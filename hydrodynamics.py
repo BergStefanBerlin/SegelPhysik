@@ -23,10 +23,14 @@ class HydroDyn:
     def __init__(self, sim):
         self.sim = sim
         q = sim.q
+        # Kalibrierung (abgestimmt): Der KIEL traegt die Hauptseiten-
+        # kraft (60-80 %), der Rumpf nur einen kleinen Queranteil
+        # -> Abdrift typ. 3..8 deg. Laengs bestimmt der quadratische
+        # Widerstand die Gleichgewichtsfahrt: v* = sqrt(F_vort/k_l).
         A_l = 2.2 * q.L * abs(q.d_r)
-        self.k_l = 0.5 * RHO_W * 0.010 * A_l
-        A_q = q.L * (abs(q.d_r) + 0.6*q.t_fin)
-        self.k_q = 0.5 * RHO_W * 0.35 * A_q
+        self.k_l = 0.5 * RHO_W * 0.030 * A_l
+        A_q = q.L * abs(q.d_r)        # Canoe-Koerper ohne Fin-Flaeche
+        self.k_q = 0.5 * RHO_W * 0.060 * A_q
         self.rw = 0.0
         self.drift = 0.0
         self.alpha_k = 0.0
@@ -49,7 +53,10 @@ class HydroDyn:
         sa, ca = np.sin(alpha), np.cos(alpha)
         CLa = 2.0*np.pi*AR/(AR + 2.0)
         CN = CLa*sa*ca + CD90*sa*abs(sa)
-        CT = -cd0*ca*abs(ca)*float(np.sign(u[0]))
+        # Reibung laengs der Sehne wirkt IMMER entgegen der Blatt-
+        # geschwindigkeit (echter Widerstand). Vorher: Vorzeichenfehler
+        # -> Schub -> Energie-Instabilitaet im Langzeitlauf.
+        CT = cd0*ca*abs(ca)*float(np.sign(u[0]))
         q_dyn = 0.5*RHO_W*U*U
         F_body = q_dyn*A*np.array([CT, CN, 0.0])
         F_world = self.sim.R @ F_body
@@ -92,8 +99,13 @@ class HydroDyn:
         # dann das Moment in den Koerperframe drehen.
         tau_k = R.T @ np.cross(R @ r_k, F_k)
         tau_r = R.T @ np.cross(R @ r_r, F_r)
-        F_h_b = np.array([-self.k_l*abs(v[0])*v[0],
-                          -self.k_q*abs(v[1])*v[1], 0.0])
+        # Formwiderstand in KOERPERachsen (Geschwindigkeit erst in den
+        # Koerperframe drehen!) - sonst steht die Gegenkraft bei
+        # Kraengung/Trimm schraeg zur Bewegung und fuehrt ggf. Energie
+        # zu (F.v > 0). Mit vb ist der Widerstand immer bremsend.
+        vb_w = R.T @ v
+        F_h_b = np.array([-self.k_l*abs(vb_w[0])*vb_w[0],
+                          -self.k_q*abs(vb_w[1])*vb_w[1], 0.0])
         F_h = R @ F_h_b
         F_h[2] = 0.0
         self.F_kiel, self.F_rud, self.F_rumpf = F_k, F_r, F_h

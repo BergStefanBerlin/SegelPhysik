@@ -90,6 +90,13 @@ class QuaderApp:
                                  bbox=dict(boxstyle='round', fc='#eef3f6',
                                            ec='#99aabb', alpha=0.9))
 
+        # Fahrt-Anzeige oben links im Bild (m/s und Knoten)
+        self.txt_fahrt = self.fig.text(
+            0.295, 0.985, '', ha='left', va='top', fontsize=11,
+            fontweight='bold', family='monospace', color='#00325a',
+            bbox=dict(boxstyle='round', fc='#e8f2fa', ec='#4a7fa5',
+                      alpha=0.9), zorder=20)
+
         self.sim = None
         self.wasser = None
         self._w_off = np.zeros(2)     # Boot-Position in der Zeichen-Welt
@@ -552,6 +559,22 @@ class QuaderApp:
                        f'Pos x/y        = {s.p[0]:+7.3f}/{s.p[1]:+7.3f} m',
                        f'v x/y/z        = {s.v[0]:+6.2f}/{s.v[1]:+6.2f}/{s.v[2]:+6.2f} m/s',
                        f'|omega|       = {np.degrees(np.linalg.norm(s.om)):7.1f} grad/s']
+            # --- Kraftbilanz horizontal (Weltframe): eingepraegte
+            #     Mastkraft vs. Reaktionen aus Kiel/Ruder/Rumpf ---
+            hd = getattr(s, 'hydrodyn', None)
+            if hd is not None:
+                F_sum = (s.F_ext + hd.F_kiel + hd.F_rud + hd.F_rumpf)
+                zeilen += ['--- Kraftbilanz horizontal ---',
+                           f'Abdrift       = {_w(hd.drift):8.1f} grad',
+                           f'F_Mast   x/y  = {s.F_ext[0]:+7.0f}/{s.F_ext[1]:+7.0f} N',
+                           f'F_Kiel   x/y  = {hd.F_kiel[0]:+7.0f}/{hd.F_kiel[1]:+7.0f} N',
+                           f'F_Ruder  x/y  = {hd.F_rud[0]:+7.0f}/{hd.F_rud[1]:+7.0f} N',
+                           f'F_Rumpf  x/y  = {hd.F_rumpf[0]:+7.0f}/{hd.F_rumpf[1]:+7.0f} N',
+                           f'Summe    x/y  = {F_sum[0]:+7.0f}/{F_sum[1]:+7.0f} N']
+        # Fahrt oben links (m/s und Knoten)
+        vh = float(np.hypot(s.v[0], s.v[1]))
+        self.txt_fahrt.set_text(
+            f'Fahrt: {vh:4.2f} m/s  =  {vh*1.94384:4.2f} kn')
         self.txt.set_text('\n'.join(zeilen))
 
     def show(self):
