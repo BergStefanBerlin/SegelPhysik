@@ -69,22 +69,33 @@ class HydroDyn:
         u_r = -(v + np.cross(om, r_r))
         vb = v + np.cross(om, r_k)
         self.drift = float(np.arctan2(vb[1], abs(vb[0]) + 1e-9))
-        F_k, tau_k, self.alpha_k = self._tragfluegel(
+        F_k, _, self.alpha_k = self._tragfluegel(
             u_k, q.A_fin, q.AR_fin, r_k, cd0=0.012, CD90=1.1)
         vor = 1.0 if u_r[0] < 0.0 else -1.0
         U_r = float(np.hypot(u_r[0], u_r[1]))
         alpha_flow = float(np.arctan2(u_r[1], abs(u_r[0])))
         self.alpha_r = alpha_flow - vor*self.rw
         u_r_eff = np.array([u_r[0], U_r*np.sin(self.alpha_r), 0.0])
-        F_r, tau_r, _ = self._tragfluegel(
+        F_r, _, _ = self._tragfluegel(
             u_r_eff, q.A_rud, q.AR_rud, r_r, cd0=0.015, CD90=1.0)
         fac_k = self._tauche(q.r_kiel, q.t_fin)
         fac_r = self._tauche(q.r_rud, q.t_rud)
-        F_k, tau_k = F_k*fac_k, tau_k*fac_k
-        F_r, tau_r = F_r*fac_r, tau_r*fac_r
+        F_k, F_r = F_k*fac_k, F_r*fac_r
+        # Alle Hydrodynamik-Kraefte wirken AUSSCHLIESSLICH in der Ebene
+        # der Wasseroberflaeche (keine Z-Komponente im Weltframe, auch
+        # nicht bei Kraengung/Trimm). Die Tragfluegel-Physik (Anstell-
+        # winkel, CN) bleibt im Koerperframe; nur die resultierende
+        # Kraft wird auf die Horizontale projiziert.
+        F_k[2] = 0.0
+        F_r[2] = 0.0
+        # Momente konsistent um den CG: Hebelarm UND Kraft im Weltframe,
+        # dann das Moment in den Koerperframe drehen.
+        tau_k = R.T @ np.cross(R @ r_k, F_k)
+        tau_r = R.T @ np.cross(R @ r_r, F_r)
         F_h_b = np.array([-self.k_l*abs(v[0])*v[0],
                           -self.k_q*abs(v[1])*v[1], 0.0])
         F_h = R @ F_h_b
+        F_h[2] = 0.0
         self.F_kiel, self.F_rud, self.F_rumpf = F_k, F_r, F_h
         self.tau_hyd = tau_k + tau_r
         return F_k + F_r + F_h, self.tau_hyd

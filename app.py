@@ -221,7 +221,9 @@ class QuaderApp:
         F_w = FM * d_w
         r_top = np.array([float(q.c_body[0]), 0.0, q.H/2 + MAST_H_FAKTOR*q.L])
         s.F_ext = F_w
-        s.tau_ext = s.R.T @ np.cross(s.R @ r_top, F_w)
+        # Hebelarm RELATIV zum CG (Newton-Euler bezieht Momente auf den
+        # CG) -> kein Phantom-Moment mehr durch den CG-Versatz.
+        s.tau_ext = s.R.T @ np.cross(s.R @ (r_top - q.c_body), F_w)
 
     def _grab_kraft_anwenden(self):
         """Pro Bild: Greifkraft + Moment aus aktueller Richtung setzen."""
