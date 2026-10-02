@@ -18,4 +18,5 @@ SLIDER_DEFS = [
     ('tk',  'Kiel-Tiefe/L',               0.5,  1.8,   1.35, 0.05),
     ('rk',  'Bulb-Dichte',                7000, 11400, 11300, 100),
     ('FM',  'Scheiben-Kraft [N]',         0,    3000,  0,    50),
-    ('FW',  'Kraftwinkel (0=Bug 90=StB)', 0,    360,   0,    5)]
+    ('FW',  'Kraftwinkel (0=Bug 90=StB)', 0,    360,   0,    5),
+                ('RW',  'Ruderwinkel [deg]',  -35,  35,   0,   1)]

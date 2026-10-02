@@ -57,6 +57,7 @@ class Simulation:
         self.z_bed = -3.0 * max(q.L, q.B, q.H)
         self.F_ext = np.zeros(3)      # externe Kraft (Weltframe) [N]
         self.tau_ext = np.zeros(3)    # externes Moment (Koerperframe) [Nm]
+        self.rw_soll = 0.0            # Soll-Ruderwinkel [rad]
         self.hydrodyn = HydroDyn(self)   # Schritt 2: Hydrodynamik
         self.reset()
 
@@ -119,8 +120,7 @@ class Simulation:
         # --- Translation (Weltframe): Auftrieb, Gewicht, Daempfung ---
         v_h = self.v[:2]
         F_d = np.array([0.0, 0.0, -self.c_lin * self.v[2]])
-        F_d[:2] = -self.k_drag * np.linalg.norm(v_h) * v_h
-        F_hyd, tau_hyd = self.hydrodyn.kraefte(dt)   # Stub: (0, 0)
+        F_hyd, tau_hyd = self.hydrodyn.kraefte(dt)
         F = (np.array([0.0, 0.0, h['F_A'] - q.m*G]) + F_d
              + self.F_ext + F_hyd)
         a = F / (q.m + self.m_a)

@@ -233,6 +233,20 @@ class QuaderVoxel:
                         I[i, j] += -np.sum(r[:, i]*r[:, j]*wgt)
         self.I_num = I
 
+        # ---- Tragfluegel-Kennzahlen (fuer Hydrodynamik) -------------
+        cf_f = self.lk_f * self.L
+        tf_f = self.tk_f * 0.105 * self.L
+        self.t_fin, self.t_rud = tf_f, 0.70*tf_f
+        self.A_fin = max(tf_f * 0.835 * cf_f, 1e-4)
+        self.AR_fin = max(tf_f*tf_f/self.A_fin, 0.2)
+        self.r_kiel = np.array([self.xf0 + 0.45*cf_f, 0.0,
+                                z_fin_top - 0.55*tf_f])
+        cr_r, tr_r = 0.55*cf_f, 0.70*tf_f
+        self.A_rud = max(tr_r * 0.875 * cr_r, 1e-4)
+        self.AR_rud = max(tr_r*tr_r/self.A_rud, 0.2)
+        self.r_rud = np.array([xr0 + 0.50*cr_r, 0.0,
+                               z_rud_top - 0.50*tr_r])
+
         # ---- Flaechnetz zum Zeichnen (Stationen x Ring) ----
         NS, MS = 26, 6
         xs = np.linspace(self.x_heck, self.x_bug, NS)

@@ -319,6 +319,7 @@ class QuaderApp:
     def _btn_schritt_vor(self, *_):
         self._grab_kraft_anwenden()
         self._scheiben_kraft_anwenden()
+        self.sim.rw_soll = np.radians(float(self.slider['RW'].val))
         for _ in range(NSUB):
             self.sim.schritt()
         wasser_schritt(self, NSUB * DT)
@@ -362,6 +363,7 @@ class QuaderApp:
                     self._acc -= 1.0
                     self._grab_kraft_anwenden()
                     self._scheiben_kraft_anwenden()
+                    self.sim.rw_soll = np.radians(float(self.slider['RW'].val))
                     for _ in range(NSUB):
                         self.sim.schritt()
                     wasser_schritt(self, NSUB * DT)
