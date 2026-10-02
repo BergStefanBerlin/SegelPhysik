@@ -492,6 +492,35 @@ class QuaderApp:
                 label(zu_px(top_v + dr(s, f_r) * 0.02),
                       'F_M = %.0f N' % FM, '#008000', 10, 18)
 
+        # --- Kiel- und Ruder-Kraftvektoren (Overlay) -----------------
+        # Teal  = Kielkraft am Angriffspunkt der Flosse (spaeter:
+        #         echter laterale Druckpunkt CLR),
+        # Gold  = Ruderkraft am Ruder-Angriffspunkt.
+        # Die pfeil()-Funktion projiziert den 3D-Vektor automatisch auf
+        # die Bildebene -> es wird nur der zur Blickrichtung gehoerige
+        # Anteil gezeichnet (gleiche Logik wie bei G/F_A/F_M).
+        # Skala wie F_M: 1000 N entsprechen 1 g-Pfeillaenge (2 cm).
+        hd = getattr(s, 'hydrodyn', None)
+        if hd is not None:
+            p_kiel_v = boot_ansicht(s, s.R @ q.r_kiel + s.p)
+            p_rud_v = boot_ansicht(s, s.R @ q.r_rud + s.p)
+            F_k = np.asarray(hd.F_kiel, float)
+            F_r = np.asarray(hd.F_rud, float)
+            if float(np.linalg.norm(F_k)) > 20.0:
+                e_k = pfeil(p_kiel_v, dr(s, F_k),
+                            px_pro_g * float(np.linalg.norm(F_k)) / 1000.0,
+                            (0.00, 0.60, 0.55), 0.0)
+                if e_k is not None:
+                    label(e_k[1], 'F_Kiel = %.0f N' % np.linalg.norm(F_k),
+                          '#00806e', 10, -16)
+            if float(np.linalg.norm(F_r)) > 20.0:
+                e_r = pfeil(p_rud_v, dr(s, F_r),
+                            px_pro_g * float(np.linalg.norm(F_r)) / 1000.0,
+                            (0.95, 0.72, 0.10), 0.0)
+                if e_r is not None:
+                    label(e_r[1], 'F_Ruder = %.0f N' % np.linalg.norm(F_r),
+                          '#a87f00', 10, 16)
+
         ax.set_title(
             f'L={q.L:g}  B={q.B:g}  H={q.H:g} m   rho={q.rho:g} kg/m^3   '
             f'm={q.m:.0f} kg   t={s.t:6.1f} s   '
