@@ -95,6 +95,10 @@ class QuaderApp:
         self.fig.canvas.mpl_connect('button_release_event', self._on_release)
         self.fig.canvas.mpl_connect('key_press_event', self._on_key)
 
+    def show(self):
+        """Kompatibel zum alten Einstieg: startet die matplotlib-Hauptschleife."""
+        plt.show()
+
     def _neu(self):
         self.sim = Simulation(P_L, P_B, P_H, P_RHO, n=P_N,
                               lk=P_LK, tk=P_TK, rhok=P_RK)
