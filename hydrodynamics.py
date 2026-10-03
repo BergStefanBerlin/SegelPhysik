@@ -1,16 +1,31 @@
 # ============================================================
 # hydrodynamics.py - Hydrodynamik: Kiel + Ruder als Tragfluegel,
-# Rumpfwiderstand laengs/quer getrennt.  (Schritt 2)
+# Rumpfwiderstand laengs/quer getrennt.  (Schritt 6)
 # ------------------------------------------------------------
-# Normalkraft-Modell (gueltig 0..90 deg Anstellwinkel):
-#   CN(alpha) = CLa*sin(a)*cos(a) + CD90*sin(a)*|sin(a)|
-#   CLa       = 2*pi*AR/(AR+2)          (endliche Streckung)
-# Erster Term: Potential-Zirkulation (kleine alpha: linear),
-# zweiter Term: Querstrom-Widerstand (dominiert im Stall ->
-# natuerliches Abreissen ohne Polter-Kraefte).
-# Momente um den GESAMT-CG (Newton-Euler im Koerperframe).
-# Die Anstroemung am Blatt enthaelt omega x r -> Kiel und Ruder
-# liefern automatisch Roll-/Gierdaempfung.
+# Tragfluegel-Modell, gueltig fuer ALLE Anstroemrichtungen:
+#   Zerlegung der Anstroemung am Blatt in Sehnenkomponente (ut,
+#   Koerper-x) und Normalkomponente (un, Koerper-y):
+#     Normalkraft  CN = f_circ*CLa*sin(a)cos(a) + CD90*sin(a)|sin(a)|
+#       - Zirkulationsanteil NUR bei Anstroemung von vorn (ut < 0),
+#         quadratischer Fade mit ut/U -> bei Quer-/Rueckwarts-
+#         anstroemung reiner Querstrom.
+#       - Querstrom-Widerstand wirkt IMMER entlang der Normalkompo-
+#         nente der Relativstroemung -> streng dissipativ.
+#     Reibung CT entlang der Sehne, immer entgegen der Gleit-
+#         geschwindigkeit (Vorzeichen = ut).
+#   Damit gilt F·u >= 0 fuer JEDE Anstroemrichtung: Die Kraft kann
+#   dem System nie Energie zufuehren (keine Anti-Daempfung mehr,
+#   kein Aufschaukeln bei Drehbewegungen - Fix der Schritt-5-
+#   Instabilitaet).
+#   CLa = 2*pi*AR/(AR+2)  (endliche Streckung)
+#
+# Ruder: Die Anstroemung wird um den Ruderwinkel in das Ruderframe
+#   gedreht, die Kraft zurueckgedreht. Konvention: rw > 0 -> Bug
+#   nach Backbord (+y). Stetig fuer alle Anstroemrichtungen.
+#
+# Momente um den GESAMT-CG (Newton-Euler im Koerperframe). Alle
+# Hydrodynamik-Kraefte wirken ausschliesslich in der Ebene der
+# Wasseroberflaeche (keine Z-Komponente im Weltframe).
 # ============================================================
 import numpy as np
 from config import RHO_W
@@ -23,13 +38,9 @@ class HydroDyn:
     def __init__(self, sim):
         self.sim = sim
         q = sim.q
-        # Kalibrierung (abgestimmt): Der KIEL traegt die Hauptseiten-
-        # kraft (60-80 %), der Rumpf nur einen kleinen Queranteil
-        # -> Abdrift typ. 3..8 deg. Laengs bestimmt der quadratische
-        # Widerstand die Gleichgewichtsfahrt: v* = sqrt(F_vort/k_l).
         A_l = 2.2 * q.L * abs(q.d_r)
         self.k_l = 0.5 * RHO_W * 0.030 * A_l
-        A_q = q.L * abs(q.d_r)        # Canoe-Koerper ohne Fin-Flaeche
+        A_q = q.L * abs(q.d_r)
         self.k_q = 0.5 * RHO_W * 0.060 * A_q
         self.rw = 0.0
         self.drift = 0.0
@@ -44,24 +55,25 @@ class HydroDyn:
         z_w = float((self.sim.R @ p_body + self.sim.p)[2])
         return float(np.clip(-z_w / max(0.5*tiefe, 0.05), 0.0, 1.0))
 
-    def _tragfluegel(self, u_body, A, AR, r_rel, cd0=0.015, CD90=1.0):
+    def _tragfluegel_b(self, u_body, A, AR, cd0=0.015, CD90=1.0):
+        """Tragfluegel im KOERPERframe. u_body: Relativstroemung am
+        Blatt. Vorwaertsfahrt -> u[0] < 0. Rueckgabe: (F_body, alpha).
+        F ist streng dissipativ: F·u >= 0 fuer alle Richtungen."""
         u = np.asarray(u_body, float)
-        U = float(np.hypot(u[0], u[1]))
+        ut, un = float(u[0]), float(u[1])
+        U = float(np.hypot(ut, un))
         if U < 1e-4 or A <= 1e-9:
-            return np.zeros(3), np.zeros(3), 0.0
-        alpha = float(np.arctan2(u[1], abs(u[0])))
+            return np.zeros(3), 0.0
+        alpha = float(np.arctan2(un, abs(ut)))
         sa, ca = np.sin(alpha), np.cos(alpha)
         CLa = 2.0*np.pi*AR/(AR + 2.0)
-        CN = CLa*sa*ca + CD90*sa*abs(sa)
-        # Reibung laengs der Sehne wirkt IMMER entgegen der Blatt-
-        # geschwindigkeit (echter Widerstand). Vorher: Vorzeichenfehler
-        # -> Schub -> Energie-Instabilitaet im Langzeitlauf.
-        CT = cd0*ca*abs(ca)*float(np.sign(u[0]))
+        f_vorn = max(-ut, 0.0)/U          # Zirkulation nur von vorn
+        f_circ = f_vorn*f_vorn
+        CN = f_circ*CLa*sa*ca + CD90*sa*abs(sa)
+        CT = cd0*abs(ca)*ut/U             # immer bremsend
         q_dyn = 0.5*RHO_W*U*U
         F_body = q_dyn*A*np.array([CT, CN, 0.0])
-        F_world = self.sim.R @ F_body
-        tau_body = np.cross(r_rel, F_body)
-        return F_world, tau_body, alpha
+        return F_body, alpha
 
     def kraefte(self, dt):
         s = self.sim
@@ -76,38 +88,35 @@ class HydroDyn:
         u_r = -(v + np.cross(om, r_r))
         vb = v + np.cross(om, r_k)
         self.drift = float(np.arctan2(vb[1], abs(vb[0]) + 1e-9))
-        F_k, _, self.alpha_k = self._tragfluegel(
-            u_k, q.A_fin, q.AR_fin, r_k, cd0=0.012, CD90=1.1)
-        vor = 1.0 if u_r[0] < 0.0 else -1.0
-        U_r = float(np.hypot(u_r[0], u_r[1]))
-        alpha_flow = float(np.arctan2(u_r[1], abs(u_r[0])))
-        self.alpha_r = alpha_flow - vor*self.rw
-        u_r_eff = np.array([u_r[0], U_r*np.sin(self.alpha_r), 0.0])
-        F_r, _, _ = self._tragfluegel(
-            u_r_eff, q.A_rud, q.AR_rud, r_r, cd0=0.015, CD90=1.0)
+
+        Fk_b, self.alpha_k = self._tragfluegel_b(
+            u_k, q.A_fin, q.AR_fin, cd0=0.012, CD90=1.1)
+
+        c, s_ = np.cos(self.rw), np.sin(self.rw)
+        u_rr = np.array([c*u_r[0] - s_*u_r[1],
+                         s_*u_r[0] + c*u_r[1], 0.0])
+        Fr_rud, self.alpha_r = self._tragfluegel_b(
+            u_rr, q.A_rud, q.AR_rud, cd0=0.015, CD90=1.0)
+        Fr_b = np.array([c*Fr_rud[0] + s_*Fr_rud[1],
+                         -s_*Fr_rud[0] + c*Fr_rud[1], 0.0])
+
         fac_k = self._tauche(q.r_kiel, q.t_fin)
         fac_r = self._tauche(q.r_rud, q.t_rud)
-        F_k, F_r = F_k*fac_k, F_r*fac_r
-        # Alle Hydrodynamik-Kraefte wirken AUSSCHLIESSLICH in der Ebene
-        # der Wasseroberflaeche (keine Z-Komponente im Weltframe, auch
-        # nicht bei Kraengung/Trimm). Die Tragfluegel-Physik (Anstell-
-        # winkel, CN) bleibt im Koerperframe; nur die resultierende
-        # Kraft wird auf die Horizontale projiziert.
+        Fk_b, Fr_b = Fk_b*fac_k, Fr_b*fac_r
+
+        F_k = R @ Fk_b
+        F_r = R @ Fr_b
         F_k[2] = 0.0
         F_r[2] = 0.0
-        # Momente konsistent um den CG: Hebelarm UND Kraft im Weltframe,
-        # dann das Moment in den Koerperframe drehen.
         tau_k = R.T @ np.cross(R @ r_k, F_k)
         tau_r = R.T @ np.cross(R @ r_r, F_r)
-        # Formwiderstand in KOERPERachsen (Geschwindigkeit erst in den
-        # Koerperframe drehen!) - sonst steht die Gegenkraft bei
-        # Kraengung/Trimm schraeg zur Bewegung und fuehrt ggf. Energie
-        # zu (F.v > 0). Mit vb ist der Widerstand immer bremsend.
+
         vb_w = R.T @ v
         F_h_b = np.array([-self.k_l*abs(vb_w[0])*vb_w[0],
                           -self.k_q*abs(vb_w[1])*vb_w[1], 0.0])
         F_h = R @ F_h_b
         F_h[2] = 0.0
+
         self.F_kiel, self.F_rud, self.F_rumpf = F_k, F_r, F_h
         self.tau_hyd = tau_k + tau_r
         return F_k + F_r + F_h, self.tau_hyd
