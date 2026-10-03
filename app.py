@@ -17,6 +17,12 @@ from matplotlib.patches import FancyArrowPatch, Ellipse
 from matplotlib.widgets import Button
 import mpl_toolkits.mplot3d.proj3d as proj3d
 
+# Farbschema Kraftpfeile (Paare mit gleicher Farbe wirken gegeneinander):
+#   ROT   : G (Gewicht, abwaerts) <-> F_A (Auftrieb, aufwaerts)
+#   GRUEN : F_M (Vortrieb)        <-> F_Rumpf (Widerstand)
+#   BLAU  : F_Kiel + F_Ruder      (laterales System)
+import time as _time
+
 from config import G, DT, NSUB, MAST_H_FAKTOR
 from dynamics import Simulation
 from rendering.scene import boot_ansicht, dr, zeichne_szene, wasser_schritt
@@ -87,9 +93,12 @@ class QuaderApp:
         self._klick_zonen = {}
         self._neu()
 
-        self.timer = self.fig.canvas.new_timer(interval=40)
+        self.timer = self.fig.canvas.new_timer(interval=15)
         self.timer.add_callback(self._frame)
         self.timer.start()
+        self._uhr = _time.perf_counter()   # Echtzeit-Regler
+        self._rueckstand = 0.0
+        self._zeitfaktor = 1.0
 
         self.view_drag = None
         self.fig.canvas.mpl_connect('button_press_event', self._on_press)
@@ -234,6 +243,25 @@ class QuaderApp:
         y = zeile(y, 'Tiefgang', '%7.3f m' % h['tiefgang'])
         y -= 0.006
 
+        y -= 0.006
+        y = gruppe(y, 'Gleichgewicht (Validierung)')
+        F_res = getattr(s, 'F_res', None)
+        tau_res = getattr(s, 'tau_res', None)
+        if F_res is not None:
+            ok_f = float(np.linalg.norm(F_res)) < 100.0
+            y = zeile(y, 'Summe F  x/y/z',
+                      '%+5.0f/%+5.0f/%+5.0f N'
+                      % (F_res[0], F_res[1], F_res[2]),
+                      '#007000' if ok_f else '#b06000')
+            y = zeile(y, '|Summe F|',
+                      '%7.0f N' % float(np.linalg.norm(F_res)),
+                      '#007000' if ok_f else '#b06000')
+            if tau_res is not None:
+                ok_m = float(np.linalg.norm(tau_res)) < 500.0
+                y = zeile(y, '|Summe M| (Drehmoment)',
+                          '%7.0f Nm' % float(np.linalg.norm(tau_res)),
+                          '#007000' if ok_m else '#b06000')
+        y -= 0.006
         y = gruppe(y, 'Position / Bewegung')
         y = zeile(y, 'Position x/y',
                   '%+6.1f / %+6.1f m' % (s.p[0], s.p[1]))
@@ -344,19 +372,37 @@ class QuaderApp:
         s.tau_ext = s.R.T @ np.cross(s.R @ (r_top - s.q.c_body), F_w)
 
     def _frame(self):
-        self._scheiben_kraft_anwenden()
-        self.sim.rw_soll = np.radians(self.rw_deg)
-        for _ in range(NSUB):
+        # --- Echtzeit-Regler: verstrichene Wanduhr-Zeit in Physik-
+        #     Schritte umsetzen. Die Simulation folgt der echten Uhr,
+        #     egal wie schnell oder langsam der Rechner ist.
+        jetzt = _time.perf_counter()
+        dt_wand = min(jetzt - self._uhr, 0.25)   # Deckel (Tab-Wechsel etc.)
+        self._uhr = jetzt
+        self._rueckstand += dt_wand
+
+        schritte = 0
+        while self._rueckstand >= DT and schritte < 240:
+            self._scheiben_kraft_anwenden()
+            self.sim.rw_soll = np.radians(self.rw_deg)
             self.sim.schritt()
-        wasser_schritt(self, NSUB * DT)
+            self._rueckstand -= DT
+            schritte += 1
+        if self._rueckstand > 1.0:      # hoffnungslos hinterher -> verwerfen
+            self._rueckstand = 0.0
+        if schritte:
+            wasser_schritt(self, schritte * DT)
+        if dt_wand > 1e-4:
+            faktor_neu = schritte * DT / dt_wand
+            self._zeitfaktor += 0.1 * (faktor_neu - self._zeitfaktor)
+
         self._zeichnen()
         self._messwerte_zeichnen()
         self._parameter_zeichnen()
         self.txt_fahrt.set_text(
-            'Fahrt %5.2f m/s (%4.2f kn)   t = %.1f s'
+            'Fahrt %5.2f m/s (%4.2f kn)   t = %.1f s   Realzeit x%.2f'
             % (float(np.hypot(self.sim.v[0], self.sim.v[1])),
                float(np.hypot(self.sim.v[0], self.sim.v[1])) * 1.94384,
-               self.sim.t))
+               self.sim.t, self._zeitfaktor))
         self.fig.canvas.draw_idle()
 
     # ------------------------------------------------------------
@@ -430,7 +476,7 @@ class QuaderApp:
               'G %.1f kN' % (FG / 1000.0))
         if CB is not None:
             FA = s.h['F_A']
-            pfeil(CB, [0, 0, +1], sk(FA), '#0044cc',
+            pfeil(CB, [0, 0, +1], sk(FA), '#c00000',
                   'F_A %.1f kN' % (FA / 1000.0))
 
         # Horizontale Kraefte: Richtung World -> Boot-Ansicht (dr)
@@ -446,13 +492,13 @@ class QuaderApp:
             zk = -0.55 * P_TK * P_L
             if np.linalg.norm(hd.F_kiel) > 1e-9:
                 pfeil([0.0, 0.0, zk], dview(hd.F_kiel), sk(hd.F_kiel),
-                      '#00806e', 'Kiel %.0f N' % np.linalg.norm(hd.F_kiel))
+                      '#0055bb', 'Kiel %.0f N' % np.linalg.norm(hd.F_kiel))
             if np.linalg.norm(hd.F_rud) > 1e-9:
                 pfeil([-0.42 * P_L, 0.0, zk * 0.85], dview(hd.F_rud),
-                      sk(hd.F_rud), '#a87f00',
+                      sk(hd.F_rud), '#0055bb',
                       'Rud %.0f N' % np.linalg.norm(hd.F_rud))
             if np.linalg.norm(hd.F_rumpf) > 1e-9:
-                pfeil(CG, dview(hd.F_rumpf), sk(hd.F_rumpf), '#707070',
+                pfeil(CG, dview(hd.F_rumpf), sk(hd.F_rumpf), '#008800',
                       'Drag %.0f N' % np.linalg.norm(hd.F_rumpf))
 
 

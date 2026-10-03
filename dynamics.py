@@ -59,6 +59,8 @@ class Simulation:
         self.tau_ext = np.zeros(3)    # externes Moment (Koerperframe) [Nm]
         self.rw_soll = 0.0            # Soll-Ruderwinkel [rad]
         self.hydrodyn = HydroDyn(self)   # Schritt 2: Hydrodynamik
+        self.F_res = np.zeros(3)
+        self.tau_res = np.zeros(3)
         self.reset()
 
     # ---------- Anzeige-/Kompatibilitaets-Eigenschaften ----------
@@ -87,13 +89,20 @@ class Simulation:
         self._q_ok = self.quat.copy()
         self.aktualisiere()
 
-    def reset(self, heel_deg=25.0):
+    def reset(self, heel_deg=0.0):
         q = self.q
         if self.sinkt:
             z0 = q.H / 2 + 0.10
         else:
             # Kiel ist praktisch immer getaucht: Restvolumen vom Rumpf
             z0 = q.H/2 - max(q.m/RHO_W - q.Vk, 0.0) / (q.L * q.B)
+            # Auftriebs-Gleichgewicht exakt einregeln (F_A = m*g):
+            for _ in range(40):
+                self.p = np.array([0.0, 0.0, z0])
+                self.quat = quat_from_euler(0.0, 0.0, 0.0)
+                self.aktualisiere()
+                dV = (self.h['F_A'] / (RHO_W * G)) - q.m / RHO_W
+                z0 += dV / (q.L * q.B)
         self.p = np.array([0.0, 0.0, z0])
         self.quat = quat_from_euler(np.radians(heel_deg), 0.0, 0.0)
         self.v = np.zeros(3)
@@ -123,9 +132,11 @@ class Simulation:
         F_hyd, tau_hyd = self.hydrodyn.kraefte(dt)
         F = (np.array([0.0, 0.0, h['F_A'] - q.m*G]) + F_d
              + self.F_ext + F_hyd)
+        self.F_res = F.copy()          # Resultierende (Weltframe)
         a = F / (q.m + self.m_a)
         # --- Rotation (Koerperframe): Newton-Euler mit Kreiselterm ---
         tau = h['tau_body'] - self.c_rot * self.om + self.tau_ext + tau_hyd
+        self.tau_res = tau.copy()      # Resultierendes Moment (Koerperframe)
         gyro = np.cross(self.om, self.I @ self.om)
         alpha = np.linalg.solve(self.I_ges, tau - gyro)
         # --- semi-implizites Euler ---
