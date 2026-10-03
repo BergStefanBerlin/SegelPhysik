@@ -26,6 +26,10 @@ var rw := 0.0
 var fm := 1200.0
 var send_acc := 0.0
 var hud: Label
+var cam_node: Camera3D
+var wasser_node: MeshInstance3D
+var bridge_label: Label
+var letzte_pkt_ms: int = -1000000
 
 func _ready() -> void:
     udp = PacketPeerUDP.new()
@@ -54,6 +58,7 @@ func _baue_umgebung() -> void:
     var cam := Camera3D.new()
     cam.set_script(load("res://scripts/orbit_cam.gd"))
     add_child(cam)
+    cam_node = cam
     cam.make_current()
     var wasser := MeshInstance3D.new()
     var plane := PlaneMesh.new()
@@ -65,6 +70,7 @@ func _baue_umgebung() -> void:
     wm.shader = load("res://shaders/water.gdshader")
     wasser.material_override = wm
     add_child(wasser)
+    wasser_node = wasser
 
 func _hull_mat(c: Color) -> ShaderMaterial:
     var m := ShaderMaterial.new()
@@ -79,6 +85,7 @@ func _baue_yacht() -> void:
     var hull := MeshInstance3D.new()
     if ResourceLoader.exists("res://yacht_hull.obj"):
         hull.mesh = load("res://yacht_hull.obj")
+        hull.rotation_degrees = Vector3(-90, 0, 0)
     else:
         var box := BoxMesh.new()
         box.size = Vector3(9, 1.6, 2.96)
@@ -88,6 +95,7 @@ func _baue_yacht() -> void:
     var keel := MeshInstance3D.new()
     if ResourceLoader.exists("res://yacht_keel.obj"):
         keel.mesh = load("res://yacht_keel.obj")
+        keel.rotation_degrees = Vector3(-90, 0, 0)
     else:
         var box2 := BoxMesh.new()
         box2.size = Vector3(1.0, 1.6, 0.3)
@@ -118,6 +126,10 @@ func _baue_hud() -> void:
     hud.position = Vector2(12, 10)
     hud.add_theme_font_size_override("font_size", 15)
     layer.add_child(hud)
+    bridge_label = Label.new()
+    bridge_label.position = Vector2(12, 104)
+    bridge_label.add_theme_font_size_override("font_size", 13)
+    layer.add_child(bridge_label)
 
 func _pfeil_neu(farbe: Color, gestrichelt: bool) -> Node3D:
     var root := Node3D.new()
@@ -177,12 +189,15 @@ func _empfangen() -> void:
         var data = JSON.parse_string(udp.get_packet().get_string_from_utf8())
         if data == null:
             continue
+        letzte_pkt_ms = Time.get_ticks_msec()
         if data.has("pose"):
             var po = data["pose"]
             var pos := Vector3(po["pos"][0], po["pos"][1], po["pos"][2])
             var qt = po["quat"]
             var quat := Quaternion(qt[0], qt[1], qt[2], qt[3])
             yacht.transform = Transform3D(Basis(quat), pos)
+            if cam_node != null:
+                cam_node.set("ziel", pos)
         if data.has("forces"):
             _kraefte_zeichnen(data["forces"])
         if data.has("flow"):
@@ -277,3 +292,13 @@ func _eingabe(delta: float) -> void:
 func _process(delta: float) -> void:
     _empfangen()
     _eingabe(delta)
+    if wasser_node != null and yacht != null:
+        wasser_node.position = Vector3(yacht.position.x, 0.0, yacht.position.z)
+    if bridge_label != null:
+        var alter := (Time.get_ticks_msec() - letzte_pkt_ms) / 1000.0
+        if alter < 0.5:
+            bridge_label.text = "Bridge: OK (%.0f Hz)" % (1.0 / max(delta, 0.001))
+            bridge_label.modulate = Color(0.3, 1.0, 0.3)
+        else:
+            bridge_label.text = "Bridge: OFFLINE seit %.1f s" % alter
+            bridge_label.modulate = Color(1.0, 0.35, 0.35)

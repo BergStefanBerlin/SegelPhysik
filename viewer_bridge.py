@@ -7,7 +7,7 @@
 # Stroemung, Stats); empfaengt Befehle auf 127.0.0.1:9998.
 # Koordinaten: Simulation Z-up -> Godot Y-up via (x, z, -y).
 # ============================================================
-import socket, json, time, sys, os
+import socket, json, time, sys, os, traceback
 import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from config import G
@@ -137,6 +137,17 @@ def _paket(sim, fm):
                       'fm': float(fm)}}
 
 
+def _rein(x):
+    """Ersetzt NaN/Inf durch 0.0, damit JSON valide bleibt."""
+    if isinstance(x, dict):
+        return {k: _rein(v) for k, v in x.items()}
+    if isinstance(x, list):
+        return [_rein(v) for v in x]
+    if isinstance(x, float) and not np.isfinite(x):
+        return 0.0
+    return x
+
+
 def main(test=False):
     sim = Simulation(9.0, 2.96, 1.6, 130, 16, 0.11, 1.35, 11300)
     sim.reset(heel_deg=0.0)
@@ -188,10 +199,21 @@ def main(test=False):
                 except Exception:
                     break
             sim.rw_soll = np.radians(rw)
-            for _ in range(NSUB_VIEWER):
-                _kraefte_setzen(sim, fm, fw)
-                sim.schritt()
-            sock.sendto(json.dumps(_paket(sim, fm)).encode(), addr)
+            try:
+                for _ in range(NSUB_VIEWER):
+                    _kraefte_setzen(sim, fm, fw)
+                    sim.schritt()
+            except Exception:
+                print('WARNUNG: Physik-Fehler, Reset:')
+                traceback.print_exc()
+                sim.reset(heel_deg=0.0)
+                continue
+            if not (np.isfinite(sim.v).all() and np.isfinite(sim.p).all()
+                    and np.isfinite(sim.quat).all()):
+                print('WARNUNG: Zustand ungultig bei t=%.1f s -> Reset' % sim.t)
+                sim.reset(heel_deg=0.0)
+                continue
+            sock.sendto(json.dumps(_rein(_paket(sim, fm))).encode(), addr)
             n += 1
             rest = frame - (time.time() - t0)
             if rest > 0:
