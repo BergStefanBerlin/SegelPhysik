@@ -52,6 +52,7 @@ class QuaderApp:
 
         # --- Ansicht-Buttons unten links unter der Szene ---
         self._btn_axes = []
+        self._btns = []          # Referenzen halten (sonst GC -> tot)
         bw = 0.085
         for i, (name, az, el) in enumerate(ANSICHTEN):
             bax = self.fig.add_axes(
@@ -59,10 +60,11 @@ class QuaderApp:
             btn = Button(bax, name)
             btn.on_clicked(lambda ev, az=az, el=el: self._ansicht(az, el))
             self._btn_axes.append(bax)
+            self._btns.append(btn)
 
-        self.axp = self.fig.add_axes([0.675, 0.60, 0.315, 0.37])
-        self.axw = self.fig.add_axes([0.675, 0.145, 0.315, 0.44])
-        self.axs = self.fig.add_axes([0.685, 0.025, 0.295, 0.105])
+        self.axp = self.fig.add_axes([0.675, 0.640, 0.315, 0.330])
+        self.axw = self.fig.add_axes([0.675, 0.115, 0.315, 0.515])
+        self.axs = self.fig.add_axes([0.685, 0.018, 0.295, 0.090])
         for a in (self.axp, self.axw, self.axs):
             a.set_xticks([]); a.set_yticks([])
             a.set_facecolor('#eef3f6')
@@ -124,6 +126,7 @@ class QuaderApp:
              ('Kiel-Tiefe/L', '%g' % P_TK),
              ('Bulb-Dichte', '%.0f kg/m^3' % P_RK)]
         self.axp.clear()
+        self.axp.set_xticks([]); self.axp.set_yticks([])
         self.axp.set_xlim(0, 1); self.axp.set_ylim(0, 1)
         self.axp.text(0.03, 0.965, 'PARAMETER', fontsize=10,
                       fontweight='bold', va='top', color='#00325a')
@@ -140,7 +143,7 @@ class QuaderApp:
         y -= 0.055
         self._klick_zonen = {}
         regel = [('fm', 'Scheiben-Kraft FM', '%.0f N' % self.fm),
-                 ('fw', 'Kraftwinkel FW', '%g deg (0=Bug)' % self.fw_deg),
+                 ('fw', 'Kraftwinkel FW', '%g deg (weltfest)' % self.fw_deg),
                  ('rw', 'Ruderwinkel RW', '%g deg' % self.rw_deg)]
         for key, name, val in regel:
             self.axp.text(0.03, y, name, fontsize=8.5, va='top',
@@ -178,24 +181,25 @@ class QuaderApp:
             return (np.degrees(x) + 180.0) % 360.0 - 180.0
 
         self.axw.clear()
+        self.axw.set_xticks([]); self.axw.set_yticks([])
         self.axw.set_xlim(0, 1); self.axw.set_ylim(0, 1)
 
         def gruppe(y, titel):
             self.axw.text(0.03, y, titel, fontsize=9, fontweight='bold',
                           va='top', color='#00325a')
-            return y - 0.072
+            return y - 0.052
 
         def zeile(y, name, val, farbe='#103050'):
             self.axw.text(0.09, y, name, fontsize=8.2, va='top',
                           color='#304050')
             self.axw.text(0.97, y, val, fontsize=8.2, va='top', ha='right',
                           family='monospace', color=farbe)
-            return y - 0.060
+            return y - 0.038
 
         y = 0.98
         self.axw.text(0.03, y, 'MESSWERTE   t = %.1f s' % s.t, fontsize=10,
                       fontweight='bold', va='top', color='#00325a')
-        y -= 0.082
+        y -= 0.075
 
         y = gruppe(y, 'Kraefte')
         y = zeile(y, 'G  (Gewicht)', self._kN(q.m * G), '#a00000')
@@ -211,7 +215,7 @@ class QuaderApp:
                       '%7.0f N' % np.linalg.norm(hd.F_rud), '#a87f00')
             y = zeile(y, 'F_Rumpf (Widerstand)',
                       '%7.0f N' % np.linalg.norm(hd.F_rumpf), '#606060')
-        y -= 0.012
+        y -= 0.006
 
         y = gruppe(y, 'Geschwindigkeiten')
         y = zeile(y, 'horizontal (Fahrt)',
@@ -219,7 +223,7 @@ class QuaderApp:
         y = zeile(y, 'vertikal (v_z)', '%+5.2f m/s' % s.v[2])
         y = zeile(y, 'resultierend |v|',
                   '%5.2f m/s' % float(np.linalg.norm(s.v)))
-        y -= 0.012
+        y -= 0.006
 
         y = gruppe(y, 'Lage')
         y = zeile(y, 'Kraengung', '%7.1f deg' % _w(s.roll))
@@ -228,7 +232,7 @@ class QuaderApp:
         if hd is not None:
             y = zeile(y, 'Abdrift', '%7.1f deg' % _w(hd.drift))
         y = zeile(y, 'Tiefgang', '%7.3f m' % h['tiefgang'])
-        y -= 0.012
+        y -= 0.006
 
         y = gruppe(y, 'Position / Bewegung')
         y = zeile(y, 'Position x/y',
@@ -245,6 +249,7 @@ class QuaderApp:
 
         # --- Summenkraft-Balken ---
         self.axs.clear()
+        self.axs.set_xticks([]); self.axs.set_yticks([])
         self.axs.set_xlim(0, 1); self.axs.set_ylim(0, 1)
         self.axs.text(0.03, 0.97, 'SUMMENKRAFT (Achsen)', fontsize=9,
                       fontweight='bold', va='top', color='#00325a')
@@ -328,15 +333,10 @@ class QuaderApp:
             s.F_ext = np.zeros(3)
             s.tau_ext = np.zeros(3)
             return
-        x_w = s.R @ np.array([1.0, 0.0, 0.0]); x_w[2] = 0.0
-        y_w = s.R @ np.array([0.0, 1.0, 0.0]); y_w[2] = 0.0
-        nx, ny = np.linalg.norm(x_w), np.linalg.norm(y_w)
-        if nx < 1e-9 or ny < 1e-9:
-            s.F_ext = np.zeros(3)
-            s.tau_ext = np.zeros(3)
-            return
-        x_w, y_w = x_w / nx, y_w / ny
-        d_w = np.cos(FW) * x_w - np.sin(FW) * y_w
+        # WELTFESTE Richtung (wie Wind aus fester Richtung): FW ist
+        # der Winkel zur Welt-x-Achse, NICHT zum Boot. Sonst dreht die
+        # Kraft beim Gieren mit und es existiert kein Gleichgewicht.
+        d_w = np.array([np.cos(FW), -np.sin(FW), 0.0])
         F_w = FM * d_w
         r_top = np.array([float(s.q.c_body[0]), 0.0,
                           s.q.H / 2 + MAST_H_FAKTOR * s.q.L])
