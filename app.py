@@ -1,38 +1,42 @@
 # ============================================================
-# app.py - GUI (QuaderApp), Schritt 8: Paneel-Layout
+# app.py - GUI (QuaderApp), Schritt 8.2
 # ------------------------------------------------------------
-# Umgestaltung gegenueber Schritt 6:
-#   * KEINE Schieberegler mehr (Parameter sind feste Werte)
-#   * KEINE Buttons (Neustart/Gleichgewicht/Stoss) und keine
-#     Zeitkontrolle (Start/Pause/Einzelschritt/Tempo/Richtung)
-#   * Layout: LINKS die 3D-Szene, RECHTS zwei Listen
-#       - oben: feste Parameter
-#       - unten: aktuelle Messwerte, thematisch gruppiert
-#         (Kraefte paarweise, Geschwindigkeiten, Lage, Bewegung)
-#       - Summenkraefte pro Achse als Balkendarstellung
-#   * Ansicht: freie Mausrotation (linke Maustaste ziehen)
-# Die Physik-Module kennen diese Datei nicht -> headless testbar.
+#   * KEINE Slider, KEINE Zeitkontrolle
+#   * Layout: LINKS Szene (+ Ansicht-Buttons unten links),
+#             RECHTS Parameter- und Messwert-Panel
+#   * FM / FW / RW einstellbar:
+#       - Klick auf "-" / "+" im Parameter-Panel
+#       - Tasten:  Bild auf/ab        = FM +/-100 N
+#                  Pfeil auf/ab       = FW +/-5 deg
+#                  Pfeil links/rechts = RW +/-5 deg
+#   * Simulation laeuft permanent
 # ============================================================
 import numpy as np
 import matplotlib.pyplot as plt
-import mpl_toolkits.mplot3d.proj3d as proj3d
 from matplotlib.patches import FancyArrowPatch, Ellipse
+from matplotlib.widgets import Button
+import mpl_toolkits.mplot3d.proj3d as proj3d
 
 from config import G, DT, NSUB, MAST_H_FAKTOR
 from dynamics import Simulation
 from rendering.scene import boot_ansicht, dr, zeichne_szene, wasser_schritt
 
-# --- feste Einstellwerte (ehemalige Slider-Defaults; FM/FW so, dass
-#     die Yacht segelt; siehe Parameterliste rechts oben) ---
+# --- feste Rumpf-Parameter ---
 P_L, P_B, P_H, P_RHO, P_N = 9.0, 2.96, 1.6, 130.0, 16
 P_LK, P_TK, P_RK = 0.11, 1.35, 11300.0
-P_FM, P_FW_DEG, P_RW_DEG = 1200.0, 35.0, 0.0
+
+FM_SCHRITT, FW_SCHRITT, RW_SCHRITT = 100.0, 5.0, 5.0
+
+# --- Ansichts-Presets: (Name, Azimut, Elevation) ---
+ANSICHTEN = [('3/4', -60.0, 22.0), ('Seite', 90.0, 8.0),
+             ('Bug', 0.0, 8.0), ('Heck', 180.0, 8.0),
+             ('Oben', -90.0, 89.0)]
 
 
 class QuaderApp:
     def __init__(self):
         plt.rcParams['font.size'] = 9
-        self.fig = plt.figure(figsize=(14.5, 8.0))
+        self.fig = plt.figure(figsize=(14.5, 8.2))
         try:
             self.fig.canvas.manager.set_window_title(
                 'Segelphysik - Schwimmender Koerper, 6 Freiheitsgrade')
@@ -41,87 +45,121 @@ class QuaderApp:
         self.fig.patch.set_facecolor('#f4f6f8')
 
         # --------------------- LAYOUT ---------------------
-        # Links: 3D-Szene (+ unsichtbare Overlay-Ebene fuer Pfeile)
-        self.ax = self.fig.add_axes([0.015, 0.02, 0.64, 0.95],
+        self.ax = self.fig.add_axes([0.015, 0.075, 0.64, 0.895],
                                     projection='3d')
         self.axov = self.fig.add_axes(self.ax.get_position().bounds)
         self.axov.set_zorder(10)
 
-        # Rechts oben: Parameterliste (statisch)
-        self.axp = self.fig.add_axes([0.675, 0.60, 0.315, 0.37])
-        # Rechts Mitte: Messwert-Listen (gruppiert, live)
-        self.axw = self.fig.add_axes([0.675, 0.145, 0.315, 0.44])
-        # Rechts unten: Summenkraefte pro Achse (Balken)
-        self.axs = self.fig.add_axes([0.685, 0.025, 0.295, 0.105])
+        # --- Ansicht-Buttons unten links unter der Szene ---
+        self._btn_axes = []
+        bw = 0.085
+        for i, (name, az, el) in enumerate(ANSICHTEN):
+            bax = self.fig.add_axes(
+                [0.025 + i * (bw + 0.010), 0.012, bw, 0.042])
+            btn = Button(bax, name)
+            btn.on_clicked(lambda ev, az=az, el=el: self._ansicht(az, el))
+            self._btn_axes.append(bax)
 
+        self.axp = self.fig.add_axes([0.675, 0.60, 0.315, 0.37])
+        self.axw = self.fig.add_axes([0.675, 0.145, 0.315, 0.44])
+        self.axs = self.fig.add_axes([0.685, 0.025, 0.295, 0.105])
         for a in (self.axp, self.axw, self.axs):
             a.set_xticks([]); a.set_yticks([])
             a.set_facecolor('#eef3f6')
             for sp in a.spines.values():
                 sp.set_color('#99aabb')
 
-        # Fahrt-Anzeige ueber der Szene
         self.txt_fahrt = self.fig.text(
             0.035, 0.985, '', ha='left', va='top', fontsize=12,
             fontweight='bold', family='monospace', color='#00325a',
             bbox=dict(boxstyle='round', fc='#e8f2fa', ec='#4a7fa5',
                       alpha=0.9), zorder=20)
 
+        # --- regelbare Groessen ---
+        self.fm = 1200.0      # Scheiben-Kraft [N]
+        self.fw_deg = 35.0    # Kraftwinkel [deg], 0 = Bug
+        self.rw_deg = 0.0     # Ruderwinkel [deg]
+
         self.sim = None
         self.wasser = None
-        self._w_off = np.zeros(2)     # Boot-Position in der Zeichen-Welt
-        self._w_yaw = 0.0             # aufsummierter Gierwinkel
+        self._klick_zonen = {}
         self._neu()
-        self._parameter_zeichnen()
 
         self.timer = self.fig.canvas.new_timer(interval=40)
         self.timer.add_callback(self._frame)
         self.timer.start()
 
-        # --- freie Mausrotation der Szene ---
         self.view_drag = None
         self.fig.canvas.mpl_connect('button_press_event', self._on_press)
         self.fig.canvas.mpl_connect('motion_notify_event', self._on_motion)
         self.fig.canvas.mpl_connect('button_release_event', self._on_release)
+        self.fig.canvas.mpl_connect('key_press_event', self._on_key)
+
+    def _neu(self):
+        self.sim = Simulation(P_L, P_B, P_H, P_RHO, n=P_N,
+                              lk=P_LK, tk=P_TK, rhok=P_RK)
+        self.wasser = None
+        self._w_off = np.zeros(2)
+        self._w_yaw = 0.0
+
+    def _ansicht(self, azimut, elevation):
+        self.ax.azim = azimut
+        self.ax.elev = elevation
 
     # ------------------------------------------------------------
-    # Rechte Panels
+    # Parameter-Panel (oben rechts)
     # ------------------------------------------------------------
     def _parameter_zeichnen(self):
-        q = self.sim.q if self.sim is not None else None
-        L = q.L if q else P_L
-        B = q.B if q else P_B
-        H = q.H if q else P_H
-        rho = q.rho if q else P_RHO
-        m = q.m if q else 0.0
-        z = [('Rumpflaenge L', '%g m' % L),
-             ('Rumpfbreite B', '%g m' % B),
-             ('Rumpfhoehe H', '%g m' % H),
-             ('Strukturdichte', '%g kg/m^3' % rho),
-             ('Gesamtmasse m', '%.0f kg' % m),
+        q = self.sim.q
+        z = [('Rumpflaenge L', '%g m' % q.L),
+             ('Rumpfbreite B', '%g m' % q.B),
+             ('Rumpfhoehe H', '%g m' % q.H),
+             ('Strukturdichte', '%g kg/m^3' % q.rho),
+             ('Gesamtmasse m', '%.0f kg' % q.m),
              ('Kiel-Laenge/L', '%g' % P_LK),
              ('Kiel-Tiefe/L', '%g' % P_TK),
-             ('Bulb-Dichte', '%.0f kg/m^3' % P_RK),
-             ('Scheiben-Kraft FM', '%.0f N' % P_FM),
-             ('Kraftwinkel FW', '%g deg (0=Bug)' % P_FW_DEG),
-             ('Ruderwinkel RW', '%g deg' % P_RW_DEG)]
+             ('Bulb-Dichte', '%.0f kg/m^3' % P_RK)]
         self.axp.clear()
         self.axp.set_xlim(0, 1); self.axp.set_ylim(0, 1)
-        self.axp.text(0.03, 0.955, 'PARAMETER (fest)', fontsize=10,
+        self.axp.text(0.03, 0.965, 'PARAMETER', fontsize=10,
                       fontweight='bold', va='top', color='#00325a')
-        y = 0.86
+        y = 0.875
         for name, val in z:
             self.axp.text(0.03, y, name, fontsize=8.5, va='top',
                           color='#304050')
             self.axp.text(0.97, y, val, fontsize=8.5, va='top',
                           ha='right', family='monospace', color='#103050')
-            y -= 0.082
+            y -= 0.075
+
+        self.axp.text(0.03, y, 'einstellbar (-/+ klicken oder Tasten):',
+                      fontsize=7.2, va='top', color='#708090')
+        y -= 0.055
+        self._klick_zonen = {}
+        regel = [('fm', 'Scheiben-Kraft FM', '%.0f N' % self.fm),
+                 ('fw', 'Kraftwinkel FW', '%g deg (0=Bug)' % self.fw_deg),
+                 ('rw', 'Ruderwinkel RW', '%g deg' % self.rw_deg)]
+        for key, name, val in regel:
+            self.axp.text(0.03, y, name, fontsize=8.5, va='top',
+                          color='#304050')
+            self.axp.text(0.62, y, '-', fontsize=13, va='top', ha='center',
+                          fontweight='bold', color='#a00000',
+                          family='monospace')
+            self.axp.text(0.78, y, val, fontsize=8.2, va='top', ha='center',
+                          family='monospace', color='#103050')
+            self.axp.text(0.94, y, '+', fontsize=11, va='top', ha='center',
+                          fontweight='bold', color='#006000',
+                          family='monospace')
+            self._klick_zonen[key] = y
+            y -= 0.075
 
     @staticmethod
     def _kN(x):
         return ('%8.2f kN' % (x / 1000.0) if abs(x) >= 1000.0
                 else '%8.1f N' % x)
 
+    # ------------------------------------------------------------
+    # Messwert-Panel (Mitte rechts) + Summenkraft (unten rechts)
+    # ------------------------------------------------------------
     def _messwerte_zeichnen(self):
         s, q = self.sim, self.sim.q
         h = s.h
@@ -141,22 +179,21 @@ class QuaderApp:
         def gruppe(y, titel):
             self.axw.text(0.03, y, titel, fontsize=9, fontweight='bold',
                           va='top', color='#00325a')
-            return y - 0.075
+            return y - 0.072
 
         def zeile(y, name, val, farbe='#103050'):
             self.axw.text(0.09, y, name, fontsize=8.2, va='top',
                           color='#304050')
             self.axw.text(0.97, y, val, fontsize=8.2, va='top', ha='right',
                           family='monospace', color=farbe)
-            return y - 0.062
+            return y - 0.060
 
         y = 0.98
         self.axw.text(0.03, y, 'MESSWERTE   t = %.1f s' % s.t, fontsize=10,
                       fontweight='bold', va='top', color='#00325a')
-        y -= 0.085
+        y -= 0.082
 
-        # --- Kraefte (paarweise: G <-> F_A) ---
-        y = gruppe(y, 'Kr\u00e4fte')
+        y = gruppe(y, 'Kraefte')
         y = zeile(y, 'G  (Gewicht)', self._kN(q.m * G), '#a00000')
         y = zeile(y, 'F_A (Auftrieb)', self._kN(h['F_A']), '#003ca0')
         y = zeile(y, 'Netto z (F_A-G)', self._kN(F_z),
@@ -170,28 +207,25 @@ class QuaderApp:
                       '%7.0f N' % np.linalg.norm(hd.F_rud), '#a87f00')
             y = zeile(y, 'F_Rumpf (Widerstand)',
                       '%7.0f N' % np.linalg.norm(hd.F_rumpf), '#606060')
-        y -= 0.015
+        y -= 0.012
 
-        # --- Geschwindigkeiten ---
         y = gruppe(y, 'Geschwindigkeiten')
         y = zeile(y, 'horizontal (Fahrt)',
                   '%5.2f m/s = %4.2f kn' % (vh, vh * 1.94384))
         y = zeile(y, 'vertikal (v_z)', '%+5.2f m/s' % s.v[2])
         y = zeile(y, 'resultierend |v|',
                   '%5.2f m/s' % float(np.linalg.norm(s.v)))
-        y -= 0.015
+        y -= 0.012
 
-        # --- Lage ---
         y = gruppe(y, 'Lage')
-        y = zeile(y, 'Kr\u00e4ngung', '%7.1f deg' % _w(s.roll))
+        y = zeile(y, 'Kraengung', '%7.1f deg' % _w(s.roll))
         y = zeile(y, 'Trimm', '%7.1f deg' % _w(s.pitch))
         y = zeile(y, 'Gieren', '%7.1f deg' % _w(s.yaw))
         if hd is not None:
             y = zeile(y, 'Abdrift', '%7.1f deg' % _w(hd.drift))
         y = zeile(y, 'Tiefgang', '%7.3f m' % h['tiefgang'])
-        y -= 0.015
+        y -= 0.012
 
-        # --- Position / Bewegung ---
         y = gruppe(y, 'Position / Bewegung')
         y = zeile(y, 'Position x/y',
                   '%+6.1f / %+6.1f m' % (s.p[0], s.p[1]))
@@ -205,7 +239,7 @@ class QuaderApp:
                           fontsize=9, fontweight='bold', va='top',
                           color='#b00000')
 
-        # --- Summenkraefte pro Achse: Balken ---
+        # --- Summenkraft-Balken ---
         self.axs.clear()
         self.axs.set_xlim(0, 1); self.axs.set_ylim(0, 1)
         self.axs.text(0.03, 0.97, 'SUMMENKRAFT (Achsen)', fontsize=9,
@@ -226,13 +260,66 @@ class QuaderApp:
                           color='#103050')
 
     # ------------------------------------------------------------
-    # Physik-Takt (immer laufend, keine Zeitkontrolle mehr)
+    # Aenderung der regelbaren Groessen
+    # ------------------------------------------------------------
+    def _aendern(self, key, richtung):
+        if key == 'fm':
+            self.fm = float(np.clip(self.fm + richtung * FM_SCHRITT,
+                                    0.0, 4000.0))
+        elif key == 'fw':
+            self.fw_deg = float(np.clip(self.fw_deg + richtung * FW_SCHRITT,
+                                        0.0, 180.0))
+        elif key == 'rw':
+            self.rw_deg = float(np.clip(self.rw_deg + richtung * RW_SCHRITT,
+                                        -35.0, 35.0))
+
+    def _on_key(self, ev):
+        k = ev.key
+        if k in ('up', 'pageup'):
+            self._aendern('fm', +1)
+        elif k in ('down', 'pagedown'):
+            self._aendern('fm', -1)
+        elif k == 'left':
+            self._aendern('rw', -1)
+        elif k == 'right':
+            self._aendern('rw', +1)
+        elif k == 'shift+up':
+            self._aendern('fw', +1)
+        elif k == 'shift+down':
+            self._aendern('fw', -1)
+
+    def _on_press(self, ev):
+        if ev.inaxes is self.axp and self._klick_zonen:
+            xf, yf = ev.xdata, ev.ydata
+            if xf is not None and yf is not None:
+                for key, yz in self._klick_zonen.items():
+                    if abs(yf - yz) < 0.05:
+                        if 0.55 <= xf <= 0.69:
+                            self._aendern(key, -1); return
+                        if 0.87 <= xf <= 1.00:
+                            self._aendern(key, +1); return
+        if ev.inaxes not in (self.ax, self.axov) or ev.button != 1:
+            return
+        self.view_drag = (ev.x, ev.y, self.ax.azim, self.ax.elev)
+
+    def _on_motion(self, ev):
+        if ev.x is None or ev.y is None or self.view_drag is None:
+            return
+        x0, y0, az0, el0 = self.view_drag
+        self.ax.azim = az0 - (ev.x - x0) * 0.5
+        self.ax.elev = max(-90.0, min(90.0, el0 + (ev.y - y0) * 0.5))
+
+    def _on_release(self, ev):
+        self.view_drag = None
+
+    # ------------------------------------------------------------
+    # Physik-Takt
     # ------------------------------------------------------------
     def _scheiben_kraft_anwenden(self):
-        """Konstante Mastspitzen-Kraft FM, Richtung aus FW (bootrelativ,
-        immer horizontal), Moment um den CG."""
+        """Konstante Kraft FM an der Mastspitze, Richtung aus FW
+        (bootrelativ, immer horizontal), Moment um den CG."""
         s = self.sim
-        FM, FW = P_FM, np.radians(P_FW_DEG)
+        FM, FW = self.fm, np.radians(self.fw_deg)
         if FM <= 1e-9:
             s.F_ext = np.zeros(3)
             s.tau_ext = np.zeros(3)
@@ -254,20 +341,25 @@ class QuaderApp:
 
     def _frame(self):
         self._scheiben_kraft_anwenden()
-        self.sim.rw_soll = np.radians(P_RW_DEG)
+        self.sim.rw_soll = np.radians(self.rw_deg)
         for _ in range(NSUB):
             self.sim.schritt()
         wasser_schritt(self, NSUB * DT)
         self._zeichnen()
         self._messwerte_zeichnen()
+        self._parameter_zeichnen()
+        self.txt_fahrt.set_text(
+            'Fahrt %5.2f m/s (%4.2f kn)   t = %.1f s'
+            % (float(np.hypot(self.sim.v[0], self.sim.v[1])),
+               float(np.hypot(self.sim.v[0], self.sim.v[1])) * 1.94384,
+               self.sim.t))
         self.fig.canvas.draw_idle()
 
     # ------------------------------------------------------------
-    # Szene + Kraftpfeile (Overlay)
+    # Szene + Kraftpfeile (Overlay im Vordergrund)
     # ------------------------------------------------------------
     def _zeichnen(self):
         ax = self.ax
-        ax.clear()
         ax.set_proj_type('ortho')
         self.axov.clear()
         self.axov.set_xlim(0, 1); self.axov.set_ylim(0, 1)
@@ -276,145 +368,90 @@ class QuaderApp:
         self.axov.set_zorder(10)
         s = self.sim
         q = s.q
-
         ref = zeichne_szene(self, ax, self.axov)
         CG, CB, top_v, r = ref['CG'], ref['CB'], ref['top_v'], ref['r']
 
-        dpi = self.fig.dpi
-        px_pro_g = 2.0 / 2.54 * dpi
         bb = self.axov.bbox
 
         def zu_px(p3):
-            x2, y2, _ = proj3d.proj_transform(p3[0], p3[1], p3[2],
-                                              ax.get_proj())
-            return np.array(ax.transData.transform((x2, y2)))
+            x2, y2, _ = proj3d.proj_transform(float(p3[0]), float(p3[1]),
+                                              float(p3[2]), ax.get_proj())
+            return np.asarray(ax.transData.transform((x2, y2)), float)
 
         def px2frac(p):
             return ((p[0] - bb.x0) / bb.width, (p[1] - bb.y0) / bb.height)
 
-        cg_px = zu_px(CG)
-        shrink_pts = 0.0
+        az, el = np.radians(ax.azim), np.radians(ax.elev)
+        view = np.array([np.cos(el) * np.cos(az), np.cos(el) * np.sin(az),
+                         np.sin(el)])
 
-        def pfeil(start3d, richtung3d, laenge_px, farbe, shrink_pts):
-            start3d = np.asarray(start3d, dtype=float)
-            u = np.asarray(richtung3d, dtype=float)
+        def pfeil(start_v, d_v, px_len, farbe, label=None):
+            u = np.asarray(d_v, float)
             nl = np.linalg.norm(u)
             if nl < 1e-12:
-                return None
+                return
             u = u / nl
-            start_px = zu_px(start3d)
-            d_px = 2 * 3.2 * dpi / 72.0
-            self.axov.add_patch(Ellipse(
-                px2frac(start_px), d_px / bb.width, d_px / bb.height,
-                facecolor=farbe, edgecolor='none', zorder=5,
-                transform=self.axov.transAxes))
-            az, el = np.radians(ax.azim), np.radians(ax.elev)
-            view = np.array([np.cos(el) * np.cos(az),
-                             np.cos(el) * np.sin(az), np.sin(el)])
             f = float(np.sqrt(max(0.0, 1.0 - float(u @ view) ** 2)))
-            if f < 0.04:
-                return None
-            dpx = zu_px(start3d + u * (0.05 * r)) - start_px
+            if f < 0.06:
+                return
+            s_px = zu_px(start_v)
+            dpx = zu_px(np.asarray(start_v, float) + u * (0.06 * r)) - s_px
             L = np.linalg.norm(dpx)
             if L < 1e-9:
-                return None
-            ende = start_px + dpx * (laenge_px * f / L)
-            arr = FancyArrowPatch(px2frac(start_px), px2frac(ende),
-                                  arrowstyle='-|>', mutation_scale=26,
-                                  lw=3.2, color=farbe, zorder=4,
-                                  shrinkA=shrink_pts, shrinkB=1,
-                                  transform=self.axov.transAxes)
-            self.axov.add_patch(arr)
-            return start_px, ende
+                return
+            e_px = s_px + dpx * (px_len * f / L)
+            self.axov.add_patch(Ellipse(
+                px2frac(s_px), 5.0 / bb.width, 5.0 / bb.height,
+                facecolor=farbe, edgecolor='none', zorder=5,
+                transform=self.axov.transAxes))
+            self.axov.add_patch(FancyArrowPatch(
+                px2frac(s_px), px2frac(e_px),
+                transform=self.axov.transAxes, color=farbe,
+                arrowstyle='-|>', mutation_scale=13, lw=1.8,
+                shrinkA=0, shrinkB=0, zorder=6))
+            if label is not None:
+                self.axov.text(px2frac(e_px)[0] + 0.008,
+                               px2frac(e_px)[1] + 0.008, label,
+                               transform=self.axov.transAxes, fontsize=7,
+                               color=farbe, zorder=7)
 
-        def label(px_end, text, farbe, dx_px, dy_px):
-            f = px2frac(np.array([px_end[0] + dx_px, px_end[1] + dy_px]))
-            self.axov.text(f[0], f[1], text, color=farbe, fontsize=9,
-                           fontweight='bold', ha='left', va='center',
-                           zorder=5)
+        # Kraftskala: Pixel pro Kilonewton, gedeckelt
+        def sk(F):
+            return float(min(30.0 * max(np.linalg.norm(F), 1e-9) / 1000.0
+                             + 28.0, 240.0))
 
-        e_g = pfeil(CG, [0, 0, -1], px_pro_g, (0.85, 0.10, 0.10), shrink_pts)
-        e_b = None
-        if CB is not None and s.h['F_A'] > 1e-9:
-            a_b = s.h['F_A'] / q.m
-            e_b = pfeil(CB, [0, 0, 1], px_pro_g * a_b / G,
-                        (0.10, 0.35, 0.90), 0.0)
-
+        # G und F_A (vertikal, Welt-Richtung)
+        FG = q.m * G
+        pfeil(CG, [0, 0, -1], sk(FG), '#c00000',
+              'G %.1f kN' % (FG / 1000.0))
         if CB is not None:
-            ax.plot([CG[0], CB[0]], [CG[1], CB[1]], [CG[2], CB[2]],
-                    'k--', lw=1, alpha=0.6)
+            FA = s.h['F_A']
+            pfeil(CB, [0, 0, +1], sk(FA), '#0044cc',
+                  'F_A %.1f kN' % (FA / 1000.0))
 
-        label(cg_px, 'CG', '#303030', 14, 14)
-        if e_g is not None:
-            label(e_g[1], 'G = %.1f kN' % (q.m * G / 1000), '#a00000',
-                  10, -16)
-        if e_b is not None:
-            label(e_b[1], 'F_A = %.1f kN' % (s.h['F_A'] / 1000), '#003ca0',
-                  10, 16)
-        if CB is not None and s.h['F_A'] > 1e-9:
-            label(zu_px(CB), 'CB', '#003ca0', 12, -14)
+        # Horizontale Kraefte: Richtung World -> Boot-Ansicht (dr)
+        def dview(F_w):
+            d2 = dr(s, np.asarray(F_w, float)[:2])
+            return np.array([float(d2[0]), float(d2[1]), 0.0])
 
-        if P_FM > 1e-9:
-            FW = np.radians(P_FW_DEG)
-            x_w = s.R @ np.array([1.0, 0.0, 0.0]); x_w[2] = 0.0
-            y_w = s.R @ np.array([0.0, 1.0, 0.0]); y_w[2] = 0.0
-            nx, ny = np.linalg.norm(x_w), np.linalg.norm(y_w)
-            if nx > 1e-9 and ny > 1e-9:
-                f_r = (np.cos(FW) * (x_w / nx) - np.sin(FW) * (y_w / ny))
-                pfeil(top_v, dr(s, f_r), px_pro_g * P_FM / 1000.0,
-                      (0.00, 0.70, 0.15), 0.0)
-                label(zu_px(top_v + dr(s, f_r) * 0.02),
-                      'F_M = %.0f N' % P_FM, '#008000', 10, 18)
-
+        if np.linalg.norm(s.F_ext) > 1e-9:
+            pfeil(top_v, dview(s.F_ext), sk(s.F_ext), '#008800',
+                  'F_M %.0f N' % np.linalg.norm(s.F_ext))
         hd = getattr(s, 'hydrodyn', None)
         if hd is not None:
-            p_kiel_v = boot_ansicht(s, s.R @ q.r_kiel + s.p)
-            p_rud_v = boot_ansicht(s, s.R @ q.r_rud + s.p)
-            F_k = np.asarray(hd.F_kiel, float)
-            F_r = np.asarray(hd.F_rud, float)
-            if float(np.linalg.norm(F_k)) > 20.0:
-                e_k = pfeil(p_kiel_v, dr(s, F_k),
-                            px_pro_g * float(np.linalg.norm(F_k)) / 1000.0,
-                            (0.00, 0.60, 0.55), 0.0)
-                if e_k is not None:
-                    label(e_k[1], 'F_Kiel = %.0f N' % np.linalg.norm(F_k),
-                          '#00806e', 10, -16)
-            if float(np.linalg.norm(F_r)) > 20.0:
-                e_r = pfeil(p_rud_v, dr(s, F_r),
-                            px_pro_g * float(np.linalg.norm(F_r)) / 1000.0,
-                            (0.95, 0.72, 0.10), 0.0)
-                if e_r is not None:
-                    label(e_r[1], 'F_Ruder = %.0f N' % np.linalg.norm(F_r),
-                          '#a87f00', 10, 16)
+            zk = -0.55 * P_TK * P_L
+            if np.linalg.norm(hd.F_kiel) > 1e-9:
+                pfeil([0.0, 0.0, zk], dview(hd.F_kiel), sk(hd.F_kiel),
+                      '#00806e', 'Kiel %.0f N' % np.linalg.norm(hd.F_kiel))
+            if np.linalg.norm(hd.F_rud) > 1e-9:
+                pfeil([-0.42 * P_L, 0.0, zk * 0.85], dview(hd.F_rud),
+                      sk(hd.F_rud), '#a87f00',
+                      'Rud %.0f N' % np.linalg.norm(hd.F_rud))
+            if np.linalg.norm(hd.F_rumpf) > 1e-9:
+                pfeil(CG, dview(hd.F_rumpf), sk(hd.F_rumpf), '#707070',
+                      'Drag %.0f N' % np.linalg.norm(hd.F_rumpf))
 
-        ax.set_title(
-            'Winner 9.00   L=%g  B=%g  H=%g m   m=%.0f kg   t=%6.1f s'
-            '   1 g = 2 cm' % (q.L, q.B, q.H, q.m, s.t), fontsize=9)
 
-    # ------------------------------------------------------------
-    # Maus: freie Rotation der Szene
-    # ------------------------------------------------------------
-    def _on_press(self, ev):
-        if ev.inaxes not in (self.ax, self.axov) or ev.button != 1:
-            return
-        self.view_drag = (ev.x, ev.y, self.ax.azim, self.ax.elev)
-
-    def _on_motion(self, ev):
-        if ev.x is None or ev.y is None or self.view_drag is None:
-            return
-        x0, y0, az0, el0 = self.view_drag
-        self.ax.azim = az0 - (ev.x - x0) * 0.5
-        self.ax.elev = max(-90.0, min(90.0, el0 + (ev.y - y0) * 0.5))
-
-    def _on_release(self, ev):
-        self.view_drag = None
-
-    # ------------------------------------------------------------
-    def _neu(self):
-        self.sim = Simulation(P_L, P_B, P_H, P_RHO, P_N,
-                              P_LK, P_TK, P_RK)
-        self.sim.reset(heel_deg=25.0)
-        self.wasser = None
-
-    def show(self):
-        plt.show()
+# ------------------------------------------------------------
+if __name__ == '__main__':
+    QuaderApp().fig.canvas.manager.show()
