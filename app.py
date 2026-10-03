@@ -84,7 +84,7 @@ class QuaderApp:
                       alpha=0.9), zorder=20)
 
         # --- regelbare Groessen ---
-        self.fm = 1200.0      # Scheiben-Kraft [N]
+        self.fm = 0.0         # Scheiben-Kraft [N] (Start: kraftfrei)
         self.fw_deg = 35.0    # Kraftwinkel [deg], 0 = Bug
         self.rw_deg = 0.0     # Ruderwinkel [deg]
 
