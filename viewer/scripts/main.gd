@@ -8,7 +8,7 @@ extends Node3D
 
 const PORT := 9999
 const PORT_CMD := 9998
-const PFEIL_SKALA := 1.5   # Meter pro 1000 N
+const PFEIL_SKALA := {"vertikal": 0.12, "seiten": 1.5}  # m pro kN je Gruppe
 
 const FARBE := {
     "vertikal": Color(0.25, 0.55, 1.0),
@@ -162,13 +162,13 @@ func _pfeil_setzen(a: Node3D, p0: Vector3, d: Vector3, laenge: float) -> void:
     a.visible = sichtbar
     if not sichtbar:
         return
-    var dn := d.normalized()
+    var dn: Vector3 = d.normalized()
     a.position = p0
     var xb := dn.cross(Vector3.UP)
     if xb.length() < 0.01:
         xb = dn.cross(Vector3.RIGHT)
     xb = xb.normalized()
-    var zb := xb.cross(dn).normalized()
+    var zb: Vector3 = xb.cross(dn).normalized()
     a.basis = Basis(xb, dn, zb)
     a.scale = Vector3(1, laenge, 1)
 
@@ -212,10 +212,11 @@ func _kraefte_zeichnen(forces: Array) -> void:
             lbl.outline_size = 8
             add_child(lbl)
             etikett[name] = lbl
-        var p := Vector3(f["p"][0], f["p"][1], f["p"][2])
+        var p: Vector3 = Vector3(f["p"][0], f["p"][1], f["p"][2])
         var fv := Vector3(f["F"][0], f["F"][1], f["F"][2])
         var betrag := fv.length()
-        var laenge := PFEIL_SKALA * betrag / 1000.0
+        var skala: float = float(PFEIL_SKALA.get(f.get("gruppe", "seiten"), 1.5))
+        var laenge: float = minf(skala * betrag / 1000.0, 6.0)
         _pfeil_setzen(pfeile[name], p, fv, laenge)
         var lbl2: Label3D = etikett[name]
         lbl2.visible = laenge > 0.03
@@ -235,19 +236,19 @@ func _fluss_zeichnen(flow: Array) -> void:
     for i in range(flow_max):
         if i < n:
             var fp = flow[i]
-            var p := Vector3(fp["p"][0], fp["p"][1], fp["p"][2])
-            var u := Vector3(fp["u"][0], fp["u"][1], fp["u"][2])
-            var L := clamp(u.length() * 0.5, 0.05, 1.4)
-            var dn := u.normalized() if u.length() > 1e-4 else Vector3.UP
+            var p: Vector3 = Vector3(fp["p"][0], fp["p"][1], fp["p"][2])
+            var u: Vector3 = Vector3(fp["u"][0], fp["u"][1], fp["u"][2])
+            var L: float = clampf(u.length() * 0.5, 0.05, 1.4)
+            var dn: Vector3 = u.normalized() if u.length() > 1e-4 else Vector3.UP
             var xb := dn.cross(Vector3.UP)
             if xb.length() < 0.01:
                 xb = Vector3.RIGHT
             xb = xb.normalized()
-            var zb := xb.cross(dn).normalized()
-            var b := Basis(xb, dn, zb).scaled(Vector3(1, L, 1))
+            var zb: Vector3 = xb.cross(dn).normalized()
+            var b: Basis = Basis(xb, dn, zb).scaled(Vector3(1, L, 1))
             mm.set_instance_transform(i, Transform3D(b, p + dn * L * 0.5))
         else:
-            var b0 := Basis.IDENTITY.scaled(Vector3.ONE * 0.0001)
+            var b0: Basis = Basis.IDENTITY.scaled(Vector3.ONE * 0.0001)
             mm.set_instance_transform(i, Transform3D(b0, Vector3(0, -99, 0)))
 
 func _eingabe(delta: float) -> void:
