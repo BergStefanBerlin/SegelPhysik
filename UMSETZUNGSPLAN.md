@@ -2,16 +2,31 @@
 
 **Basis:** SPEC 1.0 (Stand 09.10.2026) auf `main`
 **Ziel:** Definition of Done aus Abschnitt 8 der Spec (10 Akzeptanzkriterien)
-**Stand des Plans:** 09.10.2026 · **Plan-Version:** 1.1 (überarbeitet nach Vollprüfung)
+**Stand des Plans:** 09.10.2026 · **Plan-Version:** 1.3
 
-**Änderungen gegenüber Plan v1.0:** Issue-Granularität zwischen Meilenstein-
-Details und Issue-Liste angeglichen (jetzt durchgängig 17 Issues); Auflösungs-
-regel ausschließlich in M4 verankert (war doppelt, mit falscher Reihenfolge);
-Abhängigkeitskette im Text an das Diagramm angeglichen (M4 parallel); M3-Abnahme
-auf numerischen Wellennachweis umformuliert (Rendering gibt es erst in M4);
-M1-Abnahme auf Substep-Durchsatz geändert (Realtime-Fator braucht Renderframes);
-Benchmark-Ausführungskontext geklärt (außerhalb der CI); Mermaid-Labels
-in Anführungszeichen; K6-Test präzisiert; Issue 1 von Issue 0 entkoppelt.
+**Änderungen gegenüber Plan v1.1:**
+- **K7-Partikelzahl:** Die Default-Konfiguration (Δx = 0,25 m) liefert nur
+  19.200 Partikel und würde K7 („≥ 20.000") nie erfüllen. Das Benchmark-
+  Szenario verwendet daher `Δx = 0,24 m` → ≈ 21.700 Partikel ≥ 20.000.
+  Folgewerte bleiben spec-konsistent: h ≈ 0,31 m, CFL-Grenze ≈ 22,4 m/s
+  (innerhalb des „~23 m/s" aus Spec K4). Als dokumentierte Konfigurations-
+  entscheidung im Benchmark-Issue – keine Spec-Änderung nötig.
+- **K7-Körperteil:** Spec K7 verlangt „≥ 20.000 Partikel **+ ≥ 10 starre
+  Körper**". Das M2-Skript misst nur Partikel; das verbindliche kombinierte
+  Benchmark-Szenario liegt in M5 (Issue 16).
+- **Auflösungsregel ≥ 8·Δx** wird zusätzlich im Config-Loader (Issue 1) und
+  beim Szenen-Laden (Issue 15) validiert – nicht nur im Einspawner (Issue 13).
+- **SI-Einheiten** (Spec §7.1, verbindlich) in die PR-Checkliste aufgenommen.
+- **Issue 16 geteilt** in Test-Suite (16) und README + Tag (17) → jetzt
+  18 Issues (0–17); alle Zählungen angeglichen.
+- Tippfehler korrigiert („Realtime-Fator" → „Realtime-Faktor").
+
+**Änderungen gegenüber Plan v1.0:** Issue-Granularität angeglichen;
+Auflösungsregel ausschließlich in M4 verankert; Abhängigkeitskette an das
+Diagramm angeglichen (M4 parallel, M2 ab M0); M3-Abnahme auf numerischen
+Wellennachweis umformuliert; M1-Abnahme auf Substep-Durchsatz geändert;
+Benchmark außerhalb der CI; Mermaid-Labels in Anführungszeichen; K6 präzisiert;
+Issue 1 von Issue 0 entkoppelt.
 
 ---
 
@@ -20,10 +35,10 @@ in Anführungszeichen; K6-Test präzisiert; Issue 1 von Issue 0 entkoppelt.
 - **Milestone-basiert:** 6 Meilensteine (M0–M5), jeder mit klarer Abnahme.
 - **Ein Meilenstein = ein Satz GitHub-Issues**; pro Issue ein PR gegen `main`.
 - **Jeder PR muss:** Tests grün haben, keine hart kodierten Physik-Konstanten,
-  Spec-Referenz im Beschreibungstext.
+  durchgängig SI-Einheiten (Spec §7.1), Spec-Referenz im Beschreibungstext.
 - **Feature-Flags statt langer Branches:** Unfertige Teile liegen hinter Flags
   auf `main`, damit die CI stets grün bleibt.
-- **Issue-Granularität:** Insgesamt 17 Issues (0–16); die Detailabschnitte in
+- **Issue-Granularität:** Insgesamt 18 Issues (0–17); die Detailabschnitte in
   Abschnitt 2 und die Liste in Abschnitt 5 sind deckungsgleich.
 
 ---
@@ -37,7 +52,7 @@ in Anführungszeichen; K6-Test präzisiert; Issue 1 von Issue 0 entkoppelt.
 | M2 | SPH-Wasserkern | Fluidsolver hinter Interface, 20k Partikel, CFL, Determinismus | §5 | 5–7 |
 | M3 | Kopplung | Kraftmodule, Windfeld-Interface, Fluid↔Körper-Impuls | §2–§4 | 8–10 |
 | M4 | Rendering & UI | Wasseroberfläche, Gitter, Kontrollpanel, Klick-Spawning, Statusanzeige | §6 | 11–14 |
-| M5 | Abnahme | Akzeptanztests zu allen 10 Kriterien, Szenen-Serialisierung, Doku | §8 | 15–16 |
+| M5 | Abnahme | Akzeptanztests zu allen 10 Kriterien, Szenen-Serialisierung, Doku | §8 | 15–17 |
 
 Parallelisierung: M4 kann ab M1 laufen; M2 kann bereits ab M0 parallel zu M1
 laufen (der SPH-Kern braucht nur Config und Interface, keine Körper).
@@ -74,8 +89,10 @@ Details siehe Diagramm in Abschnitt 3.
   ```
 - `config.json` mit allen Defaults aus der Spec (ρ_W, ρ_L, g, c_w, μ, e,
   Beckenmaße, Δt, Δx, h, Wind) – **einzige Quelle der Wahrheit**.
+- **Validierung im Config-Loader:** Auflösungsregel „Körperabmessung ≥ 8·Δx"
+  wird beim Laden geprüft (gleiche Regel wie Einspawner/Szenenladen, Spec §4).
 - CI: pytest-Lauf + Lint bei jedem Push.
-- Erste Unit-Tests: Config laden, Parameterzugriff.
+- Erste Unit-Tests: Config laden, Parameterzugriff, Auflösungsregel-Validierung.
 
 **Abnahme M0:** `pip install -e . && pytest` grün; Config lädt alle Spec-Defaults;
 Architektur-Entscheidung im Issue begründet.
@@ -101,7 +118,7 @@ kleineren Körpers (→ Kriterium 6 vorbereitet, volle Präzision aus Spec §8.6
 
 **Abnahme M1:** Zwei Körper kollidieren physikalisch plausibel im leeren Raum
 (ohne Wasser); Substep-Durchsatz messbar (≥ 240 Substeps/s = Realtime-Fähigkeit
-des Solvers; der eigentliche Realtime-Factor wird erst mit Renderframes in M4
+des Solvers; der eigentliche Realtime-Faktor wird erst mit Renderframes in M4
 messbar).
 
 ---
@@ -113,22 +130,24 @@ messbar).
   `density_at(pos)`, `velocity_at(pos)` – Implementierung dahinter austauschbar.
 - **Issue 6:** Taichi-Implementierung: WCSPH oder IISPH (Entscheidung im Issue
   mit Begründung), h = 1,3·Δx, CFL-Begrenzung 0,3·h/Substep.
-- **Issue 7:** Initialisierung: Beckengitter aus Config (Δx = 0,25 m →
-  ~19.200 Partikel), Seed für Determinismus.
+- **Issue 7:** Initialisierung: Beckengitter aus Config, Seed für Determinismus.
+  **Benchmark-Konfiguration:** `Δx = 0,24 m` → ≈ 21.700 Partikel (erfüllt K7
+  „≥ 20.000"; die Default-Δx = 0,25 m lieferte nur 19.200 – dokumentierte
+  Entscheidung im Issue). Folgewerte: h ≈ 0,31 m, CFL-Grenze ≈ 22,4 m/s.
 
 **Unit-Tests:** Hydrostatischer Druck am Boden ± 1 % (→ Kriterium 3);
 Partikel in Ruhe ohne Körper bleiben stabil (keine Explosion nach 1.000 Substeps);
 Determinismus: zwei Läufe, gleicher Seed → Abweichung < 1e-9 (→ Kriterium 9,
 auf Fluid-Ebene; Szenen-weit in M5).
 
-**Benchmark (Kriterium 7):** 20.000 Partikel @ ≥ 30 FPS. **Ausführungskontext:**
-als manuell ausführbares Benchmark-Skript mit FPS-Log – **nicht** als
-CI-Pflichttest (GitHub-Runner haben keine dedizierte GPU); Ergebnis wird im
-Issue dokumentiert. CPU-Fallback mit reduzierter Partikelzahl dokumentieren
-(Risiko aus Spec §7).
+**Benchmark (Zwischenstand, nur Fluid):** Partikel-Benchmark als manuell
+ausführbares Skript mit FPS-Log – **nicht** als CI-Pflichttest (GitHub-Runner
+haben keine dedizierte GPU); Ergebnis im Issue dokumentieren. CPU-Fallback mit
+reduzierter Partikelzahl dokumentieren (Risiko aus Spec §7). Das **verbindliche
+kombinierte K7-Szenario** (Partikel + ≥ 10 starre Körper) wird in M5 gefahren.
 
 **Abnahme M2:** Wasser steht stabil im Becken, Oberfläche aus Partikeln
-extrahierbar, Benchmark-Ergebnis dokumentiert.
+extrahierbar, Partikel-Benchmark-Ergebnis dokumentiert.
 
 ---
 
@@ -147,8 +166,8 @@ extrahierbar, Benchmark-Ergebnis dokumentiert.
   (reicht laut Spec für v0.2); Zwei-Wege-Kopplung als dokumentierte
   Vereinfachung.
 
-*(Die Auflösungsregel „Körperabmessung ≥ 8·Δx" wird ausschließlich in M4 im
-Einspawner erzwungen – siehe Issue 13; der Einspawner existiert in M3 noch nicht.)*
+*(Die Auflösungsregel „Körperabmessung ≥ 8·Δx" wird im Einspawner (M4, Issue 13)
+sowie im Config-Loader (M0, Issue 1) und Szenen-Laden (M5, Issue 15) erzwungen.)*
 
 **Unit-Tests:** Auftrieb halb getauchter Testquader = 39.240 N ± 5 %
 (→ Kriterium 2); Terminalgeschwindigkeit gegen analytischen Wert mit
@@ -167,7 +186,7 @@ CFL-verträglicher Testkonfiguration (→ Kriterium 4).
 - **Issue 11:** Szene: transparente, beleuchtete Wasseroberfläche (Marching
   Cubes oder Partikel-Dichte-Schwellwert), Tiefenfarbe.
 - **Issue 12:** Koordinatengitter mit Beschriftung + Maßstabsleiste;
-  Realtime-Factor-Anzeige (jetzt sind Renderframes vorhanden).
+  Realtime-Faktor-Anzeige (jetzt sind Renderframes vorhanden).
 - **Issue 13:** Kontrollpanel (g, Wind Richtung/Geschwindigkeit, Pause/Schritt/
   Reset, Partikelanzahl als Restart-Parameter, Δt, Substeps-Obergrenze,
   Beckenmaße) **und** Klick-Spawning (Kugel/Quader, Dichte, μ, e wählbar)
@@ -176,31 +195,33 @@ CFL-verträglicher Testkonfiguration (→ Kriterium 4).
   Eintauchtiefe, resultierende Kräfte.
 
 **Abnahme M4:** Kriterium 8 erfüllt (Einspawnen per Klick, g/Wind zur Laufzeit
-änderbar); Realtime-Factor ≈ 1 im Zusammenspiel gemessen.
+änderbar); Realtime-Faktor ≈ 1 im Zusammenspiel gemessen.
 
 ---
 
-### M5 – Abnahme & Stabilisierung (Issues 15–16)
+### M5 – Abnahme & Stabilisierung (Issues 15–17)
 
 **Issues:**
 - **Issue 15:** Szenen-Serialisierung (Parameter + Körper + Seed speichern/
-  laden) – Voraussetzung für automatisierte Akzeptanzläufe (Spec §7.1, §8.9).
-- **Issue 16:** Akzeptanztest-Suite + README + Tag:
-  - je Kriterium aus Spec §8 ein automatisierter Test oder ein dokumentiertes
-    manuelles Protokoll:
-    - K1 Schwimmen/Sinken (automatisch: Gleichgewichtstiefgang + Restwelligkeit)
-    - K2 Auftrieb 39.240 N ± 5 % (automatisch)
-    - K3 Bodenruck ± 1 % (automatisch)
-    - K4 Luftwiderstand/Wind + v_term (automatisch)
-    - K5 Wellenamplitude ≥ 2·Δx (semi-automatisch: Amplitudenmessung)
-    - K6 Kollisionen, Restdurchdringung < 1 % der kleinsten charakteristischen
-      Abmessung (automatisch)
-    - K7 Echtzeit-Benchmark (Skript mit FPS-Log, außerhalb der CI – siehe M2)
-    - K8 Interaktion (manuelles Protokoll)
-    - K9 Reproduzierbarkeit < 1e-9, szenenweit über Serialisierung (automatisch)
-    - K10 pytest grün (CI)
-  - README: Installation, Bedienung, Architekturüberblick, Bekannte Einschränkungen.
-  - Tag `v0.2.0` nach erfolgter Abnahme.
+  laden) – Voraussetzung für automatisierte Akzeptanzläufe (Spec §7.1, §8.9);
+  **inkl. Validierung der Auflösungsregel ≥ 8·Δx beim Laden.**
+- **Issue 16:** Akzeptanztest-Suite, je Kriterium aus Spec §8 ein automatisierter
+  Test oder ein dokumentiertes manuelles Protokoll:
+  - K1 Schwimmen/Sinken (automatisch: Gleichgewichtstiefgang + Restwelligkeit)
+  - K2 Auftrieb 39.240 N ± 5 % (automatisch)
+  - K3 Bodenruck ± 1 % (automatisch)
+  - K4 Luftwiderstand/Wind + v_term (automatisch)
+  - K5 Wellenamplitude ≥ 2·Δx (semi-automatisch: Amplitudenmessung)
+  - K6 Kollisionen, Restdurchdringung < 1 % der kleinsten charakteristischen
+    Abmessung (automatisch)
+  - K7 **kombiniertes Benchmark-Szenario:** Benchmark-Konfiguration aus M2
+    (Δx = 0,24 m, ≈ 21.700 Partikel) **+ ≥ 10 starre Körper**, ≥ 30 FPS –
+    Skript mit FPS-Log, außerhalb der CI, Ergebnis im Issue dokumentiert
+  - K8 Interaktion (manuelles Protokoll)
+  - K9 Reproduzierbarkeit < 1e-9, szenenweit über Serialisierung (automatisch)
+  - K10 pytest grün (CI)
+- **Issue 17:** README (Installation, Bedienung, Architekturüberblick, Bekannte
+  Einschränkungen) + Tag `v0.2.0` nach erfolgter Abnahme.
 
 **Abnahme M5:** Alle 10 Kriterien nachweisbar; Tag gesetzt.
 
@@ -236,28 +257,30 @@ die Wasseroberflächen-Darstellung (Issue 11) erst ab M2.
 | Marching Cubes zu langsam für Echtzeit | M4 | Fallback: Punktwolke/Dichte-Sphären statt Mesh |
 | Eigener Starrkörper-Solver zu aufwändig | M1 | Früh PyBullet-Spike (1 Tag) vor Entscheidung |
 | Benchmark in CI nicht reproduzierbar (keine GPU auf Runnern) | M2, M5 | Benchmark als manuelles Skript mit dokumentiertem Ergebnis, nicht als CI-Gate |
+| 10 Körper + 20k Partikel gemeinsam langsamer als Teil-Benchmarks | M5 | K7 früh in M5 fahren; bei Engpass Kraftmodul-Ausführung optimieren (Batch-Auswertung der Fluidabfragen) |
 
 ---
 
-## 5. Issue-Liste (GitHub, 17 Issues)
+## 5. Issue-Liste (GitHub, 18 Issues)
 
 1. **Issue 0:** Architektur-Entscheidung (Taichi vs. NumPy/Numba; PyBullet vs. eigen) – Blocker für M1–M4
-2. Issue 1: Config-System + Paketgerüst + CI (M0) – *unabhängig von Issue 0, kann parallel*
+2. Issue 1: Config-System + Paketgerüst + CI + Auflösungsregel-Validierung (M0) – *unabhängig von Issue 0, kann parallel*
 3. Issue 2: Body/Shape-Interfaces + Teilvolumen (M1)
 4. Issue 3: Starrkörper-Solver + Kollisionen (M1)
 5. Issue 4: Akkumulator-Zeitschleife + Durchsatzmessung (M1)
 6. Issue 5: SPH-Interface (M2)
 7. Issue 6: Taichi-SPH-Implementierung (M2)
-8. Issue 7: Becken-Initialisierung + Determinismus + Benchmark-Skript (M2)
+8. Issue 7: Becken-Initialisierung + Determinismus + Partikel-Benchmark-Skript (M2)
 9. Issue 8: Kraftmodul-Schnittstelle + Kraftmodule (M3)
 10. Issue 9: Windfeld-Interface (M3)
 11. Issue 10: Körper→Partikel-Impulsübertrag (M3)
 12. Issue 11: Wasseroberflächen-Rendering (M4)
-13. Issue 12: Koordinatengitter + Realtime-Factor-Anzeige (M4)
+13. Issue 12: Koordinatengitter + Realtime-Faktor-Anzeige (M4)
 14. Issue 13: Kontrollpanel + Klick-Spawning inkl. Auflösungsregel (M4)
 15. Issue 14: Statusanzeige Körperwerte (M4)
-16. Issue 15: Szenen-Serialisierung (M5)
-17. Issue 16: Akzeptanztest-Suite K1–K10 + README + Tag v0.2.0 (M5)
+16. Issue 15: Szenen-Serialisierung inkl. Auflösungsregel-Validierung (M5)
+17. Issue 16: Akzeptanztest-Suite K1–K10 inkl. kombiniertem K7-Benchmark (M5)
+18. Issue 17: README + Tag v0.2.0 (M5)
 
 ---
 
