@@ -300,3 +300,22 @@ class SphWater(FluidSolver):
                     pos_v = self.vel[hit_hi, a] > 0
                     idx_hit = np.nonzero(hit_hi)[0][pos_v]
                     self.vel[idx_hit, a] = 0.0
+
+
+    def apply_body_force(self, pos, force, dt):
+        """Verteilt eine Körperkraft kernelgewichtet auf Partikel im
+        Stützradius (Impulsübertrag Spec §5). Deterministisch."""
+        pos = np.asarray(pos, dtype=float)
+        force = np.asarray(force, dtype=float)
+        d = self.pos - pos
+        r = np.sqrt(np.einsum('ij,ij->i', d, d))
+        m = r < 2.0*self.h
+        if not np.any(m) or np.linalg.norm(force) == 0.0:
+            return
+        W = _SIGMA/self.h**3 * _w(r[m]/self.h)
+        s = float(np.sum(W))
+        if s <= 0:
+            return
+        frac = W/s
+        dv = dt*force/self.mass
+        self.vel[m] += frac[:, None]*dv

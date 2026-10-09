@@ -13,6 +13,12 @@ class FluidSolver(ABC):
     @abstractmethod
     def n_particles(self) -> int: ...
 
+    def apply_body_force(self, pos, force, dt):
+        """Rückwirkung einer Körperkraft auf umliegende Partikel
+        (Impulsübertrag, Spec §5). Default: keine Wirkung."""
+        pass
+
+
 class NullFluid(FluidSolver):
     """Ersatzimplementierung für M1-Tests (kein Wasser)."""
     def __init__(self): self._n = 0

@@ -6,10 +6,14 @@ from .fluid import NullFluid
 from .bodies import Sphere, quat_integrate
 
 class World:
-    def __init__(self, config, fluid=None):
+    def __init__(self, config, fluid=None, force_modules=None):
         self.cfg = config
         self.bodies = []
         self.fluid = fluid if fluid is not None else NullFluid()
+        from .forces import Environment, Gravity
+        self.environment = Environment(config, self.fluid)
+        self.force_modules = force_modules if force_modules is not None \
+            else [Gravity()]
         self.time = 0.0
     def add(self, body):
         self.bodies.append(body); return body
@@ -25,10 +29,12 @@ class World:
                 ("z", -1, depth,      np.array([0,0, 1.0]))]
     def step(self, dt: float):
         """Ein fester Substep (dt = 1/240 s)."""
-        g = self.cfg.g
         for b in self.bodies:
             b.force = np.zeros(3); b.torque = np.zeros(3)
-            b.force += np.array([0.0, 0.0, -g]) * b.mass
+        for mod in self.force_modules:
+            for b in self.bodies:
+                mod.apply(b, self.environment, dt)
+        self.fluid.step(dt)
         for b in self.bodies:
             b.vel += b.force / b.mass * dt
             b.omega += (b.torque / b.inertia_diag()) * dt  # diag-Näherung (v0.2)
