@@ -2,7 +2,7 @@
 
 **Basis:** SPEC 1.0 (Stand 09.10.2026) auf `main`
 **Ziel:** Definition of Done aus Abschnitt 8 der Spec (10 Akzeptanzkriterien)
-**Stand des Plans:** 09.10.2026 · **Plan-Version:** 1.3
+**Stand des Plans:** 09.10.2026 · **Plan-Version:** 1.0
 
 **Änderungen gegenüber Plan v1.1:**
 - **K7-Partikelzahl:** Die Default-Konfiguration (Δx = 0,25 m) liefert nur
