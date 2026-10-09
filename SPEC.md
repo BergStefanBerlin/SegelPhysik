@@ -1,3 +1,4 @@
+# Stand:09.10.2026
 # SPEC – 3D-Physiksimulations-Umgebung (SegelPhysik)
 
 **Status:** Verbindliche Spezifikation für den Neustart auf `main`
