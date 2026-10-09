@@ -1,10 +1,18 @@
 # SPEC – 3D-Physiksimulations-Umgebung (SegelPhysik)
 
 **Status:** Verbindliche Spezifikation für den Neustart auf `main`
-**Version:** 0.2.4 · **Datum:** 09.10.2026
+**Version:** 0.2.5 · **Datum:** 09.10.2026
 **Zweck:** Eigenständige Echtzeit-3D-Umgebung mit Zwei-Phasen-Welt (Wasser/Luft),
 Starrkörper-Dynamik und gekoppelter Fluid↔Festkörper-Interaktion als Fundament
 für die spätere Segelboot-Simulation.
+
+**Änderungen gegenüber v0.2.4:** Kriterium 2 an den vergrößerten
+Testquader angepasst (2 × 2 × 2 m = 8 m³ statt 1 m³ – der alte Wert
+verstieß gegen die eigene Auflösungsregel ≥ 8·Δx); Abschnitt 7 um
+verbindliche Erweiterbarkeitsanforderungen ergänzt (Konfigurationsformat,
+Kraftmodul-Schnittstelle, Body-/Shape-Interface, austauschbarer SPH-Kern,
+Szenen-Serialisierung, SI-Einheiten) – die Spec ist ausdrücklich als
+Basis für v0.3+ gedacht; veralteten Verweis `A_proj` korrigiert.
 
 **Änderungen gegenüber v0.2.3:** Testkörper vergrößert (Kugel r = 1 m,
 Quader 2 m Kante) – die bisherigen Körper waren mit nur 4·Δx Kantenlänge
@@ -77,7 +85,7 @@ Defaults wäre der Terminalgeschwindigkeits-Test aus Kriterium 4
 nicht bestimmt.
 
 - `A_ref`: Referenzfläche des Körpers (projizierte Fläche senkrecht zur
-  Relativbewegung); gleiche Definition wie `A_proj` in Abschnitt 4.
+  Relativbewegung); gleiche Definition wie in Abschnitt 4.
 - `v_rel = v_Körper − v_Wind`: der Widerstand wirkt relativ zum lokalen Windfeld.
 - **Windfeld (Pflichtfeature, nicht optional):**
   - Konfigurierbar über Richtung (Azimut) und Geschwindigkeit (m/s).
@@ -177,13 +185,41 @@ nicht bestimmt.
 - Tests: Mindestens Unit-Tests für Auftrieb (Teilvolumen), hydrostatischen Druck,
   Widerstandsgesetz und Kollisionsauflösung.
 
+### 7.1 Erweiterbarkeit (verbindlich – diese Spec ist Basis für v0.3+)
+
+- **Einheiten:** Durchgängig SI-Einheiten; das ist verbindlich und wird
+  nirgends verlassen (auch nicht in Konfigurationsdateien).
+- **Konfiguration:** Alle physikalischen Parameter und Defaults
+  (ρ_W, ρ_L, g, c_w, μ, e, Beckenmaße, Δt, Δx/h, Wind) werden über ein
+  zentrales Parameterobjekt verwaltet, das aus einer Konfigurationsdatei
+  (JSON oder YAML) geladen werden kann. Keine physikalischen Konstanten
+  hart im Solver-Code.
+- **Kraftmodule:** Jedes Kraftmodell (Auftrieb, Widerstand, Stokes-Dämpfung,
+  später Wind-/Segelkräfte) ist ein austauschbares Modul hinter einer
+  gemeinsamen Schnittstelle (`apply(body, environment, dt) -> Kraft/Moment`);
+  der Solver kennt nur die Schnittstelle, nicht die konkreten Modelle.
+- **Körper als Interface:** `Body`-Basisklasse mit Shape-Abstraktion;
+  Kugel und Quader sind die ersten Implementierungen. Neue Formen
+  (Segelflächen, Rumpfgeometrien in v0.3+) erweitern das System, ohne den
+  Solver zu ändern. Mindestanforderung je Form: Teilvolumen unter Wasser-
+  linie, `A_ref`, Trägheitstensor.
+- **SPH-Kern austauschbar:** Der Fluidsolver liegt hinter einem Interface
+  (Partikelzustand lesen/schreiben, Dichte/Feldabfragen am Körperort), damit
+  in v0.5 Thermodynamik/Mehrphasen andockbar sind, ohne die Kopplung neu
+  zu schreiben. Das Windfeld-Interface aus Abschnitt 3 ist das Muster dafür.
+- **Szenen-Serialisierung:** Der komplette Szenenzustand (Parameter,
+  Körper, Partikel-Seed) lässt sich speichern und laden – Voraussetzung
+  für die reproduzierbaren Läufe aus Kriterium 9 und für Regressionstests
+  in allen folgenden Versionen.
+
 ## 8. Akzeptanzkriterien (Definition of Done für v0.2)
 
 1. **Schwimmen/Sinken:** Eine Testkugel (r = 1,0 m) mit ρ = 500 kg/m³ schwimmt
    stabil an der Oberfläche (Restwelligkeit < 10 % des Radius nach 10 s); eine
    Testkugel mit ρ = 2000 kg/m³ sinkt zum Boden und bleibt liegen.
-2. **Auftrieb korrekt:** Ein Testquader (1 m³), zur Hälfte eingetaucht, erfährt
-   statisch `F_A = ρ_W · (V/2) · g`; numerisches Gleichgewicht weicht um < 5 % ab.
+2. **Auftrieb korrekt:** Ein Testquader (2 × 2 × 2 m, V = 8 m³), zur Hälfte
+   eingetaucht, erfährt statisch `F_A = ρ_W · (V/2) · g = 39.240 N`;
+   numerisches Gleichgewicht weicht um < 5 % ab.
 3. **Hydrostatischer Druck:** Druck am Boden entspricht `ρ_W · g · (H/3)` ± 1 %.
 4. **Luftwiderstand & Wind:** Der **horizontale** Geschwindigkeitsanteil eines
    Körpers in ruhender Luft (Test entweder mit g = 0 oder Auswertung nur der
