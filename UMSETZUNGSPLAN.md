@@ -2,7 +2,16 @@
 
 **Basis:** SPEC 1.0 (Stand 09.10.2026) auf `main`
 **Ziel:** Definition of Done aus Abschnitt 8 der Spec (10 Akzeptanzkriterien)
-**Stand des Plans:** 09.10.2026
+**Stand des Plans:** 09.10.2026 · **Plan-Version:** 1.1 (überarbeitet nach Vollprüfung)
+
+**Änderungen gegenüber Plan v1.0:** Issue-Granularität zwischen Meilenstein-
+Details und Issue-Liste angeglichen (jetzt durchgängig 17 Issues); Auflösungs-
+regel ausschließlich in M4 verankert (war doppelt, mit falscher Reihenfolge);
+Abhängigkeitskette im Text an das Diagramm angeglichen (M4 parallel); M3-Abnahme
+auf numerischen Wellennachweis umformuliert (Rendering gibt es erst in M4);
+M1-Abnahme auf Substep-Durchsatz geändert (Realtime-Fator braucht Renderframes);
+Benchmark-Ausführungskontext geklärt (außerhalb der CI); Mermaid-Labels
+in Anführungszeichen; K6-Test präzisiert; Issue 1 von Issue 0 entkoppelt.
 
 ---
 
@@ -14,28 +23,31 @@
   Spec-Referenz im Beschreibungstext.
 - **Feature-Flags statt langer Branches:** Unfertige Teile liegen hinter Flags
   auf `main`, damit die CI stets grün bleibt.
+- **Issue-Granularität:** Insgesamt 17 Issues (0–16); die Detailabschnitte in
+  Abschnitt 2 und die Liste in Abschnitt 5 sind deckungsgleich.
 
 ---
 
 ## 1. Meilensteine im Überblick
 
-| M | Titel | Kernlieferung | Spec-Bezug |
-|---|---|---|---|
-| M0 | Architektur & Gerüst | Bibliotheksentscheidung, Paketstruktur, Config-System, CI | §7, §7.1 |
-| M1 | Starrkörper-Welt | Body-/Shape-Interface, Kugel/Quader, Kollisionen, Starrkörper-Solver | §4, §5 |
-| M2 | SPH-Wasserkern | Fluidsolver hinter Interface, 20k Partikel, CFL, Determinismus | §5 |
-| M3 | Kopplung | Auftrieb/Widerstand/Stokes als Kraftmodule, Fluid↔Körper-Impuls | §2–§4 |
-| M4 | Rendering & UI | Wasseroberfläche, Gitter, Kontrollpanel, Klick-Spawning | §6 |
-| M5 | Abnahme | Akzeptanztests zu allen 10 Kriterien, Szenen-Serialisierung, Doku | §8 |
+| M | Titel | Kernlieferung | Spec-Bezug | Issues |
+|---|---|---|---|---|
+| M0 | Architektur & Gerüst | Bibliotheksentscheidung, Paketstruktur, Config-System, CI | §7, §7.1 | 0–1 |
+| M1 | Starrkörper-Welt | Body-/Shape-Interface, Kugel/Quader, Kollisionen, Starrkörper-Solver, Zeitschleife | §4, §5 | 2–4 |
+| M2 | SPH-Wasserkern | Fluidsolver hinter Interface, 20k Partikel, CFL, Determinismus | §5 | 5–7 |
+| M3 | Kopplung | Kraftmodule, Windfeld-Interface, Fluid↔Körper-Impuls | §2–§4 | 8–10 |
+| M4 | Rendering & UI | Wasseroberfläche, Gitter, Kontrollpanel, Klick-Spawning, Statusanzeige | §6 | 11–14 |
+| M5 | Abnahme | Akzeptanztests zu allen 10 Kriterien, Szenen-Serialisierung, Doku | §8 | 15–16 |
 
-Abhängigkeitskette: M0 → M1 → M2 → M3 → M4 → M5
-(M4 kann ab M1 parallel laufen; Details siehe Diagramm in Abschnitt 3.)
+Parallelisierung: M4 kann ab M1 laufen; M2 kann bereits ab M0 parallel zu M1
+laufen (der SPH-Kern braucht nur Config und Interface, keine Körper).
+Details siehe Diagramm in Abschnitt 3.
 
 ---
 
 ## 2. Meilensteine im Detail
 
-### M0 – Architektur & Gerüst
+### M0 – Architektur & Gerüst (Issues 0–1)
 
 **Ziel-Entscheidungen (dokumentiert im Architektur-Issue):**
 1. SPH-Kern: **Taichi** (empfohlen, GPU-Pfad für Kriterium 7) vs. NumPy/Numba (CPU-Fallback).
@@ -70,102 +82,127 @@ Architektur-Entscheidung im Issue begründet.
 
 ---
 
-### M1 – Starrkörper-Welt
+### M1 – Starrkörper-Welt (Issues 2–4)
 
 **Issues:**
-1. `Body`-Basisklasse + `Sphere`, `Box` (Masse, Dichte, μ, e, Trägheitstensor).
-2. Shape-Methoden: `submerged_volume(waterline)` – Quader analytisch,
-   Kugel über Kappenhöhe; `A_ref(direction)`; Trägheitstensor.
-3. Starrkörper-Solver: Semi-implizite Euler, Impulsbasierte Kollisionsauflösung
-   mit Restitution + Coulomb-Reibung; Wände/Boden/Oberseite-offen.
-4. Zeitschleife mit **Akkumulator-Muster** (Δt = 1/240 s, Substep-Obergrenze 8).
+- **Issue 2:** `Body`-Basisklasse + `Sphere`, `Box` (Masse, Dichte, μ, e,
+  Trägheitstensor) sowie Shape-Methoden: `submerged_volume(waterline)` –
+  Quader analytisch, Kugel über Kappenhöhe; `A_ref(direction)`.
+- **Issue 3:** Starrkörper-Solver: Semi-implizite Euler, impulsbasierte
+  Kollisionsauflösung mit Restitution + Coulomb-Reibung; Wände/Boden,
+  Oberseite offen.
+- **Issue 4:** Zeitschleife mit **Akkumulator-Muster** (Δt = 1/240 s,
+  Substep-Obergrenze 8) + Substep-Durchsatz-Messung.
 
 **Unit-Tests:** Teilvolumen halb getauchter Quader = 4 m³; Kugel-Kappe gegen
-analytische Formel; Kollision zweier Kugeln → Impulserhaltung; Restdurchdringung
-< 1 % (→ Kriterium 6 vorbereitet).
+analytische Formel; Kollision zweier Kugeln → Impulserhaltung; maximale
+Restdurchdringung < 1 % der kleinsten charakteristischen Abmessung des
+kleineren Körpers (→ Kriterium 6 vorbereitet, volle Präzision aus Spec §8.6).
 
 **Abnahme M1:** Zwei Körper kollidieren physikalisch plausibel im leeren Raum
-(ohne Wasser); Realtime-Factor-Messung vorhanden.
+(ohne Wasser); Substep-Durchsatz messbar (≥ 240 Substeps/s = Realtime-Fähigkeit
+des Solvers; der eigentliche Realtime-Factor wird erst mit Renderframes in M4
+messbar).
 
 ---
 
-### M2 – SPH-Wasserkern
+### M2 – SPH-Wasserkern (Issues 5–7)
 
 **Issues:**
-1. SPH-Interface (`fluid.py`): Partikelzustand lesen/schreiben,
-   `density_at(pos)`, `velocity_at(pos)` – Implementierung dahinter austauschbar.
-2. Taichi-Implementierung: WCSPH oder IISPH (Entscheidung im Issue mit Begründung),
-   h = 1,3·Δx, CFL-Begrenzung 0,3·h/Substep.
-3. Initialisierung: Beckengitter aus Config (Δx = 0,25 m → ~19.200 Partikel),
-   Seed für Determinismus.
-4. Benchmark: 20.000 Partikel @ ≥ 30 FPS (GPU-Pfad); CPU-Fallback mit
-   reduzierter Partikelzahl dokumentieren (Risiko aus §7).
+- **Issue 5:** SPH-Interface (`fluid.py`): Partikelzustand lesen/schreiben,
+  `density_at(pos)`, `velocity_at(pos)` – Implementierung dahinter austauschbar.
+- **Issue 6:** Taichi-Implementierung: WCSPH oder IISPH (Entscheidung im Issue
+  mit Begründung), h = 1,3·Δx, CFL-Begrenzung 0,3·h/Substep.
+- **Issue 7:** Initialisierung: Beckengitter aus Config (Δx = 0,25 m →
+  ~19.200 Partikel), Seed für Determinismus.
 
 **Unit-Tests:** Hydrostatischer Druck am Boden ± 1 % (→ Kriterium 3);
 Partikel in Ruhe ohne Körper bleiben stabil (keine Explosion nach 1.000 Substeps);
-Determinismus: zwei Läufe, gleicher Seed → Abweichung < 1e-9 (→ Kriterium 9).
+Determinismus: zwei Läufe, gleicher Seed → Abweichung < 1e-9 (→ Kriterium 9,
+auf Fluid-Ebene; Szenen-weit in M5).
 
-**Abnahme M2:** Wasser steht stabil im Becken, Oberfläche aus Partikeln extrahierbar.
+**Benchmark (Kriterium 7):** 20.000 Partikel @ ≥ 30 FPS. **Ausführungskontext:**
+als manuell ausführbares Benchmark-Skript mit FPS-Log – **nicht** als
+CI-Pflichttest (GitHub-Runner haben keine dedizierte GPU); Ergebnis wird im
+Issue dokumentiert. CPU-Fallback mit reduzierter Partikelzahl dokumentieren
+(Risiko aus Spec §7).
+
+**Abnahme M2:** Wasser steht stabil im Becken, Oberfläche aus Partikeln
+extrahierbar, Benchmark-Ergebnis dokumentiert.
 
 ---
 
-### M3 – Kopplung (Fluid ↔ Festkörper)
+### M3 – Kopplung, Fluid ↔ Festkörper (Issues 8–10)
 
 **Issues:**
-1. Kraftmodul-Schnittstelle: `apply(body, environment, dt) -> Kraft/Moment`.
-2. Module: `Buoyancy` (Archimedes mit Teilvolumen), `WaterDrag`
-   (½·ρ_W·c_w·A_ref·v_rel², v_rel gegen lokale SPH-Geschwindigkeit),
-   `AirDrag` (dieselbe Form, ρ_L, v_rel gegen Windfeld), `StokesDamping`
-   (dokumentiert als Stabilitätshilfe).
-3. Windfeld-Interface: homogenes Feld (Azimut + Geschwindigkeit) als erste
-   Implementierung – Schnittstelle so, dass v0.3 ortsabhängige Felder einsetzt.
-4. Impulsübertrag Körper → Partikel: Penetrationsabstoßung (reicht laut Spec
-   für v0.2); Zwei-Wege-Kopplung als dokumentierte Vereinfachung.
-5. Auflösungsregel im Einspawner: Körperabmessung ≥ 8·Δx erzwingen.
+- **Issue 8:** Kraftmodul-Schnittstelle (`apply(body, environment, dt) ->
+  Kraft/Moment`) + Module: `Buoyancy` (Archimedes mit Teilvolumen),
+  `WaterDrag` (½·ρ_W·c_w·A_ref·v_rel², v_rel gegen lokale SPH-Geschwindigkeit),
+  `AirDrag` (dieselbe Form, ρ_L, v_rel gegen Windfeld), `StokesDamping`
+  (dokumentiert als Stabilitätshilfe).
+- **Issue 9:** Windfeld-Interface: homogenes Feld (Azimut + Geschwindigkeit)
+  als erste Implementierung – Schnittstelle so, dass v0.3 ortsabhängige
+  Felder einsetzt.
+- **Issue 10:** Impulsübertrag Körper → Partikel: Penetrationsabstoßung
+  (reicht laut Spec für v0.2); Zwei-Wege-Kopplung als dokumentierte
+  Vereinfachung.
+
+*(Die Auflösungsregel „Körperabmessung ≥ 8·Δx" wird ausschließlich in M4 im
+Einspawner erzwungen – siehe Issue 13; der Einspawner existiert in M3 noch nicht.)*
 
 **Unit-Tests:** Auftrieb halb getauchter Testquader = 39.240 N ± 5 %
 (→ Kriterium 2); Terminalgeschwindigkeit gegen analytischen Wert mit
 CFL-verträglicher Testkonfiguration (→ Kriterium 4).
 
 **Abnahme M3:** Schwimmende/sinkende Kugeln verhalten sich physikalisch korrekt
-(→ Kriterium 1 vorbereitet); Wellen nach Einsprung sichtbar (→ Kriterium 5 vorbereitet).
+(→ Kriterium 1 vorbereitet); Wellen nach Einsprung **numerisch nachweisbar**
+(Amplitude ≥ 2·Δx aus den Partikeldaten – die visuelle Darstellung folgt in M4;
+→ Kriterium 5 vorbereitet).
 
 ---
 
-### M4 – Rendering & UI (parallel ab M1 möglich)
+### M4 – Rendering & UI (Issues 11–14; parallel ab M1 möglich)
 
 **Issues:**
-1. Szene: transparente, beleuchtete Wasseroberfläche (Marching Cubes oder
-   Partikel-Dichte-Schwellwert), Tiefenfarbe.
-2. Koordinatengitter mit Beschriftung + Maßstabsleiste.
-3. Kontrollpanel: g, Wind (Richtung/Geschwindigkeit), Pause/Schritt/Reset,
-   Partikelanzahl (Restart-Parameter!), Δt, Substeps-Obergrenze, Beckenmaße.
-4. Klick-Spawning: Kugel/Quader, Dichte, μ, e wählbar; Mindestgröße ≥ 8·Δx erzwungen.
-5. Statusanzeige des gewählten Körpers: Position, Geschwindigkeit, Eintauchtiefe, Kräfte.
+- **Issue 11:** Szene: transparente, beleuchtete Wasseroberfläche (Marching
+  Cubes oder Partikel-Dichte-Schwellwert), Tiefenfarbe.
+- **Issue 12:** Koordinatengitter mit Beschriftung + Maßstabsleiste;
+  Realtime-Factor-Anzeige (jetzt sind Renderframes vorhanden).
+- **Issue 13:** Kontrollpanel (g, Wind Richtung/Geschwindigkeit, Pause/Schritt/
+  Reset, Partikelanzahl als Restart-Parameter, Δt, Substeps-Obergrenze,
+  Beckenmaße) **und** Klick-Spawning (Kugel/Quader, Dichte, μ, e wählbar)
+  mit erzwungener Mindestgröße ≥ 8·Δx (Auflösungsregel aus Spec §4).
+- **Issue 14:** Statusanzeige des gewählten Körpers: Position, Geschwindigkeit,
+  Eintauchtiefe, resultierende Kräfte.
 
-**Abnahme M4:** Kriterium 8 erfüllt (Einspawnen per Klick, g/Wind zur Laufzeit änderbar).
+**Abnahme M4:** Kriterium 8 erfüllt (Einspawnen per Klick, g/Wind zur Laufzeit
+änderbar); Realtime-Factor ≈ 1 im Zusammenspiel gemessen.
 
 ---
 
-### M5 – Abnahme & Stabilisierung
+### M5 – Abnahme & Stabilisierung (Issues 15–16)
 
 **Issues:**
-1. Szenen-Serialisierung (Parameter + Körper + Seed speichern/laden) –
-   Voraussetzung für automatisierte Akzeptanzläufe.
-2. Akzeptanztest-Suite: je Kriterium aus §8 ein automatisierter Test oder ein
-   dokumentiertes manuelles Protokoll:
-   - K1 Schwimmen/Sinken (automatisch: Gleichgewichtstiefgang + Restwelligkeit)
-   - K2 Auftrieb 39.240 N ± 5 % (automatisch)
-   - K3 Bodenruck ± 1 % (automatisch)
-   - K4 Luftwiderstand/Wind + v_term (automatisch)
-   - K5 Wellenamplitude ≥ 2·Δx (semi-automatisch: Amplitudenmessung)
-   - K6 Kollisionen (automatisch)
-   - K7 Echtzeit-Benchmark (Skript mit FPS-Log)
-   - K8 Interaktion (manuelles Protokoll)
-   - K9 Reproduzierbarkeit < 1e-9 (automatisch)
-   - K10 pytest grün (CI)
-3. README: Installation, Bedienung, Architekturüberblick, Bekannte Einschränkungen.
-4. Tag `v0.2.0` nach erfolgter Abnahme.
+- **Issue 15:** Szenen-Serialisierung (Parameter + Körper + Seed speichern/
+  laden) – Voraussetzung für automatisierte Akzeptanzläufe (Spec §7.1, §8.9).
+- **Issue 16:** Akzeptanztest-Suite + README + Tag:
+  - je Kriterium aus Spec §8 ein automatisierter Test oder ein dokumentiertes
+    manuelles Protokoll:
+    - K1 Schwimmen/Sinken (automatisch: Gleichgewichtstiefgang + Restwelligkeit)
+    - K2 Auftrieb 39.240 N ± 5 % (automatisch)
+    - K3 Bodenruck ± 1 % (automatisch)
+    - K4 Luftwiderstand/Wind + v_term (automatisch)
+    - K5 Wellenamplitude ≥ 2·Δx (semi-automatisch: Amplitudenmessung)
+    - K6 Kollisionen, Restdurchdringung < 1 % der kleinsten charakteristischen
+      Abmessung (automatisch)
+    - K7 Echtzeit-Benchmark (Skript mit FPS-Log, außerhalb der CI – siehe M2)
+    - K8 Interaktion (manuelles Protokoll)
+    - K9 Reproduzierbarkeit < 1e-9, szenenweit über Serialisierung (automatisch)
+    - K10 pytest grün (CI)
+  - README: Installation, Bedienung, Architekturüberblick, Bekannte Einschränkungen.
+  - Tag `v0.2.0` nach erfolgter Abnahme.
+
+**Abnahme M5:** Alle 10 Kriterien nachweisbar; Tag gesetzt.
 
 ---
 
@@ -173,14 +210,19 @@ CFL-verträglicher Testkonfiguration (→ Kriterium 4).
 
 ```mermaid
 graph TD
-    M0[M0 Architektur & Gerüst] --> M1[M1 Starrkörper-Welt]
-    M0 --> M4[M4 Rendering & UI]
-    M1 --> M2[M2 SPH-Wasserkern]
+    M0["M0 Architektur & Gerüst"] --> M1["M1 Starrkörper-Welt"]
+    M0 --> M2["M2 SPH-Wasserkern"]
+    M0 --> M4["M4 Rendering & UI"]
+    M1 --> M3["M3 Kopplung"]
+    M2 --> M3
     M1 --> M4
-    M2 --> M3[M3 Kopplung]
-    M3 --> M5[M5 Abnahme & Stabilisierung]
+    M3 --> M5["M5 Abnahme & Stabilisierung"]
     M4 --> M5
 ```
+
+Hinweis: M2 hängt nur an M0 (Config + Interface) und kann parallel zu M1
+laufen; M3 braucht M1 (Körper) **und** M2 (Fluid). M4 kann ab M1 starten,
+die Wasseroberflächen-Darstellung (Issue 11) erst ab M2.
 
 ---
 
@@ -193,26 +235,29 @@ graph TD
 | PyBullet-Achsenkonvention weicht ab | M1 | z-up prüfen; ggf. Transformation kapseln |
 | Marching Cubes zu langsam für Echtzeit | M4 | Fallback: Punktwolke/Dichte-Sphären statt Mesh |
 | Eigener Starrkörper-Solver zu aufwändig | M1 | Früh PyBullet-Spike (1 Tag) vor Entscheidung |
+| Benchmark in CI nicht reproduzierbar (keine GPU auf Runnern) | M2, M5 | Benchmark als manuelles Skript mit dokumentiertem Ergebnis, nicht als CI-Gate |
 
 ---
 
-## 5. Empfohlene Reihenfolge der Issues (GitHub)
+## 5. Issue-Liste (GitHub, 17 Issues)
 
-1. **Issue 0:** Architektur-Entscheidung (Taichi vs. NumPy/Numba; PyBullet vs. eigen) – Blocker für alles
-2. Issue 1: Config-System + Paketgerüst + CI (M0)
+1. **Issue 0:** Architektur-Entscheidung (Taichi vs. NumPy/Numba; PyBullet vs. eigen) – Blocker für M1–M4
+2. Issue 1: Config-System + Paketgerüst + CI (M0) – *unabhängig von Issue 0, kann parallel*
 3. Issue 2: Body/Shape-Interfaces + Teilvolumen (M1)
 4. Issue 3: Starrkörper-Solver + Kollisionen (M1)
-5. Issue 4: Akkumulator-Zeitschleife (M1)
-6. Issue 5: SPH-Interface + Taichi-Implementierung (M2)
-7. Issue 6: Becken-Initialisierung + Determinismus (M2)
-8. Issue 7: Kraftmodule (Auftrieb/Widerstand/Stokes) (M3)
-9. Issue 8: Windfeld-Interface (M3)
-10. Issue 9: Körper→Partikel-Impulsübertrag (M3)
-11. Issue 10: Wasseroberflächen-Rendering (M4)
-12. Issue 11: Kontrollpanel + Klick-Spawning (M4)
-13. Issue 12: Szenen-Serialisierung (M5)
-14. Issue 13: Akzeptanztest-Suite K1–K10 (M5)
-15. Issue 14: README + Tag v0.2.0 (M5)
+5. Issue 4: Akkumulator-Zeitschleife + Durchsatzmessung (M1)
+6. Issue 5: SPH-Interface (M2)
+7. Issue 6: Taichi-SPH-Implementierung (M2)
+8. Issue 7: Becken-Initialisierung + Determinismus + Benchmark-Skript (M2)
+9. Issue 8: Kraftmodul-Schnittstelle + Kraftmodule (M3)
+10. Issue 9: Windfeld-Interface (M3)
+11. Issue 10: Körper→Partikel-Impulsübertrag (M3)
+12. Issue 11: Wasseroberflächen-Rendering (M4)
+13. Issue 12: Koordinatengitter + Realtime-Factor-Anzeige (M4)
+14. Issue 13: Kontrollpanel + Klick-Spawning inkl. Auflösungsregel (M4)
+15. Issue 14: Statusanzeige Körperwerte (M4)
+16. Issue 15: Szenen-Serialisierung (M5)
+17. Issue 16: Akzeptanztest-Suite K1–K10 + README + Tag v0.2.0 (M5)
 
 ---
 
