@@ -1,15 +1,17 @@
-# SPEC – 3D-Physiksimulations-Umgebung (SegelPhysik, v0.2)
+# SPEC – 3D-Physiksimulations-Umgebung (SegelPhysik)
 
 **Status:** Verbindliche Spezifikation für den Neustart auf `main`
-**Version:** 0.2.1 · **Datum:** 09.10.2026
+**Version:** 0.2.3 · **Datum:** 09.10.2026
 **Zweck:** Eigenständige Echtzeit-3D-Umgebung mit Zwei-Phasen-Welt (Wasser/Luft),
 Starrkörper-Dynamik und gekoppelter Fluid↔Festkörper-Interaktion als Fundament
 für die spätere Segelboot-Simulation.
 
-**Änderungen gegenüber v0.2:** Achsenkonvention konsistent auf z-Achse nach oben
-umgestellt; Rolle der Luftphase präzisiert (vereinfachtes Kraftmodell, keine
-Fluidsimulation); Becken-Default an Partikelauflösung gekoppelt; Glättungslänge
-`h` definiert; Formulierungen in Abschnitt 4 und Kriterium 6 korrigiert.
+**Änderungen gegenüber v0.2.2:** Kriterium 4 physikalisch korrigiert (nur
+horizontaler Geschwindigkeitsanteil bzw. Test mit g = 0 – ein freier Körper
+erreicht unter Gravitation seine Fallterminalgeschwindigkeit, nicht v = 0);
+Substep-Angabe präzisiert (4 Substeps bei 60 FPS = Realtime-Factor 1);
+Raum-Oberseite als offen definiert; Referenzfläche einheitlich `A_ref`;
+Beckenmaße ins UI-Panel aufgenommen.
 
 ---
 
@@ -21,13 +23,15 @@ Fluidsimulation); Becken-Default an Partikelauflösung gekoppelt; Glättungslän
     Wasseroberfläche.
   - **x-Achse** zeigt in der Ebene der ungestörten Wasseroberfläche in Richtung
     Bug der späteren Yacht (Vorbereitung für v0.3; in v0.2 nur Namenskonvention).
-  - **y-Achse** zeigt quer dazu in der Ebene der ungestörten Wasseroberfläche
-    (positiv nach Steuerbord).
+  - **y-Achse** zeigt quer dazu in der Ebene der ungestörten Wasseroberfläche,
+    **positiv nach Backbord** (folgt zwingend aus x = Bug, z = oben und dem
+    Rechtssystem: y = z × x).
 - Gesamthöhe `H` (konfigurierbar, Default: 9 m):
   - **Luft** (obere zwei Drittel): `z ∈ (0, 2H/3]` → Default: 6 m
   - **Wasser** (unteres Drittel): `z ∈ [−H/3, 0]` → Default: 3 m Wassertiefe
 - Grundfläche des Raums konfigurierbar (Default: 10 m × 10 m); Wände und Boden
-  sind feste Kollisionsgrenzen.
+  sind feste Kollisionsgrenzen. **Die Oberseite des Raums ist offen** – Objekte
+  können von oberhalb der Wasserlinie eingesponnen werden und fallen frei ein.
 - Gravitation: `g = 9,81 m/s²` in negativer z-Richtung (im UI konfigurierbar).
 
 > **Begründung der Defaults:** Wasser-Volumen = 10 · 10 · 3 = 300 m³. Bei der in
@@ -40,7 +44,7 @@ Fluidsimulation); Becken-Default an Partikelauflösung gekoppelt; Glättungslän
 | Größe | Wert |
 |---|---|
 | Dichte ρ_W | 1000 kg/m³ |
-| Dynamische Viskosität η | ≈ 1 mPa·s |
+| Dynamische Viskosität η | ≈ 1 mPa·s (nur informativ; wirksam ausschließlich über den dokumentierten Stokes-Dämpfungsterm aus Abschnitt 4) |
 | Hydrostatischer Druck | `p = ρ_W · g · h` (linear mit Tiefe h) |
 | Auftrieb (Archimedes) | `F_A = ρ_W · V_verdrängt · g` |
 
@@ -56,8 +60,10 @@ nur über die folgenden Kraftmodelle in die Dynamik ein:
 | Größe | Wert |
 |---|---|
 | Dichte ρ_L | 1,225 kg/m³ (15 °C, Meereshöhe) |
-| Quadratischer Widerstand | `F_D = ½ · ρ_L · c_w · A · v_rel²` |
+| Quadratischer Widerstand | `F_D = ½ · ρ_L · c_w · A_ref · v_rel²` |
 
+- `A_ref`: Referenzfläche des Körpers (projizierte Fläche senkrecht zur
+  Relativbewegung); gleiche Definition wie `A_proj` in Abschnitt 4.
 - `v_rel = v_Körper − v_Wind`: der Widerstand wirkt relativ zum lokalen Windfeld.
 - **Windfeld (Pflichtfeature, nicht optional):**
   - Konfigurierbar über Richtung (Azimut) und Geschwindigkeit (m/s).
@@ -71,13 +77,19 @@ nur über die folgenden Kraftmodelle in die Dynamik ein:
     Anfangsposition/-geschwindigkeit.
   - Defaults: Reibungskoeffizient μ = 0,5; Restitutionskoeffizient e = 0,3
     (im UI pro Objekt änderbar).
+  - **Default-Testkörper (für die Akzeptanzkriterien):**
+    - Testkugel: Radius r = 0,5 m
+    - Testquader: 1 m × 1 m × 1 m (Kantenlänge 1 m)
 - **Verhalten:** Dichte < 1000 kg/m³ → schwimmt; > 1000 kg/m³ → sinkt.
 - **Kollisionen:** Körper↔Körper sowie Körper↔Wände/Boden.
 - **Teil-Eintauchen:** Der verdrängte Teilvolumenanteil wird explizit berechnet:
   - Quader: analytisch über den eingetauchten Anteil der Höhe.
   - Kugel: analytisch über die Kappenhöhe (Segmentvolumen).
 - **Kräfte im Wasser:** Auftrieb nach Archimedes (mit Teilvolumen),
-  hydrodynamischer Widerstand proportional zu `½ · ρ_W · c_w · A_proj · v_rel²`,
+  hydrodynamischer Widerstand proportional zu
+  `½ · ρ_W · c_w · A_ref · v_rel²` mit
+  `v_rel = v_Körper − v_Fluid(lokal)` – bezogen auf die lokale SPH-Fluid-
+  geschwindigkeit am Körperort (nicht auf Wind),
   Zusatzdämpfung durch η (als vereinfachter Stokes-Term erlaubt, solange
   dokumentiert).
 
@@ -94,11 +106,23 @@ nur über die folgenden Kraftmodelle in die Dynamik ein:
   - Auftrieb + Widerstand auf die Körper (siehe Abschnitte 2–4).
   - Impulsübertrag: Körper drücken SPH-Partikel weg (einfache Penetrations-
     abstoßung reicht für v0.2; Zwei-Wege-Kraftkopplung dokumentieren).
-- **Zeitschritt:** Fester Zeitschritt `Δt = 1/240 s`, 4–8 Substeps pro Renderframe;
-  CFL-Begrenzung im SPH-Teil (Partikel dürfen pro Substep max. ~0,3·h wandern,
-  d. h. bei `h ≈ 0,33 m` max. ~0,1 m pro Substep).
+- **Zeitschritt & Echtzeit:**
+  - Fester Zeitschritt `Δt = 1/240 s`.
+  - **Akkumulator-Muster:** Pro Renderframe rückt die Simulationszeit um die
+    real verstrichene Zeit nach; die Substep-Anzahl ergibt sich daraus.
+    Bei 60 FPS und Realtime-Factor 1 sind das genau **4 Substeps pro Frame**
+    (60 · 4 · 1/240 s = 1 s); die im UI einstellbare Substeps-Obergrenze
+    (Default: 8) begrenzt den Rückstand nur bei Frame-Jitter und verhindert
+    einen „Spiral of Death". Ziel: Realtime-Factor ≈ 1.
+    Läuft die Darstellung langsamer (z. B. 30 FPS), darf der Realtime-Factor
+    unter 1 fallen – die Physik bleibt davon unberührt (feste Δt, fester Seed).
+  - CFL-Begrenzung im SPH-Teil (Partikel dürfen pro Substep max. ~0,3·h wandern,
+    d. h. bei `h ≈ 0,33 m` max. ~0,1 m pro Substep).
 - **Determinismus:** Bei fixem Seed und fixen Substeps ist der Simulationsverlauf
   reproduzierbar.
+- **Partikelanzahl als Restart-Parameter:** Eine Änderung der Partikelanzahl
+  (und damit von `Δx`/`h`) erfordert einen Simulations-Reset; sie ist nicht
+  zur Laufzeit mitten in einer Szene änderbar.
 
 ## 6. Visualisierung & UI
 
@@ -108,7 +132,9 @@ nur über die folgenden Kraftmodelle in die Dynamik ein:
   - Gravitation g (m/s²)
   - Wind: Richtung + Geschwindigkeit
   - Zeitsteuerung: Pause / Schritt / Reset
-  - Simulationsparameter: Partikelanzahl, Δt, Substeps
+  - Simulationsparameter: Partikelanzahl (wirkt nach Reset), Δt,
+    Substeps-Obergrenze
+  - Beckenmaße: Grundfläche (L × B) und Höhe H (wirken nach Reset)
 - **Einspawnen von Objekten per Klick** in die Szene (Kugel/Quader, wählbare
   Dichte, wählbare Reibung/Restitution).
 - Anzeige von Statuswerten des zuletzt gewählten Körpers: Position,
@@ -116,9 +142,13 @@ nur über die folgenden Kraftmodelle in die Dynamik ein:
 
 ## 7. Technische Rahmenbedingungen
 
-- Python 3.11+; Rendering und Simulation laufen interaktiv in Echtzeit.
+- Python 3.11+; Rendering und Simulation laufen interaktiv in Echtzeit
+  (Realtime-Factor ≈ 1, siehe Abschnitt 5).
 - Empfohlene Basis: **Taichi** (GPU-kompatibler SPH-Kern) oder **PyBullet/NumPy**
   für Starrkörper – Entscheidung beim Issue „Architektur" treffen und dort begründen.
+  Dort auch adressieren: Kriterium 7 (20.000 Partikel @ 30 FPS) auf reiner CPU
+  ist ambitioniert; GPU-Pfad bevorzugen oder CPU-Fallback mit reduzierter
+  Partikelzahl definieren.
 - Saubere Trennung: Simulationskern ohne Rendering-Abhängigkeiten (testbar),
   Rendering/UI als separate Schicht.
 - Tests: Mindestens Unit-Tests für Auftrieb (Teilvolumen), hydrostatischen Druck,
@@ -126,26 +156,31 @@ nur über die folgenden Kraftmodelle in die Dynamik ein:
 
 ## 8. Akzeptanzkriterien (Definition of Done für v0.2)
 
-1. **Schwimmen/Sinken:** Eine Kugel mit ρ = 500 kg/m³ schwimmt stabil an der
-   Oberfläche (Restwelligkeit < 10 % des Radius nach 10 s); eine Kugel mit
-   ρ = 2000 kg/m³ sinkt zum Boden und bleibt liegen.
-2. **Auftrieb korrekt:** Ein Quader, zur Hälfte eingetaucht, erfährt statisch
-   `F_A = ρ_W · (V/2) · g`; numerisches Gleichgewicht weicht um < 5 % ab.
+1. **Schwimmen/Sinken:** Eine Testkugel (r = 0,5 m) mit ρ = 500 kg/m³ schwimmt
+   stabil an der Oberfläche (Restwelligkeit < 10 % des Radius nach 10 s); eine
+   Testkugel mit ρ = 2000 kg/m³ sinkt zum Boden und bleibt liegen.
+2. **Auftrieb korrekt:** Ein Testquader (1 m³), zur Hälfte eingetaucht, erfährt
+   statisch `F_A = ρ_W · (V/2) · g`; numerisches Gleichgewicht weicht um < 5 % ab.
 3. **Hydrostatischer Druck:** Druck am Boden entspricht `ρ_W · g · (H/3)` ± 1 %.
-4. **Luftwiderstand & Wind:** Ein Körper mit v₀ ≠ 0 in ruhender Luft erreicht
-   asymptotisch v → 0; bei aktivem Wind stellt sich `v → v_Wind` ein (± 5 %).
+4. **Luftwiderstand & Wind:** Der **horizontale** Geschwindigkeitsanteil eines
+   Körpers in ruhender Luft (Test entweder mit g = 0 oder Auswertung nur der
+   x/y-Komponente) klingt asymptotisch gegen 0 ab; bei aktivem Wind stellt sich
+   `v_horizontal → v_Wind` ein (± 5 %). Vertikal gilt stattdessen die
+   Fallterminalgeschwindigkeit aus dem Kräftegleichgewicht – diese wird separat
+   als Unit-Test gegen den Widerstandsgesetzes-Analyzerwert geprüft.
 5. **Wellenoberfläche:** Nach Einsprung eines Körpers entstehen sichtbare
-   Oberflächenwellen (Amplitude ≥ 2 · Δx), die sich innerhalb des Beckens
-   ausbreiten und abklingen.
+   Oberflächenwellen (Amplitude ≥ 2 · Δx, bezogen auf den jeweils aktiven
+   `Δx` der Simulation), die sich innerhalb des Beckens ausbreiten und abklingen.
 6. **Kollisionen:** Zwei Körper kollidieren mit einer maximalen Restdurchdringung
-   < 1 % des kleinsten Radius und übertragen Impuls plausibel; Wände/Boden
-   halten dicht.
+   < 1 % der kleinsten charakteristischen Abmessung des kleineren Körpers und
+   übertragen Impuls plausibel; Wände/Boden halten dicht.
 7. **Echtzeit:** ≥ 20.000 SPH-Partikel + ≥ 10 starre Körper bei ≥ 30 FPS
-   (Referenz-Hardware: mittleres Desktop-Notebook).
+   (Referenz-Hardware: mittleres Desktop-Notebook; siehe Risiko-Hinweis in
+   Abschnitt 7).
 8. **Interaktion:** Objekte lassen sich per Klick einspawnen; Gravitation und
    Wind sind zur Laufzeit änderbar und wirken sofort.
 9. **Reproduzierbarkeit:** Zwei Läufe mit identischen Startwerten liefern nach
-   1.000 Substeps identische Zustände (Bit-gleich oder < 1e-9 Abweichung).
+   1.000 Substeps Zustände mit Abweichung < 1e-9 (Position und Geschwindigkeit).
 10. **Tests:** Alle Unit-Tests aus Abschnitt 7 bestehen (`pytest` grün).
 
 ## 9. Ausbaustufen (nicht Teil von v0.2)
