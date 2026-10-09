@@ -12,8 +12,19 @@
 | M3 Fluid↔Körper-Kopplung | ✅ |
 | M4 Rendering & UI | ✅ |
 | M5 Abnahme (Serialisierung, Akzeptanz-Suite, Benchmark) | ✅ |
+| v0.3a Echtzeit (Taichi/GPU + PyVista) | ✅ |
 
 Details: `doc/UMSETZUNGSPLAN.md`, Abnahme: `doc/ACCEPTANCE.md`.
+
+## Echtzeit-GUI (v0.3a)
+
+```powershell
+pip install taichi-forge pyvista
+python gui.py                 # Vulkan/GPU + PyVista, interaktiv
+python gui.py --backend numpy # NumPy-Referenz zum Vergleich
+```
+
+Details: `doc/V03A.md`.
 
 ## Schnellstart
 

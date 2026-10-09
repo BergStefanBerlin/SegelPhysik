@@ -29,10 +29,14 @@ class SimulationApp:
             cfg = Config(config_dict)
         self.cfg = cfg
         self._spawn_specs = []
+        # v0.3a: optionales Fluid-Backend (z. B. TaichiSphWater), bleibt
+        # ueber reset() erhalten. None -> NumPy-Referenz (core.sph).
+        self.fluid_factory = None
         self._build()
 
     def _build(self):
-        self.sph = SphWater(self.cfg)
+        self.sph = (self.fluid_factory(self.cfg) if self.fluid_factory
+                    else SphWater(self.cfg))
         self.world = World(self.cfg, fluid=self.sph,
                            force_modules=_default_modules())
         self.loop = TimeLoop(self.world)
