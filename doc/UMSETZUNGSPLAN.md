@@ -2,7 +2,7 @@
 
 **Basis:** SPEC 1.0 (Stand 09.10.2026) auf `main`
 **Ziel:** Definition of Done aus Abschnitt 8 der Spec (10 Akzeptanzkriterien)
-**Stand des Plans:** 09.10.2026 · **Plan-Version:** 1.0
+**Stand des Plans:** 09.10.2026 · **Plan-Version:** 1.2
 
 **Änderungen gegenüber Plan v1.1:**
 - **K7-Partikelzahl:** Die Default-Konfiguration (Δx = 0,25 m) liefert nur
@@ -71,6 +71,12 @@ Details siehe Diagramm in Abschnitt 3.
    - Falls eigener Solver: Kugel-Kugel und Quader-Kollisionen selbst implementieren (Aufwand!).
 3. Rendering: **OpenGL-basiert** (z. B. ModernGL/pyrender) oder Taichi-GUI –
    Kriterium: transparente Oberfläche + 30 FPS bei 20k Partikeln.
+
+**Issues:**
+- **Issue 0:** Architektur-Entscheidung (siehe Ziel-Entscheidungen unten) –
+  Blocker für M1–M4, aber nicht für Issue 1.
+- **Issue 1:** Config-System + Paketgerüst + CI + Auflösungsregel-Validierung
+  (*unabhängig von Issue 0, kann parallel laufen*).
 
 **Lieferobjekte:**
 - Paketstruktur:
