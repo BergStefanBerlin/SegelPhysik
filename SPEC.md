@@ -1,10 +1,19 @@
 # SPEC – 3D-Physiksimulations-Umgebung (SegelPhysik)
 
 **Status:** Verbindliche Spezifikation für den Neustart auf `main`
-**Version:** 0.2.3 · **Datum:** 09.10.2026
+**Version:** 0.2.4 · **Datum:** 09.10.2026
 **Zweck:** Eigenständige Echtzeit-3D-Umgebung mit Zwei-Phasen-Welt (Wasser/Luft),
 Starrkörper-Dynamik und gekoppelter Fluid↔Festkörper-Interaktion als Fundament
 für die spätere Segelboot-Simulation.
+
+**Änderungen gegenüber v0.2.3:** Testkörper vergrößert (Kugel r = 1 m,
+Quader 2 m Kante) – die bisherigen Körper waren mit nur 4·Δx Kantenlänge
+bzw. 2·Δx Radius von der SPH-Auflösung her nicht aufgelöst (Kriterium 2
+nicht erfüllbar); Regel „Körperabmessung ≥ 8·Δx" ergänzt; c_w-Defaults
+definiert (Kugel 0,47, Quader 1,05) – ohne sie ist der Terminalgeschwindigkeits-
+Test aus Kriterium 4 unbestimmt; Terminalgeschwindigkeits-Test auf
+CFL-verträglichen Geschwindigkeitsbereich begrenzt; Irrelevanz des
+Stokes-Terms bei diesen Skalen dokumentiert.
 
 **Änderungen gegenüber v0.2.2:** Kriterium 4 physikalisch korrigiert (nur
 horizontaler Geschwindigkeitsanteil bzw. Test mit g = 0 – ein freier Körper
@@ -62,6 +71,11 @@ nur über die folgenden Kraftmodelle in die Dynamik ein:
 | Dichte ρ_L | 1,225 kg/m³ (15 °C, Meereshöhe) |
 | Quadratischer Widerstand | `F_D = ½ · ρ_L · c_w · A_ref · v_rel²` |
 
+**c_w-Defaults (pro Objekt im UI änderbar):** Kugel `c_w = 0,47`;
+Quader (Anströmung senkrecht zur Fläche) `c_w = 1,05`. Ohne feste
+Defaults wäre der Terminalgeschwindigkeits-Test aus Kriterium 4
+nicht bestimmt.
+
 - `A_ref`: Referenzfläche des Körpers (projizierte Fläche senkrecht zur
   Relativbewegung); gleiche Definition wie `A_proj` in Abschnitt 4.
 - `v_rel = v_Körper − v_Wind`: der Widerstand wirkt relativ zum lokalen Windfeld.
@@ -78,8 +92,13 @@ nur über die folgenden Kraftmodelle in die Dynamik ein:
   - Defaults: Reibungskoeffizient μ = 0,5; Restitutionskoeffizient e = 0,3
     (im UI pro Objekt änderbar).
   - **Default-Testkörper (für die Akzeptanzkriterien):**
-    - Testkugel: Radius r = 0,5 m
-    - Testquader: 1 m × 1 m × 1 m (Kantenlänge 1 m)
+    - Testkugel: Radius r = 1,0 m
+    - Testquader: 2 m × 2 m × 2 m (Kantenlänge 2 m)
+  - **Auflösungsregel:** Jede simulierbare Körperabmessung muss
+    `≥ 8 · Δx` betragen (bei Default-Δx = 0,25 m also ≥ 2 m), damit die
+    SPH-Umströmung – und damit Auftrieb und Widerstand – überhaupt
+    aufgelöst wird. Das Einspawner-UI begrenzt die minimale Körpergröße
+    entsprechend.
 - **Verhalten:** Dichte < 1000 kg/m³ → schwimmt; > 1000 kg/m³ → sinkt.
 - **Kollisionen:** Körper↔Körper sowie Körper↔Wände/Boden.
 - **Teil-Eintauchen:** Der verdrängte Teilvolumenanteil wird explizit berechnet:
@@ -91,7 +110,11 @@ nur über die folgenden Kraftmodelle in die Dynamik ein:
   `v_rel = v_Körper − v_Fluid(lokal)` – bezogen auf die lokale SPH-Fluid-
   geschwindigkeit am Körperort (nicht auf Wind),
   Zusatzdämpfung durch η (als vereinfachter Stokes-Term erlaubt, solange
-  dokumentiert).
+  dokumentiert). **Hinweis:** Bei den hier simulierten Skalen (Objekte ≥ 2 m,
+  Wasser) ist der Stokes-Term (`6π·η·r` für Kugeln ≈ 0,02 N·s/m) rund vier
+  Größenordnungen schwächer als der quadratische Widerstandsterm und damit
+  numerisch vernachlässigbar; er dient nur der Stabilität bei sehr kleinen
+  Relativgeschwindigkeiten und muss nicht kalibriert werden.
 
 ## 5. Physik-Kern
 
@@ -156,7 +179,7 @@ nur über die folgenden Kraftmodelle in die Dynamik ein:
 
 ## 8. Akzeptanzkriterien (Definition of Done für v0.2)
 
-1. **Schwimmen/Sinken:** Eine Testkugel (r = 0,5 m) mit ρ = 500 kg/m³ schwimmt
+1. **Schwimmen/Sinken:** Eine Testkugel (r = 1,0 m) mit ρ = 500 kg/m³ schwimmt
    stabil an der Oberfläche (Restwelligkeit < 10 % des Radius nach 10 s); eine
    Testkugel mit ρ = 2000 kg/m³ sinkt zum Boden und bleibt liegen.
 2. **Auftrieb korrekt:** Ein Testquader (1 m³), zur Hälfte eingetaucht, erfährt
@@ -167,7 +190,10 @@ nur über die folgenden Kraftmodelle in die Dynamik ein:
    x/y-Komponente) klingt asymptotisch gegen 0 ab; bei aktivem Wind stellt sich
    `v_horizontal → v_Wind` ein (± 5 %). Vertikal gilt stattdessen die
    Fallterminalgeschwindigkeit aus dem Kräftegleichgewicht – diese wird separat
-   als Unit-Test gegen den Widerstandsgesetzes-Analyzerwert geprüft.
+   als Unit-Test gegen den analytischen Wert
+   `v_term = sqrt(2·m·g / (ρ_L · c_w · A_ref))` geprüft (Testkonfiguration so
+   wählen, dass v_term unterhalb der CFL-Grenze von ~23 m/s bleibt, z. B.
+   leichte Kugel oder reduziertes g).
 5. **Wellenoberfläche:** Nach Einsprung eines Körpers entstehen sichtbare
    Oberflächenwellen (Amplitude ≥ 2 · Δx, bezogen auf den jeweils aktiven
    `Δx` der Simulation), die sich innerhalb des Beckens ausbreiten und abklingen.
