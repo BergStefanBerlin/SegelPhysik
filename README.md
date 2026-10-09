@@ -9,7 +9,7 @@ Umsetzung: `doc/UMSETZUNGSPLAN.md` (Plan v1.2).
 - [x] M1 Starrkörper-Welt (Issue 2–4)
 - [x] M2 SPH-Wasserkern (NumPy-Referenz, `core/sph.py`; Taichi-Port offen)
 - [x] M3 Kopplung (Auftrieb/Widerstand/Wind, Impulsübertrag) Fluid↔Körper
-- [ ] M4 Rendering & UI
+- [x] M4 Rendering & UI (Heightfield, Renderer, App-API)
 - [ ] M5 Abnahme (K1–K10)
 
 ## Tests (aus dem Repo-Root)
