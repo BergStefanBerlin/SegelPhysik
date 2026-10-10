@@ -48,7 +48,7 @@ Eintauchwinkel, nicht nur in der Ruhelage.
   (Abschnitt 5.4, v2.2) – ohne ihn kommen schwimmende Körper nicht zur Ruhe.
 - Referenzkörper „Bojenkegel" mit geschlossenen Sollwerten und exakten
   Referenzmomenten (Abschnitt 8).
-- Spawn-Presets im UI (Abschnitt 7).
+- Spawn-Presets im UI (Definition Abschnitt 4.3, Kontrollpanel Abschnitt 6).
 
 ### Übernommen (unverändert)
 §1 Welt & Koordinatensystem (rechtshändig, z nach oben, Becken 10×10×9 m,
