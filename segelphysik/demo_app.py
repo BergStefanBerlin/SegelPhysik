@@ -1,9 +1,9 @@
-"""SegelPhysik V3 - kinematische Demo.
+"""SegelPhysik V3 - kinematische Demo (alle drei Koerper, Eigenrotation).
 
-Grafik: die FERTIGE v0.4-Render-Pipeline (render/vista.py, unveraendert),
-angefluensert ueber grafik_bruecke.GrafikBruecke. Keine Physik-Module.
+Animation ueber die dokumentierte interactive_update-Schleife
+(funktionsunabhaengig von PyVista-Timer-APIs -> Rotation laeuft immer).
 Start: python -m segelphysik.demo_app
-Tasten: Leertaste Pause/Play | r Reset | 1/2/3 Kegel/Quader/Pyramide
+Tasten: 1/2/3 Koerper ein/aus | a alle an | Leertaste Pause | r Reset
         +/- (auch Pfeile) Wiedergabefaktor | q Beenden
 """
 from __future__ import annotations
@@ -13,29 +13,16 @@ from .core import bewegung as kin
 from .grafik_bruecke import GrafikBruecke
 from .steuerung import ControlPanel
 
+TYPEN = (("kegel", "cone"), ("quader", "box"), ("pyramide", "pyramid"))
 TYPEN_DEUTSCH = {"cone": "Kegel", "box": "Quader", "pyramid": "Pyramide"}
+POSITIONEN = {"cone": (-2.5, 0.0, 0.0), "box": (0.0, 0.0, 0.0),
+              "pyramid": (2.5, 0.0, 0.0)}   # Plan M3: nebeneinander
 
 
-def _starte_takt(plotter, funktion, intervall_ms=16):
-    """Animationstakt versionsunabhaengig verbinden
-    (Plotter.add_callback existiert in neueren PyVista-Versionen nicht mehr;
-    dann VTK-Timer des Interactors)."""
-    if hasattr(plotter, "add_callback"):
-        plotter.add_callback(funktion, interval=intervall_ms)
-        return
-    iren = plotter.iren
-
-    def vtk_rueckruf(objekt, ereignis):
-        funktion()
-
-    iren.add_observer("TimerEvent", vtk_rueckruf)
-    interaktor = getattr(iren, "interactor", iren)
-    for methode in ("CreateRepeatingTimer", "create_repeating_timer"):
-        erzeuger = getattr(interaktor, methode, None)
-        if erzeuger is not None:
-            erzeuger(intervall_ms)
-            return
-    raise RuntimeError("Kein Timer-Mechanismus gefunden.")
+def _phi_grad(t):
+    if hasattr(kin, "phi_grad"):
+        return kin.phi_grad(t)
+    return kin.phi_deg(t)
 
 
 def main():
@@ -43,16 +30,24 @@ def main():
     plotter = bruecke.fenster_bauen()
 
     panel = ControlPanel()
-    szene = kin.Szene.standard(panel.body_type)
     uhr = kin.Uhr(wiedergabe=panel.wiedergabe)
     zustand = {"letzte_zeit": time.perf_counter()}
+    sichtbar = {}
 
-    def spawne(typ):
-        szene_neu = kin.Szene.standard(typ)
-        d = szene_neu.koerper[0]
-        uhr.ruecksetzen()
-        bruecke.koerper_setzen(d["type"], d["dims"], d["axis"], d["phase"])
-        zustand["letzte_zeit"] = time.perf_counter()
+    def spawne(name, typ):
+        szene = kin.Szene.standard(typ)
+        d = szene.koerper[0]
+        bruecke.koerper_setzen(name, d["type"], d["dims"], d["axis"],
+                               d["phase"], POSITIONEN[typ])
+        sichtbar[name] = True
+
+    def umschalten(index):
+        name, typ = TYPEN[index]
+        if name not in sichtbar:
+            spawne(name, typ)
+        else:
+            sichtbar[name] = not sichtbar[name]
+            bruecke.sichtbar_setzen(name, sichtbar[name])
 
     def taktschlag():
         jetzt = time.perf_counter()
@@ -61,24 +56,40 @@ def main():
         if panel.laeuft:
             uhr.weiter_real(real_dt)
         bruecke.aktualisieren(uhr.t)
-        phi = kin.phi_grad(uhr.t)
+        phi = _phi_grad(uhr.t)
         pause = "" if panel.laeuft else "   [PAUSE]"
+        aktiv = "/".join(n for n, _ in TYPEN if sichtbar.get(n))
         bruecke.status(
-            "Koerpertyp: %s   phi(t): %8.2f Grad   Umdrehung: %d   "
+            "Aktiv: %s   phi(t): %8.2f Grad   Umdrehung: %d   "
             "Animationszeit: %7.2f s   Wiedergabe: %.2fx%s"
-            % (TYPEN_DEUTSCH.get(panel.body_type, panel.body_type),
-               phi, int(phi // 360), uhr.t, panel.wiedergabe, pause))
+            % (aktiv, phi, int(phi // 360), uhr.t, panel.wiedergabe, pause))
 
-    panel.verdrahte(plotter, spawne)
-    spawne(panel.body_type)
+    # Alle drei Koerper initial spawnen (K6-Kriterium): nebeneinander.
+    for name, typ in TYPEN:
+        spawne(name, typ)
+
+    # Tasten: 1/2/3 = einzelner Koerper ein/aus, a = alle an.
+    for index in range(3):
+        plotter.add_key_event(str(index + 1), lambda i=index: umschalten(i))
+    plotter.add_key_event("a", lambda: [bruecke.sichtbar_setzen(n, True)
+                                        for n, _ in TYPEN])
     plotter.add_key_event("space", lambda: panel.umschalten())
     plotter.add_key_event("r", uhr.ruecksetzen)
     for taste in ("plus", "up", "kp_add"):
         plotter.add_key_event(taste, lambda: panel.aendere_wiedergabe(2.0))
     for taste in ("minus", "down", "kp_subtract"):
         plotter.add_key_event(taste, lambda: panel.aendere_wiedergabe(0.5))
-    _starte_takt(plotter, taktschlag, 16)
-    plotter.show()
+    plotter.add_key_event("q", plotter.close)
+
+    # Robuste Animationsschleife: interactive_update + update()
+    plotter.show(interactive_update=True, auto_close=False)
+    try:
+        while True:
+            taktschlag()
+            plotter.update()
+            time.sleep(0.012)
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":

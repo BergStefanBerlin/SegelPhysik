@@ -1,22 +1,28 @@
 """Grafik-Bruecke V3 (Additivprinzip): verbindet die fertige v0.4-
 Render-Pipeline (segelphysik/render/vista.py - UNVERAENDERT) mit der
-kinematischen Demo.
+kinematischen Demo. Mehrkoerper-faehig.
 
-Der alte Renderer erwartet ein app-Objekt mit cfg/world; hier wird ein
-minimaler Stellvertreter bereitgestellt (keine Physik). Die drei
-Spec-Koerper werden als Meshes aus koerper_formen.py in denselben
-Plotter gehaengt und im originalen v0.4-Zweiton-Look gefaerbt
-(tanh-Farbverlauf, blau unter / rot ueber der Wasserlinie).
+Wasserlinie (Verfahren B): Jeder Koerper wird pro Frame von
+segelphysik.wasser_schnitt exakt an der Ebene z = 0 in zwei geschlossene
+Teil-Meshes zerlegt und EINFARBIG eingefaerbt (dunkelblau unter Wasser,
+rot darueber). Die Wasserlinie ist die exakte Schnittkante - scharf fuer
+beliebig geformte Koerper und jede Orientierung.
 """
 from __future__ import annotations
 import numpy as np
+
+try:
+    from . import wasser_schnitt as ws
+except ImportError:
+    from segelphysik import wasser_schnitt as ws
+
+FARBE_UNTEN = "#2166ac"
+FARBE_OBEN = "#b2182b"
 
 BASIN_LX, BASIN_LY, WASSER_TIEFE, DX = 10.0, 10.0, 3.0, 0.25
 
 
 class _Konfig:
-    """Stellvertreter fuer app.cfg (nur die Felder, die der Renderer liest)."""
-
     def __init__(self):
         self.basin = {"lx": BASIN_LX, "ly": BASIN_LY}
         self.water = {"depth": WASSER_TIEFE}
@@ -34,8 +40,6 @@ class _Welt:
 
 
 class StellvertreterApp:
-    """Minimal-App-Interface fuer PyVistaRenderer (ohne Physik)."""
-
     def __init__(self):
         self.cfg = _Konfig()
         self.world = _Welt()
@@ -48,52 +52,21 @@ def _polydaten(pv, vertices, gesichter):
                        np.hstack([kopf, gesicht]).ravel())
 
 
-def wasserlinie_segmente(punkte, gesichter, eps=1e-9):
-    """Schnitte der Dreiecke mit der Ebene z=0 -> Punktpaare (Segmente).
-
-    Dies ist die Wasserlinien-Kontur aus der Grafik-Spec (Abschnitt 5),
-    hier fuer beliebig rotierte Meshes je Frame berechnet. Hinweis:
-    benachbarte Dreiecke liefern dieselbe Kante doppelt (harmlos fuer
-    die Darstellung).
-    """
-    P = np.asarray(punkte, dtype=float)
-    F = np.asarray(gesichter, dtype=int)
-    z = P[:, 2]
-    punkte_liste = []
-    for dreieck in F:
-        pz = z[dreieck]
-        if (pz > eps).all() or (pz < -eps).all():
-            continue
-        schnitt = []
-        for i in range(3):
-            a, b = dreieck[i], dreieck[(i + 1) % 3]
-            za, zb = z[a], z[b]
-            if (za > eps and zb < -eps) or (za < -eps and zb > eps):
-                t = za / (za - zb)
-                schnitt.append(P[a] + t * (P[b] - P[a]))
-            elif abs(za) <= eps:
-                schnitt.append(P[a])
-        if len(schnitt) >= 2:
-            punkte_liste.append(schnitt[0])
-            punkte_liste.append(schnitt[1])
-    if not punkte_liste:
-        return np.zeros((0, 3))
-    return np.asarray(punkte_liste)
-
-
-def zweiton_wert(z_welt, weichheit=0.08):
-    """Originaler v0.4-Farbverlauf: tanh um die Wasserlinie."""
-    return np.tanh(np.asarray(z_welt, dtype=float) / weichheit)
+def _dreiecks_polydaten(pv, punkte, dreiecke):
+    dreiecke = np.asarray(dreiecke, dtype=np.int64)
+    kopf = np.full((len(dreiecke), 1), 3, dtype=np.int64)
+    return pv.PolyData(np.asarray(punkte, dtype=np.float64),
+                       np.hstack([kopf, dreiecke]).ravel())
 
 
 class GrafikBruecke:
-    """Baut das Fenster mit dem ORIGINAL-Renderer und haelt die Koerper."""
+    """Baut das Fenster mit dem ORIGINAL-Renderer; haelt MEHRERE Koerper."""
 
     def __init__(self):
         self.app = StellvertreterApp()
         self._renderer = None
         self._plotter = None
-        self._koerper = None
+        self._koerper = {}
 
     def fenster_bauen(self):
         try:
@@ -105,8 +78,8 @@ class GrafikBruecke:
         p = self._renderer.build()
         self._plotter = p
         self._hilfetext_ersetzen(
-            "SegelPhysik v3.0 | [Leertaste] Pause  [r] Reset  "
-            "[1/2/3] Koerper  [+/-] Tempo  [q] Ende")
+            "SegelPhysik v3.0 | [1/2/3] Koerper ein/aus  [a] alle  "
+            "[Leertaste] Pause  [r] Reset  [+/-] Tempo  [q] Ende")
         return p
 
     def _hilfetext_ersetzen(self, text):
@@ -128,46 +101,82 @@ class GrafikBruecke:
                 except Exception:
                     pass
 
-    def koerper_setzen(self, typ, dims, achse, phase):
+    def koerper_setzen(self, name, typ, dims, achse, phase, position=(0.0, 0.0, 0.0)):
         from .core import koerper_formen as formen
-        p = self._plotter
-        for name in ("koerper", "kontur"):
-            try:
-                p.remove_actor(name)
-            except Exception:
-                pass
         bauer = {"cone": formen.bau_kegel, "box": formen.bau_quader,
                  "pyramid": formen.bau_pyramide}[typ]
         v, f = bauer(**dims)
         import pyvista as pv
         pd = _polydaten(pv, v, f)
         pd["referenz_punkte"] = pd.points.copy()
-        pd.point_data["wet"] = zweiton_wert(pd.points[:, 2])
-        self._koerper = {"type": typ, "dims": dims, "axis": achse,
-                         "phase": phase, "pd": pd}
-        p.add_mesh(pd, scalars="wet",
-                   cmap=["#2166ac", "#b2182b"], clim=(-1.0, 1.0),
-                   show_scalar_bar=False, opacity=0.95,
-                   smooth_shading=True, name="koerper")
+        self._koerper[name] = {"typ": typ, "dims": dims, "achse": tuple(achse),
+                               "phase": phase, "position": np.asarray(position, float),
+                               "pd": pd, "aktiv": True}
+        self._einhaengen(name)
+
+    def _actor_namen(self, name):
+        return ("koerper_%s_unten" % name, "koerper_%s_oben" % name,
+                "kontur_%s" % name)
+
+    def _einhaengen(self, name):
+        k = self._koerper[name]
+        welt = k["pd"]["referenz_punkte"] + k["position"]
+        k["pd"].points = welt
+        self._actors_aktualisieren(name, welt)
+
+    def _actors_aktualisieren(self, name, welt):
+        import pyvista as pv
+        p = self._plotter
+        pd = self._koerper[name]["pd"]
+        u_p, u_t, o_p, o_t, kontur = ws.schneide_am_wasser(welt, _gesichter(pd))
+        n_unten, n_oben, n_kontur = self._actor_namen(name)
+
+        if len(u_t):
+            un = _dreiecks_polydaten(pv, u_p, u_t)
+            p.add_mesh(un, color=FARBE_UNTEN, opacity=0.95,
+                       show_edges=False, smooth_shading=True, name=n_unten)
+        else:
+            p.remove_actor(n_unten)
+
+        if len(o_t):
+            ob = _dreiecks_polydaten(pv, o_p, o_t)
+            p.add_mesh(ob, color=FARBE_OBEN, opacity=0.95,
+                       show_edges=False, smooth_shading=True, name=n_oben)
+        else:
+            p.remove_actor(n_oben)
+
+        if len(kontur):
+            linien = pv.line_segments_from_points(kontur)
+            p.add_mesh(linien, color="black", line_width=3, name=n_kontur)
+        else:
+            p.remove_actor(n_kontur)
+
+    def sichtbar_setzen(self, name, sichtbar):
+        k = self._koerper.get(name)
+        if k is None:
+            return
+        k["aktiv"] = bool(sichtbar)
+        p = self._plotter
+        if not sichtbar:
+            for n in self._actor_namen(name):
+                try:
+                    p.remove_actor(n)
+                except Exception:
+                    pass
+        else:
+            self._einhaengen(name)
 
     def aktualisieren(self, t):
         from .core import bewegung as kin
-        k = self._koerper
-        if k is None:
-            return
-        R, r_S = kin.koerper_pose(t, achse=k["axis"], phase=k["phase"])
-        pd = k["pd"]
-        welt = pd["referenz_punkte"] @ R.T + r_S
-        pd.points = welt
-        pd.point_data["wet"] = zweiton_wert(welt[:, 2])
-        segs = wasserlinie_segmente(welt, _gesichter(pd))
-        if len(segs):
-            import pyvista as pv
-            linien = pv.line_segments_from_points(segs)
-            self._plotter.add_mesh(linien, color="black", line_width=3,
-                                   name="kontur")
-        self._renderer.set_hud("SegelPhysik v3.0 - kinematische Demo")
-        return R, r_S
+        for name, k in self._koerper.items():
+            if not k["aktiv"]:
+                continue
+            R, _ = kin.koerper_pose(t, achse=k["achse"], phase=k["phase"])
+            pd = k["pd"]
+            welt = pd["referenz_punkte"] @ R.T + k["position"]
+            pd.points = welt
+            self._actors_aktualisieren(name, welt)
+        return True
 
     def status(self, text):
         self._renderer.set_status(text)
