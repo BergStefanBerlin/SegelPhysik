@@ -40,6 +40,8 @@ class World:
             for b in self.bodies:
                 mod.apply(b, self.environment, dt)
         if step_fluid:
+            if hasattr(self.fluid, "set_bodies"):
+                self.fluid.set_bodies(self.bodies)
             self.fluid.step(dt)
         for b in self.bodies:
             b.vel += b.force / b.mass * dt
@@ -111,7 +113,10 @@ class TimeLoop:
         # wie zuvor - nur Sortier-/Transferzyklen gehen von 4 auf 1 runter.
         for _ in range(n): self.world.step(self.dt, step_fluid=False)
         if n > 0:
-            self.world.fluid.step(n * self.dt)
+            fl = self.world.fluid
+            if hasattr(fl, "set_bodies"):
+                fl.set_bodies(self.world.bodies)
+            fl.step(n * self.dt)
         self._acc -= n*self.dt
         if self._acc > self.max_sub*self.dt: self._acc = 0.0  # Spiral-of-Death-Schutz
         self.substeps_done += n

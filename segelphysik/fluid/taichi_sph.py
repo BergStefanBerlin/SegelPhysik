@@ -135,6 +135,22 @@ class TaichiSphWater(FluidSolver):
         self.gf = ti.field(ti.f32, shape=())
         self.gf[None] = float(cfg.g)
 
+        # v0.3f: Koerper fuer einseitige Ausschlusskollision (Alternative 2):
+        # Partikel werden aus Koerpervolumen herausprojiziert, OHNE
+        # Rueckkraft auf den Koerper (Auftrieb/Drag bleiben beim
+        # Kontinuum-Modell aus forces.py - keine Doppelberechnung).
+        self.MAXB = 32
+        self._col_margin = 0.5 * self.dx
+        self.n_sph = ti.field(ti.i32, shape=())
+        self.sph_c = ti.Vector.field(3, ti.f32, shape=self.MAXB)
+        self.sph_r = ti.field(ti.f32, shape=self.MAXB)
+        self.n_box = ti.field(ti.i32, shape=())
+        self.box_c = ti.Vector.field(3, ti.f32, shape=self.MAXB)
+        self.box_h = ti.Vector.field(3, ti.f32, shape=self.MAXB)
+        self.box_q = ti.Vector.field(4, ti.f32, shape=self.MAXB)
+        self.n_sph[None] = 0
+        self.n_box[None] = 0
+
         self.pos.from_numpy(pos_np)
         self.vel.fill(0.0)
         self.rho.fill(self.rho0)
@@ -267,6 +283,110 @@ class TaichiSphWater(FluidSolver):
         for i in range(self.N):
             ti.atomic_max(self.vmax[None], self.vel[i].norm())
 
+    @ti.func
+    def _qrot(self, q, v):
+        """Rotation von v mit Quaternion q=(w,x,y,z) - identische
+        Konvention wie bodies.quat_rotate."""
+        w = q[0]
+        x = q[1]
+        y = q[2]
+        z = q[3]
+        t = 2.0 * ti.Vector([y * v[2] - z * v[1],
+                             z * v[0] - x * v[2],
+                             x * v[1] - y * v[0]])
+        return v + w * t + ti.Vector([x, y, z]).cross(t)
+
+    def set_bodies(self, bodies):
+        """Uebergibt die aktuellen Koerper an den Kollisionskernel
+        (vom Solver einmal pro Fluidschritt aufgerufen). Die Felder
+        sind MAXB-gross; taichi.from_numpy verlangt exakte Formen,
+        daher wird bis MAXB mit Nullen aufgefuellt (unbenutzte
+        Slots werden vom Kernel nie erreicht, da n_* die Schleifen
+        begrenzt)."""
+        s = [b for b in bodies if hasattr(b, "r")][:self.MAXB]
+        bx = [b for b in bodies if hasattr(b, "half")][:self.MAXB]
+        ns, nb = len(s), len(bx)
+        self.n_sph[None] = ns
+        self.n_box[None] = nb
+        cs = np.zeros((self.MAXB, 3), dtype=np.float32)
+        rs = np.zeros(self.MAXB, dtype=np.float32)
+        if ns:
+            cs[:ns] = np.array([b.pos for b in s], dtype=np.float32)
+            rs[:ns] = np.array([b.r for b in s], dtype=np.float32)
+        self.sph_c.from_numpy(cs)
+        self.sph_r.from_numpy(rs)
+        cb = np.zeros((self.MAXB, 3), dtype=np.float32)
+        hb = np.zeros((self.MAXB, 3), dtype=np.float32)
+        qb = np.zeros((self.MAXB, 4), dtype=np.float32)
+        qb[:, 0] = 1.0  # Identitaets-Quaternion fuer unbenutzte Slots
+        if nb:
+            cb[:nb] = np.array([b.pos for b in bx], dtype=np.float32)
+            hb[:nb] = np.array([b.half for b in bx], dtype=np.float32)
+            qb[:nb] = np.array([b.q for b in bx], dtype=np.float32)
+        self.box_c.from_numpy(cb)
+        self.box_h.from_numpy(hb)
+        self.box_q.from_numpy(qb)
+
+    @ti.kernel
+    def _k_body_collision(self):
+        """Einseitige Ausschlusskollision (v0.3f, Alternative 2):
+        Fluid-Partikel, die in einen Koerper eindringen, werden auf
+        die Oberflaeche projiziert (Kugel: radiale Projektion, Box:
+        Push-out entlang der tiefsten Penetrationsachse im Koerper-
+        frame) und ihre Einstrom-Geschwindigkeit genullt. Keine
+        Rueckkraft auf den Koerper - die Fluidwirkung auf den
+        Koerper liefert ausschliesslich das Kontinuum-Modell
+        (Archimedes + Drag aus forces.py)."""
+        for i in range(self.N):
+            # v0.4: nur Fluid-Partikel (0..N); Wandpartikel (N..M) sind
+            # statisch und koennen nicht mit Koerpern kollidieren
+            p = self.pos[i]
+            v = self.vel[i]
+            m = self._col_margin
+            for j in range(self.n_sph[None]):
+                c = self.sph_c[j]
+                rr = self.sph_r[j] + m
+                d = p - c
+                dist = d.norm()
+                if dist < rr and dist > 1e-9:
+                    n = d / dist
+                    p = c + n * rr
+                    vn = v.dot(n)
+                    if vn < 0.0:
+                        v = v - vn * n
+            for j in range(self.n_box[None]):
+                c = self.box_c[j]
+                hh = self.box_h[j]
+                q = self.box_q[j]
+                qc = ti.Vector([q[0], -q[1], -q[2], -q[3]])
+                pl = self._qrot(qc, p - c)
+                ex = abs(pl[0]) - (hh[0] + m)
+                ey = abs(pl[1]) - (hh[1] + m)
+                ez = abs(pl[2]) - (hh[2] + m)
+                # Taichi: Variablen, die nach der Verzweigung benutzt
+                # werden, muessen VOR der Verzweigung deklariert sein
+                nl = ti.Vector([0.0, 0.0, 0.0])
+                if ex < 0.0 and ey < 0.0 and ez < 0.0:
+                    if ex >= ey and ex >= ez:
+                        sgn = 1.0 if pl[0] >= 0.0 else -1.0
+                        pl = ti.Vector([sgn * (hh[0] + m), pl[1], pl[2]])
+                        nl = ti.Vector([sgn, 0.0, 0.0])
+                    elif ey >= ez:
+                        sgn = 1.0 if pl[1] >= 0.0 else -1.0
+                        pl = ti.Vector([pl[0], sgn * (hh[1] + m), pl[2]])
+                        nl = ti.Vector([0.0, sgn, 0.0])
+                    else:
+                        sgn = 1.0 if pl[2] >= 0.0 else -1.0
+                        pl = ti.Vector([pl[0], pl[1], sgn * (hh[2] + m)])
+                        nl = ti.Vector([0.0, 0.0, sgn])
+                    nw = self._qrot(q, nl)
+                    p = c + self._qrot(q, pl)
+                    vn = v.dot(nw)
+                    if vn < 0.0:
+                        v = v - vn * nw
+            self.pos[i] = p
+            self.vel[i] = v
+
     def step(self, dt):
         self._push()
         self.vmax[None] = 0.0
@@ -285,6 +405,7 @@ class TaichiSphWater(FluidSolver):
             self._k_density(dts)
             self._k_force(dts)
             self._k_integrate(dts)
+            self._k_body_collision()
         self._pull()
 
     @ti.kernel

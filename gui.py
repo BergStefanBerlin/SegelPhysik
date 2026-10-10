@@ -1,4 +1,4 @@
-"""Interaktive Echtzeit-GUI (v0.3c).
+"""Interaktive Echtzeit-GUI (v0.4).
 
 Aufruf:  python gui.py [--backend taichi|numpy] [--full] [--frames N]
                       [--no-depth-color]
@@ -13,7 +13,7 @@ Steuerung im Fenster:
   Linksklick Koerper an Klickposition einspawnen (Spec K8)
   q          Ende
 
-Neu in v0.3c: Wasser-Look (Vertex-Zellen-Fix, feineres Raster mit
+Neu in v0.4: Wasser-Look (Vertex-Zellen-Fix, feineres Raster mit
 Upsampling, Beleuchtung/Glanz, Spike-Cap an dx gekoppelt).
 """
 import argparse
@@ -42,12 +42,12 @@ def build_app(backend="taichi", small=True):
                 raise ImportError("taichi nicht verfuegbar")
             app.fluid_factory = TaichiSphWater
             app._build()
-            print(f"[v0.3c] Taichi-Backend: {app.sph.backend}  "
+            print(f"[v0.4] Taichi-Backend: {app.sph.backend}  "
                   f"({app.sph.n_particles} Partikel)")
         except Exception as e:
-            print(f"[v0.3c] Taichi nicht verfuegbar ({e}) -> NumPy-Referenz")
+            print(f"[v0.4] Taichi nicht verfuegbar ({e}) -> NumPy-Referenz")
     else:
-        print(f"[v0.3c] NumPy-Referenz ({app.sph.n_particles} Partikel)")
+        print(f"[v0.4] NumPy-Referenz ({app.sph.n_particles} Partikel)")
     return app
 
 
@@ -61,21 +61,22 @@ def main():
     args = ap.parse_args()
 
     from segelphysik.core.render import HeightFieldSurface
-    from segelphysik.render.vista import PyVistaRenderer
+    from segelphysik.render.vista import PyVistaRenderer, IsoSurfaceWater
 
     app = build_app(args.backend, small=not args.full)
     app.spawn_sphere(radius=1.0, density=300.0, position=(0, 0, 2.5))
-    app.spawn_box(edges=(2.0, 2.0, 2.0), density=700.0, position=(2.5, 0, 1.5))
 
-    cell_target = float(app.cfg.dx)   # v0.3c: ~dx-Raster (Upsampling im Renderer)
-    nx = max(8, int(round(app.cfg.basin['lx'] / cell_target)))
-    ny = max(8, int(round(app.cfg.basin['ly'] / cell_target)))
-    print(f'[v0.3c] Oberflaechenraster: {nx}x{ny} Zellen (~1.5*dx)')
-    surf = HeightFieldSurface(app.cfg.basin, nx=nx, ny=ny)
-    ren = PyVistaRenderer(app, nx=nx, ny=ny,
+    # v0.4: Isoflaeche des Dichtefelds statt Hoehenfeld
+    b = app.cfg.basin
+    water = IsoSurfaceWater(b['lx'], b['ly'], app.cfg.water['depth'],
+                            dx=float(app.cfg.dx), iso_frac=0.6)
+    print(f"[v0.4] Dichtefeld-Grid: {water.nx}x{water.ny}x{water.nz} "
+          f"(Zelle {water.cell:.2f} m), iso={water.iso}")
+    ren = PyVistaRenderer(app, nx=2, ny=2,
                           color_by_depth=not args.no_depth_color)
-    ren.attach(surf)
+    ren.skip_surf = True
     p = ren.build()
+    iso_actor = None
     state = {"paused": False, "quit": False, "kind": "sphere"}
 
     def on_key(key):
@@ -98,7 +99,7 @@ def main():
                              position=(float(np.random.uniform(-2, 2)), 0.0, 2.5))
         elif key == "n":
             state["kind"] = "box" if state["kind"] == "sphere" else "sphere"
-            print(f"[v0.3c] Spawn-Typ: {state['kind']}")
+            print(f"[v0.4] Spawn-Typ: {state['kind']}")
         elif key == "q":
             state["quit"] = True
 
@@ -119,15 +120,15 @@ def main():
             else:
                 app.spawn_box(edges=(2.0, 2.0, 2.0), density=700.0,
                               position=(target[0], target[1], 1.5))
-            print(f"[v0.3c] {state['kind']} bei "
+            print(f"[v0.4] {state['kind']} bei "
                   f"({target[0]:.2f}, {target[1]:.2f}) gespawnt")
         except ValueError as e:
-            print(f"[v0.3c] Spawn ignoriert: {e}")
+            print(f"[v0.4] Spawn ignoriert: {e}")
 
     try:
         p.track_click_position(side="left", callback=on_click)
     except Exception as e:  # sehr alte pyvista-Versionen
-        print(f"[v0.3c] Klick-Spawning nicht verfuegbar ({e})")
+        print(f"[v0.4] Klick-Spawning nicht verfuegbar ({e})")
 
     p.show(interactive_update=True, auto_close=False)
 
@@ -154,8 +155,35 @@ def main():
                            else 0.9 * fps_ema + 0.1 * inst_fps)
             pos = (app.sph.get_state()[0] if hasattr(app.sph, "get_state")
                    else app.sph.pos[:app.sph.n_real])
-            surf.update(pos)
-            ren.update(surf)
+            water.splat(pos)
+            m = water.mesh(ren.pv)
+            if m is not None and m.n_points > 3:
+                if iso_actor is None:
+                    iso_actor = p.add_mesh(
+                        m, color="#3a7bbf", opacity=0.75,
+                        smooth_shading=True, specular=0.8,
+                        specular_power=60, show_scalar_bar=False)
+                else:
+                    ok = False
+                    try:
+                        iso_actor.mapper.dataset_overwrite(m); ok = True
+                    except Exception:
+                        pass
+                    if not ok:
+                        try:
+                            iso_actor.mapper.dataset = m; ok = True
+                        except Exception:
+                            pass
+                    if not ok:
+                        p.remove_actor(iso_actor)
+                        iso_actor = p.add_mesh(
+                            m, color="#3a7bbf", opacity=0.75,
+                            smooth_shading=True, specular=0.8,
+                            specular_power=60, show_scalar_bar=False)
+            elif iso_actor is not None:
+                p.remove_actor(iso_actor)
+                iso_actor = None
+            ren.update(None)
             if frames % 15 == 0 and rtf is not None:
                 ren.set_hud(f"RTF {rtf:5.2f} | {fps_ema:5.1f} FPS | "
                             f"t = {app.world.time:6.1f} s"

@@ -23,8 +23,11 @@ class HeightFieldSurface:
         self.X, self.Y = np.meshgrid(xs, ys)
         self.Z = np.full_like(self.X, self.fill)
 
-    def update(self, pos):
+    def update(self, pos, exclude=None):
         """pos: (N,3) Array der Fluido-Partikel (ohne Geister).
+        exclude: optional (M,3) Punkte, deren Nahe Umgebung ignoriert
+        wird (v0.3g: an Koerperhullen projizierte Partikel - sie sind
+        kein freies Wasser und wuerden als falscher "Berg" erscheinen).
 
         v0.3c: vollstaendig vektorisiert - sortiere nach Zelle (primar)
         und z (sekundaer, aufsteigend); der LETZTE Treffer je Zelle ist
@@ -35,6 +38,16 @@ class HeightFieldSurface:
         if len(pos) == 0:
             return
         pos = np.asarray(pos)
+        if exclude is not None and len(exclude) > 0:
+            ex = np.asarray(exclude)
+            keep = np.ones(len(pos), dtype=bool)
+            for j in range(len(ex)):
+                keep &= (np.abs(pos[:, 0] - ex[j, 0]) > ex[j, 3]) \
+                     | (np.abs(pos[:, 1] - ex[j, 1]) > ex[j, 3]) \
+                     | (np.abs(pos[:, 2] - ex[j, 2]) > ex[j, 3])
+            pos = pos[keep]
+            if len(pos) == 0:
+                return
         ix = np.clip(((pos[:, 0] + self.lx/2) / self.lx * self.nx).astype(int),
                      0, self.nx - 1)
         iy = np.clip(((pos[:, 1] + self.ly/2) / self.ly * self.ny).astype(int),
