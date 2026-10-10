@@ -2,7 +2,7 @@
 
 **Status:** Verbindliche Spezifikation Version 2 – ersetzt doc/SPEC.md (v0.2.5)
 und die unter „Spec v1.1" geplante Anpassung. Basis: Release v0.4 (10.10.2026).
-**Version:** 2.2.1 · **Datum:** 10.10.2026
+**Version:** 2.3 · **Datum:** 10.10.2026
 **Zweck:** Bewusster Scope-Rücksetzer. Die Simulation reduziert sich auf
 hydrostatischen Auftrieb an statischem Wasser – jetzt für nichthomogene Körper
 mit nichthomogener Massenverteilung inkl. Aufrichtmoment. Wind-, Wellen- und
