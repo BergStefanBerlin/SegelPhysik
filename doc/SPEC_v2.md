@@ -2,10 +2,10 @@
 
 **Status:** Verbindliche Spezifikation Version 2 – ersetzt doc/SPEC.md (v0.2.5)
 und die unter „Spec v1.1" geplante Anpassung. Basis: Release v0.4 (10.10.2026).
-**Version:** 2.2 · **Datum:** 10.10.2026
+**Version:** 2.2.1 · **Datum:** 10.10.2026
 **Zweck:** Bewusster Scope-Rücksetzer. Die Simulation reduziert sich auf
 hydrostatischen Auftrieb an statischem Wasser – jetzt für nichthomogene Körper
-mit nichthomogener Masserverteilung inkl. Aufrichtmoment. Wind-, Wellen- und
+mit nichthomogener Massenverteilung inkl. Aufrichtmoment. Wind-, Wellen- und
 Widerstandsphysik entfallen. Die grafische Darstellung bleibt unverändert.
 
 **Leitprinzip (v2.1):** Massenschwerpunkt S und Auftriebsanschwerpunkt B
@@ -185,7 +185,9 @@ $$\mathbf{F}_d = -c\,\mathbf{v}$$
   Bojenkegels klingt in v2 allein über die Kopplung Translation↔Rotation ab.
   Falls K6′ dadurch nicht innerhalb 20 s einschwingt, ist c zu erhöhen oder
   ein analoger Term M_d = −c_rot·ω (Default 0) vorzusehen – Entscheidung
-  fällt bei der Implementierung, wird im Testreport dokumentiert.
+  fällt zu BEGINN der Implementierung (mit einem 20-s-Testlauf des
+  invertiert gespawnten Bojenkegels), nicht erst nach einem roten K6′;
+  Ergebnis wird im Testreport dokumentiert.
 - Verifizierung: Bojenkegel aus 15 cm Versatz erreicht mit c = 2000 N·s/m
   die Gleichgewichtstauchtiefe 1,5326 m innerhalb 20 s (Anhang A).
 
@@ -302,6 +304,10 @@ als Fixture hinterlegen:
 | 20° | 404,3 N·m | 327,3 N·m | +23,5 % |
 
 Vorzeichenkonvention: aufrichtend (gegenläufig zur Krängung) positiv.
+Definition der Spalte „Abweichung der Näherung":
+Δ = (M_exakt − M_Näherung) / M_Näherung · 100 %.
+Ein negativer Wert bedeutet: die Kleine-Winkel-Formel überschätzt das
+Moment bei diesem Winkel; ein positiver: sie unterschätzt es.
 
 ## 9. Akzeptanzkriterien (Definition of Done für v2)
 
@@ -354,7 +360,14 @@ Gegenprobe), Dichteprofil-Serialisierung, Preset-Spawn.
   bei Krängung um S mit V_sub-Konstanthaltung (Sekantenverfahren auf die
   Schwimmebene) bestimmt; Metazentrum-Näherung als Gegenprobe.
 - 10.10.2026 (v2.2): Konservativitätsprüfung – ohne Dämpfung schwingt der
-  Bojenkegel (Startversatz 5/15 cm bzw. −10 %) nach 20 s noch mit unverminderter
-  Amplitude (± 5 bis ± 15,5 cm); die stationären Kriterien K1′/K5′/K6′ wären
-  unerfüllbar. Mit LinearDamping c = 2000 N·s/m wird die Gleichgewichtstauchtiefe
-  1,5326 m innerhalb 20 s erreicht (Fehler < 0,01 %) → Einführung von Abschnitt 5.4.
+  Bojenkegel nach 20 s noch mit unverminderter Amplitude; die stationären
+  Kriterien K1′/K5′/K6′ wären unerfüllbar. Mit LinearDamping c = 2000 N·s/m
+  wird die Gleichgewichtstauchtiefe 1,5326 m innerhalb 20 s erreicht
+  (Fehler < 0,01 %) → Einführung von Abschnitt 5.4.
+  Startbedingungen der Prüfläufe (reproduzierbar): reine Tauch-Oszillation
+  mit z-Versatz +5 cm und +15 cm gegenüber der Gleichgewichtslage
+  (Tiefgang 1,5326 m), Anfangsgeschwindigkeit null, keine Krängung;
+  gemessene Schwingamplituden ± 5 cm bzw. ± 15 cm. Der Eintrag „−10 %"
+  bezieht sich auf denselben Versatz als Bruchteil des Tiefgangs
+  (−10 % von 1,5326 m ≈ −15,3 cm) und ist damit durch den 15-cm-Lauf
+  abgedeckt.
