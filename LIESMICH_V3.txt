@@ -1,0 +1,21 @@
+SegelPhysik V3 - kinematische Demo (KOMPLETT inkl. Original-Grafik)
+====================================================================
+
+Dieses Paket enthaelt die Original-Render-Pipeline
+(segelphysik/render/vista.py, bytegetreu aus dem v3-Branch).
+Sie wird von grafik_bruecke.py genutzt, aber NIE veraendert.
+
+Entpacken im Repo-Root (ueberschreibt gleichnamige Dateien):
+  segelphysik/demo_app.py             Einstiegspunkt
+  segelphysik/grafik_bruecke.py       verbindet Demo <-> Original-Grafik
+  segelphysik/render/                 ORIGINAL v0.4-Grafik (unangetastet)
+  segelphysik/core/bewegung.py        phi(t)=omega*t, 360 Grad/15 s
+  segelphysik/core/koerper_formen.py  Kegel/Quader/Pyramide
+  segelphysik/steuerung.py            Tasten/Panel
+  tests/                              14 Tests
+
+Start:
+  python -m pytest tests/ -q
+  python -m segelphysik.demo_app
+
+Tasten: Leertaste Pause | r Reset | 1/2/3 Koerper | +/- Tempo | q Ende

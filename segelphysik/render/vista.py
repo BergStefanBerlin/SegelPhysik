@@ -74,7 +74,7 @@ class IsoSurfaceWater:
       (Frame 1): Median der Tiefwasserzellen = homogene Dichte. Damit
       ist iso=0.6 immer richtig, egal wie Kernel/Abstand wirklich sind.
     - Neumann-Rand an den Beckenwaenden: Dichte wird gespiegelt, die
-      Isoflaeche stoesst bündig an die Wand (kein Einrollen mehr).
+      Isoflaeche stoesst buendig an die Wand (kein Einrollen mehr).
     - Splatting via bincount (C-Tempo) statt np.add.at (~20x schneller).
     """
 
@@ -178,7 +178,7 @@ class IsoSurfaceWater:
                              minlength=nx * ny * nz
                              ).reshape(nx, ny, nz).astype(np.float32)
         # Neumann-Rand: Dichte an Beckenwaenden/Boden spiegeln, damit
-        # die Isoflaeche bündig anstoesst (kein Einrollen am Rand).
+        # die Isoflaeche buendig anstoest (kein Einrollen am Rand).
         if nx > 2:
             g[0, :, :] = g[1, :, :]
             g[-1, :, :] = g[-2, :, :]
