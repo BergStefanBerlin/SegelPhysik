@@ -114,6 +114,21 @@ class GrafikBruecke:
                                "pd": pd, "aktiv": True}
         self._einhaengen(name)
 
+    def mesh_setzen(self, name, punkte, gesichter, position=(0.0, 0.0, 0.0),
+                    farbe_unten=FARBE_UNTEN, farbe_oben=FARBE_OBEN):
+        """Haengt ein fertiges Dreiecks-Mesh ein (z. B. Boot). achse=None
+        bedeutet: statisch, keine Rotation."""
+        import pyvista as pv
+        pd = _dreiecks_polydaten(pv, punkte, gesichter)
+        pd["referenz_punkte"] = pd.points.copy()
+        self._koerper[name] = {"typ": "mesh", "dims": {}, "achse": None,
+                               "phase": 0.0,
+                               "position": np.asarray(position, float),
+                               "pd": pd, "aktiv": True,
+                               "farbe_unten": farbe_unten,
+                               "farbe_oben": farbe_oben}
+        self._einhaengen(name)
+
     def _actor_namen(self, name):
         return ("koerper_%s_unten" % name, "koerper_%s_oben" % name,
                 "kontur_%s" % name)
@@ -127,20 +142,23 @@ class GrafikBruecke:
     def _actors_aktualisieren(self, name, welt):
         import pyvista as pv
         p = self._plotter
-        pd = self._koerper[name]["pd"]
+        k = self._koerper[name]
+        farbe_u = k.get("farbe_unten", FARBE_UNTEN)
+        farbe_o = k.get("farbe_oben", FARBE_OBEN)
+        pd = k["pd"]
         u_p, u_t, o_p, o_t, kontur = ws.schneide_am_wasser(welt, _gesichter(pd))
         n_unten, n_oben, n_kontur = self._actor_namen(name)
 
         if len(u_t):
             un = _dreiecks_polydaten(pv, u_p, u_t)
-            p.add_mesh(un, color=FARBE_UNTEN, opacity=0.95,
+            p.add_mesh(un, color=farbe_u, opacity=0.95,
                        show_edges=False, smooth_shading=True, name=n_unten)
         else:
             p.remove_actor(n_unten)
 
         if len(o_t):
             ob = _dreiecks_polydaten(pv, o_p, o_t)
-            p.add_mesh(ob, color=FARBE_OBEN, opacity=0.95,
+            p.add_mesh(ob, color=farbe_o, opacity=0.95,
                        show_edges=False, smooth_shading=True, name=n_oben)
         else:
             p.remove_actor(n_oben)
@@ -171,9 +189,12 @@ class GrafikBruecke:
         for name, k in self._koerper.items():
             if not k["aktiv"]:
                 continue
-            R, _ = kin.koerper_pose(t, achse=k["achse"], phase=k["phase"])
             pd = k["pd"]
-            welt = pd["referenz_punkte"] @ R.T + k["position"]
+            if k["achse"] is None:      # statisch (z. B. Boot)
+                welt = pd["referenz_punkte"] + k["position"]
+            else:
+                R, _ = kin.koerper_pose(t, achse=k["achse"], phase=k["phase"])
+                welt = pd["referenz_punkte"] @ R.T + k["position"]
             pd.points = welt
             self._actors_aktualisieren(name, welt)
         return True

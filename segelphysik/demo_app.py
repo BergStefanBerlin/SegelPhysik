@@ -3,7 +3,7 @@
 Animation ueber die dokumentierte interactive_update-Schleife
 (funktionsunabhaengig von PyVista-Timer-APIs -> Rotation laeuft immer).
 Start: python -m segelphysik.demo_app
-Tasten: 1/2/3 Koerper ein/aus | a alle an | Leertaste Pause | r Reset
+Tasten: 1/2/3 Koerper ein/aus | 4 Boot | a alle an | Leertaste Pause | r Reset
         +/- (auch Pfeile) Wiedergabefaktor | q Beenden
 """
 from __future__ import annotations
@@ -58,7 +58,8 @@ def main():
         bruecke.aktualisieren(uhr.t)
         phi = _phi_grad(uhr.t)
         pause = "" if panel.laeuft else "   [PAUSE]"
-        aktiv = "/".join(n for n, _ in TYPEN if sichtbar.get(n))
+        aktiv = "/".join([n for n, _ in TYPEN if sichtbar.get(n)]
+                         + (["boot"] if sichtbar.get("boot") else []))
         bruecke.status(
             "Aktiv: %s   phi(t): %8.2f Grad   Umdrehung: %d   "
             "Animationszeit: %7.2f s   Wiedergabe: %.2fx%s"
@@ -68,11 +69,28 @@ def main():
     for name, typ in TYPEN:
         spawne(name, typ)
 
+    # Boot (statisch auf der Wasserlinie, einfarbig hellgrau) - Taste 4.
+    try:
+        from .core import boot_bau
+        b_punkte, b_gesichter = boot_bau.baue_boot()
+        bruecke.mesh_setzen("boot", b_punkte, b_gesichter,
+                            position=(0.0, 2.5, 0.0),
+                            farbe_unten="#c9c9c9", farbe_oben="#c9c9c9")
+        sichtbar["boot"] = True
+    except (FileNotFoundError, ImportError) as fehler:
+        print("Hinweis: Boot nicht geladen:", fehler)
+
     # Tasten: 1/2/3 = einzelner Koerper ein/aus, a = alle an.
     for index in range(3):
         plotter.add_key_event(str(index + 1), lambda i=index: umschalten(i))
     plotter.add_key_event("a", lambda: [bruecke.sichtbar_setzen(n, True)
                                         for n, _ in TYPEN])
+
+    def boot_umschalten():
+        if "boot" in sichtbar:
+            sichtbar["boot"] = not sichtbar["boot"]
+            bruecke.sichtbar_setzen("boot", sichtbar["boot"])
+    plotter.add_key_event("4", boot_umschalten)
     plotter.add_key_event("space", lambda: panel.umschalten())
     plotter.add_key_event("r", uhr.ruecksetzen)
     for taste in ("plus", "up", "kp_add"):
