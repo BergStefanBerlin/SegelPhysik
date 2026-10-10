@@ -1,8 +1,12 @@
-"""PyVista-Renderer (v0.3a.1): Echtzeit-3D mit Orbit-Steuerung.
+"""PyVista-Renderer (v0.3b): Echtzeit-3D mit Orbit-Steuerung.
 
 v0.3a.1: Robuste Oberflaechen-Nachbearbeitung (_smooth_surface):
 NaN-Loecher werden aus Nachbarwerten gefuellt, Spritzer-Nadeln
 werden gegen den lokalen Median gekappt -> geschlossene Wasserflaeche.
+
+v0.3b: Tiefen-/Hoehenfaerbung der Oberflaeche (color_by_depth),
+HUD-Textzeile (set_hud) fuer RTF/FPS, screen_to_water() fuer
+Klick-Spawning (Spec K8).
 """
 import numpy as np
 
@@ -20,7 +24,8 @@ def _surface_polydata(pv, X, Y, Z):
 
 
 class PyVistaRenderer:
-    def __init__(self, app, nx=64, ny=64, off_screen=False):
+    def __init__(self, app, nx=64, ny=64, off_screen=False,
+                 color_by_depth=True):
         import pyvista as pv
         self.pv = pv; self.app = app
         b = app.cfg.basin
@@ -32,6 +37,10 @@ class PyVistaRenderer:
         self.X, self.Y = np.meshgrid(self._xs, self._ys)
         self._plotter = None; self._surf = None; self._bodies = {}
         self.off_screen = off_screen
+        self.color_by_depth = bool(color_by_depth)
+        self._elev_key = "elev"
+        self._hud_actor = None
+        self._frame = 0
 
     def attach(self, surface):
         # Renderer und Heightfield teilen sich EIN Gitter:
@@ -41,14 +50,7 @@ class PyVistaRenderer:
 
     # ---------- Oberflaechen-Nachbearbeitung ----------
     def _smooth_surface(self, Z):
-        """Loecher fuellen + Nadeln kappen (v0.3a.1).
-
-        1) NaN-Zellen erhalten iterativ den Mittelwert ihrer finiten
-           Nachbarn; isolierte Rest-NaN fallen auf den Feldmedian.
-        2) Ausreisser > 0.35 m ueber dem lokalen 3x3-Mittel werden auf
-           dieses gekappt (Spritz-Nadeln gehoeren nicht in die
-           geschlossene Darstellungsflaeche).
-        """
+        """Loecher fuellen + Nadeln kappen (v0.3a.1)."""
         Z = np.array(Z, dtype=np.float64, copy=True)
         bad = ~np.isfinite(Z)
         if bad.all():
@@ -115,7 +117,7 @@ class PyVistaRenderer:
                 seg.append((x, y, -d)); seg.append((x, y, 0.0))
         p.add_mesh(pv.line_segments_from_points(np.array(seg)),
                    color="gray", line_width=2)
-        # Maßstab 1 m
+        # Massstab 1 m
         p.add_mesh(pv.Line((0.0, -ly/2, 0.05), (1.0, -ly/2, 0.05)),
                    color="black", line_width=5)
         p.add_mesh(pv.Plane(center=(0, 0, -d), direction=(0, 0, 1),
@@ -123,20 +125,76 @@ class PyVistaRenderer:
                    color="lightsteelblue", opacity=0.25)
         self._surf = _surface_polydata(pv, self.X, self.Y,
                                        np.zeros_like(self.X))
-        p.add_mesh(self._surf, color="tab:blue", opacity=0.55,
-                   show_edges=False)
+        if self.color_by_depth:
+            # Hoehe relativ zum Ruhewasser: Blau-Abstufung (M4-Kosmetik)
+            self._surf[self._elev_key] = np.zeros(self.X.size,
+                                                  dtype=np.float64)
+            p.add_mesh(self._surf, scalars=self._elev_key, cmap="Blues_r",
+                       opacity=0.65, show_edges=False, clim=(-0.4, 0.4),
+                       show_scalar_bar=False)
+        else:
+            p.add_mesh(self._surf, color="tab:blue", opacity=0.55,
+                       show_edges=False)
         p.add_axes(xlabel="x (Bug)", ylabel="y (Backbord)", zlabel="z")
-        p.add_text("SegelPhysik v0.3a | [g/G] g  [w/W] Wind  [space] Pause"
-                   "  [r] Reset  [s] Kugel  [q] Ende",
+        p.add_text("SegelPhysik v0.3b | [g/G] g  [w/W] Wind  [space] Pause"
+                   "  [r] Reset  [s] Kugel  [n] Typ  [Klick] Spawn  [q] Ende",
                    position="upper_left", font_size=10)
+        # HUD rechts oben (RTF/FPS), leer bis zur ersten Aktualisierung
+        self._hud_actor = p.add_text(" ", position="upper_right",
+                                     font_size=10, color="black")
         self._plotter = p
         return p
+
+    # ---------- HUD ----------
+    def set_hud(self, text):
+        """HUD-Zeile (RTF/FPS/Simulationszeit) aktualisieren."""
+        a = self._hud_actor
+        if a is None:
+            return
+        if hasattr(a, "SetInput"):
+            a.SetInput(str(text))
+            a.Modified()
+
+    # ---------- Klick -> Wasserebene (Spec K8) ----------
+    def screen_to_water(self, x, y):
+        """Bildschirmkoordinate -> Punkt auf der Wasserebene z = 0.
+
+        Kamerastrahl durch den Bildpunkt, Schnitt mit z = 0; das
+        Ergebnis wird ins Beckeninnere geklemmt. Rueckgabe None, wenn
+        der Strahl die Ebene nicht schneidet.
+        """
+        p = self._plotter
+        if p is None:
+            return None
+        import vtk
+        coord = vtk.vtkCoordinate()
+        coord.SetCoordinateSystemToDisplay()
+        coord.SetValue(float(x), float(y))
+        w = np.asarray(coord.GetComputedWorldValue(p.renderer),
+                       dtype=np.float64)
+        cam = p.camera
+        pos = np.asarray(cam.position, dtype=np.float64)
+        d = w - pos
+        if abs(d[2]) < 1e-9:
+            return None
+        t = -pos[2] / d[2]
+        if t <= 0.0:
+            return None
+        pt = pos + t * d
+        r = 0.75  # Randmargin: Koerper sollen ganz im Becken bleiben
+        cx = min(max(float(pt[0]), -self.lx/2 + r), self.lx/2 - r)
+        cy = min(max(float(pt[1]), -self.ly/2 + r), self.ly/2 - r)
+        return cx, cy
 
     # ---------- Aktualisierung ----------
     def update(self, surface):
         Z = self._smooth_surface(surface.Z)
         self._surf.points = np.column_stack(
             [self.X.ravel(), self.Y.ravel(), Z.ravel()])
+        if self.color_by_depth and self._frame % 3 == 0:
+            # Farbskala nur jeden 3. Frame neu hochladen (Perf: VTK-Upload)
+            self._surf[self._elev_key] = Z.ravel()
+        self._frame += 1
         from ..core.bodies import Sphere
         alive = set()
         for k, b in enumerate(self.app.world.bodies):

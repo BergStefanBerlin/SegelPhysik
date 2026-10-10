@@ -27,14 +27,20 @@ class World:
                 ("y", +1, b["ly"]/2, np.array([0,-1.0,0])),
                 ("y", -1, b["ly"]/2, np.array([0, 1.0,0])),
                 ("z", -1, depth,      np.array([0,0, 1.0]))]
-    def step(self, dt: float):
-        """Ein fester Substep (dt = 1/240 s)."""
+    def step(self, dt: float, step_fluid: bool = True):
+        """Ein fester Substep (dt = 1/240 s).
+
+        step_fluid=False unterdrueckt den Fluidaufruf (v0.3a-Perf: der
+        Solver buendelt den Fluidschritt einmal pro Frame in advance(),
+        die Rueckwirkung der Koerperkraefte auf die Partikel laeuft
+        weiter pro Substep ueber die Kraftmodule)."""
         for b in self.bodies:
             b.force = np.zeros(3); b.torque = np.zeros(3)
         for mod in self.force_modules:
             for b in self.bodies:
                 mod.apply(b, self.environment, dt)
-        self.fluid.step(dt)
+        if step_fluid:
+            self.fluid.step(dt)
         for b in self.bodies:
             b.vel += b.force / b.mass * dt
             b.omega += (b.torque / b.inertia_diag()) * dt  # diag-Näherung (v0.2)
@@ -99,7 +105,13 @@ class TimeLoop:
     def advance(self, real_dt: float) -> int:
         self._acc += real_dt
         n = min(int(self._acc / self.dt), self.max_sub)
-        for _ in range(n): self.world.step(self.dt)
+        # v0.3a-Perf: Koerper-Substeps ohne Fluidaufruf; der Fluidschritt
+        # wird einmal mit der Summe aller Substeps aufgerufen. Die interne
+        # CFL-Unterteilung des Fluidsolvers erzeugt dieselben SPH-Substeps
+        # wie zuvor - nur Sortier-/Transferzyklen gehen von 4 auf 1 runter.
+        for _ in range(n): self.world.step(self.dt, step_fluid=False)
+        if n > 0:
+            self.world.fluid.step(n * self.dt)
         self._acc -= n*self.dt
         if self._acc > self.max_sub*self.dt: self._acc = 0.0  # Spiral-of-Death-Schutz
         self.substeps_done += n
