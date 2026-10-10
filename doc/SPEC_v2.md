@@ -2,10 +2,10 @@
 
 **Status:** Verbindliche Spezifikation Version 2 – ersetzt doc/SPEC.md (v0.2.5)
 und die unter „Spec v1.1" geplante Anpassung. Basis: Release v0.4 (10.10.2026).
-**Version:** 2.1 · **Datum:** 10.10.2026
+**Version:** 2.2 · **Datum:** 10.10.2026
 **Zweck:** Bewusster Scope-Rücksetzer. Die Simulation reduziert sich auf
 hydrostatischen Auftrieb an statischem Wasser – jetzt für nichthomogene Körper
-mit nichthomogener Massenverteilung inkl. Aufrichtmoment. Wind-, Wellen- und
+mit nichthomogener Masserverteilung inkl. Aufrichtmoment. Wind-, Wellen- und
 Widerstandsphysik entfallen. Die grafische Darstellung bleibt unverändert.
 
 **Leitprinzip (v2.1):** Massenschwerpunkt S und Auftriebsanschwerpunkt B
@@ -34,15 +34,18 @@ Eintauchwinkel, nicht nur in der Ruhelage.
 | §4 | Körper sind nicht mehr homogen: Masse/Schwerpunkt/Trägheitstensor aus Dichteverteilung ρ(x) (Abschnitt 4/5) |
 | §5 | Starrkörper-Solver mit vollständiger Rotation: Quaternion-Orientierung, voller Trägheitstensor im Körperframe, Kreiselterm ω×(Iω) |
 | §5 | Auftrieb analytisch aus Eintauchgeometrie (exakter Ebenen-Clip), nicht aus Partikelfeld |
+| §5 | Statt Drag/Stokes: ein einziger, als nicht-physikalisch dokumentierter linearer Dämpfungsterm F_d = −c·v (Abschnitt 5.4, neu in v2.2) |
 | §6 | Wasseroberfläche = statische, transparente Ebene bei z = 0 (Tiefenfärbung, Zweiton-Körper, Wasserlinien-Kontur bleiben); Kraftpfeile erweitert um Auftriebsvektor in B und Gewichtspfeil in S |
 | §8 | Neue Kriterien K1′–K13′ (Abschnitt 9) |
 
 ### Neu
 - Dichteverteilungen: zusammengesetzte Primitive mit je konstanter Dichte;
-  Kegel zusätzlich mit linearem Dichteprofil entlang der Achse (Abschnitt 4).
+  Kegel zusätzlich mit linearem Dichteprofil entlang der Achse (Abschnitt 4.2).
 - Auftriebsmoment M_A = (r_B − r_S) × F_A → Metazentrum-Stabilität,
   passives Aufrichten/Kippen (Abschnitt 5).
 - Exakte Eintauchgeometrie für beliebige Orientierung (Abschnitt 5.2, v2.1).
+- Linearer Dämpfungsterm als Ersatz für die entfallenen Dissipationsmechanismen
+  (Abschnitt 5.4, v2.2) – ohne ihn kommen schwimmende Körper nicht zur Ruhe.
 - Referenzkörper „Bojenkegel" mit geschlossenen Sollwerten und exakten
   Referenzmomenten (Abschnitt 8).
 - Spawn-Presets im UI (Abschnitt 7).
@@ -89,6 +92,19 @@ Dichteverteilung ρ(x,y,z) im Körperframe. Masse, Schwerpunkt und Trägheitsten
 werden daraus integriert (Abschnitt 5.1) – niemals als Dichte × Volumen mit
 Mittelpunktsannahme.
 
+### 4.2 Dichtemodelle (beide verbindlich)
+1. **Konstant pro Primitive:** Ein Körper ist die Vereinigung von Teil-
+   primitiven (Kugeln, Quader, Kegel) mit je konstanter Dichte ρ_i.
+   Überlappungen sind zu vermeiden; falls vorhanden, wird das erste Primitive
+   prioritär gezählt (dokumentiertes Verhalten).
+2. **Linearer Achsen-Profile (Kegel):** ρ(s) = ρ_tip + (ρ_base − ρ_tip)·s/H
+   mit s = Abstand von der Kegelspitze entlang der Symmetrieachse.
+
+Begründung der Wahl gegenüber einem Voxel-Gitter ρ(x): Masse, Schwerpunkt und
+Trägheitstensor sind für beide Modelle analytisch geschlossen integrierbar
+(exakt testbar, kein Diskretisierungsfehler in den Referenzwerten), und das
+UI bleibt schlank. Ein Voxel-Gitter bleibt als späterer Ausbaustufen-Kandidat
+(Abschnitt 11) und als Debug-Werkzeug (Abschnitt 5.2).
 
 ### 4.3 Konfiguration
 Dichteverteilungen werden deklarativ in der Szenen-JSON definiert
@@ -120,7 +136,7 @@ und pro Zeitschritt über die Rotation transformiert: I_welt = R·I_körper·R�
 ### 5.2 Exakte Eintauchgeometrie bei beliebiger Orientierung (Pflichtverfahren)
 
 Verdrängtes Volumen und Angriffspunkt B werden aus dem **exakten Schnitt**
-der Körpermitte mit der Wasserebene z = 0 bestimmt – für jeden Krängungs- und
+der Körpermesh mit der Wasserebene z = 0 bestimmt – für jeden Krängungs- und
 Eintauchwinkel, ohne Kleine-Winkel- oder Achsenparallelitäts-Näherung:
 
 - **Verfahren:** Polyeder-Ebenen-Clip. Der Körper liegt als geschlossene
@@ -147,7 +163,33 @@ dieser beiden Kräfte – keine separate Metazentrum-Implementierung in der
 Physik. Die Metazentrum-Formel dient ausschließlich als analytischer
 Vergleichswert in Tests (Abschnitt 8/9).
 
-### 5.4 Gleichgewicht und Stabilität (analytische Referenz)
+### 5.4 Dämpfung (nicht-physikalisch, verbindlich)
+
+Da hydrodynamischer Widerstand und Stokes-Dämpfung in v2 entfallen, wäre das
+System sonst vollständig konservativ: schwimmende Körper schwingen ohne
+Abklingen um ihre Gleichgewichtslage (numerisch verifiziert: Amplitude bleibt
+nach 20 s konstant). Damit die Akzeptanzkriterien K1′/K5′/K6′ stationäre
+Endlagen prüfen können, gilt:
+
+$$\mathbf{F}_d = -c\,\mathbf{v}$$
+
+- **c:** globaler Dämpfungskoeffizient, Default **2000 N·s/m**, UI-änderbar,
+  im Parameterobjekt serialisiert. c = 0 zulässig (reine Hydrostatik).
+- **Kennzeichnung:** Der Term ist NICHT physikalisch begründet (kein
+  Drag-Gesetz, keine Geschwindigkeitsabhängigkeit 2. Ordnung) und dient
+  ausschließlich der numerischen Beruhigung. Er ist im Code als separates,
+  abschaltbares Kraftmodul `LinearDamping` zu implementieren – nicht mit dem
+  späteren physikalischen Widerstandsmodul (v2.1-Ausbau, Abschnitt 11) zu
+  vermischen.
+- Kein Drehmomentanteil (keine Rotationsdämpfung); das Aufrichtpendel des
+  Bojenkegels klingt in v2 allein über die Kopplung Translation↔Rotation ab.
+  Falls K6′ dadurch nicht innerhalb 20 s einschwingt, ist c zu erhöhen oder
+  ein analoger Term M_d = −c_rot·ω (Default 0) vorzusehen – Entscheidung
+  fällt bei der Implementierung, wird im Testreport dokumentiert.
+- Verifizierung: Bojenkegel aus 15 cm Versatz erreicht mit c = 2000 N·s/m
+  die Gleichgewichtstauchtiefe 1,5326 m innerhalb 20 s (Anhang A).
+
+### 5.5 Gleichgewicht und Stabilität (analytische Referenz)
 Schwimmebene: m = ρ_W·V_sub. Anfangsstabilität (Kleine-Winkel-Näherung):
 $$GM = KB + BM - KG, \qquad BM = \frac{I_{wp}}{V_{sub}}$$
 mit KB/KG = Höhe von B/S über dem Kiel, I_wp = Flächenmoment 2. Ordnung der
@@ -156,18 +198,18 @@ Näherung weicht beim Bojenkegel bei 10° um ≈ 5,6 % ab (verifiziert), bei 20�
 um ≈ 24 % – daher prüfen die Akzeptanzkriterien gegen exakte Referenzmomente
 (Abschnitt 8.2), nicht gegen die Formel.
 
-### 5.5 Starrkörper-Solver
+### 5.6 Starrkörper-Solver
 - Translation: semi-implizite Euler mit F = m·a.
 - Rotation: Quaternion-Orientierung q, Winkelgeschwindigkeit ω;
   ω̇ = I_körper⁻¹(M_körper − ω × (I_körper·ω)) im Körperframe (Kreiselterm
   verpflichtend). Quaternionen werden nach jedem Schritt renormalisiert.
 - Kollisionen Körper↔Körper sowie Körper↔Wände/Boden unverändert
-  (impulsbasiert, μ = 0,5, e = 0,3, Defaults UI-änderbar).
+  (impulsbasiert, μ = 0,5, e = 0,3, Defaults UI-änderbar, siehe Abschnitt 6).
 - Keine Partikel-Interaktion (statisches Wasser; die frühere einseitige
   Partikel↔Körper-Kollision entfällt mit dem SPH-Rückzug aus der
   Physikschleife).
 
-### 5.6 Zeitschritt & Determinismus
+### 5.7 Zeitschritt & Determinismus
 Unverändert: Δt = 1/240 s, Akkumulator-Muster, Substeps-Obergrenze (Default 8),
 Realtime-Factor ≈ 1, reproduzierbar bei fixem Seed und Substeps (K9′).
 
@@ -189,8 +231,9 @@ Unverändert gegenüber v0.2.5 §6 mit folgenden Festlegungen:
 - **Status-Panel** (pro gewähltem Körper): Position, |v|, Orientierung
   (Quaternion/Euler), Tiefgang, V_verdrängt, m, r_S, r_B, resultierende
   Kraft, Moment, GM-Schätzwert.
-- **Kontrollpanel:** g, Zeitsteuerung (Pause/Schritt/Reset), Spawn mit
-  Presets (§4.3) inkl. Dichteprofil-Parameter, Beckenmaße (nach Reset).
+- **Kontrollpanel:** g, Dämpfung c (inkl. 0 = aus), Kollisionsparameter
+  μ und e, Zeitsteuerung (Pause/Schritt/Reset), Spawn mit Presets (§4.3)
+  inkl. Dichteprofil-Parameter, Beckenmaße (nach Reset).
   Entfallen: Wind-Regler, Partikelanzahl, Δx/h.
 
 ## 7. Technische Rahmenbedingungen & Erweiterbarkeit
@@ -200,10 +243,11 @@ Unverändert gegenüber v0.2.5 §6 mit folgenden Festlegungen:
   Ausbaustufen (kein Abnahmekriterium in v2).
 - §7.1 aus v0.2.5 bleibt verbindlich mit Anpassungen:
   - SI-Einheiten, zentrales Parameterobjekt (JSON/YAML) ohne hart kodierte
-    Konstanten – ohne Wind/c_w/η-Parameter, dafür mit Dichteprofil-Parametern.
+    Konstanten – ohne Wind/c_w/η-Parameter, dafür mit Dichteprofil-Parametern
+    und Dämpfungskoeffizient c.
   - Kraftmodul-Schnittstelle apply(body, environment, dt) -> Kraft/Moment
-    bleibt; aktive Module in v2: Buoyancy, Gravity. Drag/Stokes/Wind werden
-    als deaktivierte Module geführt oder entfernt.
+    bleibt; aktive Module in v2: Buoyancy, Gravity, LinearDamping.
+    Drag/Stokes/Wind werden als deaktivierte Module geführt oder entfernt.
   - Body-/Shape-Interface – Mindestanforderung je Form:
     (a) V_sub und r_B für beliebige Schnitt-Ebene und beliebige Orientierung
         (exakt, siehe 5.2),
@@ -237,8 +281,10 @@ Dichteprofil: ρ(s) = 1200 → 200 kg/m³ linear von der Spitze zur Basis.
 | GM (Basis unten, invertiert gespawnt) | analog, d′ ≈ 0,361 m | −0,1223 m → instabil |
 
 Zweiter Referenzkörper (Regression): homogene Kugel r = 1,0 m mit
-ρ = 500 kg/m³ (schwimmt) und ρ = 2000 kg/m³ (sinkt) – Verhalten muss dem
-Stand v0.4 entsprechen.
+ρ = 500 kg/m³ (schwimmt) und ρ = 2000 kg/m³ (sinkt). Vergleichbar mit v0.4
+sind die Gleichgewichtsgrößen (schwimmt/sinkt, stationärer Tiefgang) – NICHT
+die Trajektorien, da v0.4 über Stokes-/Drag-Dämpfung verfügte, v2 nur über
+den linearen Term aus 5.4.
 
 ### 8.2 Exakte Referenzmomente (statische Krängung um S, V_sub konstant)
 
@@ -261,17 +307,17 @@ Vorzeichenkonvention: aufrichtend (gegenläufig zur Krängung) positiv.
 
 | K | Kriterium | Prüfung / Toleranz |
 |---|---|---|
-| K1′ | Regression Schwimmen/Sinken: homogene Kugeln ρ = 500 / 2000 kg/m³ verhalten sich wie v0.4 | QUICK; stationäre Tiefgangslage ± 2 % |
+| K1′ | Regression Schwimmen/Sinken: homogene Kugeln ρ = 500 / 2000 kg/m³ – Gleichgewichtsverhalten wie v0.4 (schwimmt mit stationärem Tiefgang bzw. sinkt); Trajektorien sind NICHT vergleichbar (v0.4 hatte Stokes/Drag) | QUICK; stationärer Tiefgang ± 2 % |
 | K2′ | Statischer Auftrieb: Quader 2×2×2 m, halb eingetaucht → F_A = 39.240 N | QUICK; < 1 % |
 | K3′ | Hydrostatischer Druck p(z) = ρ_W·g·h exakt am Interface abfragbar | QUICK; < 0,1 % |
 | K4′ | Massenintegration: Bojenkegel m = 300π, r_S = 4/3 m ab Spitze; zusammengesetzter Körper gegen numerische Quadratur | QUICK; < 0,1 % |
-| K5′ | Bojenkegel erreicht Schwimmebene: Tiefgang 1,533 m ± 2 %, F_A = G ± 1 % | QUICK |
-| K6′ | Passives Aufrichten: Bojenkegel invertiert (Basis unten) gespawnt richtet sich in Spitzen-Lage auf; Endkrängung < 5°, innerhalb 20 s Simulationszeit | QUICK |
+| K5′ | Bojenkegel erreicht stationäre Schwimmebene (c > 0): Tiefgang 1,533 m ± 2 %, F_A = G ± 1 %, gemittelt über Fenster t = 15–20 s | QUICK |
+| K6′ | Passives Aufrichten: Bojenkegel invertiert (Basis unten) gespawnt richtet sich in Spitzen-Lage auf; Endkrängung < 5°, innerhalb 20 s Simulationszeit (c > 0) | QUICK |
 | K7′ | Aufrichtmoment gegen exakte Referenz: bei statischer Krängung φ ∈ {2°, 5°, 10°, 20°} um S (V_sub konstant) gilt M_sim innerhalb ± 2 % der Werte aus Abschnitt 8.2; Vorzeichen aufrichtend | QUICK; ± 2 % |
 | K8′ | Kollisionen: Eindringung < 1 %, Impulserhaltung, Wände/Boden dicht (wie alt-K6) | QUICK |
 | K9′ | Reproduzierbarkeit: zwei Läufe, 1.000 Substeps, Abweichung < 1e-9 | QUICK |
 | K10′ | Echtzeit: ≥ 10 Körper (inkl. Bojenkegel) bei ≥ 60 FPS auf mittlerer Desktop-Hardware (ohne SPH-Last neu gesetzt) | manuell/Hardware-abhängig |
-| K11′ | Interaktion: Klick-Spawn mit Presets, g zur Laufzeit änderbar und sofort wirksam | QUICK |
+| K11′ | Interaktion: Klick-Spawn mit Presets, g und c zur Laufzeit änderbar und sofort wirksam | QUICK |
 | K12′ | Test-Suite grün (unittest/pytest) | QUICK |
 | K13′ | Geometrie bei beliebiger Lage: V_sub und r_B über Winkel-Sweep 0°–90° (5°-Schritte) für Kugel (gegen Kappenformel), gekippten Kegel und Quader (gegen analytischen Clip) | QUICK; ≤ 0,1 % |
 
@@ -287,13 +333,16 @@ Quadratur), geschlossene Kegelwerte (§8.1), V_sub/r_B-Winkel-Sweep gegen
 analytische Referenzen (K13′), exakte Referenzmomente als Fixture (K7′),
 Auftriebsmoment-Vorzeichen und Metazentrum-Konsistenz bei kleinen Winkeln,
 Quaternion-Integration (Renormierung, Kreiselterm-Konsistenz),
-Dichteprofil-Serialisierung, Preset-Spawn.
+LinearDamping-Modul (Abklingverhalten, c = 0 → konservatives System als
+Gegenprobe), Dichteprofil-Serialisierung, Preset-Spawn.
 
 ## 11. Ausbaustufen (nicht Teil von v2)
-- v2.1: Widerstands- und Windmodule als optionale Kraftmodule reaktivieren
-  (Schnittstelle steht, §7.1).
+- v2.1: Physikalischer Widerstand (quadratischer Drag) und Windmodule als
+  optionale Kraftmodule reaktivieren (Schnittstelle steht, §7.1); dabei den
+  LinearDamping-Term ersetzen oder abschalten.
 - v3: Segelflächen/Rumpfgeometrien, frei definierte asymmetrische Körper,
-  SPH-Rückkehr als Kraftquelle hinter dem Fluid-Interface, Thermodynamik.
+  Voxel-Dichtegitter als viertes Dichtemodell, SPH-Rückkehr als Kraftquelle
+  hinter dem Fluid-Interface, Thermodynamik.
 
 ---
 
@@ -304,3 +353,8 @@ Dichteprofil-Serialisierung, Preset-Spawn.
 - 10.10.2026: Exakte Momente (§8.2) per Monte-Carlo (40 Mio. Punkte)
   bei Krängung um S mit V_sub-Konstanthaltung (Sekantenverfahren auf die
   Schwimmebene) bestimmt; Metazentrum-Näherung als Gegenprobe.
+- 10.10.2026 (v2.2): Konservativitätsprüfung – ohne Dämpfung schwingt der
+  Bojenkegel (Startversatz 5/15 cm bzw. −10 %) nach 20 s noch mit unverminderter
+  Amplitude (± 5 bis ± 15,5 cm); die stationären Kriterien K1′/K5′/K6′ wären
+  unerfüllbar. Mit LinearDamping c = 2000 N·s/m wird die Gleichgewichtstauchtiefe
+  1,5326 m innerhalb 20 s erreicht (Fehler < 0,01 %) → Einführung von Abschnitt 5.4.
