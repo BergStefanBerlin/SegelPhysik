@@ -41,3 +41,12 @@ SEGELPHYSIK_FULL=1 python -m unittest discover -s segelphysik/tests -t .        
 # K7-Benchmark (manuell, Ziel-Hardware):
 python benchmarks/benchmark_k7.py --frames 300
 ```
+
+
+## Profil-Hinweis (v0.3c)
+
+Die Default-`config.json` enthaelt das **Visualisierungsprofil**
+(`sound_speed = 30 m/s`, `cfl_acoustic = 0.3`) fuer interaktive FPS.
+Akzeptanztests (insbesondere K3 Hydrostatik) verwenden das
+**Messprofil** `sound_speed = 60 m/s`, `cfl_acoustic = 0.2` und
+setzen diese Werte in der eigenen Testkonfiguration explizit.

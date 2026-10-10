@@ -7,6 +7,11 @@ werden gegen den lokalen Median gekappt -> geschlossene Wasserflaeche.
 v0.3b: Tiefen-/Hoehenfaerbung der Oberflaeche (color_by_depth),
 HUD-Textzeile (set_hud) fuer RTF/FPS, screen_to_water() fuer
 Klick-Spawning (Spec K8).
+
+v0.3c: Wasser-Look (Spec §6 "transparent, beleuchtet"):
+Vertex-Zellen-Fix (keine Punktdelchen), Extraktion auf feinerem
+Raster mit bilinearem Upsampling, Smooth-Shading + Glanzlicht,
+Spike-Cap an dx gekoppelt (2.5*dx statt fix 0.35 m).
 """
 import numpy as np
 
@@ -19,22 +24,45 @@ def _surface_polydata(pv, X, Y, Z):
     faces = np.empty((a.size * 2, 4), dtype=np.int64)
     faces[0::2, 0] = 3; faces[0::2, 1] = a; faces[0::2, 2] = b; faces[0::2, 3] = d
     faces[1::2, 0] = 3; faces[1::2, 1] = a; faces[1::2, 2] = d; faces[1::2, 3] = c
-    pd = pv.PolyData(pts); pd.faces = faces.ravel()
-    return pd
+    # v0.3c-Fix: PolyData direkt MIT Faces erzeugen. Ein nachtraegliches
+    # `pd.faces = ...` entfernt die automatisch angelegten Vertex-Zellen
+    # nicht -> Punkte wurden als blaue Delchen mitgerendert.
+    return pv.PolyData(pts, faces=faces.ravel())
+
+
+def _bilinear_upsample(Z, f):
+    """Bilineares Hochsamplen des Hoehenfelds um Faktor f (int >= 1)."""
+    f = max(1, int(f))
+    if f == 1:
+        return Z
+    ny, nx = Z.shape
+    xi = np.linspace(0.0, nx - 1.0, (nx - 1) * f + 1)
+    yi = np.linspace(0.0, ny - 1.0, (ny - 1) * f + 1)
+    x0 = np.floor(xi).astype(int); x1 = np.minimum(x0 + 1, nx - 1)
+    y0 = np.floor(yi).astype(int); y1 = np.minimum(y0 + 1, ny - 1)
+    wx = (xi - x0)[None, :]; wy = (yi - y0)[:, None]
+    Z00 = Z[np.ix_(y0, x0)]; Z01 = Z[np.ix_(y0, x1)]
+    Z10 = Z[np.ix_(y1, x0)]; Z11 = Z[np.ix_(y1, x1)]
+    return (Z00 * (1 - wx) * (1 - wy) + Z01 * wx * (1 - wy)
+            + Z10 * (1 - wx) * wy + Z11 * wx * wy)
 
 
 class PyVistaRenderer:
     def __init__(self, app, nx=64, ny=64, off_screen=False,
-                 color_by_depth=True):
+                 color_by_depth=True, upsample=2):
         import pyvista as pv
         self.pv = pv; self.app = app
         b = app.cfg.basin
         self.lx, self.ly = float(b["lx"]), float(b["ly"])
         self.depth = float(app.cfg.water["depth"])
+        self.dx = float(getattr(app.cfg, "dx", 0.25) or 0.25)
         self.nx, self.ny = int(nx), int(ny)
+        self.upsample = max(1, int(upsample))
         self._xs = np.linspace(-self.lx / 2, self.lx / 2, self.nx)
         self._ys = np.linspace(-self.ly / 2, self.ly / 2, self.ny)
         self.X, self.Y = np.meshgrid(self._xs, self._ys)
+        # Render-Gitter (verfeinert); endgueltige Groesse in attach()
+        self._Xr, self._Yr = self.X, self.Y
         self._plotter = None; self._surf = None; self._bodies = {}
         self.off_screen = off_screen
         self.color_by_depth = bool(color_by_depth)
@@ -47,6 +75,10 @@ class PyVistaRenderer:
         # X/Y werden vom tatsaechlichen Surface-Objekt uebernommen.
         self.X, self.Y = surface.X, surface.Y
         self.ny, self.nx = self.X.shape
+        f = self.upsample
+        xr = np.linspace(-self.lx / 2, self.lx / 2, (self.nx - 1) * f + 1)
+        yr = np.linspace(-self.ly / 2, self.ly / 2, (self.ny - 1) * f + 1)
+        self._Xr, self._Yr = np.meshgrid(xr, yr)
 
     # ---------- Oberflaechen-Nachbearbeitung ----------
     def _smooth_surface(self, Z):
@@ -93,7 +125,8 @@ class PyVistaRenderer:
                 stack[i] = _shift(Z, dy, dx)
                 i += 1
         loc = np.median(stack, axis=0)
-        spike = np.abs(Z - loc) > 0.35
+        cap = 2.5 * self.dx   # v0.3c: an Aufloesung gekoppelt (K5: >= 2*dx)
+        spike = np.abs(Z - loc) > cap
         Z[spike] = loc[spike]
         return Z
 
@@ -123,20 +156,23 @@ class PyVistaRenderer:
         p.add_mesh(pv.Plane(center=(0, 0, -d), direction=(0, 0, 1),
                             i_size=lx, j_size=ly),
                    color="lightsteelblue", opacity=0.25)
-        self._surf = _surface_polydata(pv, self.X, self.Y,
-                                       np.zeros_like(self.X))
+        self._surf = _surface_polydata(pv, self._Xr, self._Yr,
+                                       np.zeros_like(self._Xr))
+        # Beleuchtung (Spec §6 "beleuchtet"): Smooth-Shading + Glanzlicht
+        light = dict(smooth_shading=True, specular=0.6, specular_power=25,
+                     diffuse=0.9, ambient=0.12)
         if self.color_by_depth:
             # Hoehe relativ zum Ruhewasser: Blau-Abstufung (M4-Kosmetik)
-            self._surf[self._elev_key] = np.zeros(self.X.size,
+            self._surf[self._elev_key] = np.zeros(self._Xr.size,
                                                   dtype=np.float64)
             p.add_mesh(self._surf, scalars=self._elev_key, cmap="Blues_r",
-                       opacity=0.65, show_edges=False, clim=(-0.4, 0.4),
-                       show_scalar_bar=False)
+                       opacity=0.7, show_edges=False, clim=(-0.5, 0.5),
+                       show_scalar_bar=False, **light)
         else:
-            p.add_mesh(self._surf, color="tab:blue", opacity=0.55,
-                       show_edges=False)
+            p.add_mesh(self._surf, color="tab:blue", opacity=0.6,
+                       show_edges=False, **light)
         p.add_axes(xlabel="x (Bug)", ylabel="y (Backbord)", zlabel="z")
-        p.add_text("SegelPhysik v0.3b | [g/G] g  [w/W] Wind  [space] Pause"
+        p.add_text("SegelPhysik v0.3c | [g/G] g  [w/W] Wind  [space] Pause"
                    "  [r] Reset  [s] Kugel  [n] Typ  [Klick] Spawn  [q] Ende",
                    position="upper_left", font_size=10)
         # HUD rechts oben (RTF/FPS), leer bis zur ersten Aktualisierung
@@ -188,12 +224,18 @@ class PyVistaRenderer:
 
     # ---------- Aktualisierung ----------
     def update(self, surface):
-        Z = self._smooth_surface(surface.Z)
+        Zs = self._smooth_surface(surface.Z)           # Extraktionsraster
+        Zr = _bilinear_upsample(Zs, self.upsample)     # Renderraster
         self._surf.points = np.column_stack(
-            [self.X.ravel(), self.Y.ravel(), Z.ravel()])
+            [self._Xr.ravel(), self._Yr.ravel(), Zr.ravel()])
+        # Normalen aktuell halten (Beleuchtung folgt den Wellen)
+        try:
+            self._surf.compute_normals(cell_normals=False, inplace=True)
+        except Exception:
+            pass
         if self.color_by_depth and self._frame % 3 == 0:
             # Farbskala nur jeden 3. Frame neu hochladen (Perf: VTK-Upload)
-            self._surf[self._elev_key] = Z.ravel()
+            self._surf[self._elev_key] = Zr.ravel()
         self._frame += 1
         from ..core.bodies import Sphere
         alive = set()

@@ -1,4 +1,4 @@
-"""Interaktive Echtzeit-GUI (v0.3b).
+"""Interaktive Echtzeit-GUI (v0.3c).
 
 Aufruf:  python gui.py [--backend taichi|numpy] [--full] [--frames N]
                       [--no-depth-color]
@@ -13,8 +13,8 @@ Steuerung im Fenster:
   Linksklick Koerper an Klickposition einspawnen (Spec K8)
   q          Ende
 
-Neu in v0.3b: Klick-Spawning (K8), RTF-/FPS-Anzeige im HUD,
-Tiefenfaerbung der Wasseroberflaeche.
+Neu in v0.3c: Wasser-Look (Vertex-Zellen-Fix, feineres Raster mit
+Upsampling, Beleuchtung/Glanz, Spike-Cap an dx gekoppelt).
 """
 import argparse
 import json
@@ -42,12 +42,12 @@ def build_app(backend="taichi", small=True):
                 raise ImportError("taichi nicht verfuegbar")
             app.fluid_factory = TaichiSphWater
             app._build()
-            print(f"[v0.3b] Taichi-Backend: {app.sph.backend}  "
+            print(f"[v0.3c] Taichi-Backend: {app.sph.backend}  "
                   f"({app.sph.n_particles} Partikel)")
         except Exception as e:
-            print(f"[v0.3b] Taichi nicht verfuegbar ({e}) -> NumPy-Referenz")
+            print(f"[v0.3c] Taichi nicht verfuegbar ({e}) -> NumPy-Referenz")
     else:
-        print(f"[v0.3b] NumPy-Referenz ({app.sph.n_particles} Partikel)")
+        print(f"[v0.3c] NumPy-Referenz ({app.sph.n_particles} Partikel)")
     return app
 
 
@@ -67,10 +67,10 @@ def main():
     app.spawn_sphere(radius=1.0, density=300.0, position=(0, 0, 2.5))
     app.spawn_box(edges=(2.0, 2.0, 2.0), density=700.0, position=(2.5, 0, 1.5))
 
-    cell_target = 1.5 * float(app.cfg.dx)
+    cell_target = float(app.cfg.dx)   # v0.3c: ~dx-Raster (Upsampling im Renderer)
     nx = max(8, int(round(app.cfg.basin['lx'] / cell_target)))
     ny = max(8, int(round(app.cfg.basin['ly'] / cell_target)))
-    print(f'[v0.3b] Oberflaechenraster: {nx}x{ny} Zellen (~1.5*dx)')
+    print(f'[v0.3c] Oberflaechenraster: {nx}x{ny} Zellen (~1.5*dx)')
     surf = HeightFieldSurface(app.cfg.basin, nx=nx, ny=ny)
     ren = PyVistaRenderer(app, nx=nx, ny=ny,
                           color_by_depth=not args.no_depth_color)
@@ -98,7 +98,7 @@ def main():
                              position=(float(np.random.uniform(-2, 2)), 0.0, 2.5))
         elif key == "n":
             state["kind"] = "box" if state["kind"] == "sphere" else "sphere"
-            print(f"[v0.3b] Spawn-Typ: {state['kind']}")
+            print(f"[v0.3c] Spawn-Typ: {state['kind']}")
         elif key == "q":
             state["quit"] = True
 
@@ -119,15 +119,15 @@ def main():
             else:
                 app.spawn_box(edges=(2.0, 2.0, 2.0), density=700.0,
                               position=(target[0], target[1], 1.5))
-            print(f"[v0.3b] {state['kind']} bei "
+            print(f"[v0.3c] {state['kind']} bei "
                   f"({target[0]:.2f}, {target[1]:.2f}) gespawnt")
         except ValueError as e:
-            print(f"[v0.3b] Spawn ignoriert: {e}")
+            print(f"[v0.3c] Spawn ignoriert: {e}")
 
     try:
         p.track_click_position(side="left", callback=on_click)
     except Exception as e:  # sehr alte pyvista-Versionen
-        print(f"[v0.3b] Klick-Spawning nicht verfuegbar ({e})")
+        print(f"[v0.3c] Klick-Spawning nicht verfuegbar ({e})")
 
     p.show(interactive_update=True, auto_close=False)
 

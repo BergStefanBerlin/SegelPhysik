@@ -1,5 +1,5 @@
 {
-  "_comment": "SegelPhysik v0.2 Defaults - einzige Quelle der Wahrheit (Spec 1.0 \u00c2\u00a77.1). Alle Werte SI.",
+  "_comment": "SegelPhysik v0.2 Defaults - einzige Quelle der Wahrheit (Spec 1.0 \u00a77.1). Alle Werte SI.",
   "basin": {
     "lx": 10.0,
     "ly": 10.0,

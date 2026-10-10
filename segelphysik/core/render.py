@@ -1,7 +1,7 @@
 """Rendering (Plan Issues 10-11, M4).
 
 HeightFieldSurface: extrahiert die Wasseroberfläche datenseitig aus den
-SPH-Partikeln (höchstes Fluido-Partikel pro (x,y)-Zelle) - renderbar und
+SPH-Partikeln (v0.3c: update() vektorisiert) (höchstes Fluido-Partikel pro (x,y)-Zelle) - renderbar und
 testbar (Trennung Extraktion <-> Darstellung, Spec §7.1).
 MatplotlibRenderer: transparente Oberfläche, Koordinatengitter, Maßstab,
 Körper als Drahtgitter. Läuft headless (Agg) und interaktiv lokal.
@@ -24,22 +24,30 @@ class HeightFieldSurface:
         self.Z = np.full_like(self.X, self.fill)
 
     def update(self, pos):
-        """pos: (N,3) Array der Fluido-Partikel (ohne Geister)."""
+        """pos: (N,3) Array der Fluido-Partikel (ohne Geister).
+
+        v0.3c: vollstaendig vektorisiert - sortiere nach Zelle (primar)
+        und z (sekundaer, aufsteigend); der LETZTE Treffer je Zelle ist
+        das hoechste Partikel. Semantik identisch zur alten Schleife,
+        aber ohne Python-Loop ueber alle Partikel pro Frame.
+        """
         self.Z[...] = self.fill
         if len(pos) == 0:
             return
+        pos = np.asarray(pos)
         ix = np.clip(((pos[:, 0] + self.lx/2) / self.lx * self.nx).astype(int),
                      0, self.nx - 1)
         iy = np.clip(((pos[:, 1] + self.ly/2) / self.ly * self.ny).astype(int),
                      0, self.ny - 1)
-        # höchstes Partikel je Zelle (lexsort: z aufsteigend, letzter gewinnt)
-        order = np.lexsort((pos[:, 2], iy, ix))
-        seen = set()
-        for k in order[::-1]:
-            key = (ix[k], iy[k])
-            if key not in seen:
-                seen.add(key)
-                self.Z[iy[k], ix[k]] = pos[k, 2]
+        flat = iy * self.nx + ix
+        order = np.lexsort((pos[:, 2], flat))
+        cells = flat[order]
+        last = np.empty(cells.size, dtype=bool)
+        last[-1] = True
+        if cells.size > 1:
+            last[:-1] = cells[:-1] != cells[1:]
+        sel = order[last]          # Index des höchsten Partikels je Zelle
+        self.Z.flat[flat[sel]] = pos[sel, 2]
 
 
 class MatplotlibRenderer:
