@@ -1,6 +1,7 @@
 {
-  "_beschreibung": "Eingabedatei fuer SegelPhysik – einzige Quelle fuer Material-/Wassertabellen, Boot-Zuordnung und Darstellungs-Defaults. Vorlaeufer des spaeteren Konfigurators (Spec P6).",
+  "_beschreibung": "Eingabedatei fuer SegelPhysik – einzige Quelle fuer Material-/Wassertabellen, Boot-Zuordnung und Darstellungs-Defaults. Vorlaeufer des spaeteren Konfigurators (Spec P6). ALLE WERTE IN SI-EINHEITEN (Spec R6): Laengen in Metern [m], Massen in Kilogramm [kg], Dichten in kg/m^3, Flaechenmassen in kg/m^2, Zeiten in Sekunden [s]. Umrechnungen (z. B. Knoten) erfolgen AUSSCHLIESSLICH in der Darstellungsschicht, nie in dieser Datei oder im Rechenkern. Struktur von boot.teile ist REKURSIV (Spec P2): Ein Eintrag mit 'teile' ist eine reine GRUPPE ohne eigene Werte (keine Masse/Dichte/Material/Flaechenmasse, keine Farbe) – ihre Massen-, Schwerpunkt- und Tensorwerte ergeben sich ausschliesslich aus den Teilen. Ein Eintrag ohne 'teile' ist ein BLATT und muss GENAU EINE Massengroesse tragen (Genau-eins-Regel, Spec P3). Felder mit fuehrendem Unterstrich (_) sind Dokumentation und werden vom Loader ignoriert.",
   "materialien": {
+    "_einheit": "Dichte in kg/m^3",
     "Holz": 600,
     "GfK": 1900,
     "Stahl": 7850,
@@ -8,6 +9,7 @@
     "Aluminium": 2700
   },
   "wasser": {
+    "_einheit": "Dichten in kg/m^3",
     "dichten_kg_pro_m3": {
       "Süßwasser": 1000,
       "Salzwasser": 1025,
@@ -17,42 +19,30 @@
     "standard": "Süßwasser"
   },
   "boot": {
+    "_einheit": "material = Name aus materialien [Dichte kg/m^3]; flaechenmasse_kg_pro_m2 in kg/m^2",
     "teile": [
+      { "name": "rumpf", "material": "GfK" },
+      { "name": "ruder", "material": "GfK" },
       {
-        "name": "rumpf",
-        "material": "GfK"
+        "name": "kielsystem",
+        "teile": [
+          { "name": "kiel", "material": "Stahl" },
+          { "name": "bulb", "material": "Blei" }
+        ]
       },
       {
-        "name": "kiel",
-        "material": "Stahl"
-      },
-      {
-        "name": "bulb",
-        "material": "Blei"
-      },
-      {
-        "name": "mast",
-        "material": "Aluminium"
-      },
-      {
-        "name": "boom",
-        "material": "Aluminium"
-      },
-      {
-        "name": "grosssegel",
-        "flaechenmasse_kg_pro_m2": 0.5
-      },
-      {
-        "name": "fock",
-        "flaechenmasse_kg_pro_m2": 0.5
-      },
-      {
-        "name": "ruder",
-        "material": "GfK"
+        "name": "rigg",
+        "teile": [
+          { "name": "mast", "material": "Aluminium" },
+          { "name": "boom", "material": "Aluminium" },
+          { "name": "grosssegel", "flaechenmasse_kg_pro_m2": 0.5 },
+          { "name": "fock", "flaechenmasse_kg_pro_m2": 0.5 }
+        ]
       }
     ]
   },
   "darstellung": {
+    "_einheit": "delta_helligkeit_unterwasser dimensionslos [0..1]",
     "delta_helligkeit_unterwasser": 0.25,
     "farbe_standard": "#c9c9c9"
   }

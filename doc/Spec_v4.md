@@ -1,7 +1,8 @@
-# TEMP-SPEC: Körper-Klasse & Architektur (verbindliche Fassung)
+# SPEC V4: Körper-Klasse & Architektur (verbindliche Fassung)
 
 Status: VOLLSTÄNDIG – alle Punkte entschieden oder bewusst zurückgestellt
-(Stand 11.10.2026; mehrere Konsistenzprüfungen, letzte inkl. Eingabedatei-Beschluss).
+(Stand 11.10.2026; mehrere Konsistenzprüfungen, letzte inkl. Eingabedatei-Beschluss
+und Dateinamen-Klärung).
 Zweck: Verbindliche Grundlage für die Umsetzung (Schritt 1: Körper-Klasse).
 Datum: 11.10.2026
 
@@ -52,9 +53,9 @@ existiert er nur noch intern und ist für den Nutzer unsichtbar.
 - AK-P1c: Zusammengesetzter Zweiteilkörper → r_S gegen unabhängige Integration < 0,1 %.
 - AK-P1d: Boot (8 OBJ-Teile, Dichten laut Materialtabelle) → r_S plausibel unter
   Rumpfmitte, gegen numerische Referenzintegration < 0,5 %.
-  (Materialzuordnung je Teil: festgelegt in `konfiguration.json`, JSON-Pfad
-  `boot.teile` – Rumpf/Ruder GfK, Kiel Stahl, Bulb Blei, Mast/Boom Aluminium,
-  Segel über Flächenmasse 0,5 kg/m².)
+  (Materialzuordnung je Teil: festgelegt in der Arbeitsdatei `konfiguration.json`,
+  JSON-Pfad `boot.teile` – Rumpf/Ruder GfK, Kiel Stahl, Bulb Blei, Mast/Boom
+  Aluminium, Segel über Flächenmasse 0,5 kg/m².)
 
 ---
 
@@ -66,9 +67,15 @@ existiert er nur noch intern und ist für den Nutzer unsichtbar.
    gemäß P4, eigener berechneter Schwerpunktframe gemäß P1).
 2. Einfache Modelle sind automatisch flach (ein Teil oder keins) – kein separater
    Flach-Modus, keine Sonderbehandlung.
-3. Verschachtelte Gruppen jederzeit möglich (z. B. Rigg = Mast + Boom + Segel als
-   Einheit mit eigener rel_Pose); die Klasse behandelt jede Tiefe identisch mit
-   denselben Summationsregeln aus P1.
+3. Verschachtelte Gruppen jederzeit möglich; die Klasse behandelt jede Tiefe
+   identisch mit denselben Summationsregeln aus P1. Reale Beispiele in der
+   Vorlage (Spec-Abschnitt J): „rigg“ (Mast + Boom + Großsegel + Fock) und
+   „kielsystem“ (Kiel + Bulb) – beide reine Gruppen ohne eigene Werte.
+   WICHTIG: Die Gruppierung ändert NICHTS an den Gesamtwerten des Boots
+   (Masse, Gesamtschwerpunkt, Tensor sind identisch zur flachen Struktur –
+   die Rekursion summiert dasselbe). Ihr Gewinn ist semantisch: benannte
+   Zwischenaggregate (z. B. „Schwerpunkt des Kielsystems“) und später die
+   Fähigkeit, eine Gruppe ALS EINHEIT zu manipulieren (z. B. Rigg kippen).
 4. API: Der Konstruktor nimmt eine Teile-Liste; jede rel_Pose wird im
    Konstruktionsframe des Elternkörpers angegeben (lesbar in Modellkoordinaten),
    ausgewertet wird rekursiv von der Wurzel abwärts.
@@ -95,7 +102,7 @@ Weder zwei gesetzt noch keins gesetzt → Validierungsfehler beim Erzeugen.
 Alle vier laufen intern auf dieselbe Teilmasse m_i; danach ist alles einheitlich
 (rekursive Summation gemäß P1).
 
-**Materialtabelle (Default-Werte; Quelle: Eingabedatei `konfiguration.json`, beschrieben in Spec-Abschnitt J):**
+**Materialtabelle (Default-Werte; Quelle: Arbeitsdatei `konfiguration.json`, beschrieben in Spec-Abschnitt J):**
 
 | Material | Dichte (kg/m³) | Quelle/Anmerkung |
 |---|---|---|
@@ -116,7 +123,7 @@ Alle vier laufen intern auf dieselbe Teilmasse m_i; danach ist alles einheitlich
 
 **Konsequenzen:**
 - ALLE Tabellen und Defaults (Materialien, Wasser, Boot-Zuordnung, ΔL, Default-
-  Farbe) stammen ausschließlich aus der Eingabedatei `konfiguration.json`
+  Farbe) stammen ausschließlich aus der Arbeitsdatei `konfiguration.json`
   (Spec-Abschnitt J) – im Code gibt es keine stillen Duplikate dieser Werte.
 - Wasser-Dichte ist in `konfiguration.json` hinterlegt (Auswahl per Name oder
   direkter Zahl; direkte Zahl bleibt immer zulässig).
@@ -226,7 +233,7 @@ Idee des Nutzers (11.10.2026): Später ein **Konfigurator**, über den neue Mode
 und Konfigurationen geändert werden können – Selbstbedienung statt Entwickler-
 Anfrage. Status: nur als Absicht dokumentiert. Kein Design, kein Zeitplan.
 Er baut später auf dieser Körper-Klasse und dem Szenen-/Parameterobjekt auf
-(deshalb saubere API als Fundament). Vorläufer: die Eingabedatei
+(deshalb saubere API als Fundament). Vorläufer: die Arbeitsdatei
 `konfiguration.json` (Spec-Abschnitt J) – seine Oberfläche wird genau diese
 Struktur lesen und schreiben.
 
@@ -283,28 +290,67 @@ umgesetzt sind. Umsetzung: als eigener Meilenstein NACH der Körper-Klasse,
 additiv in der Bruecke; vista.py bleibt unangetastet (Einstellungen werden
 von der Bruecke gesetzt, nicht in vista.py geändert).
 
-## J – Eingabedatei `konfiguration.json` [ENTSCHEIDEN 11.10.]
+## J – Eingabedatei `konfiguration.json` [ENTSCHEIDEN 11.10., präzisiert: Template-Muster]
 
 **Zweck:** Bis der Konfigurator (P6) existiert sind ALLE veränderbaren Werte in
 einer einzigen JSON-Eingabedatei zusammengefasst. Der Nutzer kann Werte dort
 selbst eintragen oder sie erzeugen lassen. Die Datei ist die EINZIGE Quelle –
 im Code gibt es keine stillen Duplikate der Tabellen.
 
+**Template-Muster (Beschluss 11.10.):**
+- Im Repo liegt die VORLAGE: `doc/configuration_template.json`
+  (Werkseinstellungen, versioniert, unverändert in Gebrauch).
+- Beim Einrichten des Projekts wird die Vorlage EINMAL explizit nach
+  `konfiguration.json` (Projekt-Root bzw. Laufzeitpfad) kopiert – das ist die
+  ARBEITSDATEI, in der der Nutzer experimentiert, ohne die Vorlage zu zerstören.
+- Der Loader liest AUSSCHLIESSLICH `konfiguration.json`. Fehlt sie, gibt es
+  einen klaren Fehler mit Hinweis: „Bitte aus doc/configuration_template.json
+  erzeugen (kopieren)." KEIN stiller Fallback auf im Code versteckte Werte.
+- Der Konfigurator (P6) schreibt später die Arbeitsdatei; die Vorlage bleibt
+  Referenz der Werkseinstellungen.
+
 **Inhalt (Abschnitte):**
 - `materialien`: Name → Dichte in kg/m³ (Holz, GfK, Stahl, Blei, Aluminium)
 - `wasser`: Dichten in kg/m³ (Süßwasser, Salzwasser, Totes-Meer-Wasser,
   Quecksilber) + Standard-Auswahl (aktuell Süßwasser)
-- `boot`: Zuordnung je Bootsteil → `material` bzw. `flaechenmasse`
-  (Rumpf GfK · Kiel Stahl · Bulb Blei · Mast/Boom Aluminium · Ruder GfK ·
-  Großsegel/Fock je 0,5 kg/m²)
+- `boot.teile`: REKURSIVE Struktur (gemäß P2). Ein Eintrag MIT `"teile"` ist
+  eine reine GRUPPE ohne eigene Werte (keine Masse/Dichte/Material/
+  Flächenmasse, keine Farbe) – seine Werte ergeben sich ausschließlich aus
+  den Teilen. Ein Eintrag OHNE `"teile"` ist ein BLATT und muss GENAU EINE
+  Massengröße tragen (Genau-eins-Regel, P3). Aktuelle Struktur:
+  rumpf (GfK) · ruder (GfK) · kielsystem [kiel (Stahl), bulb (Blei)] ·
+  rigg [mast (Aluminium), boom (Aluminium), großsegel (0,5 kg/m²),
+  fock (0,5 kg/m²)]
+- Gruppen-Erkennung: ausschließliche über das Vorhandensein von `"teile"` –
+  es gibt KEIN zusätzliches Typ-Feld (die Verschachtelung selbst ist die
+  eine Wahrheit; ein Typ-Feld könnte der Struktur widersprechen).
 - `darstellung`: ΔL der Unterwasser-Aufhellung (0,25) und Default-Farbe
+
+**Zuordnungstabelle Spec-Parameter ↔ JSON-Schlüssel** (die JSON-Schlüssel
+tragen Einheiten im Namen, die Spec-Parameter nicht):
+
+| Spec-Parameter (P3/P4) | JSON-Schlüssel | JSON-Pfad |
+|---|---|---|
+| `material` (Name) | `<Materialname>` → Dichte | `materialien` |
+| `dichte` (direkte Zahl) | – (direkte Zahl im Körper-Konstruktor) | – |
+| `flaechenmasse` | `flaechenmasse_kg_pro_m2` | `boot.teile[]` |
+| Wasser-Auswahl | `standard` bzw. Name → Dichte | `wasser.dichten_kg_pro_m3` |
+| ΔL der Aufhellung | `delta_helligkeit_unterwasser` | `darstellung` |
+| `farbe` (Default) | `farbe_standard` | `darstellung` |
 
 **Regeln:**
 - Fehlender oder doppelter Schlüssel → Validierungsfehler beim Laden
   (kein stiller Fallback auf im Code versteckte Werte).
+  Implementierungshinweis: Pythons `json.load` akzeptiert doppelte Schlüssel
+  stillschweigend (letzter gewinnt). Die Doppelschlüssel-Erkennung ist daher
+  NUR mit `object_pairs_hook` (Prüfung auf doppelte Keys je Objekt) erfüllbar –
+  dieser Check ist Pflichtbestandteil des Loaders.
 - Direkte Zahlen bleiben überall zulässig (Dichte statt Materialname usw.);
   die Datei definiert nur die benannten Defaults.
-- Die Datei ist der Vorläufer des Konfigurators (P6).
+- Die Validierung läuft REKURSIV über die gesamte teile-Baumstruktur:
+  Gruppe mit Massen-Schlüssel → Fehler; Blatt ohne/genau-zwei Massengrößen →
+  Fehler; leere Gruppe → Fehler.
+- Die Arbeitsdatei ist der Vorläufer des Konfigurators (P6).
 
 ---
 
@@ -322,9 +368,16 @@ im Code gibt es keine stillen Duplikate der Tabellen.
   (3) Overlays (r_S, Hauptachsen) als eigener Schritt.
 - R4 Geplante Dateien (alle neu, Altbestand unberührt):
   core/koerper.py (Klasse), core/massen.py (Divergenzsatz, r_S, Tensor),
-  Fabrik-Funktionen, tests/test_koerper.py, konfiguration.json (Eingabedatei,
+  Fabrik-Funktionen, tests/test_koerper.py, konfiguration.json (ARBEITSDATEI,
+  einmalig erzeugt aus der Vorlage doc/configuration_template.json –
   siehe Spec-Abschnitt J).
 - **R5 (DAUERHAFTE ANWEISUNG des Nutzers, 11.10.2026): Kritische Begleitung ist
   Pflicht.** Ideen werden stets kritisch geprüft und herausgefordert – Ziel ist
   gemeinsam das Optimum, nicht schnelle Zustimmung. Diese Regel gilt für die
   gesamte weitere Zusammenarbeit.
+- R6 Einheitenregel: Intern wird durchgängig in ISO-SI-Einheiten gerechnet
+  (Längen m · Massen kg · Dichten kg/m³ · Flächenmassen kg/m² · Kräfte N ·
+  Momente N·m · Zeiten s · Winkel rad intern). Umrechnungen (z. B. Knoten,
+  Grad) erfolgen AUSSCHLIESSLICH in der Darstellungsschicht – nie in der
+  Eingabedatei, nie im Rechenkern. Die Eingabedatei enthält ausschließlich
+  SI-Werte; ihre `_einheit`-Felder dokumentieren die Leseeinheit je Block.
