@@ -1,0 +1,61 @@
+{
+  "_beschreibung": "Koerperdefinitionen (Spec P2/P3). Eintrag mit 'teile' = reine Gruppe ohne eigene Werte (P2.5). BLATT: 'material' Pflicht – Name aus materialien.json ODER direkte Dichte [kg/m^3] als Zahl. Optional 'wanddicke_m' (>0) => SCHALE mit fm=rho*t; ohne => VOLUMENKOERPER m=rho*V. Andere Massenschluessel unzulaessig (ein Kanal pro Groesse).",
+  "boot": {
+    "_einheit": "Dichten kg/m^3, Wanddicken m",
+    "teile": [
+      {
+        "name": "rumpf",
+        "material": "GfK",
+        "wanddicke_m": 0.005
+      },
+      {
+        "name": "ruder",
+        "material": "GfK",
+        "wanddicke_m": 0.005
+      },
+      {
+        "name": "kielsystem",
+        "teile": [
+          {
+            "name": "kiel",
+            "material": "Stahl"
+          },
+          {
+            "name": "bulb",
+            "material": "Blei"
+          }
+        ]
+      },
+      {
+        "name": "rigg",
+        "teile": [
+          {
+            "name": "mast",
+            "material": "Aluminium",
+            "wanddicke_m": 0.002
+          },
+          {
+            "name": "boom",
+            "material": "Aluminium",
+            "wanddicke_m": 0.002
+          },
+          {
+            "name": "grosssegel",
+            "material": 1250,
+            "wanddicke_m": 0.0004
+          },
+          {
+            "name": "fock",
+            "material": 1250,
+            "wanddicke_m": 0.0004
+          }
+        ]
+      }
+    ]
+  },
+  "darstellung": {
+    "_einheit": "delta_helligkeit_unterwasser dimensionslos [0..1]",
+    "delta_helligkeit_unterwasser": 0.4,
+    "farbe_standard": "#c9c9c9"
+  }
+}

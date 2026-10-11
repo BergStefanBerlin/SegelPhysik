@@ -94,11 +94,11 @@ class Koerper:
                 I = ma.traegheitstensor_homogen(punkte, dreiecke, self.masse / self._volumen)
             else:
                 r, _ = ma.schwerpunkt_flaechig(punkte, dreiecke)
-                I = np.zeros((3, 3))
+                I = ma.traegheitstensor_flaechig(punkte, dreiecke, self.masse / self._flaeche)
         else:
             self.masse = float(flaechenmasse) * self._flaeche
             r, _ = ma.schwerpunkt_flaechig(punkte, dreiecke)
-            I = np.zeros((3, 3))
+            I = ma.traegheitstensor_flaechig(punkte, dreiecke, float(flaechenmasse))
         self.punkte = punkte - r
         self.dreiecke = dreiecke
         self.traegheitstensor = I

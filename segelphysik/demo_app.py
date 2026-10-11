@@ -11,10 +11,11 @@ import time
 
 from .core import bewegung as kin
 from .core import fabriken
-from .core.konfig_lader import lade_konfiguration
+from .core.konfig_lader import lade_konfig
 from .grafik_bruecke import GrafikBruecke, FARBE_UNTEN, FARBE_OBEN
 from .steuerung import ControlPanel
 from . import grafik_optimierung
+from .core.overlays import LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN
 
 TYPEN = (("kegel", "cone"), ("quader", "box"), ("pyramide", "pyramid"))
 TYPEN_DEUTSCH = {"cone": "Kegel", "box": "Quader", "pyramid": "Pyramide"}
@@ -29,7 +30,7 @@ def _phi_grad(t):
 
 
 def main():
-    konfig = lade_konfiguration()   # Spec J: einzige Quelle, kein stiller Fallback
+    konfig = lade_konfig()   # Spec J: einzige Quelle, kein stiller Fallback
     bruecke = GrafikBruecke()
     plotter = bruecke.fenster_bauen()
     opt = grafik_optimierung.anwenden(bruecke)   # Schritt 2: K1+K2+K5
@@ -156,7 +157,8 @@ def main():
     # Neuer Titel + STATUS-ZEILE (Rueckmeldung im Fenster)
     plotter.add_text(
         "SegelPhysik v4  [1/2/3] Koerper  [4] Boot  [a] alle  [space] Pause  "
-        "[r] Reset  [+/-] Tempo  [F1-F4] Kamera  [o] SSAO  [q] Ende",
+        "[r] Reset  [+/-] Tempo  [F1-F4] Kamera  [o] SSAO  [5] r_S  "
+        "[6] Hauptachsen  [q] Ende",
         position="upper_left", font_size=10, color="black", name="titel_v4")
     status = plotter.add_text("(Bereit)", position="upper_right",
                               font_size=12, color="darkred", name="status")
@@ -171,6 +173,10 @@ def main():
             _status_setzen("SSAO: %s" % meldung)
         elif sym in ("f1", "f2", "f3", "f4"):
             _status_setzen("Kamera: %s" % sym.upper())
+        elif sym in ("5", "6"):
+            layer = LAYER_SCHWERPUNKT if sym == "5" else LAYER_HAUPTACHSEN
+            an = bruecke.layer_umschalten(layer)
+            _status_setzen("Layer '%s': %s" % (layer, "AN" if an else "AUS"))
         else:
             _status_setzen("Taste: %s" % sym)
     try:

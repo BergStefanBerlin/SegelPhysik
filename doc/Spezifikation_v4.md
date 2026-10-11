@@ -391,3 +391,23 @@ tragen Einheiten im Namen, die Spec-Parameter nicht):
   Grad) erfolgen AUSSCHLIESSLICH in der Darstellungsschicht – nie in der
   Eingabedatei, nie im Rechenkern. Die Eingabedatei enthält ausschließlich
   SI-Werte; ihre `_einheit`-Felder dokumentieren die Leseeinheit je Block.
+
+
+---
+
+## P3.1 - Schema-Reform der Eingabe [ENTSCHEIDEN 11.10., abendlich]
+
+**Zwei Dateien (Beschluss Nutzer):** Stoffdaten und Koerperdefinitionen getrennt.
+- `konfigurationen/materialien.json` - Materialtabelle + Wasser (Stoffdaten)
+- `konfigurationen/koerper.json` - boot.teile (Hierarchie) + darstellung
+- Vorlagen: `doc/materialien_vorlage.json`, `doc/koerper_vorlage.json`
+
+**Massen-Regel (total, ein Kanal pro Groesse):** BLATT traegt PFLICHT `material`
+(Name ODER direkte Dichte-Zahl kg/m^3) und OPTIONAL `wanddicke_m` (>0).
+wanddicke vorhanden => SCHALE (fm = rho*t); fehlt => VOLUMEN (m = rho*V).
+Jeder andere Massenschluessel (`masse`, `dichte`, `flaechenmasse_kg_pro_m2`,
+`dichte_kg_pro_m3`) ist ein Validierungsfehler - ein Kanal pro Groesse,
+Doppeleintraege per Konstruktion unmoeglich. Der Lader protokolliert je Teil
+Deutung und Herleitung und warnt, wenn ein Einzelteil mehr als 40 % der
+Gesamtmasse stellt (haette den Vollkoerper-Rumpf von 93.8 % gemeldet).
+Die Koerper-Klasse aendert sich NICHT - die Reform ist Eingabe-Semantik.

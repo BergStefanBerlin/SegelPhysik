@@ -35,9 +35,10 @@ def baue_boot(konfig, skala=boot_bau.SKALA, ordner=YACHT_ORDNER):
     geladenen Modell-Frame - fuer die Welt-Platzierung (Position += r_modell),
     damit die Darstellung identisch zum bisherigen Verfahren bleibt.
     """
-    specs = _specs_aus_konfig(konfig.boot_teile, konfig.materialien, skala, ordner)
+    specs = _specs_aus_konfig(konfig.boot_teile, konfig, skala, ordner)
     k = Koerper.verband(specs, farbe=konfig.farbe_standard,
                         delta_helligkeit=konfig.delta_helligkeit)
+    _protokoll_und_warnung(konfig.boot_teile, specs, konfig)
     return k, k._r_eingabe.copy()
 
 
@@ -47,23 +48,51 @@ def _werte(konfig):
     return konfig.farbe_standard, konfig.delta_helligkeit
 
 
-def _specs_aus_konfig(eintraege, materialien, skala, ordner):
+def _specs_aus_konfig(eintraege, konfig, skala, ordner):
+    """Neues Schema (Spec P3): 'material' = Name ODER Dichte-Zahl,
+    optional 'wanddicke_m' -> Schale mit fm = rho*t."""
     specs = []
     for eintrag in eintraege:
         name = eintrag["name"]
         if "teile" in eintrag:
             specs.append({"teile": _specs_aus_konfig(
-                eintrag["teile"], materialien, skala, ordner)})
+                eintrag["teile"], konfig, skala, ordner)})
             continue
         p, f = boot_bau.baue_teil(name, skala=skala, ordner=ordner)
-        spec = {"form": (p, f)}
-        if "material" in eintrag:
-            spec["dichte"] = float(materialien[eintrag["material"]])
-        elif "flaechenmasse_kg_pro_m2" in eintrag:
-            spec["flaechenmasse"] = float(eintrag["flaechenmasse_kg_pro_m2"])
-        elif "dichte" in eintrag:
-            spec["dichte"] = float(eintrag["dichte"])
-        elif "masse" in eintrag:
-            spec["masse"] = float(eintrag["masse"])
+        spec = {"form": (p, f), "_name": name}
+        rho = konfig.dichte_von(eintrag["material"])
+        if "wanddicke_m" in eintrag:
+            t = float(eintrag["wanddicke_m"])
+            spec["flaechenmasse"] = rho * t
+            konfig.protokoll.append(
+                "%s: SCHALE  rho=%g * t=%g = %.3f kg/m^2" % (name, rho, t, rho * t))
+        else:
+            spec["dichte"] = rho
+            konfig.protokoll.append("%s: VOLUMEN  rho=%g kg/m^3" % (name, rho))
         specs.append(spec)
     return specs
+
+
+WARN_SCHWELLE = 0.40   # Einzelteil > 40 % der Gesamtmasse -> Warnung
+
+def _protokoll_und_warnung(eintraege, specs, konfig):
+    """Druckt je Blatt die Masse und warnt, wenn ein Teil dominiert."""
+    zeilen = []
+    def gehe(e, s):
+        for ei, si in zip(e, s):
+            if "teile" in ei:
+                gehe(ei["teile"], si["teile"])
+                continue
+            kwargs = {k: v for k, v in si.items()
+                      if not k.startswith("_") and k != "form"}
+            k = Koerper(form=si["form"], **kwargs)
+            zeilen.append((si["_name"], k.masse))
+    gehe(eintraege, specs)
+    gesamt = sum(m for _n, m in zeilen)
+    for n, m in zeilen:
+        konfig.protokoll.append("%s: masse=%.3f kg (%.1f %%)" % (n, m, 100.0 * m / gesamt))
+        if m > WARN_SCHWELLE * gesamt:
+            print("WARNUNG (Plausibilitaet): Teil '%s' hat %.1f %% der Gesamtmasse "
+                  "(> %.0f %%). Vergessen wanddicke_m? (Spec P3)"
+                  % (n, 100.0 * m / gesamt, 100.0 * WARN_SCHWELLE))
+    return zeilen, gesamt

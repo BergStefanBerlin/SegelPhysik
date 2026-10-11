@@ -1,0 +1,21 @@
+{
+  "_beschreibung": "Stoffdaten fuer SegelPhysik (Spec P3/J): Materialdichten und Wasser-Dichten, ausschliesslich SI (kg/m^3). EINZIGE Quelle fuer Stoffdaten – keine stillen Duplikate im Code. Felder mit fuehrendem Unterstrich sind Dokumentation.",
+  "materialien": {
+    "_einheit": "Dichte in kg/m^3",
+    "Holz": 600,
+    "GfK": 1900,
+    "Stahl": 7850,
+    "Blei": 11340,
+    "Aluminium": 2700
+  },
+  "wasser": {
+    "_einheit": "Dichten in kg/m^3",
+    "dichten_kg_pro_m3": {
+      "Süßwasser": 1000,
+      "Salzwasser": 1025,
+      "Totes-Meer-Wasser": 1240,
+      "Quecksilber": 13546
+    },
+    "standard": "Süßwasser"
+  }
+}

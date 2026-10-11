@@ -20,121 +20,136 @@ from segelphysik.core import fabriken
 from segelphysik.core import koerper_formen as formen
 from segelphysik.core import massen as ma
 from segelphysik.core.koerper import Koerper, KoerperFehler, helle_auf
-from segelphysik.core.konfig_lader import (KonfigFehler, lade_konfiguration,
-                                           ARBEITSDATEI)
+from segelphysik.core.konfig_lader import KonfigFehler, lade_konfig
 
-KONFIG_PFAD = os.path.join(ROOT, ARBEITSDATEI)
-VORLAGE_PFAD = os.path.join(ROOT, "doc", "configuration_template.json")
+KONFIG_ORDNER = os.path.join(ROOT, "konfigurationen")
+MAT_VORLAGE = os.path.join(ROOT, "doc", "materialien_vorlage.json")
+KOR_VORLAGE = os.path.join(ROOT, "doc", "koerper_vorlage.json")
 YACHT = fabriken.YACHT_ORDNER
 
 
 @pytest.fixture(scope="module")
 def konfig():
-    return lade_konfiguration(KONFIG_PFAD)
+    return lade_konfig(KONFIG_ORDNER)
 
 
 @pytest.fixture(scope="module")
-def vorlage():
-    with open(VORLAGE_PFAD, encoding="utf-8") as f:
+def mat_vorlage():
+    with open(MAT_VORLAGE, encoding="utf-8") as f:
         return json.load(f)
 
 
-def _temp_konfig(tmp_path, daten):
-    p = tmp_path / os.path.join(ROOT, ARBEITSDATEI)
-    p.write_text(json.dumps(daten), encoding="utf-8")
-    return str(p)
+@pytest.fixture(scope="module")
+def kor_vorlage():
+    with open(KOR_VORLAGE, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _temp_konfig(tmp_path, mat, kor):
+    """Schreibt beide Dateien in einen temporaeren Ordner (Schema-Reform)."""
+    with open(os.path.join(str(tmp_path), "materialien.json"), "w",
+              encoding="utf-8") as f:
+        json.dump(mat, f)
+    with open(os.path.join(str(tmp_path), "koerper.json"), "w",
+              encoding="utf-8") as f:
+        json.dump(kor, f)
+    return str(tmp_path)
 
 
 def _kopie(vorlage):
     return json.loads(json.dumps(vorlage))
 
 
-# ---------------- Block A: Konfig-Lader (Spec J) ----------------
+# ---------------- Block A: Konfig-Lader (Spec J, Schema-Reform) ----------------
 
-def test_tc_a1_arbeitsdatei_entspricht_vorlage(konfig, vorlage):
-    assert konfig.materialien == vorlage["materialien"]
-    assert konfig.wasser_dichten == vorlage["wasser"]["dichten_kg_pro_m3"]
-    assert konfig.farbe_standard == vorlage["darstellung"]["farbe_standard"]
-    assert konfig.delta_helligkeit == vorlage["darstellung"]["delta_helligkeit_unterwasser"]
+def test_tc_a1_arbeitsdateien_entsprechen_vorlagen(konfig, mat_vorlage, kor_vorlage):
+    assert konfig.materialien == mat_vorlage["materialien"]
+    assert konfig.wasser_dichten == mat_vorlage["wasser"]["dichten_kg_pro_m3"]
+    assert konfig.farbe_standard == kor_vorlage["darstellung"]["farbe_standard"]
+    assert konfig.delta_helligkeit == kor_vorlage["darstellung"]["delta_helligkeit_unterwasser"]
 
 
-def test_tc_a2_fehlende_arbeitsdatei_kein_stiller_fallback(tmp_path):
+def test_tc_a2_fehlende_datei_kein_stiller_fallback(tmp_path):
     with pytest.raises(KonfigFehler) as info:
-        lade_konfiguration(str(tmp_path / "fehlt.json"))
-    assert "configuration_template" in str(info.value)
+        lade_konfig(str(tmp_path))
+    assert "Vorlage" in str(info.value)
 
 
-def test_tc_a3_doppelschluessel_wird_erkannt(tmp_path):
+def test_tc_a3_doppelschluessel_wird_erkannt(tmp_path, mat_vorlage, kor_vorlage):
+    text = '{"materialien": {"Blei": 1, "Blei": 11340}, "wasser": {"dichten_kg_pro_m3": {"S": 1000}, "standard": "S"}}'
+    od = _temp_konfig(tmp_path, mat_vorlage, kor_vorlage)
+    with open(os.path.join(od, "materialien.json"), "w", encoding="utf-8") as f:
+        f.write(text)
     with pytest.raises(KonfigFehler) as info:
-        lade_konfiguration(_temp_konfig(tmp_path, {"materialien": {"x": 1}}))
-    # Doppelschluessel auf Textebene pruefen (object_pairs_hook-Pflicht, Spec J)
-    text = '{"materialien": {"Blei": 1, "Blei": 11340}, "wasser": {}, "boot": {}, "darstellung": {}}'
-    p = tmp_path / "doppelt.json"
-    p.write_text(text, encoding="utf-8")
-    with pytest.raises(KonfigFehler) as info2:
-        lade_konfiguration(str(p))
-    assert "Doppelter" in str(info2.value)
+        lade_konfig(od)
+    assert "Doppelter" in str(info.value)
 
 
-def test_tc_a4_fehlender_materialschluessel(tmp_path, vorlage):
-    d = _kopie(vorlage)
-    del d["materialien"]["Blei"]
+def test_tc_a4_unbekanntes_material_cross_file(tmp_path, mat_vorlage, kor_vorlage):
+    kor = _kopie(kor_vorlage)
+    for e in kor["boot"]["teile"]:
+        if e["name"] == "rumpf":
+            e["material"] = "Unobtainium"
+    od = _temp_konfig(tmp_path, mat_vorlage, kor)
     with pytest.raises(KonfigFehler) as info:
-        lade_konfiguration(_temp_konfig(tmp_path, d))
-    assert "Blei" in str(info.value)
+        lade_konfig(od)
+    assert "Unobtainium" in str(info.value)
 
 
-def test_tc_a5_gruppe_mit_masse_fehler(tmp_path, vorlage):
-    d = _kopie(vorlage)
-    for e in d["boot"]["teile"]:
+def test_tc_a5_gruppe_mit_masse_fehler(tmp_path, mat_vorlage, kor_vorlage):
+    kor = _kopie(kor_vorlage)
+    for e in kor["boot"]["teile"]:
         if e["name"] == "kielsystem":
             e["dichte"] = 500.0
+    od = _temp_konfig(tmp_path, mat_vorlage, kor)
     with pytest.raises(KonfigFehler) as info:
-        lade_konfiguration(_temp_konfig(tmp_path, d))
+        lade_konfig(od)
     assert "P2.5" in str(info.value)
 
 
-def test_tc_a6_blatt_ohne_masse_fehler(tmp_path, vorlage):
-    d = _kopie(vorlage)
-    for e in d["boot"]["teile"]:
+def test_tc_a6_blatt_ohne_material_fehler(tmp_path, mat_vorlage, kor_vorlage):
+    kor = _kopie(kor_vorlage)
+    for e in kor["boot"]["teile"]:
         if e["name"] == "rumpf":
             del e["material"]
+    od = _temp_konfig(tmp_path, mat_vorlage, kor)
     with pytest.raises(KonfigFehler) as info:
-        lade_konfiguration(_temp_konfig(tmp_path, d))
-    assert "GENAU EINE" in str(info.value)
+        lade_konfig(od)
+    assert "material" in str(info.value)
 
 
-def test_tc_a7_blatt_mit_zwei_massen_fehler(tmp_path, vorlage):
-    d = _kopie(vorlage)
-    for e in d["boot"]["teile"]:
-        if e["name"] == "kielsystem":
-            for kind in e["teile"]:
-                if kind["name"] == "kiel":
-                    kind["dichte"] = 7850.0
-    with pytest.raises(KonfigFehler):
-        lade_konfiguration(_temp_konfig(tmp_path, d))
+def test_tc_a7_fremder_massenschluessel_fehler(tmp_path, mat_vorlage, kor_vorlage):
+    kor = _kopie(kor_vorlage)
+    for e in kor["boot"]["teile"]:
+        if e["name"] == "rumpf":
+            e["flaechenmasse_kg_pro_m2"] = 9.5
+    od = _temp_konfig(tmp_path, mat_vorlage, kor)
+    with pytest.raises(KonfigFehler) as info:
+        lade_konfig(od)
+    assert "unzulaessiger Massenschluessel" in str(info.value)
 
 
-def test_tc_a8_leere_gruppe_fehler(tmp_path, vorlage):
-    d = _kopie(vorlage)
-    for e in d["boot"]["teile"]:
+def test_tc_a8_leere_gruppe_fehler(tmp_path, mat_vorlage, kor_vorlage):
+    kor = _kopie(kor_vorlage)
+    for e in kor["boot"]["teile"]:
         if e["name"] == "rigg":
             e["teile"] = []
+    od = _temp_konfig(tmp_path, mat_vorlage, kor)
     with pytest.raises(KonfigFehler) as info:
-        lade_konfiguration(_temp_konfig(tmp_path, d))
+        lade_konfig(od)
     assert "leer" in str(info.value)
 
 
-def test_tc_a9_direkte_dichte_zahl_zulaessig(tmp_path, vorlage):
-    d = _kopie(vorlage)
-    for e in d["boot"]["teile"]:
+def test_tc_a9_direkte_dichte_zahl_zulaessig(tmp_path, mat_vorlage, kor_vorlage):
+    kor = _kopie(kor_vorlage)
+    for e in kor["boot"]["teile"]:
         if e["name"] == "kielsystem":
             for kind in e["teile"]:
                 if kind["name"] == "bulb":
-                    del kind["material"]
-                    kind["dichte"] = 11340
-    k = lade_konfiguration(_temp_konfig(tmp_path, d))  # laedt ohne Fehler
-    assert k.materialien["Blei"] == 11340
+                    kind["material"] = 11340
+    od = _temp_konfig(tmp_path, mat_vorlage, kor)
+    k = lade_konfig(od)
+    assert k.dichte_von(11340) == 11340.0
 
 
 # ---------------- Block B: Massen einzelner Koerper ----------------
@@ -217,6 +232,35 @@ def test_tc_b8_material_aufloesung(konfig):
     assert abs(k1.masse - konfig.materialien["Blei"] * abs(ma.mesh_volumen(p, fv))) < 1e-6
 
 
+def test_tc_b9_flaechentensor_platte_analytisch():
+    # Platte s=2 in der xy-Ebene, fm=3 -> m=12; I_z = m*s^2/6 = 8, I_x = I_y = 4
+    v = np.array([[-1, -1, 0], [1, -1, 0], [1, 1, 0], [-1, 1, 0]], float)
+    f = np.array([[0, 1, 2], [0, 2, 3]])
+    k = Koerper(form=(v, f), flaechenmasse=3.0)
+    assert abs(k.masse - 12.0) < 1e-12
+    I = k.traegheitstensor
+    assert abs(I[2, 2] - 8.0) < 1e-9
+    assert abs(I[0, 0] - 4.0) < 1e-9 and abs(I[1, 1] - 4.0) < 1e-9
+    assert np.max(np.abs(I - np.diag(np.diag(I)))) < 1e-9
+
+
+def test_tc_b10_flaechentensor_hohlwuerfel_analytisch():
+    # Hohlwuerfel a=2, fm=1 -> m=24; I = 5*m*a^2/18 = 80/3 (exakt, alle Achsen gleich)
+    s = 1.0
+    ecken = [(-s,-s,-s),(s,-s,-s),(s,s,-s),(-s,s,-s),
+             (-s,-s,s),(s,-s,s),(s,s,s),(-s,s,s)]
+    quads = [(0,1,2,3),(4,5,6,7),(0,1,5,4),(2,3,7,6),(0,3,7,4),(1,2,6,5)]
+    tris = []
+    for q in quads:
+        tris += [[q[0], q[1], q[2]], [q[0], q[2], q[3]]]
+    v = np.array(ecken, float); f = np.array(tris, np.int64)
+    k = Koerper(form=(v, f), flaechenmasse=1.0)
+    assert abs(k.masse - 24.0) < 1e-9
+    I = k.traegheitstensor
+    assert abs(I[0, 0] - 80.0 / 3.0) < 1e-9
+    assert np.max(np.abs(I - np.diag(np.diag(I)))) < 1e-9
+
+
 # ---------------- Block C: Rekursion (P2) ----------------
 
 def _zwei_teile():
@@ -249,7 +293,7 @@ def test_tc_c3_tensor_rotation():
 
 
 def test_tc_c4_gruppe_gleich_summe(konfig):
-    baum = fabriken._specs_aus_konfig(konfig.boot_teile, konfig.materialien,
+    baum = fabriken._specs_aus_konfig(konfig.boot_teile, konfig,
                                       boot_bau.SKALA, YACHT)
     kielsystem = next(s for s in baum if "teile" in s)       # erste Gruppe
     gruppe = Koerper.verband([kielsystem])
@@ -259,7 +303,7 @@ def test_tc_c4_gruppe_gleich_summe(konfig):
 
 
 def test_tc_c5_flach_gleich_gruppiert_gesamtboot(konfig):
-    baum = fabriken._specs_aus_konfig(konfig.boot_teile, konfig.materialien,
+    baum = fabriken._specs_aus_konfig(konfig.boot_teile, konfig,
                                       boot_bau.SKALA, YACHT)
     flach_specs = []
 
@@ -308,7 +352,7 @@ def test_tc_d2_boot_rs_unter_geometrischer_mitte(konfig):
              "grosssegel", "fock")]
     pa = np.vstack(alle)
     z_geo = (pa[:, 2].min() + pa[:, 2].max()) / 2.0
-    assert r_modell[2] < z_geo                # Bulb dominiert (AK-P1d)
+    assert r_modell[2] < z_geo                # Schalenrumpf: CM liegt unter der geometrischen Mitte (AK-P1d)
 
 
 def test_tc_d3_boot_masse_unabhaengige_referenz(konfig):
@@ -323,31 +367,34 @@ def test_tc_d3_boot_masse_unabhaengige_referenz(konfig):
         return float(0.5 * np.linalg.norm(np.cross(p1 - p0, p2 - p0), axis=1).sum())
 
     mat = konfig.materialien
+    FM_GFK = mat["GfK"] * 0.005          # 5 mm GfK-Laminate (fm = rho*t, Spec P3)
+    FM_ALU_WAND = mat["Aluminium"] * 0.002   # 2 mm Alu-Wand (Hohlprofil)
     erwartung = 0.0
-    for name, rho in (("rumpf", mat["GfK"]), ("ruder", mat["GfK"]),
-                      ("kiel", mat["Stahl"]), ("bulb", mat["Blei"]),
-                      ("mast", mat["Aluminium"]), ("boom", mat["Aluminium"])):
+    for name in ("rumpf", "ruder"):
+        p, t = boot_bau.baue_teil(name, ordner=YACHT)
+        erwartung += FM_GFK * flaeche(p, t)
+    for name, rho in (("kiel", mat["Stahl"]), ("bulb", mat["Blei"])):
         p, t = boot_bau.baue_teil(name, ordner=YACHT)
         erwartung += rho * abs(vol(p, t))
+    for name in ("mast", "boom"):
+        p, t = boot_bau.baue_teil(name, ordner=YACHT)
+        erwartung += FM_ALU_WAND * flaeche(p, t)
     for name in ("grosssegel", "fock"):
         p, t = boot_bau.baue_teil(name, ordner=YACHT)
         erwartung += 0.5 * flaeche(p, t)
     assert abs(boot.masse - erwartung) < 1e-6
     einzeln = {}
-    for name, rho in (("rumpf", mat["GfK"]), ("ruder", mat["GfK"]),
-                      ("kiel", mat["Stahl"]), ("bulb", mat["Blei"]),
-                      ("mast", mat["Aluminium"]), ("boom", mat["Aluminium"])):
+    for name in ("rumpf", "ruder"):
+        p, t = boot_bau.baue_teil(name, ordner=YACHT)
+        einzeln[name] = FM_GFK * flaeche(p, t)
+    for name, rho in (("kiel", mat["Stahl"]), ("bulb", mat["Blei"])):
         p, t = boot_bau.baue_teil(name, ordner=YACHT)
         einzeln[name] = rho * abs(vol(p, t))
-    # Sachlich korrekt (lokal verifiziert): der GfK-Rumpf ist wegen seines
-    # grossen Volumens das schwerste Einzelteil - nicht der Bulb. Die
-    # Stabilitaets-relevante Aussage (r_S unter der geometrischen Mitte)
-    # wird separat in TC-D2 geprueft.
-    assert max(einzeln, key=einzeln.get) == "rumpf"
-    # Gemessene Werte dieses Modells (nicht erraten): Kiel 178.5 kg >
-    # Bulb 128.7 kg > Mast 64.1 kg - der Stahl-Kielfin ist schwerer als der
-    # Blei-Bulb. Verbleibende echte Aussage: der Bulb wiegt mehr als der Mast.
-    assert einzeln["bulb"] > einzeln["mast"]
+    for name in ("mast", "boom"):
+        p, t = boot_bau.baue_teil(name, ordner=YACHT)
+        einzeln[name] = FM_ALU_WAND * flaeche(p, t)
+    assert max(einzeln, key=einzeln.get) == "kiel"
+    assert einzeln["rumpf"] > einzeln["bulb"] > einzeln["mast"]
 
 
 def test_tc_d4_segeln_sind_flaechenkoerper(konfig):
@@ -364,6 +411,19 @@ def test_tc_d4_segeln_sind_flaechenkoerper(konfig):
     assert len(segel) == 2                    # grosssegel + fock
     for s in segel:
         assert s._flaeche > 0.0
+
+
+def test_tc_d5_schalenboot_kennzahlen(konfig):
+    """Kennzahlen des Schalenboots (gemessen, Hohlprofil-Modell)."""
+    boot, r_modell = fabriken.baue_boot(konfig)
+    assert abs(boot.masse - 459.4368) < 0.01      # Gesamtmasse (gemessen)
+    assert r_modell[2] < 0.0                       # CM unter der Wasserlinie
+    assert abs(r_modell[2] - (-0.494574)) < 0.001  # CM-Tiefe (gemessen)
+    d = np.diag(boot.traegheitstensor)
+    assert abs(d[0] - 243.990) < 0.05
+    assert abs(d[1] - 427.215) < 0.05
+    assert abs(d[2] - 220.610) < 0.05
+
 
 
 # ---------------- Block E: Farbe (P4) ----------------
@@ -391,10 +451,10 @@ def test_tc_e3_default_farbe_aus_konfig(konfig):
     assert k.farbe == konfig.farbe_standard == "#c9c9c9"
 
 
-def test_tc_e4_delta_aus_konfig(tmp_path, vorlage):
-    d = _kopie(vorlage)
-    d["darstellung"]["delta_helligkeit_unterwasser"] = 0.4
-    k4 = lade_konfiguration(_temp_konfig(tmp_path, d))
+def test_tc_e4_delta_aus_konfig(tmp_path, mat_vorlage, kor_vorlage):
+    kor = _kopie(kor_vorlage)
+    kor["darstellung"]["delta_helligkeit_unterwasser"] = 0.4
+    k4 = lade_konfig(_temp_konfig(tmp_path, mat_vorlage, kor))
     k = fabriken.baue_kegel(k4)
     assert k.delta_helligkeit == 0.4
     assert k.unterwasser_farbe() == helle_auf("#c9c9c9", 0.4)
@@ -402,6 +462,8 @@ def test_tc_e4_delta_aus_konfig(tmp_path, vorlage):
 
 # ---------------- Block F: Regression ----------------
 
-def test_tc_f4_keine_stillen_duplikate(konfig, vorlage):
-    assert konfig.materialien == vorlage["materialien"]
-    assert konfig.wasser_dichten == vorlage["wasser"]["dichten_kg_pro_m3"]
+def test_tc_f4_keine_stillen_duplikate(konfig, mat_vorlage, kor_vorlage):
+    assert konfig.materialien == mat_vorlage["materialien"]
+    assert konfig.wasser_dichten == mat_vorlage["wasser"]["dichten_kg_pro_m3"]
+    assert konfig.farbe_standard == kor_vorlage["darstellung"]["farbe_standard"]
+    assert konfig.delta_helligkeit == kor_vorlage["darstellung"]["delta_helligkeit_unterwasser"]

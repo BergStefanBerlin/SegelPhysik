@@ -103,3 +103,18 @@ Konventionen für ALLE Tests:
 Hinweis: P5-Overlays (Schritt 3) und Grafik (Schritt 2) bekommen ihre
 Testvorgaben mit den jeweiligen Schritt-Specs – hier nur die numerische
 Grundlage (Tensor korrekt ⇒ Eigenvektoren sinnvoll prüfbar).
+
+
+---
+
+## Block H - Schema-Reform (zwei Konfig-Dateien, material+wanddicke_m)
+
+| ID | Titel | Erwartung |
+|---|---|---|
+| TC-H1 | Zahl als Dichte | material: 1250 ohne wanddicke_m -> Volumenkoerper, dichte_von=1250 |
+| TC-H2 | Zahl + wanddicke_m | fm = rho*t exakt (1250*0.0004 = 0.5 kg/m^2) |
+| TC-H3 | Fremder Massenschluessel | flaechenmasse_kg_pro_m2 am Blatt -> KonfigFehler |
+| TC-H4 | Unbekanntes Material | Name nicht in materialien.json -> KonfigFehler (Cross-File) |
+| TC-H5 | Doppelte Schluessel | object_pairs_hook wirft in BEIDEN Dateien |
+| TC-H6 | Gruppe mit Masseschluessel | -> KonfigFehler (P2.5) |
+| TC-H7 | Migrations-Gegenprobe | Neues Schema liefert identische Bootswerte (TC-D5-Zahlen) |

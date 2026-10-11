@@ -21,22 +21,46 @@
   "boot": {
     "_einheit": "material = Name aus materialien [Dichte kg/m^3]; flaechenmasse_kg_pro_m2 in kg/m^2",
     "teile": [
-      { "name": "rumpf", "material": "GfK" },
-      { "name": "ruder", "material": "GfK" },
+      {
+        "name": "rumpf",
+        "flaechenmasse_kg_pro_m2": 9.5
+      },
+      {
+        "name": "ruder",
+        "flaechenmasse_kg_pro_m2": 9.5
+      },
       {
         "name": "kielsystem",
         "teile": [
-          { "name": "kiel", "material": "Stahl" },
-          { "name": "bulb", "material": "Blei" }
+          {
+            "name": "kiel",
+            "material": "Stahl"
+          },
+          {
+            "name": "bulb",
+            "material": "Blei"
+          }
         ]
       },
       {
         "name": "rigg",
         "teile": [
-          { "name": "mast", "material": "Aluminium" },
-          { "name": "boom", "material": "Aluminium" },
-          { "name": "grosssegel", "flaechenmasse_kg_pro_m2": 0.5 },
-          { "name": "fock", "flaechenmasse_kg_pro_m2": 0.5 }
+          {
+            "name": "mast",
+            "material": "Aluminium"
+          },
+          {
+            "name": "boom",
+            "material": "Aluminium"
+          },
+          {
+            "name": "grosssegel",
+            "flaechenmasse_kg_pro_m2": 0.5
+          },
+          {
+            "name": "fock",
+            "flaechenmasse_kg_pro_m2": 0.5
+          }
         ]
       }
     ]
