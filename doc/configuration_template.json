@@ -1,0 +1,59 @@
+{
+  "_beschreibung": "Eingabedatei fuer SegelPhysik – einzige Quelle fuer Material-/Wassertabellen, Boot-Zuordnung und Darstellungs-Defaults. Vorlaeufer des spaeteren Konfigurators (Spec P6).",
+  "materialien": {
+    "Holz": 600,
+    "GfK": 1900,
+    "Stahl": 7850,
+    "Blei": 11340,
+    "Aluminium": 2700
+  },
+  "wasser": {
+    "dichten_kg_pro_m3": {
+      "Süßwasser": 1000,
+      "Salzwasser": 1025,
+      "Totes-Meer-Wasser": 1240,
+      "Quecksilber": 13546
+    },
+    "standard": "Süßwasser"
+  },
+  "boot": {
+    "teile": [
+      {
+        "name": "rumpf",
+        "material": "GfK"
+      },
+      {
+        "name": "kiel",
+        "material": "Stahl"
+      },
+      {
+        "name": "bulb",
+        "material": "Blei"
+      },
+      {
+        "name": "mast",
+        "material": "Aluminium"
+      },
+      {
+        "name": "boom",
+        "material": "Aluminium"
+      },
+      {
+        "name": "grosssegel",
+        "flaechenmasse_kg_pro_m2": 0.5
+      },
+      {
+        "name": "fock",
+        "flaechenmasse_kg_pro_m2": 0.5
+      },
+      {
+        "name": "ruder",
+        "material": "GfK"
+      }
+    ]
+  },
+  "darstellung": {
+    "delta_helligkeit_unterwasser": 0.25,
+    "farbe_standard": "#c9c9c9"
+  }
+}
