@@ -129,6 +129,25 @@ class GrafikBruecke:
                                "farbe_oben": farbe_oben}
         self._einhaengen(name)
 
+    def koerper_objekt_setzen(self, name, koerper, position=(0.0, 0.0, 0.0),
+                              achse=None, phase=0.0,
+                              farbe_unten=None, farbe_oben=None):
+        """Haengt einen Koerper (core.koerper.Koerper) ein (Spec V4).
+
+        Ohne Farb-Override gelten die P4-Farben des Koerpers (aktiv ab
+        Schritt 2.5); mit Override bleibt das alte Erscheinungsbild
+        exakt erhalten (Schritt 1: visuell unveraendert).
+        """
+        self.mesh_setzen(name, koerper.punkte, koerper.dreiecke,
+                         position=position,
+                         farbe_unten=(farbe_unten if farbe_unten is not None
+                                      else koerper.unterwasser_farbe()),
+                         farbe_oben=(farbe_oben if farbe_oben is not None
+                                     else koerper.farbe))
+        if achse is not None:
+            self._koerper[name]["achse"] = tuple(achse)
+            self._koerper[name]["phase"] = phase
+
     def _actor_namen(self, name):
         return ("koerper_%s_unten" % name, "koerper_%s_oben" % name,
                 "kontur_%s" % name)

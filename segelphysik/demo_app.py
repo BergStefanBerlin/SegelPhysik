@@ -10,7 +10,9 @@ from __future__ import annotations
 import time
 
 from .core import bewegung as kin
-from .grafik_bruecke import GrafikBruecke
+from .core import fabriken
+from .core.konfig_lader import lade_konfiguration
+from .grafik_bruecke import GrafikBruecke, FARBE_UNTEN, FARBE_OBEN
 from .steuerung import ControlPanel
 
 TYPEN = (("kegel", "cone"), ("quader", "box"), ("pyramide", "pyramid"))
@@ -26,6 +28,7 @@ def _phi_grad(t):
 
 
 def main():
+    konfig = lade_konfiguration()   # Spec J: einzige Quelle, kein stiller Fallback
     bruecke = GrafikBruecke()
     plotter = bruecke.fenster_bauen()
 
@@ -37,8 +40,13 @@ def main():
     def spawne(name, typ):
         szene = kin.Szene.standard(typ)
         d = szene.koerper[0]
-        bruecke.koerper_setzen(name, d["type"], d["dims"], d["axis"],
-                               d["phase"], POSITIONEN[typ])
+        bauer = {"cone": fabriken.baue_kegel, "box": fabriken.baue_quader,
+                 "pyramid": fabriken.baue_pyramide}[typ]
+        k = bauer(konfig, **d["dims"])
+        bruecke.koerper_objekt_setzen(name, k, POSITIONEN[typ],
+                                      achse=d["axis"], phase=d["phase"],
+                                      farbe_unten=FARBE_UNTEN,
+                                      farbe_oben=FARBE_OBEN)
         sichtbar[name] = True
 
     def umschalten(index):
@@ -71,11 +79,10 @@ def main():
 
     # Boot (statisch auf der Wasserlinie, einfarbig hellgrau) - Taste 4.
     try:
-        from .core import boot_bau
-        b_punkte, b_gesichter = boot_bau.baue_boot()
-        bruecke.mesh_setzen("boot", b_punkte, b_gesichter,
-                            position=(0.0, 2.5, 0.0),
-                            farbe_unten="#c9c9c9", farbe_oben="#c9c9c9")
+        boot, r_modell = fabriken.baue_boot(konfig)
+        bruecke.koerper_objekt_setzen(
+            "boot", boot, position=(0.0, 2.5, 0.0) + r_modell,
+            farbe_unten="#c9c9c9", farbe_oben="#c9c9c9")   # Schritt 1: wie bisher
         sichtbar["boot"] = True
     except (FileNotFoundError, ImportError) as fehler:
         print("Hinweis: Boot nicht geladen:", fehler)

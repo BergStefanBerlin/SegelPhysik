@@ -1,0 +1,28 @@
+SEGELPHYSIK V4 - ADDITIVE PATCHES (SCHRITT 1, Teil 2)
+=====================================================
+
+Inhalt dieser Zip:
+  segelphysik/demo_app.py        - gepatcht (4 gezielte Ersetzungen)
+  segelphysik/grafik_bruecke.py  - gepatcht (1 neue Methode, sonst unveraendert)
+  tests/test_koerper.py          - NEU (32 Testfaelle, Bloecke A-E + F4)
+  LIESMICH_Patches.txt           - diese Datei
+
+Voraussetzung: SegelPhysik_v4_schritt0_1_2.zip ist bereits eingestellt
+(core/konfig_lader.py, core/massen.py, core/koerper.py, core/fabriken.py,
+modelle/yacht1/, konfiguration.json).
+
+Anwendung:
+  1. Die drei Dateien ueber die Repo-Fassungen legen (demo_app.py und
+     grafik_bruecke.py ERSETZEN - die Aenderungen sind darin markiert
+     bzw. rein additiv).
+  2. python -m pytest tests/ -v
+     Erwartung: 22 alte + 32 neue Tests, alle gruen.
+  3. Optional Sichtprobe: python -m segelphysik.demo_app
+     (Bild muss identisch zur V3-Demo sein - Schritt-1-Abnahme).
+
+Hinweise:
+- Die P4-Farben (Konfiguration) sind vorbereitet, aber in Schritt 1
+  bewusst per Override stillgelegt (Blau/Rot bzw. Grau) - Aktivierung
+  erfolgt in Schritt 2.5 gemaess Umsetzungsplan.
+- Das Boot kommt jetzt aus konfiguration.json (rekursiv: kielsystem,
+  rigg) und aus modelle/yacht1/.
