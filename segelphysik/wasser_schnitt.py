@@ -61,7 +61,8 @@ def wasserlinie_aus_teilmesh(punkte, dreiecke, ebene_z=0.0, tol=1e-9):
     rand = uniq[counts == 1]
     if len(rand) == 0:
         return np.zeros((0, 3))
-    auf_hoehe = (np.abs(P[rand[:, 0], 2] - ebene_z) <= tol) &                 (np.abs(P[rand[:, 1], 2] - ebene_z) <= tol)
+    auf_hoehe = ((np.abs(P[rand[:, 0], 2] - ebene_z) <= tol)
+                 & (np.abs(P[rand[:, 1], 2] - ebene_z) <= tol))
     rand = rand[auf_hoehe]
     if len(rand) == 0:
         return np.zeros((0, 3))
@@ -115,7 +116,8 @@ def schneide_am_wasser(punkte, gesichter, ebene_z=0.0):
 
     kontur = [wasserlinie_aus_teilmesh(unten_p, unten_t, ebene_z),
               wasserlinie_aus_teilmesh(oben_p, oben_t, ebene_z)]
-    kontur_p = np.vstack([k for k in kontur if len(k)])         if any(len(k) for k in kontur) else np.zeros((0, 3))
+    kontur_p = (np.vstack([k for k in kontur if len(k)])
+                if any(len(k) for k in kontur) else np.zeros((0, 3)))
     return unten_p, unten_t, oben_p, oben_t, kontur_p
 
 
@@ -151,6 +153,9 @@ def polygonzug_der_kontur(kontur, tol=1e-9):
         v1 = sortiert[i] - behalten[-1]
         v2 = sortiert[(i + 1) % len(sortiert)] - sortiert[i]
         n1, n2 = np.linalg.norm(v1[:2]), np.linalg.norm(v2[:2])
-        if np.linalg.norm(np.cross(v1[:2], v2[:2])) > 1e-9 * max(n1, n2, 1.0):
+        # Quick-Win: np.cross auf 2D-Vektoren ist seit NumPy 2.0 deprecated.
+        # |norm(cross(v1,v2))| ist fuer 2D analytisch identisch mit
+        # |v1x*v2y - v1y*v2x| -> direkt berechnet (10000 Zufallspaare: diff 0.0).
+        if abs(v1[0] * v2[1] - v1[1] * v2[0]) > 1e-9 * max(n1, n2, 1.0):
             behalten.append(sortiert[i])
     return np.asarray(behalten)
