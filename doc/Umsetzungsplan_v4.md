@@ -1,6 +1,6 @@
 # UMSETZUNGSPLAN V4 – Körper-Klasse & Architektur
 
-Status: VERBINDLICH · Grundlage: doc/Spec_v4.md (Fassung 11.10.2026, mit
+Status: VERBINDLICH · Grundlage: doc/Spezifikation_v4.md (Fassung 11.10.2026, mit
 Text-Überarbeitungsdurchlauf) · Datum: 11.10.2026
 
 Dieser Plan setzt die in der Spec V4 getroffenen Entscheidungen (P1–P7,
@@ -31,7 +31,7 @@ Neue Dateien (Spec R4):
 | `core/massen.py` | Divergenzsatz-Volumen, Flächeninhalt, Schwerpunkt, Trägheitstensor – rein numpy, exakt testbar |
 | `core/koerper.py` | Klasse `Koerper`: Form, genau-eins-Massen-Input (masse/dichte/material/flaechenmasse), Farbe (P4), Teile-Liste (P2), automatische r_S/I_S-Berechnung (P1), Pose in Welt (A1) |
 | Fabrik-Funktionen | dünne Erzeuger für Quader, Kegel, Pyramide, Boot (aus OBJ + konfiguration.json) |
-| `tests/test_koerper.py` | Testfälle gemäß doc/TESTCASES_V4.md |
+| `tests/test_koerper.py` | Testfälle gemäß doc/Testfaelle_v4.md |
 
 Regeln, die im Code sichtbar werden müssen:
 - Schwerpunktframe als einziges System (P1): nach Erzeugung sind ALLE Punkte um −r_S verschoben; Konstruktionskoordinaten existieren nur intern.
@@ -43,7 +43,7 @@ Regeln, die im Code sichtbar werden müssen:
 Umstellung der vier bekannten Körper (Kegel, Quader, Pyramide, Boot) auf die
 Klasse; demo_app/steuerung nutzen weiterhin die Brücke.
 
-**Abnahmekriterium Schritt 1:** Alle Tests aus TESTCASES_V4.md grün UND die
+**Abnahmekriterium Schritt 1:** Alle Tests aus doc/Testfaelle_v4.md grün UND die
 bestehende Regression (22 Tests) bleibt grün UND die Darstellung ist visuell
 unverändert (K5″-Prinzip: nichts Neues sichtbar).
 

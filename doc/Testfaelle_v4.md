@@ -1,6 +1,6 @@
 # TESTCASES V4 – Vorgaben für tests/test_koerper.py (und Lader-Tests)
 
-Status: VERBINDLICH · Grundlage: doc/Spec_v4.md (11.10.2026) · Datum: 11.10.2026
+Status: VERBINDLICH · Grundlage: doc/Spezifikation_v4.md (11.10.2026) · Datum: 11.10.2026
 
 Konventionen für ALLE Tests:
 - SI-Einheiten (R6); Toleranzen absolut, wo nicht anders angegeben.
