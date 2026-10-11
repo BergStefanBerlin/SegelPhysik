@@ -150,7 +150,7 @@ Alle vier laufen intern auf dieselbe Teilmasse m_i; danach ist alles einheitlich
 2. **Unterwasserfarbe (`farbe_unter_wasser`):** OPTIONAL pro Instanz vorgebbar.
 3. **Default-Verhalten:** Wird keine Unterwasserfarbe angegeben, ist die
    Unterwasserfärbung automatisch **um eine gut sichtbare Nuance heller** als die
-   Überwasserfarbe (Aufhellen im HSL-Raum um ΔL = +0,25 – Lightness +25 %,
+   Überwasserfarbe (Aufhellen im HSL-Raum um ΔL = 0,4 – Lightness +40 %,
    Sättigung unverändert; Wert vom Nutzer bestätigt, gepflegt in
    `konfiguration.json`; deterministisch, per Test festgenagelt).
 4. Muster/Texturen werden bewusst NICHT vorgesehen – sie lenken vom Ziel ab:
@@ -333,7 +333,7 @@ im Code gibt es keine stillen Duplikate der Tabellen.
 - Gruppen-Erkennung: ausschließlich über das Vorhandensein von `"teile"` –
   es gibt KEIN zusätzliches Typ-Feld (die Verschachtelung selbst ist die
   eine Wahrheit; ein Typ-Feld könnte der Struktur widersprechen).
-- `darstellung`: ΔL der Unterwasser-Aufhellung (0,25) und Default-Farbe
+- `darstellung`: ΔL der Unterwasser-Aufhellung (0,4 – Beschluss 11.10., nach Sichtprobe; vorher 0,25) und Default-Farbe
 
 **Zuordnungstabelle Spec-Parameter ↔ JSON-Schlüssel** (die JSON-Schlüssel
 tragen Einheiten im Namen, die Spec-Parameter nicht):

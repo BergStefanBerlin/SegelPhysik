@@ -64,7 +64,7 @@ Konventionen für ALLE Tests:
 
 | ID | Titel | Eingabe | Erwartung |
 |---|---|---|---|
-| TC-E1 | Default-Aufhellung (AK-P4a) | farbe=#c9c9c9, keine Unterwasserfarbe | Unterwasserfarbe = HSL-Aufhellung ΔL=+0,25, S unverändert; Referenzwerte fest im Test |
+| TC-E1 | Default-Aufhellung (AK-P4a) | farbe=#c9c9c9, keine Unterwasserfarbe | Unterwasserfarbe = HSL-Aufhellung ΔL=+0,4 (Beschluss 11.10.), S unverändert; Referenzwerte fest im Test |
 | TC-E2 | Beide gesetzt (AK-P4b) | beide Farben angegeben | beide exakt übernommen, keine Transformation |
 | TC-E3 | Default-Farbe (AK-P4c) | keine Farbangabe | farbe = #c9c9c9 (aus konfiguration.json, nicht hart codiert) |
 | TC-E4 | ΔL aus Konfiguration | delta_helligkeit_unterwasser=0.4 in Kopie | Aufhellung folgt der Datei (keine Code-Konstante) |

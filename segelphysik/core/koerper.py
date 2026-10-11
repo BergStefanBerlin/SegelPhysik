@@ -50,7 +50,7 @@ class Koerper:
 
     def __init__(self, form=None, *, masse=None, dichte=None, material=None,
                  flaechenmasse=None, materialien=None, farbe="#c9c9c9",
-                 farbe_unter_wasser=None, delta_helligkeit=0.25,
+                 farbe_unter_wasser=None, delta_helligkeit=0.4,
                  rel_pose=None, teile=()):
         self.farbe = farbe
         self.farbe_unter_wasser = farbe_unter_wasser

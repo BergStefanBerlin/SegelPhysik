@@ -14,6 +14,7 @@ from .core import fabriken
 from .core.konfig_lader import lade_konfiguration
 from .grafik_bruecke import GrafikBruecke, FARBE_UNTEN, FARBE_OBEN
 from .steuerung import ControlPanel
+from . import grafik_optimierung
 
 TYPEN = (("kegel", "cone"), ("quader", "box"), ("pyramide", "pyramid"))
 TYPEN_DEUTSCH = {"cone": "Kegel", "box": "Quader", "pyramid": "Pyramide"}
@@ -31,6 +32,7 @@ def main():
     konfig = lade_konfiguration()   # Spec J: einzige Quelle, kein stiller Fallback
     bruecke = GrafikBruecke()
     plotter = bruecke.fenster_bauen()
+    opt = grafik_optimierung.anwenden(bruecke)   # Schritt 2: K1+K2+K5
 
     panel = ControlPanel()
     uhr = kin.Uhr(wiedergabe=panel.wiedergabe)
@@ -44,9 +46,7 @@ def main():
                  "pyramid": fabriken.baue_pyramide}[typ]
         k = bauer(konfig, **d["dims"])
         bruecke.koerper_objekt_setzen(name, k, POSITIONEN[typ],
-                                      achse=d["axis"], phase=d["phase"],
-                                      farbe_unten=FARBE_UNTEN,
-                                      farbe_oben=FARBE_OBEN)
+                                      achse=d["axis"], phase=d["phase"])
         sichtbar[name] = True
 
     def umschalten(index):
@@ -64,6 +64,7 @@ def main():
         if panel.laeuft:
             uhr.weiter_real(real_dt)
         bruecke.aktualisieren(uhr.t)
+        opt.tick()
         phi = _phi_grad(uhr.t)
         pause = "" if panel.laeuft else "   [PAUSE]"
         aktiv = "/".join([n for n, _ in TYPEN if sichtbar.get(n)]
@@ -81,8 +82,7 @@ def main():
     try:
         boot, r_modell = fabriken.baue_boot(konfig)
         bruecke.koerper_objekt_setzen(
-            "boot", boot, position=(0.0, 2.5, 0.0) + r_modell,
-            farbe_unten="#c9c9c9", farbe_oben="#c9c9c9")   # Schritt 1: wie bisher
+            "boot", boot, position=(0.0, 2.5, 0.0) + r_modell)   # Schritt 2.5: P4-Farben
         sichtbar["boot"] = True
     except (FileNotFoundError, ImportError) as fehler:
         print("Hinweis: Boot nicht geladen:", fehler)
@@ -104,10 +104,79 @@ def main():
         plotter.add_key_event(taste, lambda: panel.aendere_wiedergabe(2.0))
     for taste in ("minus", "down", "kp_subtract"):
         plotter.add_key_event(taste, lambda: panel.aendere_wiedergabe(0.5))
+    # Kamera-Presets (K5): F1 Bug, F2 Heck, F3 3/4, F4 Draufsicht
+    for taste, preset in (("F1", "bug"), ("F2", "heck"),
+                          ("F3", "drei_viertel"), ("F4", "draufsicht")):
+        plotter.add_key_event(taste, lambda n=preset: opt.kamera(n))
+
+    # Taste 'o' wird unten direkt am Interactor beobachtet (zuverlaessiger)
     plotter.add_key_event("q", plotter.close)
 
     # Robuste Animationsschleife: interactive_update + update()
     plotter.show(interactive_update=True, auto_close=False)
+
+    # Direkter Tasten-Beobachter (Schritt-2-Diagnose): meldet JEDE Taste auf
+    # der Konsole und routet 'o' an SSAO. Laeuft unabhaengig von der
+    # pyvista-Key-Zwischenschicht.
+    def _status_setzen(text):
+        try:
+            status.SetInput(text)
+        except Exception:
+            status.SetText(0, text)
+
+    # Alter V3-Titel (fest in vista.py) wird ENTFERNT: Alle Text-Props,
+    # deren Inhalt den alten Text enthaelt, kommen aus dem Renderer raus.
+    try:
+        entfernt = 0
+        for prop in list(plotter.renderer.GetViewProps()):
+            name = type(prop).__name__
+            if not any(s in name for s in ("CornerAnnotation", "TextActor")):
+                continue
+            texte = []
+            fn = getattr(prop, "GetInput", None)
+            if fn:
+                try:
+                    texte.append(str(fn() or ""))
+                except Exception:
+                    pass
+            gt = getattr(prop, "GetText", None)
+            if gt:
+                try:
+                    texte += [str(gt(i) or "") for i in range(4)]
+                except Exception:
+                    pass
+            if any(("v0.4" in t) or ("[g/G]" in t) for t in texte):
+                plotter.renderer.RemoveActor(prop)
+                entfernt += 1
+        print("Alter Titel entfernt (%d Actor(s))" % entfernt)
+    except Exception as fehler:
+        print("Alter Titel nicht entfernbar:", fehler)
+
+
+    # Neuer Titel + STATUS-ZEILE (Rueckmeldung im Fenster)
+    plotter.add_text(
+        "SegelPhysik v4  [1/2/3] Koerper  [4] Boot  [a] alle  [space] Pause  "
+        "[r] Reset  [+/-] Tempo  [F1-F4] Kamera  [o] SSAO  [q] Ende",
+        position="upper_left", font_size=10, color="black", name="titel_v4")
+    status = plotter.add_text("(Bereit)", position="upper_right",
+                              font_size=12, color="darkred", name="status")
+
+    def _tasten_beobachter(objekt, ereignis):
+        sym = (objekt.GetKeySym() or "").lower()
+        if sym == "o":
+            try:
+                meldung = opt.ssao_umschalten()
+            except Exception as fehler:
+                meldung = "Fehler: %s" % fehler
+            _status_setzen("SSAO: %s" % meldung)
+        elif sym in ("f1", "f2", "f3", "f4"):
+            _status_setzen("Kamera: %s" % sym.upper())
+        else:
+            _status_setzen("Taste: %s" % sym)
+    try:
+        plotter.iren.add_observer("KeyPressEvent", _tasten_beobachter)
+    except Exception as fehler:
+        print("Tasten-Beobachter nicht registrierbar:", fehler)
     try:
         while True:
             taktschlag()

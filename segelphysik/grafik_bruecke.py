@@ -78,7 +78,7 @@ class GrafikBruecke:
         p = self._renderer.build()
         self._plotter = p
         self._hilfetext_ersetzen(
-            "SegelPhysik v3.0 | [1/2/3] Koerper ein/aus  [a] alle  "
+            "SegelPhysik v4 | [1/2/3] Koerper  [4] Boot  [a] alle  [F1-F4] Kamera  "
             "[Leertaste] Pause  [r] Reset  [+/-] Tempo  [q] Ende")
         return p
 
