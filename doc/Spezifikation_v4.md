@@ -1,8 +1,8 @@
 # SPEC V4: Körper-Klasse & Architektur (verbindliche Fassung)
 
 Status: VOLLSTÄNDIG – alle Punkte entschieden oder bewusst zurückgestellt
-(Stand 11.10.2026; mehrere Konsistenzprüfungen, letzte inkl. Eingabedatei-Beschluss
-und Dateinamen-Klärung).
+(Stand 11.10.2026; mehrere Konsistenzprüfungen, letzte inkl. Eingabedatei-Beschluss,
+Dateinamen-Klärung und Text-Überarbeitungsdurchlauf).
 Zweck: Verbindliche Grundlage für die Umsetzung (Schritt 1: Körper-Klasse).
 Datum: 11.10.2026
 
@@ -287,8 +287,10 @@ Status: PRIORISIERT (Beschluss 11.10.): Zuerst K1 + K2 + K5 (Licht/Atmosphäre,
 Wasser-Glanz, Kamera-Presets) – reine Renderer-Einstellungen, kein Umbau.
 K3 (Materialglanz) und K4 (Tube-Overlays) folgen, sobald die Overlays aus P5
 umgesetzt sind. Umsetzung: als eigener Meilenstein NACH der Körper-Klasse,
-additiv in der Bruecke; vista.py bleibt unangetastet (Einstellungen werden
-von der Bruecke gesetzt, nicht in vista.py geändert).
+additiv in der Brücke; vista.py bleibt unangetastet (Einstellungen werden
+von der Brücke gesetzt, nicht in vista.py geändert).
+
+---
 
 ## J – Eingabedatei `konfiguration.json` [ENTSCHEIDEN 11.10., präzisiert: Template-Muster]
 
@@ -321,7 +323,14 @@ im Code gibt es keine stillen Duplikate der Tabellen.
   rumpf (GfK) · ruder (GfK) · kielsystem [kiel (Stahl), bulb (Blei)] ·
   rigg [mast (Aluminium), boom (Aluminium), großsegel (0,5 kg/m²),
   fock (0,5 kg/m²)]
-- Gruppen-Erkennung: ausschließliche über das Vorhandensein von `"teile"` –
+- Geometrie-Zuordnung: Der Teilename wird per Konvention auf die OBJ-Datei
+  `modelle/<name>.obj` abgebildet (alle 8 Boot-Teile folgen dieser Konvention).
+- rel_Posen: Die Vorlage gibt KEINE rel_Posen an – alle Teile teilen den
+  gemeinsamen Modellursprung, ihre rel_Pose ist damit implizit die Identität
+  (Angabe gemäß P2 Punkt 4 nur, wenn abweichend nötig).
+- Farben: In der Vorlage sind keine Farbangaben gesetzt – für alle Boot-Teile
+  gilt der Default gemäß P4 (#c9c9c9, Unterwasser automatisch heller).
+- Gruppen-Erkennung: ausschließlich über das Vorhandensein von `"teile"` –
   es gibt KEIN zusätzliches Typ-Feld (die Verschachtelung selbst ist die
   eine Wahrheit; ein Typ-Feld könnte der Struktur widersprechen).
 - `darstellung`: ΔL der Unterwasser-Aufhellung (0,25) und Default-Farbe
@@ -334,7 +343,7 @@ tragen Einheiten im Namen, die Spec-Parameter nicht):
 | `material` (Name) | `<Materialname>` → Dichte | `materialien` |
 | `dichte` (direkte Zahl) | – (direkte Zahl im Körper-Konstruktor) | – |
 | `flaechenmasse` | `flaechenmasse_kg_pro_m2` | `boot.teile[]` |
-| Wasser-Auswahl | `standard` bzw. Name → Dichte | `wasser.dichten_kg_pro_m3` |
+| Wasser-Auswahl | `standard` (Name) bzw. direkte Zahl | `wasser.standard`; Namensauflösung in `wasser.dichten_kg_pro_m3` |
 | ΔL der Aufhellung | `delta_helligkeit_unterwasser` | `darstellung` |
 | `farbe` (Default) | `farbe_standard` | `darstellung` |
 
@@ -348,7 +357,7 @@ tragen Einheiten im Namen, die Spec-Parameter nicht):
 - Direkte Zahlen bleiben überall zulässig (Dichte statt Materialname usw.);
   die Datei definiert nur die benannten Defaults.
 - Die Validierung läuft REKURSIV über die gesamte teile-Baumstruktur:
-  Gruppe mit Massen-Schlüssel → Fehler; Blatt ohne/genau-zwei Massengrößen →
+  Gruppe mit Massen-Schlüssel → Fehler; Blatt mit keiner oder mehr als einer Massengröße →
   Fehler; leere Gruppe → Fehler.
 - Die Arbeitsdatei ist der Vorläufer des Konfigurators (P6).
 
@@ -362,10 +371,11 @@ tragen Einheiten im Namen, die Spec-Parameter nicht):
 - R2 Einsprachige native API: die öffentliche API ist durchgängig deutsch,
   KEINE Alias-Doppelung mehr (alte Fassaden bleiben unangetastet, werden nicht
   erweitert).
-- R3 Umsetzung in drei Schritten (Reihenfolge gemäß P5c/P7-Beschlüssen):
+- R3 Umsetzung in vier Schritten (Reihenfolge gemäß P5c/P7-Beschlüssen):
   (1) Klasse + Massenintegration + Umstellung der vier bekannten Körper,
   Regression grün; (2) Grafik-Optimierung K1+K2+K5 als eigener Meilenstein;
-  (3) Overlays (r_S, Hauptachsen) als eigener Schritt.
+  (3) Overlays (r_S, Hauptachsen) als eigener Schritt; (4) Materialglanz K3
+  und Tube-Overlays K4 (gemäß P7 erst NACH Schritt 3).
 - R4 Geplante Dateien (alle neu, Altbestand unberührt):
   core/koerper.py (Klasse), core/massen.py (Divergenzsatz, r_S, Tensor),
   Fabrik-Funktionen, tests/test_koerper.py, konfiguration.json (ARBEITSDATEI,
