@@ -1,4 +1,4 @@
-"""SegelPhysik V4 - Demo (P5c Phase C: Kraeftebild + Beenden-Fix).
+"""SegelPhysik V4 - Demo (P5c Phase C + B2: Kraeftebild, statischer Solver).
 
 Start: python -m segelphysik.demo_app
 Tasten: [space] Objekt wechseln | [n] Uhr-Reset | [r/s/z] Simulationsmodus
@@ -25,6 +25,7 @@ from .core.konfig_lader import lade_konfig, lade_physik
 from .grafik_bruecke import GrafikBruecke, FARBE_UNTEN, FARBE_OBEN
 from .steuerung import ControlPanel
 from .core.sim_modus import SimSteuerung, Modus
+from .core.statisch import loese as statisch_loese, SolverFehler
 from . import grafik_optimierung
 from .core.overlays import (LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN,
                             LAYER_KRAEFTE)
@@ -56,6 +57,9 @@ def main():
     aktuell = {"index": 0}
     erzeugt = {}
     kraefte_cache = {}      # name -> (erg, masse, g, skala)
+    kraefte_start = {}      # name -> Ruhepose-Ergebnis (Restore bei r/z)
+    kraftfunktionen = {}    # name -> gebundene Kraftfunktion (F19)
+    statisch_info = {}      # name -> Kurzinfo der Loesung fuer die Statuszeile
     beenden = {"aktiv": False}
 
     def spawne(name, typ):
@@ -91,6 +95,8 @@ def main():
             halbe = float(np.abs(np.asarray(objekt.punkte, float)).max()) or 1.0
             skala = kb.skala_waehlen(objekt.masse, g, referenz_laenge=1.1 * halbe)
             kraefte_cache[name] = (erg, objekt.masse, g, skala)
+            kraefte_start[name] = kraefte_cache[name]
+            kraftfunktionen[name] = kf
         except Exception as fehler:
             print("Hinweis: Kraeftebild nicht verfuegbar fuer %s:" % name, fehler)
         return True
@@ -121,14 +127,69 @@ def main():
         naechster = (aktuell["index"] + 1) % len(OBJEKTE)
         objekt_anzeigen(naechster)
 
+    def _statisch_loesen_und_setzen(name):
+        """Phase B2 (Plan §4): Solver mit der aktuellen Pose als Startwert,
+        dann Pose + Kraeftebild auf die Gleichgewichtslage setzen."""
+        eintrag = kraefte_cache.get(name)
+        kf = kraftfunktionen.get(name)
+        if eintrag is None or kf is None:
+            print("STATISCH: keine Kraefte-Daten fuer %s - Solver uebersprungen" % name)
+            return
+        _erg, m, g, _sk = eintrag
+        print("STATISCH: Solver laeuft (%s) ..." % name)
+        _status_setzen("STATISCH: Solver rechnet ... (Protokoll in der Konsole)")
+        try:
+            plotter.update()
+        except Exception:
+            pass
+        t0 = time.perf_counter()
+        try:
+            loesung = statisch_loese(kf, m, g=g, start=(0.0, 0.0))
+        except SolverFehler as fehler:
+            dauer = time.perf_counter() - t0
+            print("STATISCH: Solver-Fehler nach %.2f s: %s" % (dauer, fehler))
+            _status_setzen("STATISCH: Solver-Fehler (siehe Konsole)")
+            statisch_info.pop(name, None)
+            return
+        dauer = time.perf_counter() - t0
+        z, phi = float(loesung["z"]), float(loesung["phi"])
+        gm = loesung["gm"]
+        print("STATISCH: z*=%.4f m  phi*=%.2f Grad  Iterationen=%d  Restarts=%d  "
+              "Restkraft=%.2e N  Restmoment=%.2e N*m  GM=%s  Dauer=%.2f s"
+              % (z, np.degrees(phi), loesung["iterationen"], loesung["restarts"],
+                 loesung["restkraft"], loesung["restmoment"],
+                 ("%.4f m" % gm) if gm is not None else "n/a (gekraengt)", dauer))
+        # Ergebnis AN DER LOESUNG holen. K ist Welt (D11: r_S dort bei
+        # (0,0,z)) -> fuer die Bruecke auf r_S normieren (Vertrag: K relativ).
+        erg_l = kf((z, phi, 0.0))
+        K_rel = (np.asarray(erg_l.K.as_array(), float)
+                 - np.array([0.0, 0.0, z]))
+        erg_anzeige = auftrieb.Auftriebsergebnis(
+            erg_l.V_tauch, K_rel, erg_l.F_A, erg_l.M)
+        # D1: Skala bleibt die feste Szene-Skala - nicht neu waehlen.
+        kraefte_cache[name] = (erg_anzeige, m, g, _sk)
+        statisch_info[name] = "z*=%7.3f m  phi*=%6.2f Grad" % (z, np.degrees(phi))
+        bruecke.statische_pose_setzen(name, z, phi)
+        erg, mm, gg, sk2 = kraefte_cache[name]
+        bruecke.kraefte_daten_setzen(name, erg, mm, gg, sk2)
+        _status_setzen("STATISCH: Gleichgewicht z*=%.3f m  phi*=%.2f Grad"
+                       % (z, np.degrees(phi)))
+
     def _kraefte_modus_anpassen():
-        """Phase C: Kraeftebild nur ausserhalb von RUHEND (Plan §5)."""
+        """Phase C+B2: Kraeftebild ausserhalb von RUHEND (Plan §5);
+        STATISCH loest zusaetzlich die Gleichgewichtslage (Plan §4)."""
         name = OBJEKTE[aktuell["index"]][0]
         if sim.modus is Modus.RUHEND:
             bruecke.kraefte_entfernen(name)
-        elif name in kraefte_cache:
-            erg, m, g, sk = kraefte_cache[name]
-            bruecke.kraefte_daten_setzen(name, erg, m, g, sk)
+            bruecke.statische_pose_loeschen(name)
+        elif sim.modus is Modus.STATISCH:
+            _statisch_loesen_und_setzen(name)
+        else:
+            bruecke.statische_pose_loeschen(name)
+            if name in kraefte_start:
+                kraefte_cache[name] = kraefte_start[name]
+                erg, m, g, sk = kraefte_cache[name]
+                bruecke.kraefte_daten_setzen(name, erg, m, g, sk)
 
     letzte_kraefte_taste = {"t": 0.0}
 
@@ -196,6 +257,8 @@ def main():
                 and sim.modus is not Modus.RUHEND
                 and name in kraefte_cache):
             info += "   " + kb.text_zeile(kraefte_cache[name][0])
+        if sim.modus is Modus.STATISCH and name in statisch_info:
+            info += "   " + statisch_info[name]
         _status_setzen(sim.text() + "   " + info)
         bruecke.status(info)
 

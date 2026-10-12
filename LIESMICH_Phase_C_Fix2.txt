@@ -1,0 +1,14 @@
+Phase C Fix 2 (Sichtprobe 12.10., 13:44): STATISCH rotierte noch.
+
+Ursache: Die Animationsuhr lief in jedem Modus ausser RUHEND weiter -
+die Szene drehte sich also auch im STATISCH-Modus.
+
+Fix: Die Uhr laeuft nur noch in ECHTZEIT. STATISCH zeigt die statische
+Lage (eingefroren, Plan §4) mit Kraeftebild; RUHEND bleibt eingefroren
+ohne Kraeftebild. Rotation gehoert ausschliesslich zu ECHTZEIT.
+
+Nur segelphysik/demo_app.py ersetzen.
+Erwartung:
+  r -> eingefroren, kein Kraeftebild
+  s -> eingefroren, Kraeftebild an Taste 7 moeglich (statische Lage)
+  z -> Szene rotiert (Animationsuhr)

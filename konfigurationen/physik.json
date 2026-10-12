@@ -1,0 +1,24 @@
+{
+  "_dokumentation": "Physik-Parameter (D8, Umsetzungsplan V5). Vorlage: einmalig nach konfigurationen/physik.json kopieren. Unterstrich-Schluessel sind Doku und werden ignoriert.",
+
+  "physik": {
+    "_dt": "Fester Zeitschritt der Echtzeit-Integration in Sekunden (K7-Determinismus, Akkumulator-Muster - nie Wanduhr-dt).",
+    "dt_s": 0.004,
+
+    "_g": "Erdbeschleunigung in m/s^2, Norm-Schwere (D4). Referenzwert fuer alle Tests.",
+    "g_m_pro_s2": 9.80665,
+
+    "_daempfung": "Uebergangsmodell (D2, 12.10.): zunaechst so stark, dass kaum Schwingung entsteht (quasi-aperiodisches Einschwingen). Lineares Modell: Kraft = -c * v bzw. Moment = -c * omega. Wird spaeter durch Hydro-/Aerodynamik ersetzt. 0 = ungedaempft (fuer Block-Q-Tests).",
+    "daempfung": {
+      "tauchung": 8000.0,
+      "kraengung": 8000.0
+    },
+
+    "_voxel": "Voxelgitter (D7/D10). aufloesung_m ist der FESTE Betriebswert. Kalibrierung (F22): einmalig die Aufloesung halbieren, bis sich V_tauch UND K nicht mehr aendern (je unter der jeweiligen Schranke) - nicht Teil jedes Aufrufs. Zwei getrennte Schranken (F24): Volumen in m^3, Punktlage in m.",
+    "voxel": {
+      "aufloesung_m": 0.05,
+      "schranke_volumen_m3": 0.0005,
+      "schranke_punkt_m": 0.005
+    }
+  }
+}

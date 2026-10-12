@@ -1,0 +1,1 @@
+{"physik": {"dt_s": 0.004, "g_m_pro_s2": 9.80665, "daempfung": {"tauchung": 8000.0, "kraengung": 8000.0}, "voxel": {"aufloesung_m": 0.05, "schranke_volumen_m3": 0.0005, "schranke_punkt_m": 0.005}}}

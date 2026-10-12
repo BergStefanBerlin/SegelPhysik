@@ -319,19 +319,17 @@ class GrafikBruecke:
             if not k["aktiv"]:
                 continue
             pd = k["pd"]
-            if k["achse"] is None:
+            if k.get("statisch_R") is not None:
+                R = k["statisch_R"]   # Phase B2: eingefrorene Gleichgewichtslage
+            elif k["achse"] is None:
                 R = np.eye(3)
-                welt = pd["referenz_punkte"] + k["position"]
             else:
                 R, _ = kin.koerper_pose(t, achse=k["achse"], phase=k["phase"])
-                welt = pd["referenz_punkte"] @ R.T + k["position"]
+            welt = pd["referenz_punkte"] @ R.T + k["position"]
             pd.points = welt
             if k.get("gruppen"):
                 for g in k["gruppen"]:
-                    if k["achse"] is None:
-                        gw = g["pd"]["referenz_punkte"] + k["position"]
-                    else:
-                        gw = g["pd"]["referenz_punkte"] @ R.T + k["position"]
+                    gw = g["pd"]["referenz_punkte"] @ R.T + k["position"]
                     g["pd"].points = gw
                 self._gruppen_actors(name, k)
             else:
@@ -420,6 +418,53 @@ class GrafikBruecke:
                 self._plotter.remove_actor(n)
             except Exception:
                 pass
+
+    def statische_pose_setzen(self, name, z, phi):
+        """Phase B2: friert den Koerper in der statischen Gleichgewichts-
+        lage ein (D11: r_S bei Welt-z = z, Rotation R_x(phi) um r_S).
+        Die Basis-Position wird gesichert und beim Loeschen restauriert."""
+        k = self._koerper.get(name)
+        if k is None:
+            return False
+        if "position_basis" not in k:
+            k["position_basis"] = np.asarray(k["position"], float).copy()
+        basis = k["position_basis"]
+        c, s = np.cos(float(phi)), np.sin(float(phi))
+        R = np.array([[1.0, 0.0, 0.0],
+                      [0.0, c, -s],
+                      [0.0, s, c]])
+        k["statisch_R"] = R
+        k["position"] = np.array([basis[0], basis[1], float(z)])
+        self._statisch_anwenden(name, k)
+        return True
+
+    def statische_pose_loeschen(self, name):
+        """Gibt die Pose wieder frei (Modus r/z): Basis-Position zurueck,
+        die Animation uebernimmt wieder."""
+        k = self._koerper.get(name)
+        if k is None or "position_basis" not in k:
+            return False
+        k["position"] = k["position_basis"].copy()
+        k.pop("statisch_R", None)
+        k.pop("position_basis", None)
+        self._statisch_anwenden(name, k)
+        return True
+
+    def _statisch_anwenden(self, name, k):
+        """Wendet die aktuelle (statische oder freigegebene) Pose an."""
+        pd = k["pd"]
+        R = k.get("statisch_R")
+        if R is None:
+            R = np.eye(3)
+        welt = pd["referenz_punkte"] @ R.T + k["position"]
+        pd.points = welt
+        if k.get("gruppen"):
+            for g in k["gruppen"]:
+                g["pd"].points = g["pd"]["referenz_punkte"] @ R.T + k["position"]
+            self._gruppen_actors(name, k)
+        else:
+            self._actors_aktualisieren(name, welt)
+        self._overlays_aktualisieren(name, k, R)
 
     def kraefte_entfernen(self, name):
         """Oeffentlich: entfernt Actors + Daten (Objektwechsel)."""

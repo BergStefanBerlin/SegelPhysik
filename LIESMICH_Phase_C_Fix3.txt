@@ -1,0 +1,26 @@
+Phase C Fix 3 (Sichtprobe 12.10., 13:47): Umschalten zur Yacht hing.
+
+Ursache: Der Voxel-Kern in core/auftrieb.py lief in dreifach
+verschachtelter reiner Python-Schleife (Saeulen x Teilmeshes x ALLE
+Dreiecke). Beim Boot (6 Meshes, tausende Dreiecke, grosse Bounding-Box)
+sind das Dutzende Millionen Skalaroperationen - die Demo friert beim
+ersten Spawn des Boots minutenlang ein. Die Grundkoerper (12 Dreiecke)
+hatten dasselbe Muster, nur unsichtbar schnell.
+
+Fix A (Performance): Die Saeulen-Berechnung ist vektorisiert
+(_y_intervalle_saeule_v, alle Dreiecke gleichzeitig je Saeule, numpy).
+Logik und Toleranzen identisch zum skalaren Pfad; Aequivalenz verifiziert
+(Wuerfel voll/halb, Halbkugel, Union zweier Wuerfel: identische Werte
+bis 1e-12 gegen den skalaren Pfad).
+
+Fix B (Robustheit, echter Latent-Bug im Original): Der Tangenten-
+Restfall entfernte bisher nur EIN aeusseres Paar. Bei ungerader
+Schnittezahl >= 5 blieb die Liste wieder ungerade -> IndexError in der
+Paarbildung. Neu: _paare_bereit() schleift, bis die Zahl gerade ist.
+
+Verifikation (analytisch): Wuerfel voll getaucht V=8, halb getaucht
+V=4 (K_z=-0.5), Union zweier ueberlappender Wuerfel V=12 - alles exakt.
+
+Nur segelphysik/core/auftrieb.py ersetzen.
+Erwartung beim Test: Space bis "boot" - das Boot erscheint jetzt in
+etwa einer Sekunde (statt Einfrieren), Kraeftebild an Taste 7.
