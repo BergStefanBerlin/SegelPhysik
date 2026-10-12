@@ -1,0 +1,31 @@
+SegelPhysik V4 - P5c Schritt 1: Simulationsmodi (nur Umschaltung)
+=================================================================
+Stand: 12.10.2026
+
+UMFANG (Beschluss "langsam langsam"):
+  Nur der Modus-Automat + Textanzeige. KEINE Physik, kein Solver,
+  keine Integration, keine Stoer-Tasten.
+
+DATEIEN:
+  segelphysik/core/sim_modus.py    neu: Modus (Enum), SimSteuerung (rein,
+                                   ohne Grafik -> voll testbar)
+  segelphysik/demo_app.py          Tasten r/s/z verdrahtet, Modus steht
+                                   vorne in der Statuszeile
+  tests/test_sim_modus.py          Block M1-M7 (7 Tests)
+
+TASTEN (neu):
+  r -> RUHEND    s -> STATISCH    z -> ECHTZEIT
+  ACHTUNG: Der Uhr-Reset war bisher auf 'r' und ist jetzt auf 'n'
+  (Nullpunkt). Fenstertitel aktualisiert.
+
+REGELN:
+  - Gleiche Taste im selben Modus: No-op.
+  - Unbekannte Taste: nichts passiert (False).
+  - Zaehler 'wechsel' erfasst nur echte Wechsel (Determinismus-Pruefung).
+
+STATUSTEILE:
+  Die Statuszeile beginnt mit "MODUS: RUHEND|STATISCH|ECHTZEIT".
+  STATISCH/ECHTZEIT verhalten sich noch exakt wie RUHEND - sie sind
+  Platzhalter fuer Solver (Schritt 2) und Integration (Schritt 3).
+
+TESTS: python -m pytest tests/test_sim_modus.py -v  (7 bestanden)

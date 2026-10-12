@@ -1,0 +1,33 @@
+SegelPhysik V4 - P5c Schritt 1a: Modus-Fix (Verhalten + Diagnose)
+=================================================================
+Stand: 12.10.2026
+
+PROBLEM (Sichtprobe): Statuszeile zeigte "MODUS: RUHEND", aber die
+Szene drehte sich weiter und Tasten r/s/z aenderten den Text nicht.
+
+DIAGNOSE: Der Modus-Text haengt an zwei Anzeige-Kanaelen (Statuszeile
+unten rechts ueber den Renderer, dunkelrote Anzeige oben rechts).
+Wenn sich KEINER regt, kam die Taste nie beim Automaten an.
+
+DER FIX (nur demo_app.py geaendert - sim_modus.py unveraendert):
+1. RUHEND friert die Szene JETZT WIRKLICH ein: Die Animationsuhr
+   laeuft nur noch ausserhalb von RUHEND. Start = stehendes Bild.
+   s druecken -> Szene beginnt sich zu drehen. r -> erstarrt.
+   Der Modus ist damit auch ohne Text sichtbar.
+2. Konsolen-Diagnose: JEDER Tastendruck wird auf der Konsole
+   gedruckt ("TASTE: s"), Moduswechsel ebenso ("MODUS -> ...").
+3. Poll-Fallback: Falls der KeyPress-Beobachter auf Deiner
+   Hardware nicht feuert, liest tasten_poll() die Taste direkt am
+   Interactor (nur bei Tastenwechsel).
+
+BITTE BEIM TESTEN DIE KONSOLE BEOBACHTEN:
+  - Erscheint "TASTE: s" beim Druecken?  -> Beobachter arbeitet.
+  - Erscheint "MODUS -> ..." zweimal?    -> Beobachter + Poll beide
+    aktiv (unkritisch, zweiter Aufruf ist No-op).
+  - Erscheint GAR NICHTS?               -> Fenster hat keinen
+    Tastaturfokus (einmal ins Fenster klicken!).
+
+TASTEN: r = RUHEND (Szene steht) | s = STATISCH (Demo-Szene laeuft,
+Solver folgt in Schritt 2) | z = ECHTZEIT (dito, Schritt 3)
+| n = Uhr-Reset (war frueher 'r') | space = Pause weiterhin wirksam
+in STATISCH/ECHTZEIT.
