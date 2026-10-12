@@ -2,7 +2,10 @@
 Alle Werte (Materialien, Farben, DeltaL) kommen aus konfigurationen/.
 Modelle liegen je Boot in modelle/<bootname>/ (z. B. modelle/yacht1/).
 Farben (Spec P4, 12.10.): farbe/farbe_unter_wasser je BLATT optional;
-ohne Angabe gilt darstellung.farbe_standard + automatische Aufhellung."""
+ohne Angabe gilt darstellung.farbe_standard + automatische Aufhellung.
+
+Schritt 4 (K3): Glanzgrad kommt je Blatt aus der Materialtabelle
+(materialien.json, Schluessel 'glanz'); bei Direkt-Tripel gilt der Default."""
 import os
 from . import koerper_formen as formen_alt
 from . import boot_bau
@@ -69,6 +72,7 @@ def _specs_aus_konfig(eintraege, konfig, skala, ordner):
         if "material" in eintrag:
             rho = konfig.dichte_von(eintrag["material"])
             farbe, farbe_uw = konfig.farben_von(eintrag["material"])
+            spec["glanz"] = konfig.glanz_von(eintrag["material"])   # K3
         else:
             rho = float(eintrag["dichte_kg_pro_m3"])
             farbe = eintrag["farbe"]

@@ -1,0 +1,23 @@
+Schritt 4.1 (rev. 2) - Deckel am Wasserschnitt gegen SSAO-Flackern
+
+WICHTIG: Diese wasser_schnitt.py basiert auf dem VOLLSTAENDIGEN
+GitHub-Stand (mit mesh_volumen, einzigartige_konturpunkte,
+polygonzug_der_kontur). Die vorherige Zip (schritt4_4) enthielt
+versehentlich eine verkuerzte Fassung - dadurch brachen 8 alte
+Tests mit AttributeError fehl.
+
+Aenderungen ggue. GitHub-Stand:
+- schneide_am_wasser(...): neuer optionaler Parameter mit_deckel=False
+  (Default unveraendert -> alle bestehenden Tests laufen weiter).
+- Bei mit_deckel=True wird die Schnittflaeche mit Dreiecken geschlossen
+  (Fan um das Ringzentrum, Normale nach aussen: unten +z, oben -z).
+- Ringe ineinander (Loch im Ring, z.B. Hohlprofil): nur der aeussere
+  Ring wird gefaechert; der Fan deckt das Innere mit ab (kein
+  Gegen-Normalen-Z-Fighting).
+- grafik_bruecke.py: beide Aufrufstellen reichen mit_deckel=True durch.
+
+Empfehlung zusaetzlich (grafik_optimierung.py, ssao_umschalten):
+    enable_ssao(radius=0.8, bias=0.002) -> bias=0.01 (oder 0.02)
+
+Verifikation: alle 8 alten Tests (Quader/Kegel/Pyramide, Volumen-
+erhaltung, Winkel-Sweep) + K1/K3/K4/K5 - alle gruen.

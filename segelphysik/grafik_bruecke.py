@@ -7,6 +7,12 @@ segelphysik.wasser_schnitt exakt an der Ebene z = 0 in zwei geschlossene
 Teil-Meshes zerlegt und EINFARBIG eingefaerbt (dunkelblau unter Wasser,
 rot darueber). Die Wasserlinie ist die exakte Schnittkante - scharf fuer
 beliebig geformte Koerper und jede Orientierung.
+
+Schritt 4 (K3/K4): K3 Materialglanz - specular/specular_power je Blatt aus
+der Materialtabelle via Koerper.glanz; Phong, bewusst KEIN PBR (SSAO-
+Lektion: keine GPU-abhaengigen Effekte in der Standard-Ansicht). K4
+Tube-Overlays: Hauptachsen als Roehren (pv.Line().tube()), Fallback dicke
+Linie; Farben gold/cyan/magenta unveraendert.
 """
 from __future__ import annotations
 import numpy as np
@@ -21,12 +27,22 @@ from .core.overlays import (LayerRegistry, hauptachsen,
 FARBE_UNTEN = "#2166ac"
 FARBE_OBEN = "#b2182b"
 
-# Schritt 3 (P5b): Farbkonvention der Overlays (K4-Vorgriff, Linien
-# statt Tubes bis Schritt 4). 1./2./3. Hauptachse = gold/cyan/magenta,
-# Schwerpunkt-Marker = weiss.
 OVERLAY_FARBEN_ACHSEN = ("gold", "cyan", "magenta")
 
 BASIN_LX, BASIN_LY, WASSER_TIEFE, DX = 10.0, 10.0, 3.0, 0.25
+
+
+def glanz_kw(glanz):
+    """K3: add_mesh-kwargs fuer Glanzgrad g in [0..1] (Phong).
+
+    Endpunkte analytisch: g=0 -> specular 0.0 / power 15;
+    g=1 -> specular 1.0 / power 130. Linear dazwischen.
+    """
+    g = float(glanz)
+    if not 0.0 <= g <= 1.0:
+        raise ValueError("glanz muss in [0..1] liegen, gefunden: %r" % glanz)
+    return {"pbr": False, "specular": g,
+            "specular_power": 15.0 + 115.0 * g}
 
 
 class _Konfig:
@@ -67,19 +83,13 @@ def _dreiecks_polydaten(pv, punkte, dreiecke):
 
 
 def _farbgruppen(koerper):
-    """Farbgruppen eines Koerpers (P4 nach der Material-Reform).
-
-    Blatt: genau eine Gruppe (eigene Farbe aus Materialtabelle oder
-    Direkt-Tripel). Verband: rekursive Zerlegung je Blatt, Punkte im
-    Verbands-Schwerpunktframe (P1) komponiert. Die Reihenfolge folgt der
-    Teile-Hierarchie und entspricht damit exakt der Anordnung in
-    koerper.punkte (das prueft der Verifikationslauf).
-    """
+    """Farbgruppen eines Koerpers (P4 nach der Material-Reform)."""
     if not getattr(koerper, "teile", None):
         return [{"punkte": np.asarray(koerper.punkte, float),
                  "dreiecke": np.asarray(koerper.dreiecke, np.int64),
                  "farbe_oben": koerper.farbe,
-                 "farbe_unten": koerper.unterwasser_farbe()}]
+                 "farbe_unten": koerper.unterwasser_farbe(),
+                 "glanz": koerper.glanz}]
     blaetter = []
 
     def sammle(k, R, t):
@@ -96,7 +106,8 @@ def _farbgruppen(koerper):
         gruppen.append({"punkte": kind.punkte @ R.T + t,
                         "dreiecke": np.asarray(kind.dreiecke, np.int64),
                         "farbe_oben": kind.farbe,
-                        "farbe_unten": kind.unterwasser_farbe()})
+                        "farbe_unten": kind.unterwasser_farbe(),
+                        "glanz": kind.glanz})
     return gruppen
 
 
@@ -108,7 +119,7 @@ class GrafikBruecke:
         self._renderer = None
         self._plotter = None
         self._koerper = {}
-        self._layer = LayerRegistry()   # P5a: global, nicht pro Koerper
+        self._layer = LayerRegistry()
 
     def fenster_bauen(self):
         try:
@@ -158,8 +169,7 @@ class GrafikBruecke:
 
     def mesh_setzen(self, name, punkte, gesichter, position=(0.0, 0.0, 0.0),
                     farbe_unten=FARBE_UNTEN, farbe_oben=FARBE_OBEN):
-        """Haengt ein fertiges Dreiecks-Mesh ein (z. B. Boot). achse=None
-        bedeutet: statisch, keine Rotation."""
+        """Haengt ein fertiges Dreiecks-Mesh ein (z. B. Boot)."""
         import pyvista as pv
         pd = _dreiecks_polydaten(pv, punkte, gesichter)
         pd["referenz_punkte"] = pd.points.copy()
@@ -174,15 +184,7 @@ class GrafikBruecke:
     def koerper_objekt_setzen(self, name, koerper, position=(0.0, 0.0, 0.0),
                               achse=None, phase=0.0,
                               farbe_unten=None, farbe_oben=None):
-        """Haengt einen Koerper (core.koerper.Koerper) ein (Spec V4/P4).
-
-        Seit der Material-Reform kommen die Farben je BLATT aus der
-        Materialtabelle bzw. dem Direkt-Tripel. Ein Verband traegt selbst
-        keine Farbe (P2.5) - er wird hier in Farbgruppen zerlegt (eine
-        Gruppe je Blatt) und gruppenweise eingefaerbt, inklusive
-        Wasserlinien-Schnitt je Gruppe. Explizite Overrides faerben
-        alles einheitlich (altes Verhalten).
-        """
+        """Haengt einen Koerper (core.koerper.Koerper) ein (Spec V4/P4)."""
         import pyvista as pv
         gruppen = _farbgruppen(koerper)
         if farbe_oben is not None or farbe_unten is not None:
@@ -206,7 +208,6 @@ class GrafikBruecke:
         if achse is not None:
             self._koerper[name]["achse"] = tuple(achse)
             self._koerper[name]["phase"] = phase
-        # Schritt 3 (P5a/P5b): Koerper-Objekt + Overlay-Skala merken.
         self._koerper[name]["koerper"] = koerper
         self._koerper[name]["overlay_skala"] = self._overlay_skala(koerper)
         self._einhaengen(name)
@@ -237,16 +238,22 @@ class GrafikBruecke:
         p = self._plotter
         farbe_u = k.get("farbe_unten", FARBE_UNTEN)
         farbe_o = k.get("farbe_oben", FARBE_OBEN)
+        glanz = k.get("glanz")
         pd = k["pd"]
-        u_p, u_t, o_p, o_t, kontur = ws.schneide_am_wasser(welt, _gesichter(pd))
+        u_p, u_t, o_p, o_t, kontur = ws.schneide_am_wasser(welt, _gesichter(pd),
+                                  mit_deckel=True)
         n_unten, n_oben, n_kontur = self._actor_namen(name)
         refs = k.setdefault("actors", {})
 
+        kw_basis = {"opacity": 0.95, "show_edges": False,
+                    "smooth_shading": True}
+        if glanz is not None:
+            kw_basis.update(glanz_kw(glanz))
+
         if len(u_t):
             un = _dreiecks_polydaten(pv, u_p, u_t)
-            refs[n_unten] = p.add_mesh(un, color=farbe_u, opacity=0.95,
-                                       show_edges=False, smooth_shading=True,
-                                       name=n_unten)
+            refs[n_unten] = p.add_mesh(un, color=farbe_u, name=n_unten,
+                                       **kw_basis)
         else:
             refs.pop(n_unten, None)
             try:
@@ -256,9 +263,8 @@ class GrafikBruecke:
 
         if len(o_t):
             ob = _dreiecks_polydaten(pv, o_p, o_t)
-            refs[n_oben] = p.add_mesh(ob, color=farbe_o, opacity=0.95,
-                                      show_edges=False, smooth_shading=True,
-                                      name=n_oben)
+            refs[n_oben] = p.add_mesh(ob, color=farbe_o, name=n_oben,
+                                      **kw_basis)
         else:
             refs.pop(n_oben, None)
             try:
@@ -278,9 +284,7 @@ class GrafikBruecke:
                 pass
 
     def sichtbar_setzen(self, name, sichtbar):
-        """Ein-/Ausblenden (Fix nach Sichtprobe): Actor-Referenzen werden
-        mitgespeichert und per SetVisibility geschaltet. Nur remove_actor
-        reichte nicht zuverlaessig - Koerper 'froren' dann nur ein."""
+        """Ein-/Ausblenden (Fix nach Sichtprobe)."""
         k = self._koerper.get(name)
         if k is None:
             return
@@ -308,7 +312,7 @@ class GrafikBruecke:
             if not k["aktiv"]:
                 continue
             pd = k["pd"]
-            if k["achse"] is None:      # statisch (z. B. Boot)
+            if k["achse"] is None:
                 R = np.eye(3)
                 welt = pd["referenz_punkte"] + k["position"]
             else:
@@ -334,25 +338,37 @@ class GrafikBruecke:
     def hud(self, text):
         self._renderer.set_hud(text)
 
-    # ------------------------------------------------------------------
-    # Schritt 3 - Overlay-Layer (P5a/P5b): r_S-Marker + Hauptachsen
-    # ------------------------------------------------------------------
     def layer_umschalten(self, layer):
-        """Globaler Layer-Schalter (P5a): betrifft ALLE Koerper gleichzeitig."""
+        """Globaler Layer-Schalter (P5a)."""
         return self._layer.umschalten(layer)
 
     def layer_ist_an(self, layer):
         return self._layer.ist_an(layer)
 
     def _overlay_skala(self, koerper):
-        """Achsen-Laenge + Marker-Radius aus der Koerpergroesse (eigene Punkte,
-        Schwerpunktframe -> halbe Max-Ausdehnung = typischer Radius)."""
+        """Achsen-Laenge + Marker-Radius aus der Koerpergroesse."""
         halbe = float(np.abs(koerper.punkte).max()) if len(koerper.punkte) else 0.0
         if halbe <= 0.0:
             halbe = 1.0
         laenge = 1.1 * halbe
         radius = min(max(0.040 * halbe, 0.020), 0.160)
         return laenge, radius
+
+    def roehren_radius(self, koerper):
+        """K4: Tube-Radius aus der Overlay-Skala (koerpergerecht)."""
+        _laenge, marker_radius = self._overlay_skala(koerper)
+        return max(0.25 * marker_radius, 0.006)
+
+    def _roehre_oder_linie(self, pv, start, ende, farbe, radius, name):
+        """K4: Achsen-Segment als Tube (pv.Line().tube()); Fallback Linie."""
+        try:
+            roehre = pv.Line(start, ende).tube(radius=radius, n_sides=12)
+            return self._plotter.add_mesh(roehre, color=farbe, name=name,
+                                          smooth_shading=True)
+        except Exception:
+            linie = pv.Line(start, ende)
+            return self._plotter.add_mesh(linie, color=farbe, line_width=4,
+                                          name=name)
 
     def _overlay_namen(self, name):
         return (["overlay_%s_schwerpunkt" % name]
@@ -363,17 +379,14 @@ class GrafikBruecke:
         if koerper is None:
             return
         _laenge, radius = k["overlay_skala"]
-        cm = k["position"]                       # Welt-Schwerpunkt (P1)
+        cm = k["position"]
         if self._layer.ist_an(LAYER_SCHWERPUNKT):
             self._overlay_schwerpunkt_setzen(name, cm, radius)
         else:
             self._overlay_schwerpunkt_entfernen(name)
         if self._layer.ist_an(LAYER_HAUPTACHSEN):
             _werte, vektoren = hauptachsen(koerper.traegheitstensor)
-            richtungen = vektoren @ R.T           # gleiche Rotation wie das Mesh
-            # Achsenlaenge je Hauptachse: echte halbe Ausdehnung des Koerpers
-            # entlang dieser Achse (+5 % Luft). Vorher pauschal 1.1*max -
-            # das gab v. a. beim Boot bildfuellende Achsen.
+            richtungen = vektoren @ R.T
             rel = np.asarray(koerper.punkte, dtype=float)
             laengen = []
             for i in range(3):
@@ -403,14 +416,14 @@ class GrafikBruecke:
         import pyvista as pv
         namen = self._overlay_namen(name)
         store = self._koerper[name].setdefault("overlay_actors", {})
+        koerper = self._koerper[name].get("koerper")
+        rr = self.roehren_radius(koerper) if koerper is not None else 0.01
         for i in range(3):
             l = laengen[i] if hasattr(laengen, "__len__") else laengen
             start = cm - l * richtungen[i]
             ende = cm + l * richtungen[i]
-            linie = pv.Line(start, ende)
-            store[namen[i + 1]] = self._plotter.add_mesh(
-                linie, color=OVERLAY_FARBEN_ACHSEN[i], line_width=4,
-                name=namen[i + 1])
+            store[namen[i + 1]] = self._roehre_oder_linie(
+                pv, start, ende, OVERLAY_FARBEN_ACHSEN[i], rr, namen[i + 1])
 
     def _overlay_hauptachsen_entfernen(self, name):
         namen = self._overlay_namen(name)
@@ -423,8 +436,7 @@ class GrafikBruecke:
                 pass
 
     def _gruppen_actors(self, name, k):
-        """Faerbt die Farbgruppen je Blatt (Material-Reform): Wasserlinien-
-        Schnitt pro Gruppe, Farben aus der Materialtabelle/Direkt-Tripel."""
+        """Faerbt die Farbgruppen je Blatt (Material-Reform, K3-Glanz)."""
         import pyvista as pv
         p = self._plotter
         refs = k.setdefault("actors", {})
@@ -433,12 +445,15 @@ class GrafikBruecke:
             n_o = "koerper_%s_g%d_oben" % (name, i)
             n_k = "kontur_%s_g%d" % (name, i)
             u_p, u_t, o_p, o_t, kontur = ws.schneide_am_wasser(
-                np.asarray(g["pd"].points, float), g["dreiecke"])
+                np.asarray(g["pd"].points, float), g["dreiecke"],
+                mit_deckel=True)
+            kw_g = {"opacity": 0.95, "show_edges": False, "smooth_shading": True}
+            if g.get("glanz") is not None:
+                kw_g.update(glanz_kw(g["glanz"]))
             if len(u_t):
                 un = _dreiecks_polydaten(pv, u_p, u_t)
-                refs[n_u] = p.add_mesh(un, color=g["farbe_unten"], opacity=0.95,
-                                       show_edges=False, smooth_shading=True,
-                                       name=n_u)
+                refs[n_u] = p.add_mesh(un, color=g["farbe_unten"], name=n_u,
+                                       **kw_g)
             else:
                 refs.pop(n_u, None)
                 try:
@@ -447,9 +462,8 @@ class GrafikBruecke:
                     pass
             if len(o_t):
                 ob = _dreiecks_polydaten(pv, o_p, o_t)
-                refs[n_o] = p.add_mesh(ob, color=g["farbe_oben"], opacity=0.95,
-                                       show_edges=False, smooth_shading=True,
-                                       name=n_o)
+                refs[n_o] = p.add_mesh(ob, color=g["farbe_oben"], name=n_o,
+                                       **kw_g)
             else:
                 refs.pop(n_o, None)
                 try:

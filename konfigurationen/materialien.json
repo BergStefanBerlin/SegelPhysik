@@ -1,26 +1,30 @@
 {
-  "_beschreibung": "Stoffdaten (Spec P3/P4): JEDES Material ist ein Block mit dichte_kg_pro_m3 + farbe + farbe_unter_wasser. EINZIGE Quelle fuer Stoffdaten UND Aussehen. Fuehrende Unterstriche = Doku.",
+  "_beschreibung": "Stoffdaten (Spec P3/P4): JEDES Material ist ein Block mit dichte_kg_pro_m3 + farbe + farbe_unter_wasser (+ optional glanz, Schritt 4/K3). EINZIGE Quelle fuer Stoffdaten UND Aussehen. Fuehrende Unterstriche = Doku.",
   "materialien": {
-    "_einheit": "dichte_kg_pro_m3 in kg/m^3, Farben als Hex (#rgb oder #rrggbb)",
+    "_einheit": "dichte_kg_pro_m3 in kg/m^3, Farben als Hex (#rgb oder #rrggbb), glanz in [0..1] (0=matt, 1=Spiegel)",
     "GfK": {
       "dichte_kg_pro_m3": 1900,
       "farbe": "#1f4e79",
-      "farbe_unter_wasser": "#7a8a99"
+      "farbe_unter_wasser": "#7a8a99",
+      "glanz": 0.35
     },
     "Stahl": {
       "dichte_kg_pro_m3": 7850,
       "farbe": "#4a4f55",
-      "farbe_unter_wasser": "#3a3e43"
+      "farbe_unter_wasser": "#3a3e43",
+      "glanz": 0.75
     },
     "Blei": {
       "dichte_kg_pro_m3": 11340,
       "farbe": "#23262a",
-      "farbe_unter_wasser": "#17191c"
+      "farbe_unter_wasser": "#17191c",
+      "glanz": 0.55
     },
     "Aluminium": {
       "dichte_kg_pro_m3": 2700,
       "farbe": "#c4c8cd",
-      "farbe_unter_wasser": "#9aa0a8"
+      "farbe_unter_wasser": "#9aa0a8",
+      "glanz": 0.65
     }
   },
   "wasser": {

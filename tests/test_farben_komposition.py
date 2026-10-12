@@ -153,7 +153,9 @@ def test_tc_c6_verschachtelungstiefe_und_additivitaet(konfig_real):
 def test_tc_h7_migrationsgegenprobe_schalenboot(konfig_real):
     """Bootswerte muessen ueber ALLE Schema-Reformen identisch bleiben."""
     boot, r_modell = fabriken.baue_boot(konfig_real)
-    assert abs(boot.masse - 459.4368) < 0.01
+    # Fock v15 (Schritt 4.2): untere Ecken +0.38 m -> Masse 459.4368 - 0.29362
+    # = 459.1432 kg (Delta analytisch: 2 * 0.5 kg/m^2 * 0.293615 m^2).
+    assert abs(boot.masse - 459.1432) < 0.01
     assert r_modell[2] < -0.4, "CM deutlich unter der Wasserlinie"
 
 

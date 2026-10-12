@@ -70,7 +70,7 @@ def wasserlinie_aus_teilmesh(punkte, dreiecke, ebene_z=0.0, tol=1e-9):
                            P[rand[:, 1]][:, None, :]], axis=1).reshape(-1, 3)
 
 
-def schneide_am_wasser(punkte, gesichter, ebene_z=0.0):
+def schneide_am_wasser(punkte, gesichter, ebene_z=0.0, mit_deckel=False):
     """Zerschneidet ein Dreiecks-Mesh an der Ebene z = ebene_z.
 
     Rueckgabe: (unten_punkte, unten_dreiecke, oben_punkte, oben_dreiecke, kontur)
@@ -118,6 +118,11 @@ def schneide_am_wasser(punkte, gesichter, ebene_z=0.0):
               wasserlinie_aus_teilmesh(oben_p, oben_t, ebene_z)]
     kontur_p = (np.vstack([k for k in kontur if len(k)])
                 if any(len(k) for k in kontur) else np.zeros((0, 3)))
+    if mit_deckel:
+        unten_p, unten_t = _deckel_setzen(unten_p, unten_t, ebene_z,
+                                          teil_oben=False)
+        oben_p, oben_t = _deckel_setzen(oben_p, oben_t, ebene_z,
+                                        teil_oben=True)
     return unten_p, unten_t, oben_p, oben_t, kontur_p
 
 
@@ -159,3 +164,124 @@ def polygonzug_der_kontur(kontur, tol=1e-9):
         if abs(v1[0] * v2[1] - v1[1] * v2[0]) > 1e-9 * max(n1, n2, 1.0):
             behalten.append(sortiert[i])
     return np.asarray(behalten)
+
+
+# ---------------- Deckel (Schritt 4.1, gegen SSAO-Flackern) ----------------
+# Der Wasserschnitt hinterlaesst OFFENE Teil-Meshes. Screen-Space-AO (SSAO)
+# erzeugt an dieser Tiefenkante einen Saum, der mit der Kamera flackert.
+# Abhilfe: Die Schnittflaeche wird mit einem Deckel aus Dreiecken geschlossen
+# (Fan um das Ringzentrum, Normale nach aussen: unten +z, oben -z).
+# Ringe ineinander (Loch im Ring, z.B. Hohlprofil): nur der AEUSSERE Ring
+# wird gefaechert - der Fan deckt das Innere mit ab. Ein eigener Fan im
+# Innenring haette die Gegen-Normale und wuerde gerade das Z-Fighting
+# erzeugen, das hier beseitigt werden soll.
+
+DECKEL_TOL = 1e-7
+
+
+def _ketten(segmente, tol=DECKEL_TOL):
+    """Verkettet Kantenpaare zu geschlossenen Ringen (Reihenfolge beliebig)."""
+    seg = np.asarray(segmente, dtype=float)
+    if seg.size == 0:
+        return []
+    seg = seg.reshape(-1, 2, 3)
+    q = np.round(seg / tol).astype(np.int64)
+    abgang = {}
+    for i in range(len(seg)):
+        abgang.setdefault(tuple(q[i, 0]), []).append(i)
+    benutzt = [False] * len(seg)
+    ringe = []
+    for i0 in range(len(seg)):
+        if benutzt[i0]:
+            continue
+        benutzt[i0] = True
+        punkte = [seg[i0, 0], seg[i0, 1]]
+        ziel = tuple(q[i0, 1])
+        start = tuple(q[i0, 0])
+        schritte = 0
+        while ziel != start and schritte <= len(seg):
+            naechster = None
+            for j in abgang.get(ziel, ()):
+                if not benutzt[j]:
+                    naechster = j
+                    break
+            if naechster is None:
+                break
+            benutzt[naechster] = True
+            punkte.append(seg[naechster, 1])
+            ziel = tuple(q[naechster, 1])
+            schritte += 1
+        if ziel == start and len(punkte) >= 4:
+            ringe.append(np.array(punkte[:-1]))
+    return ringe
+
+
+def _ring_flaeche_xy(ring):
+    """Signierte Flaeche in der Ebene z=const (positiv = gegen Uhrzeigersinn
+    von +z aus gesehen)."""
+    x, y = ring[:, 0], ring[:, 1]
+    return 0.5 * float(np.sum(x * np.roll(y, -1) - np.roll(x, -1) * y))
+
+
+def _punkt_in_ring(p, ring):
+    """Punkt-in-Polygon (Ray Casting) in der xy-Ebene."""
+    x, y = float(p[0]), float(p[1])
+    rx, ry = ring[:, 0], ring[:, 1]
+    drinnen = False
+    n = len(ring)
+    for i in range(n):
+        x1, y1 = rx[i], ry[i]
+        x2, y2 = rx[(i + 1) % n], ry[(i + 1) % n]
+        if (y1 > y) != (y2 > y):
+            xs = x1 + (y - y1) * (x2 - x1) / (y2 - y1)
+            if x < xs:
+                drinnen = not drinnen
+    return drinnen
+
+
+def _deckel_setzen(punkte, dreiecke, ebene_z, teil_oben):
+    """Schliesst die Schnittkante an z=ebene_z mit Deckeldreiecken.
+    teil_oben=True  -> Teil-Mesh liegt oberhalb, Deckelnormale nach unten (-z).
+    teil_oben=False -> Teil-Mesh liegt unterhalb, Deckelnormale nach oben (+z).
+    Rueckgabe: neue Punkte- und Dreiecks-Arrays (Original bleibt unangetastet)."""
+    P = np.asarray(punkte, dtype=float).reshape(-1, 3)
+    T = np.asarray(dreiecke, dtype=np.int64).reshape(-1, 3)
+    if len(T) == 0:
+        return P, T
+    rand = wasserlinie_aus_teilmesh(P, T, ebene_z)
+    if len(rand) == 0:
+        return P, T
+    ringe = _ketten(rand)
+    # Aeussere Ringe zuerst; Ringe innerhalb eines groesseren Rings sind
+    # Locher und werden vom aeusseren Fan mit abgedeckt (kein eigener Fan).
+    ringe.sort(key=lambda r: -abs(_ring_flaeche_xy(r)))
+    aeussere = []
+    for ring in ringe:
+        zentrum = ring.mean(axis=0)
+        if any(_punkt_in_ring(zentrum, a) for a in aeussere):
+            continue
+        aeussere.append(ring)
+    if not aeussere:
+        return P, T
+    teile_p = [P]
+    teile_t = [T]
+    basis = len(P)
+    for ring in aeussere:
+        n = len(ring)
+        flaeche = _ring_flaeche_xy(ring)
+        if abs(flaeche) < 1e-14:
+            continue
+        if (flaeche > 0.0) == bool(teil_oben):
+            ring = ring[::-1]
+        c = ring.mean(axis=0)
+        c[2] = ebene_z
+        idx = basis + np.arange(n + 1)
+        tri = np.column_stack([np.full(n, idx[n]),
+                               idx[:n],
+                               np.roll(idx[:n], -1)])
+        teile_p.append(np.vstack([ring, c[None, :]]))
+        teile_t.append(tri)
+        basis += n + 1
+    if len(teile_p) == 1:
+        return P, T
+    return np.vstack(teile_p), np.vstack(teile_t).astype(np.int64)

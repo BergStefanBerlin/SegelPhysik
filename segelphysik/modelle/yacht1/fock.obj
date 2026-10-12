@@ -1,6 +1,12 @@
-# Fock.obj v14 - konsistent, gewelded, geglaettet
-v -1.228200 1.277900 1.696900
-v -0.037500 0.494000 7.778800
+# Fock.obj v15 - untere Ecken gleichmaessig angehoben (Schritt 4.2)
+# Grund: tack und clew ragten in das Rumpfvolumen (Durchdringung -> Z-Fighting/
+# SSAO-Flackern am Kontaktring). Fixpunkt (head) unveraendert; beide unteren
+# Ecken um dz_welt = 0.38 m (du_unity = 1.52) nach oben verschoben.
+# Damit liegt die gesamte Fock ueber dem hoechsten Rumpfpunkt (z_welt=0.4875):
+#   tack z_welt 0.5035 (vorher 0.1235), clew z_welt 0.6995 (vorher 0.3195).
+# Die Fock ist dadurch etwas kleiner (Flaeche 3.6315 -> 3.3379 m^2).
+v -1.228200 2.797900 1.696900
+v -0.037500 2.014000 7.778800
 v -0.004700 20.006400 1.281400
 vt 0.063949 0.040174
 vt 1.000000 0.000000

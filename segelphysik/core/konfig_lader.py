@@ -14,6 +14,9 @@ Jeder andere Massenschluessel ist ein Validierungsfehler.
 Farb-Regel (Spec P4, Reform 12.10.): Farbe ist eine STOFF-Eigenschaft. Ein
 Blatt MIT 'material' traegt keine eigenen Farb-Schluessel; ohne 'material'
 sind beide Farben Teil des Pflicht-Tripels.
+
+Glanz (Schritt 4, K3): optionaler Schluessel 'glanz' [0..1] im MATERIAL-Block
+(Anknuepfung an die Materialtabelle, Spec P7). Fehlt er, gilt 0.15 (matt).
 """
 import json, os
 
@@ -63,6 +66,14 @@ def _val_hex(w, wo):
     if any(z not in erlaubt for z in w[1:]):
         raise KonfigFehler("%s: ungueltige Hex-Zeichen in %r" % (wo, w))
 
+GLANZ_DEFAULT = 0.15
+
+def _val_glanz(w, wo):
+    """K3: Glanzgrad [0..1] (0 = matt, 1 = Spiegel)."""
+    ok = (not isinstance(w, bool)) and isinstance(w, (int, float))
+    if (not ok) or (not 0.0 <= float(w) <= 1.0):
+        raise KonfigFehler("%s: Zahl [0..1] erwartet, gefunden: %r" % (wo, w))
+
 def _val_materialien(d, pfad):
     mat = d.get("materialien")
     if not isinstance(mat, dict) or not mat:
@@ -78,6 +89,8 @@ def _val_materialien(d, pfad):
         _positive_zahl(block.get("dichte_kg_pro_m3"), "%s.dichte_kg_pro_m3" % hier)
         _val_hex(block.get("farbe"), "%s.farbe" % hier)
         _val_hex(block.get("farbe_unter_wasser"), "%s.farbe_unter_wasser" % hier)
+        if "glanz" in block:
+            _val_glanz(block["glanz"], "%s.glanz" % hier)
     wasser = d.get("wasser")
     if not isinstance(wasser, dict):
         raise KonfigFehler("%s: Abschnitt 'wasser' fehlt" % pfad)
@@ -224,6 +237,15 @@ class Konfiguration:
             except KeyError:
                 raise KonfigFehler("Unbekanntes Material: '%s'" % material) from None
         return None
+    def glanz_von(self, material):
+        """K3: Glanzgrad [0..1] zu Material-Name; GLANZ_DEFAULT wenn nicht gesetzt."""
+        if isinstance(material, str):
+            try:
+                b = self._m["materialien"][material]
+            except KeyError:
+                raise KonfigFehler("Unbekanntes Material: '%s'" % material) from None
+            return float(b.get("glanz", GLANZ_DEFAULT))
+        return GLANZ_DEFAULT
 
 def lade_konfig(ordner=KONFIG_ORDNER):
     """Liest und validiert BEIDE Konfig-Dateien (kein stiller Fallback, Spec J)."""
