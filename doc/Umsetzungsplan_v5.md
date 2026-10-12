@@ -1,7 +1,7 @@
 # Umsetzungsplan V5 – P5c Physik-Wiederaufnahme
-**Stand:** 12.10.2026 · Revision 8 · Status: Phase A offen · Vorgänger: Umsetzungsplan_v4 (Schritte 0–4 abgeschlossen, Tag `v4.0-schritt4`)
+**Stand:** 12.10.2026 · Revision 9 · Status: Phase A offen · Vorgänger: Umsetzungsplan_v4 (Schritte 0–4 abgeschlossen, Tag `v4.0-schritt4`)
 
-**Revisionshistorie:** rev 1 Erstfassung · rev 2 Konsistenzkorrekturen F1–F5 · rev 3 Tiefenprüfung F6–F10, Entscheidungen D7/D8 · rev 4 Zweitprüfung F11–F12 · rev 5 Drittprüfung F13–F16, Entscheidung D9 · rev 6 Viertprüfung F17–F19, Präzisierung D9 · rev 7 Fünftprüfung F20, Entscheidung D10 · rev 8 Sechstprüfung F21–F23
+**Revisionshistorie:** rev 1 Erstfassung · rev 2 Konsistenzkorrekturen F1–F5 · rev 3 Tiefenprüfung F6–F10, Entscheidungen D7/D8 · rev 4 Zweitprüfung F11–F12 · rev 5 Drittprüfung F13–F16, Entscheidung D9 · rev 6 Viertprüfung F17–F19, Präzisierung D9 · rev 7 Fünftprüfung F20, Entscheidung D10 · rev 8 Sechstprüfung F21–F23 · rev 9 Siebentprüfung F24–F25, Konventionen D11
 
 ## §0 Grundprinzip (aus Spec V4, unverändert)
 
@@ -38,7 +38,7 @@ Darstellungsschicht.
 Rumpf) werden **nur einmal** gezählt – gerechnet wird die **Vereinigungsmenge** der getauchten
 Geometrie, nicht die Blattsumme. Verfahren: deterministisches **Voxelgitter** über dem getauchten
 Bereich; ein Voxel zählt, wenn sein Mittelpunkt in mindestens einem getauchten Blatt-Volumen liegt.
-Auflösung und Konvergenzschranke stehen in `physik.json` (D8). Die Auflösung ist der **feste
+Auflösung und **zwei getrennte Konvergenzschranken** stehen in `physik.json` (D8) – eine für das **Volumen** (m³), eine für **Punktlagen** (m); eine numerische Schranke kann nicht dimensionsübergreifend gelten (rev 9, F24). Die Auflösung ist der **feste
 Betriebswert**; die Halbierungs-Prozedur (Voxelauflösung halbieren, bis die Änderung von V_tauch
 unter der Schranke liegt) ist eine **einmalige Kalibrierungs-Vorschrift** zur Wahl dieses Werts
 (dokumentiert im Vorlagen-Kommentar) und optional als Validierungstest in Block N – sie läuft
@@ -77,6 +77,17 @@ und summiert – die Additivität aus Testblock C4, nur unter Wasser, gültig f�
 - Ausgabe: `Auftriebsergebnis(V_tauch, K, F_A, M)` – ein Datenrecord, von beiden Treibern nutzbar
 - **rho_W kommt aus dem Wasser-Block der `materialien.json`** (P3) – keine Code-Konstante (rev 2, F5)
 
+**Vorzeichenkonventionen (D11, rev 9):** Ohne fixe Konvention sind die
+Vorzeichenprüfungen in Block N mehrdeutig. Festgelegt:
+
+- **Tauchung z:** z-Position von r_S in der Welt; die Wasserlinie liegt in der Welt bei
+  z = 0, **positiv nach oben** (z > 0 = Boot steigt, weniger Tauchung)
+- **Krängung φ:** positiv = Krängung **nach Steuerbord**
+- **Momente:** positiv in Richtung wachsenden φ (ein restaurierendes Moment bei φ > 0
+  hat daher negatives Vorzeichen – genau so prüft es Block N)
+- **Pose-Anwendung:** Die Meshes werden vor `schneide_am_wasser` mit der Pose in die
+  Welt transformiert; der Wasserspiegel steht in der Welt fest bei z = 0
+
 **Tests Block N (alle analytisch):**
 
 | Fall | Referenz |
@@ -89,7 +100,7 @@ und summiert – die Additivität aus Testblock C4, nur unter Wasser, gültig f�
 | Gekrängter instabiler Würfel | Restmoment ≠ 0, Vorzeichen **destabilisierend**, Betrag analytisch (GM = −b/12 bei t = b/2) – prüft das Vorzeichen in der Gegenrichtung (rev 4, F12) |
 | Segel über Wasser | trägt null zum Auftrieb bei |
 | Additivität (disjunkt) | Auftrieb der Gruppe = Summe der Blätter (C4-Pendant) |
-| Überlappung (D7) | Zwei teilüberlappende Würfel: Voxel-Vereinigung = Summe minus Schnittvolumen (Schnittvolumen analytisch); **V und K** gegen die analytische Referenz geprüft, Voxel-Fehler ≤ Schranke für beide Größen (rev 3; rev 5, F13) |
+| Überlappung (D7) | Zwei teilüberlappende Würfel: Voxel-Vereinigung = Summe minus Schnittvolumen (Schnittvolumen analytisch); **V und K** gegen die analytische Referenz geprüft, Voxel-Fehler ≤ der jeweiligen Schranke – Volumen-Schranke für V, Punkt-Schranke für K (rev 3; rev 5, F13; rev 9, F24) |
 
 **⚠ Offenes Risiko (N0 zuerst):** Der Rumpf ist als Schale modelliert (Flächenmasse 5 mm), aber die
 OBJ-Geometrie stammt aus dem Unity-Modell. V_tauch braucht ein **geschlossenes Volumen**. Ist ein
@@ -165,7 +176,7 @@ Kann parallel zu B/D gebaut werden, sobald A steht.
 
 Dritte Eingabedatei nach dem P3-Muster (Vorlage `doc/physik_vorlage.json`, Loader-Erweiterung in
 `konfig_lader.py` mit denselben Validierungsregeln): fester Zeitschritt **dt**, Dämpfungsparameter
-(getrennt Tauchung/Krängung), Voxel-Auflösung + Konvergenzschranke (D7), g = 9,80665 (D4).
+(getrennt Tauchung/Krängung), Voxel-Auflösung + zwei getrennte Konvergenzschranken für Volumen und Punktlage (D7; rev 9, F24), g = 9,80665 (D4).
 Physik-Parameter wohnen damit in der Eingabe, nicht im Code.
 
 ### Dämpfung (Entscheidung D2 – getroffen 12.10.)
@@ -216,8 +227,9 @@ instabilen Würfel nicht (rev 2, F4; rev 5, F15)
 | D5 | Tasten r/s/z statt Zyklus-Taste p; Uhr-Reset auf `n` | entschieden 12.10. |
 | D6 | Trim θ = Schnittstellen-Platzhalter mit Assert-Wache, Rechnung ab Schritt 3 | entschieden (rev 2) |
 | D7 | **Nur wirksame Volumina:** Überlappungen werden erkannt, gerechnet wird die Vereinigungsmenge (Voxelgitter, Auflösung + Schranke in `physik.json`); disjunkte Fälle exakt | **entschieden 12.10. (rev 3)** |
-| D8 | **Dritte Datei `physik.json`** (dt, Dämpfung, Voxel-Parameter, g) nach P3-Muster mit Vorlage und Loader-Validierung | **entschieden 12.10. (rev 3)** |
+| D8 | **Dritte Datei `physik.json`** (dt, Dämpfung, Voxel-Parameter mit zwei getrennten Schranken, g) nach P3-Muster mit Vorlage und Loader-Validierung | **entschieden 12.10. (rev 3)** |
 | D9 | **Stabilitätsauswahl im Solver:** nach Konvergenz Stabilitätsprüfung über ∂M/∂φ < 0 an der Lösung (nicht GM – diese gilt nur in der aufrechten Lage); instabil → Restart mit **eskalierenden Störgrößen** 5°→15°→30°→44° (eigenes Iterationsbudget), sonst saubere Meldung | **entschieden 12.10. (rev 5); präzisiert (rev 6)** |
+| D11 | **Vorzeichenkonventionen:** z positiv nach oben (Wasserlinie z = 0 in der Welt), φ positiv nach Steuerbord, Momente positiv in Richtung wachsendem φ, Meshes vor dem Schnitt in die Welt transformiert | **entschieden 12.10. (rev 9)** |
 | D10 | **Pfadauswahl:** Voxel-Pfad = Standardpfad für zusammengesetzte Körper; exakter Tetraeder-Pfad nur als Testreferenz für disjunkte Geometrien; keine automatische Umschaltung | **entschieden 12.10. (rev 7)** |
 
 ## §10 Abgrenzung (später)
