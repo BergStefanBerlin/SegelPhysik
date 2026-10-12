@@ -1,7 +1,7 @@
 # Umsetzungsplan V5 – P5c Physik-Wiederaufnahme
-**Stand:** 12.10.2026 · Revision 6 · Status: Phase A offen · Vorgänger: Umsetzungsplan_v4 (Schritte 0–4 abgeschlossen, Tag `v4.0-schritt4`)
+**Stand:** 12.10.2026 · Revision 7 · Status: Phase A offen · Vorgänger: Umsetzungsplan_v4 (Schritte 0–4 abgeschlossen, Tag `v4.0-schritt4`)
 
-**Revisionshistorie:** rev 1 Erstfassung · rev 2 Konsistenzkorrekturen F1–F5 · rev 3 Tiefenprüfung F6–F10, Entscheidungen D7/D8 · rev 4 Zweitprüfung F11–F12 · rev 5 Drittprüfung F13–F16, Entscheidung D9 · rev 6 Viertprüfung F17–F19, Präzisierung D9
+**Revisionshistorie:** rev 1 Erstfassung · rev 2 Konsistenzkorrekturen F1–F5 · rev 3 Tiefenprüfung F6–F10, Entscheidungen D7/D8 · rev 4 Zweitprüfung F11–F12 · rev 5 Drittprüfung F13–F16, Entscheidung D9 · rev 6 Viertprüfung F17–F19, Präzisierung D9 · rev 7 Fünftprüfung F20, Entscheidung D10
 
 ## §0 Grundprinzip (aus Spec V4, unverändert)
 
@@ -39,6 +39,14 @@ Auflösung und Konvergenzschranke stehen in `physik.json` (D8); die Fehlerschran
 Gitterverfeinerung bestimmt (Voxelauflösung halbieren, bis die Änderung von V_tauch unter der
 Schranke liegt). Disjunkte Konfigurationen (Testgeometrien) bleiben exakt rechenbar – der
 Voxel-Pfad wird gegen die exakte Tetraeder-Summe verifiziert (Block N).
+
+**Pfadauswahl (D10, rev 7):** Der **Voxel-Pfad ist der Standardpfad** für zusammengesetzte
+Körper (das echte Boot – Überlappungen sind dort die Regel, und das Voxelgitter ist zugleich
+die Überlappungserkennung). Der **exakte Tetraeder-Pfad** wird nur für analytisch disjunkte
+Testgeometrien gebaut und genutzt (Block N: Quader-Fälle, Additivität) und dient dort als
+Verifikation des Voxel-Pfads. Eine automatische Umschaltung im Produktionscode gibt es
+nicht – der Preis des Voxel-Pfads wird durch die Fehlerschranke aus `physik.json`
+quantifiziert.
 
 Bei verteilten Blättern (Rumpf, Kiel, Segel …) werden je Blatt Volumen und Schwerpunkt gerechnet
 und summiert – die Additivität aus Testblock C4, nur unter Wasser, gültig für den disjunkten Fall.
@@ -107,6 +115,11 @@ Mesh offen, entscheidet man zwischen Mesh-Reparatur oder Wanddicke-Modell
   Startwerte unterhalb des Momentenmaximums (beim halbgetauchten Würfel bei grob 20–25°) laufen im
   Newton-Schritt stets zur instabilen Wurzel φ = 0 zurück – nur kleine Störungen würden das Budget
   erschöpfen, ohne die stabile Lage je zu erreichen.
+  **Basispunkt der Störung (rev 7):** Die Störgröße wird auf die **verworfene Lösung**
+  addiert, nicht auf die ursprüngliche Pose – der Suchpfad bleibt damit lokal um die
+  gefundene Gleichgewichtslage. **Die Störleiter ist am Kenterfall kalibriert** (stabile
+  Lage 45°); für Körper mit stabiler Lage darüber wird sie verlängert (nächste Stufen
+  60°, 80°) – bei Erschöpfung gilt weiterhin die saubere Meldung.
 
 **Tests Block P (rev 3, F10):**
 
@@ -198,6 +211,7 @@ instabilen Würfel nicht (rev 2, F4; rev 5, F15)
 | D7 | **Nur wirksame Volumina:** Überlappungen werden erkannt, gerechnet wird die Vereinigungsmenge (Voxelgitter, Auflösung + Schranke in `physik.json`); disjunkte Fälle exakt | **entschieden 12.10. (rev 3)** |
 | D8 | **Dritte Datei `physik.json`** (dt, Dämpfung, Voxel-Parameter, g) nach P3-Muster mit Vorlage und Loader-Validierung | **entschieden 12.10. (rev 3)** |
 | D9 | **Stabilitätsauswahl im Solver:** nach Konvergenz Stabilitätsprüfung über ∂M/∂φ < 0 an der Lösung (nicht GM – diese gilt nur in der aufrechten Lage); instabil → Restart mit **eskalierenden Störgrößen** 5°→15°→30°→44° (eigenes Iterationsbudget), sonst saubere Meldung | **entschieden 12.10. (rev 5); präzisiert (rev 6)** |
+| D10 | **Pfadauswahl:** Voxel-Pfad = Standardpfad für zusammengesetzte Körper; exakter Tetraeder-Pfad nur als Testreferenz für disjunkte Geometrien; keine automatische Umschaltung | **entschieden 12.10. (rev 7)** |
 
 ## §10 Abgrenzung (später)
 
