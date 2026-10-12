@@ -1,7 +1,7 @@
 # Umsetzungsplan V5 – P5c Physik-Wiederaufnahme
-**Stand:** 12.10.2026 · Revision 4 · Status: Phase A offen · Vorgänger: Umsetzungsplan_v4 (Schritte 0–4 abgeschlossen, Tag `v4.0-schritt4`)
+**Stand:** 12.10.2026 · Revision 5 · Status: Phase A offen · Vorgänger: Umsetzungsplan_v4 (Schritte 0–4 abgeschlossen, Tag `v4.0-schritt4`)
 
-**Revisionshistorie:** rev 1 Erstfassung · rev 2 Konsistenzkorrekturen F1–F5 · rev 3 Tiefenprüfung F6–F10, Entscheidungen D7/D8 · rev 4 Zweitprüfung F11–F12
+**Revisionshistorie:** rev 1 Erstfassung · rev 2 Konsistenzkorrekturen F1–F5 · rev 3 Tiefenprüfung F6–F10, Entscheidungen D7/D8 · rev 4 Zweitprüfung F11–F12 · rev 5 Drittprüfung F13–F16, Entscheidung D9
 
 ## §0 Grundprinzip (aus Spec V4, unverändert)
 
@@ -24,8 +24,11 @@ Darstellungsschicht.
    an z=0; Tetraeder-Integration liefert die getauchten Teilvolumina → Summe über die
    **wirksamen** (vereinigten) Volumina gemäß D7 – nicht die blinde Blattsumme (rev 4, F11)
 2. **Auftriebskraft:** F_A = rho_W * g * V_tauch, Richtung +z
-3. **Auftriebssummenpunkt K:** **volumengewichtetes** Mittel der Teilschwerpunkte der getauchten
-   Tetraeder (rev 2, F1) – der Schwerpunkt *des verdrängten Volumens*, nicht des Körpers
+3. **Auftriebssummenpunkt K:** der Schwerpunkt *des verdrängten Volumens*, nicht des Körpers
+   (rev 2, F1). K wird **mit derselben Methode** gerechnet wie V_tauch (rev 5, F13): im exakten
+   Pfad (disjunkt) als volumengewichtetes Mittel der Tetraeder-Schwerpunkte, im Voxel-Pfad als
+   **voxelgewichteter** Schwerpunkt (Voxel-Volumen als Gewicht) – sonst sind Kraft und Hebelarm
+   inkonsistent, sobald D7 eingreift.
 4. **Moment um r_S:** (K − r_S) × F_A
 
 **Wirksame Volumina (D7, rev 3):** Überlappende Blatt-Volumina (Mast durchs Deck, Kielwurzel im
@@ -66,12 +69,12 @@ und summiert – die Additivität aus Testblock C4, nur unter Wasser, gültig f�
 | N0 Wasserdichtheits-Check | Vorzeichenkonsistenz der Tetraeder-Volumina der **6 Volumen-Meshes** (Rumpf, Ruder, Kiel, Bulb, Mast, Boom); Segel sind Flächenkörper und scheiden aus (rev 3, F6) |
 | Quader, Tauchtiefe t | V = a·b·t, K in t/2 Tiefe |
 | Quader vollständig getaucht | V = abc, K = Quaderzentrum |
-| Schwimmender Quader | Gleichgewicht bei t = (rho_K/rho_W)·h |
+| Schwimmender Quader | **Restkraft null** (F_A = m·g) bei t = (rho_K/rho_W)·h – reine Kraftgleichgewichts-Prüfung in Phase A, ohne Solver (rev 5, F14) |
 | Gekrängter Ponton | Restmoment ≠ 0, Vorzeichen **stabilisierend** (Moment zieht zurück zu φ = 0) (rev 4, F12) |
 | Gekrängter instabiler Würfel | Restmoment ≠ 0, Vorzeichen **destabilisierend**, Betrag analytisch (GM = −b/12 bei t = b/2) – prüft das Vorzeichen in der Gegenrichtung (rev 4, F12) |
 | Segel über Wasser | trägt null zum Auftrieb bei |
 | Additivität (disjunkt) | Auftrieb der Gruppe = Summe der Blätter (C4-Pendant) |
-| Überlappung (D7) | Zwei teilüberlappende Würfel: Voxel-Vereinigung = Summe minus Schnittvolumen (Schnittvolumen analytisch); Voxel-Fehler ≤ Schranke (rev 3) |
+| Überlappung (D7) | Zwei teilüberlappende Würfel: Voxel-Vereinigung = Summe minus Schnittvolumen (Schnittvolumen analytisch); **V und K** gegen die analytische Referenz geprüft, Voxel-Fehler ≤ Schranke für beide Größen (rev 3; rev 5, F13) |
 
 **⚠ Offenes Risiko (N0 zuerst):** Der Rumpf ist als Schale modelliert (Flächenmasse 5 mm), aber die
 OBJ-Geometrie stammt aus dem Unity-Modell. V_tauch braucht ein **geschlossenes Volumen**. Ist ein
@@ -87,6 +90,12 @@ Mesh offen, entscheidet man zwischen Mesh-Reparatur oder Wanddicke-Modell
 - Rückgabe: Lösung + Iterationszahl + **metazentrische Höhe** (Nebenprodukt)
 - Hängt sich in den STATISCH-Platzhalter von `sim_modus.py` ein; Startmodus bleibt RUHEND
 - Solver springt nach Konvergenz sofort in die Gleichgewichtslage (animiertes Suchen später)
+- **Stabilitätsauswahl (D9, rev 5):** Nach jeder Konvergenz prüft der Solver die metazentrische
+  Höhe an der Lösung. Ist sie negativ (instabile Lösung), startet er mit gestörtem Startwert neu
+  (dokumentiert, mit eigenem Iterationsbudget), bis eine Lösung mit GM > 0 vorliegt oder das
+  Budget erschöpft ist (saubere Meldung). Begründung: Newton ist ein Wurzelfinder – er findet das
+  nächstgelegene Gleichgewicht, nicht das stabile; ohne Auswahl würde der Kenterfall den Solver
+  zu Recht durchfallen lassen, obwohl er korrekt rechnet.
 
 **Tests Block P (rev 3, F10):**
 
@@ -94,7 +103,9 @@ Mesh offen, entscheidet man zwischen Mesh-Reparatur oder Wanddicke-Modell
   φ = 0, Tauchtiefe t = (rho_K/rho_W)·h
 - **Kenterfall (instabil) als Referenz:** homogener Quader mit t = b/2 hat GM = −b/12 < 0
   (φ = 0 ist instabil!); der Solver muss in die stabile 45°-Lage finden – das ist das strengere
-  Kriterium, denn ein „richtiges" Anziehen auf φ = 0 wäre ein Solver-Fehler
+  Kriterium, denn ein „richtiges" Anziehen auf φ = 0 wäre ein Solver-Fehler. Mit D9
+  (Stabilitätsauswahl) ist das Kriterium erfüllbar: die instabile Lösung φ = 0 wird verworfen,
+  der Restart findet die stabile 45°-Lage (rev 5, F16)
 - Nicht-Konvergenz wird sauber gemeldet (kein Endlosloop, Iterationsbudget)
 - STATISCH-Lösung ist exakt kraftfrei (Residuum < ε)
 
@@ -140,9 +151,11 @@ wird – bis dahin ist beides äquivalent.
 
 **Tests Block Q:** STATISCH-Lösung als Startzustand → Boot bleibt liegen (Verkettungs-Gegenprobe) ·
 Energie **nicht zunehmend über Beobachtungsfenster** mit Toleranz (diskrete Integration ist nicht
-streng monoton; rev 3) · gleicher Start → bitidentische Bahn (K7″) · Schwebungsdauer des
-ungedämpften Quaders analytisch gegenrechenbar – **der Test setzt die Dämpfung explizit auf 0**
-(Testparameter, unabhängig vom D2-Default) (rev 2, F4)
+streng monoton; rev 3) · gleicher Start → bitidentische Bahn (K7″) · **Tauchschwingung** des ungedämpften Quaders
+analytisch gegenrechenbar: T = 2π·sqrt(m / (rho_W·g·A_WL)) mit konstanter Wasserlinienfläche –
+**der Test setzt die Dämpfung explizit auf 0** (Testparameter, unabhängig vom D2-Default);
+die Tauchung ist der gemeinte Freiheitsgrad, eine Roll-Schwingung um φ = 0 existiert beim
+instabilen Würfel nicht (rev 2, F4; rev 5, F15)
 
 ## §7 Phase E – Abnahme & Einchecken
 
@@ -172,6 +185,7 @@ ungedämpften Quaders analytisch gegenrechenbar – **der Test setzt die Dämpfu
 | D6 | Trim θ = Schnittstellen-Platzhalter mit Assert-Wache, Rechnung ab Schritt 3 | entschieden (rev 2) |
 | D7 | **Nur wirksame Volumina:** Überlappungen werden erkannt, gerechnet wird die Vereinigungsmenge (Voxelgitter, Auflösung + Schranke in `physik.json`); disjunkte Fälle exakt | **entschieden 12.10. (rev 3)** |
 | D8 | **Dritte Datei `physik.json`** (dt, Dämpfung, Voxel-Parameter, g) nach P3-Muster mit Vorlage und Loader-Validierung | **entschieden 12.10. (rev 3)** |
+| D9 | **Stabilitätsauswahl im Solver:** nach Konvergenz GM-Prüfung an der Lösung; instabil (GM < 0) → Restart mit gestörtem Startwert (eigenes Iterationsbudget), sonst saubere Meldung | **entschieden 12.10. (rev 5)** |
 
 ## §10 Abgrenzung (später)
 
