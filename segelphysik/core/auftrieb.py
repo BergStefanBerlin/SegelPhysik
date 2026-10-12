@@ -173,13 +173,24 @@ def _y_intervalle_saeule(u_p, u_t, x0, z0):
         if s - gedichtet[-1] > 1e-9:
             gedichtet.append(s)
     schnitte = gedichtet
-    if len(schnitte) % 2 == 1:
-        # Restfall: Beruehrung ohne Durchdringung (Tangente) - verwerfen.
-        schnitte = schnitte[1:-1] if len(schnitte) >= 4 else []
-        if not schnitte:
-            return []
+    schnitte = _paare_bereit(schnitte)
+    if not schnitte:
+        return []
     return [(schnitte[i], schnitte[i + 1])
             for i in range(0, len(schnitte), 2)]
+
+
+def _paare_bereit(schnitte):
+    """Tangenten-Restfall: ungerade Schnittezahl bedeutet Beruehrung ohne
+    Durchdringung. Entfernt solange aeussere Paare, bis die Zahl gerade ist
+    (oder nichts uebrig bleibt). Fix: die bisherige Einmal-Behandlung liess
+    bei ungerader Zahl >= 5 wieder eine ungerade Liste zurueck (IndexError
+    in der Paarbildung)."""
+    while len(schnitte) % 2 == 1:
+        if len(schnitte) < 4:
+            return []
+        schnitte = schnitte[1:-1]
+    return schnitte
 
 
 def _voxel_koerper(blatt_welt, aufloesung):
@@ -206,20 +217,60 @@ def _voxel_koerper(blatt_welt, aufloesung):
     zs = _zentren(lo[2], hi[2])
     ys = _zentren(lo[1], hi[1])
 
-    treffer = []
+    # Vektorisierte Saeulen-Berechnung (Sichtprobe-Fix: Boot mit tausenden
+    # Dreiecken dauerte in der reinen Python-Schleife Minuten). Logik und
+    # Toleranzen identisch zu _y_intervalle_saeule, aber alle Dreiecke
+    # gleichzeitig je Saeule.
+    treffer_spalten = []
     for x0 in xs:
         for z0 in zs:
             maske = np.zeros(len(ys), dtype=bool)
             for u_p, u_t in teile:
-                for y_a, y_b in _y_intervalle_saeule(u_p, u_t, x0, z0):
+                for y_a, y_b in _y_intervalle_saeule_v(u_p, u_t, x0, z0):
                     maske |= (ys > y_a) & (ys < y_b)
             if maske.any():
-                for iy in np.where(maske)[0]:
-                    treffer.append((x0, ys[iy], z0))
-    if not treffer:
+                treffer_spalten.append((x0, z0, np.where(maske)[0]))
+    if not treffer_spalten:
         return 0.0, np.zeros(3)
-    Z = np.array(treffer)
-    return len(Z) * h ** 3, Z.mean(axis=0)
+    n_treffer = sum(len(iy) for _, _, iy in treffer_spalten)
+    summe = np.zeros(3)
+    for x0, z0, iy in treffer_spalten:
+        summe[0] += len(iy) * x0
+        summe[1] += ys[iy].sum()
+        summe[2] += len(iy) * z0
+    return n_treffer * h ** 3, summe / n_treffer
+
+
+def _y_intervalle_saeule_v(u_p, u_t, x0, z0):
+    """Vektorisierte Variante von _y_intervalle_saeule (gleiche Logik,
+    gleiche Toleranzen): alle Dreiecke gleichzeitig per numpy."""
+    p0 = u_p[u_t[:, 0]]
+    p1 = u_p[u_t[:, 1]]
+    p2 = u_p[u_t[:, 2]]
+    d = ((p1[:, 0] - p0[:, 0]) * (p2[:, 2] - p0[:, 2])
+         - (p2[:, 0] - p0[:, 0]) * (p1[:, 2] - p0[:, 2]))
+    ok = np.abs(d) >= 1e-15
+    if not ok.any():
+        return []
+    w1 = ((x0 - p0[:, 0]) * (p2[:, 2] - p0[:, 2])
+          - (p2[:, 0] - p0[:, 0]) * (z0 - p0[:, 2])) / d
+    w2 = ((p1[:, 0] - p0[:, 0]) * (z0 - p0[:, 2])
+          - (x0 - p0[:, 0]) * (p1[:, 2] - p0[:, 2])) / d
+    drin = ok & (w1 >= -1e-12) & (w2 >= -1e-12) & (w1 + w2 <= 1.0 + 1e-12)
+    if not drin.any():
+        return []
+    schnitte = (p0[drin, 1] + w1[drin] * (p1[drin, 1] - p0[drin, 1])
+                + w2[drin] * (p2[drin, 1] - p0[drin, 1]))
+    schnitte.sort()
+    gedichtet = [schnitte[0]]
+    for s in schnitte[1:]:
+        if s - gedichtet[-1] > 1e-9:
+            gedichtet.append(s)
+    schnitte = _paare_bereit(gedichtet)
+    if not schnitte:
+        return []
+    return [(schnitte[i], schnitte[i + 1])
+            for i in range(0, len(schnitte), 2)]
 
 
 def kraftfunktion_berechne(koerper, lage, v=None, omega=None, rho_w=1000.0,

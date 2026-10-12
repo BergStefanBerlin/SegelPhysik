@@ -1,0 +1,24 @@
+Phase C (P5c): Kraeftebild (Taste 7) + q-Beenden-Fix
+=====================================================
+
+Neue Dateien:
+  segelphysik/core/kraefte_bild.py   - reine Pfeil-/Skalengeometrie (numpy)
+Geaenderte Dateien:
+  segelphysik/core/overlays.py       - Layer 'kraefte' registriert (P5a)
+  segelphysik/grafik_bruecke.py      - Kraefte-Projektion (Pfeile, Hebelarm)
+  segelphysik/demo_app.py            - Taste 7, Kraefte-Daten, q-Beenden
+  tests/test_kraefte.py              - Block R1-R10 (10 Tests)
+
+Verhalten:
+  Taste 7           - Layer 'kraefte' ein/aus (wie 5/6)
+  Modus s/z         - Kraeftebild sichtbar (F_G grau ab r_S abwaerts,
+                      F_A blau ab K aufwaerts, gemeinsame fixe Skala D1)
+  Modus r (RUHEND)  - Kraeftebild ausgeblendet (Plan §5)
+  Statuszeile       - V_tauch / F_A / |M| wenn Layer an + Modus != RUHEND
+  Taste q           - beendet Fenster UND Terminal-Schleife vollstaendig
+                      (vorher hing das Terminal bis Strg+C)
+
+Die Kraefte-Daten kommen aus core.auftrieb (Phase A): Die Demo rechnet
+pro Objekt EINMAL die Ruhepose (0,0,0) mit der gebundenen Kraftfunktion
+(F19) und setzt das Ergebnis an die Bruecke - die projiziert pro Frame.
+rho_W aus materialien.json (F5), g + Voxel-Aufloesung aus physik.json (D8).

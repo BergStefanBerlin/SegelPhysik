@@ -10,7 +10,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import numpy as np
 
 from segelphysik.core.overlays import (LayerRegistry, hauptachsen,
-                                       LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN)
+                                       LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN,
+                                       LAYER_KRAEFTE)
 from segelphysik.core.koerper import Koerper
 from segelphysik.core import koerper_formen as formen
 
@@ -26,11 +27,14 @@ def test_g1_layer_registry_global_und_unabhaengig():
     reg = LayerRegistry()
     assert not reg.ist_an(LAYER_SCHWERPUNKT)
     assert not reg.ist_an(LAYER_HAUPTACHSEN)
+    assert not reg.ist_an(LAYER_KRAEFTE)
     assert reg.umschalten(LAYER_SCHWERPUNKT) is True
     assert reg.ist_an(LAYER_SCHWERPUNKT)
     assert not reg.ist_an(LAYER_HAUPTACHSEN)     # unabhaengig
     assert reg.umschalten(LAYER_HAUPTACHSEN) is True
-    assert reg.zustand() == {LAYER_SCHWERPUNKT: True, LAYER_HAUPTACHSEN: True}
+    # Phase C: dritter Layer 'kraefte' - Registry liefert alle drei
+    assert reg.zustand() == {LAYER_SCHWERPUNKT: True, LAYER_HAUPTACHSEN: True,
+                             LAYER_KRAEFTE: False}
     reg.setzen(LAYER_SCHWERPUNKT, False)
     assert not reg.ist_an(LAYER_SCHWERPUNKT)
 

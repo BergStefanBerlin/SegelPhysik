@@ -13,6 +13,11 @@ der Materialtabelle via Koerper.glanz; Phong, bewusst KEIN PBR (SSAO-
 Lektion: keine GPU-abhaengigen Effekte in der Standard-Ansicht). K4
 Tube-Overlays: Hauptachsen als Roehren (pv.Line().tube()), Fallback dicke
 Linie; Farben gold/cyan/magenta unveraendert.
+
+Phase C (P5c, Umsetzungsplan V5 rev 9 §5): Layer 'kraefte' (Taste 7).
+Die Kraefte-Daten (Auftriebsergebnis + Skala) setzt die Demo ueber
+kraefte_daten_setzen(); die Bruecke projiziert sie pro Frame (P5a-Muster:
+Daten setzen, Renderer projiziert). D1: gemeinsame fixe Skala.
 """
 from __future__ import annotations
 import numpy as np
@@ -22,7 +27,7 @@ try:
 except ImportError:
     from segelphysik import wasser_schnitt as ws
 from .core.overlays import (LayerRegistry, hauptachsen,
-                            LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN)
+                            LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN, LAYER_KRAEFTE)
 
 FARBE_UNTEN = "#2166ac"
 FARBE_OBEN = "#b2182b"
@@ -120,6 +125,7 @@ class GrafikBruecke:
         self._plotter = None
         self._koerper = {}
         self._layer = LayerRegistry()
+        self._kraefte_daten = {}
 
     def fenster_bauen(self):
         try:
@@ -300,7 +306,8 @@ class GrafikBruecke:
             except Exception:
                 pass
         if not sichtbar:
-            for n in self._actor_namen(name) + self._overlay_namen(name):
+            for n in self._actor_namen(name) + self._overlay_namen(name) \
+                    + self._kraefte_namen(name):
                 try:
                     self._plotter.remove_actor(n)
                 except Exception:
@@ -344,6 +351,80 @@ class GrafikBruecke:
 
     def layer_ist_an(self, layer):
         return self._layer.ist_an(layer)
+
+    # ---------------- Phase C: Kraeftebild (Taste 7) ----------------
+
+    def kraefte_daten_setzen(self, name, erg, masse, g, skala):
+        """Speichert die Kraefte-Daten eines Objekts (P5a-Muster: die Demo
+        setzt die Wahrheit, die Bruecke projiziert sie pro Frame)."""
+        self._kraefte_daten[name] = {"erg": erg, "masse": float(masse),
+                                     "g": float(g), "skala": float(skala)}
+
+    def kraefte_daten_entfernen(self, name):
+        self._kraefte_daten.pop(name, None)
+
+    def _kraefte_namen(self, name):
+        return ["kraefte_%s_fg" % name, "kraefte_%s_fa" % name,
+                "kraefte_%s_arm" % name]
+
+    def _kraefte_actors(self, name):
+        """Baut die drei Kraefte-Actors aus den gesetzten Daten."""
+        from .core import kraefte_bild as kb
+        import pyvista as pv
+        daten = self._kraefte_daten.get(name)
+        if daten is None:
+            return
+        k = self._koerper.get(name)
+        if k is None or not k.get("aktiv"):
+            return
+        cm = np.asarray(k["position"], float)
+        r_s = cm   # P1: r_S liegt im Ursprung des Koerperframes -> Weltposition = cm
+        fg, fa = kb.kraft_pfeile(daten["erg"], r_s, daten["masse"],
+                                 daten["g"], daten["skala"])
+        store = k.setdefault("kraefte_actors", {})
+        n_fg, n_fa, n_arm = self._kraefte_namen(name)
+
+        def _pfeil(p, farbe, n):
+            try:
+                schaft = pv.Line(tuple(p["schaft_start"]),
+                                 tuple(p["schaft_ende"])).tube(
+                    radius=max(0.3 * p["kopf_radius"], 0.004), n_sides=8)
+                kopf = pv.Cone(center=tuple(0.5 * (p["schaft_ende"]
+                                                          + p["spitze"])),
+                               direction=tuple(p["richtung"]),
+                               height=p["kopf_laenge"],
+                               radius=p["kopf_radius"])
+                store[n] = self._plotter.add_mesh(
+                    schaft + kopf, color=farbe, name=n, smooth_shading=True)
+            except Exception:
+                linie = pv.line_segments_from_points(
+                    [tuple(p["start"]), tuple(p["spitze"])])
+                store[n] = self._plotter.add_mesh(linie, color=farbe,
+                                                  line_width=5, name=n)
+
+        _pfeil(fg, kb.FARBE_FG, n_fg)
+        _pfeil(fa, kb.FARBE_FA, n_fa)
+        a, b = kb.hebelarm_segment(daten["erg"].K.as_array() + cm, r_s)
+        try:
+            arm = pv.line_segments_from_points([tuple(a), tuple(b)])
+            store[n_arm] = self._plotter.add_mesh(arm, color=kb.FARBE_ARM,
+                                                  line_width=2, name=n_arm)
+        except Exception:
+            pass
+
+    def _kraefte_entfernen(self, name):
+        store = self._koerper.get(name, {}).get("kraefte_actors", {})
+        for n in self._kraefte_namen(name):
+            store.pop(n, None)
+            try:
+                self._plotter.remove_actor(n)
+            except Exception:
+                pass
+
+    def kraefte_entfernen(self, name):
+        """Oeffentlich: entfernt Actors + Daten (Objektwechsel)."""
+        self._kraefte_entfernen(name)
+        self.kraefte_daten_entfernen(name)
 
     def _overlay_skala(self, koerper):
         """Achsen-Laenge + Marker-Radius aus der Koerpergroesse."""
@@ -396,6 +477,11 @@ class GrafikBruecke:
             self._overlay_hauptachsen_setzen(name, cm, richtungen, laengen)
         else:
             self._overlay_hauptachsen_entfernen(name)
+        # Phase C: Kraeftebild nur, wenn Layer an UND Daten vorliegen.
+        if self._layer.ist_an(LAYER_KRAEFTE) and name in self._kraefte_daten:
+            self._kraefte_actors(name)
+        else:
+            self._kraefte_entfernen(name)
 
     def _overlay_schwerpunkt_setzen(self, name, cm, radius):
         import pyvista as pv
