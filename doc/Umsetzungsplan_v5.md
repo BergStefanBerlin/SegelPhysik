@@ -1,7 +1,7 @@
 # Umsetzungsplan V5 – P5c Physik-Wiederaufnahme
-**Stand:** 12.10.2026 · Revision 5 · Status: Phase A offen · Vorgänger: Umsetzungsplan_v4 (Schritte 0–4 abgeschlossen, Tag `v4.0-schritt4`)
+**Stand:** 12.10.2026 · Revision 6 · Status: Phase A offen · Vorgänger: Umsetzungsplan_v4 (Schritte 0–4 abgeschlossen, Tag `v4.0-schritt4`)
 
-**Revisionshistorie:** rev 1 Erstfassung · rev 2 Konsistenzkorrekturen F1–F5 · rev 3 Tiefenprüfung F6–F10, Entscheidungen D7/D8 · rev 4 Zweitprüfung F11–F12 · rev 5 Drittprüfung F13–F16, Entscheidung D9
+**Revisionshistorie:** rev 1 Erstfassung · rev 2 Konsistenzkorrekturen F1–F5 · rev 3 Tiefenprüfung F6–F10, Entscheidungen D7/D8 · rev 4 Zweitprüfung F11–F12 · rev 5 Drittprüfung F13–F16, Entscheidung D9 · rev 6 Viertprüfung F17–F19, Präzisierung D9
 
 ## §0 Grundprinzip (aus Spec V4, unverändert)
 
@@ -56,6 +56,8 @@ und summiert – die Additivität aus Testblock C4, nur unter Wasser, gültig f�
 - Signatur: `(lage, v, omega)` mit Lage = (Tauchung z, Krängung φ, Trim θ) (rev 3, F9).
   Die Geschwindigkeiten stehen von Anfang an in der Schnittstelle, weil die Dämpfung (§6) sie
   braucht und die spätere Hydro-/Aerodynamik sie braucht; der statische Solver ruft mit v = ω = 0.
+  Der **Körper** (Meshes, Masse, r_S) wird bei Erzeugung **gebunden** (partielle Anwendung) –
+  die Aufrufsignatur bleibt (lage, v, omega) (rev 6, F19).
 - Trim θ ist **Platzhalter mit Assert-Wache** (θ == 0), Rechnung erst in Schritt 3 (rev 2, F3/D6)
 - Nutzt `wasser_schnitt.schneide_am_wasser` je Blatt-Mesh; V_tauch und K über die
   D7-Vereinigung (Voxel), Gegenprobe je Blatt für disjunkte Fälle
@@ -87,15 +89,24 @@ Mesh offen, entscheidet man zwischen Mesh-Reparatur oder Wanddicke-Modell
 
 - Newton-Iteration über **(z, φ)** (Trim später): Startwert = aktuelle Pose,
   Konvergenzkriterium auf |Restmoment| und |ΔF|
-- Rückgabe: Lösung + Iterationszahl + **metazentrische Höhe** (Nebenprodukt)
+- Rückgabe: Lösung + Iterationszahl + **metazentrische Höhe** (Nebenprodukt für die
+  **aufrechte Lage** – dort ist sie definiert und dient als Referenzgröße für Block P;
+  rev 6, F18)
 - Hängt sich in den STATISCH-Platzhalter von `sim_modus.py` ein; Startmodus bleibt RUHEND
 - Solver springt nach Konvergenz sofort in die Gleichgewichtslage (animiertes Suchen später)
-- **Stabilitätsauswahl (D9, rev 5):** Nach jeder Konvergenz prüft der Solver die metazentrische
-  Höhe an der Lösung. Ist sie negativ (instabile Lösung), startet er mit gestörtem Startwert neu
-  (dokumentiert, mit eigenem Iterationsbudget), bis eine Lösung mit GM > 0 vorliegt oder das
+- **Stabilitätsauswahl (D9, rev 5; präzisiert rev 6, F17/F18):** Nach jeder Konvergenz prüft der
+  Solver die Stabilität der Lösung über **∂M/∂φ < 0** an der Lösung (rev 6, F18 – die metazentrische
+  Höhe ist ein Begriff der Anfangsstabilität und bei großen Krängungswinkeln kein gültiges
+  Stabilitätsmaß; das korrekte allgemeine Kriterium ist das negative Momentengefälle, äquivalent
+  zum Potentialenergie-Minimum; numerisch liegt ∂M/∂φ als Jacobi-Eintrag ohnehin vor). Ist die
+  Lösung instabil, startet er mit **eskalierendem Startwert** neu: Störgrößen 5° → 15° → 30° → 44°
+  Krängung (dokumentiert, mit eigenem Iterationsbudget), bis eine stabile Lösung vorliegt oder das
   Budget erschöpft ist (saubere Meldung). Begründung: Newton ist ein Wurzelfinder – er findet das
   nächstgelegene Gleichgewicht, nicht das stabile; ohne Auswahl würde der Kenterfall den Solver
-  zu Recht durchfallen lassen, obwohl er korrekt rechnet.
+  zu Recht durchfallen lassen, obwohl er korrekt rechnet. **Warum eskalierend (rev 6, F17):**
+  Startwerte unterhalb des Momentenmaximums (beim halbgetauchten Würfel bei grob 20–25°) laufen im
+  Newton-Schritt stets zur instabilen Wurzel φ = 0 zurück – nur kleine Störungen würden das Budget
+  erschöpfen, ohne die stabile Lage je zu erreichen.
 
 **Tests Block P (rev 3, F10):**
 
@@ -105,7 +116,8 @@ Mesh offen, entscheidet man zwischen Mesh-Reparatur oder Wanddicke-Modell
   (φ = 0 ist instabil!); der Solver muss in die stabile 45°-Lage finden – das ist das strengere
   Kriterium, denn ein „richtiges" Anziehen auf φ = 0 wäre ein Solver-Fehler. Mit D9
   (Stabilitätsauswahl) ist das Kriterium erfüllbar: die instabile Lösung φ = 0 wird verworfen,
-  der Restart findet die stabile 45°-Lage (rev 5, F16)
+  der Restart findet die stabile 45°-Lage (rev 5, F16) – mit eskalierenden Störgrößen
+  (rev 6, F17), denn kleine Störungen konvergieren erneut zur instabilen Wurzel
 - Nicht-Konvergenz wird sauber gemeldet (kein Endlosloop, Iterationsbudget)
 - STATISCH-Lösung ist exakt kraftfrei (Residuum < ε)
 
@@ -185,7 +197,7 @@ instabilen Würfel nicht (rev 2, F4; rev 5, F15)
 | D6 | Trim θ = Schnittstellen-Platzhalter mit Assert-Wache, Rechnung ab Schritt 3 | entschieden (rev 2) |
 | D7 | **Nur wirksame Volumina:** Überlappungen werden erkannt, gerechnet wird die Vereinigungsmenge (Voxelgitter, Auflösung + Schranke in `physik.json`); disjunkte Fälle exakt | **entschieden 12.10. (rev 3)** |
 | D8 | **Dritte Datei `physik.json`** (dt, Dämpfung, Voxel-Parameter, g) nach P3-Muster mit Vorlage und Loader-Validierung | **entschieden 12.10. (rev 3)** |
-| D9 | **Stabilitätsauswahl im Solver:** nach Konvergenz GM-Prüfung an der Lösung; instabil (GM < 0) → Restart mit gestörtem Startwert (eigenes Iterationsbudget), sonst saubere Meldung | **entschieden 12.10. (rev 5)** |
+| D9 | **Stabilitätsauswahl im Solver:** nach Konvergenz Stabilitätsprüfung über ∂M/∂φ < 0 an der Lösung (nicht GM – diese gilt nur in der aufrechten Lage); instabil → Restart mit **eskalierenden Störgrößen** 5°→15°→30°→44° (eigenes Iterationsbudget), sonst saubere Meldung | **entschieden 12.10. (rev 5); präzisiert (rev 6)** |
 
 ## §10 Abgrenzung (später)
 
