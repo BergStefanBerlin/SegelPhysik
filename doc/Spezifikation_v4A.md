@@ -1,6 +1,6 @@
 # Spezifikation: Stör-Taste (zufällige Platzierung) & Solver-Zielbild
 **Datei:** `doc/Spezifikation_StoerUndSolver_v1.md`
-**Stand:** 12.10.2026 · **Status:** Entwurf zur Freigabe
+**Stand:** 12.10.2026 · **Rev B** (Bereinigung nach Plausibilitätsprüfung gegen Repo-Stand `f0fe8e6`) · **Status:** freigegeben, Umsetzung ausstehend
 **Einordnung:** Phase B2-Erweiterung (nach Umsetzungsplan V5 rev 9 §7, vorgezogen durch Commit `319f92d`)
 **Vorgänger:** Spezifikation_v4 (P1–P7), Umsetzungsplan_v5 rev 9 (Phasen A–E), Testfaelle_v4 (Blöcke A–H)
 
@@ -29,9 +29,9 @@ sein Startwert ist bisher die Ausgangslage. Diese Spezifikation definiert:
 
 | Element | Wert | Begründung |
 |---|---|---|
-| Taste | **`v`** (Verschieben/Stören) | Wunschtaste `Z` ist **belegt** (ECHTZEIT-Umschaltung, neben `r`/`s`). Belegt sind außerdem: `Space`, `n`, `o`, `q`, `s`, `z`, `r`, `1/2/3`, `4`, `a`, `5`, `6`, `7`, `F1–F4`. `v` ist frei. |
+| Taste | **`v`** (Verschieben/Stören) | Wunschtaste `Z` ist **belegt** (ECHTZEIT-Umschaltung, neben `r`/`s`). Tatsächlich belegt laut `demo_app.py` (verifiziert 12.10., Commit `f0fe8e6`): `Space`, `n`, `r`, `s`, `z`, `7`, `q`, `+/-/up/down/kp_±`, `F1–F4`, `o`, `5`, `6`. `v` ist frei. |
 | Entprellung | 0,15 s | Lektion aus Phase-C-Fix 1: keine Doppelbedienung über Key-Event **und** Polling. Nur **ein** Abfragepfad. |
-| Wirksam auf | das aktuell aktive Objekt (Einzelobjekt; bei `a`/Mehrkoerper: alle aktiven Objekte gleichzeitig, gleiche Störung pro Objekt unabhängig gezogen) | |
+| Wirksam auf | das aktuell aktive Objekt (Einzelobjekt-Regel P5c 1b; eine Mehrkörper-Störung existiert im aktuellen Code nicht und wird hier nicht definiert) | |
 
 **St-1 (Entscheidung):** Taste `v`, Entprellung 0,15 s, ein Abfragepfad.
 
@@ -68,6 +68,13 @@ Damit bleibt die bestehende Testkultur (deterministische Blöcke) erhalten.
 - Winkel nahe ±180° ergeben **kopfüber-/Seitenlagen**.
 Beide Grenzfälle müssen von der Kraftfunktion und dem Solver **sauber** durchlaufen werden
 (siehe Zielbild Z5) – sie sind Teil der Abnahme, kein Ausschlusskriterium.
+
+**St-8 (Fallback vor Newton, neu in Rev B):** Bei $V_{tauch} = 0$ (komplett über Wasser) oder
+voll tauchend ist $\partial F_A/\partial z = 0$ ⇒ die Jacobi-Matrix des Newton wird singulär
+(`LinAlgError: Jacobi singulär`). Der Solver erhält daher einen **Kontaktstart**: 
+$V_{tauch} = 0$ → $z$ senken, bis Kontakt; voll tauchend → $z$ anheben bzw. Sekanten-Suche
+auf $V_{tauch}$; erst danach startet Newton. Ohne Treffer des Kontakts gilt eine saubere
+`SolverFehler`-Meldung als akzeptiertes Verhalten (Befund, kein Bug).
 
 ---
 
@@ -121,6 +128,9 @@ Freiheitsgraden $(z, \varphi)$.
   - Trim θ wird **verworfen** (die θ-Wache bleibt intakt; keine Spec-Änderung an D6/F3).
 - Die Projektion ist eine **reine Funktion** in `core/stoerung.py` (`projektiere_pose`) und
   wird separat getestet (Block S).
+- **Hinweis zur Sichtprobe:** Angezeigte Störpose und Solver-Startpose unterscheiden sich
+  bewusst (Trim verworfen); nach der Konvergenz zeigt die Szene die **Gleichgewichtslage**,
+  nicht die Störpose. Das ist beabsichtigt, kein Darstellungsfehler.
 
 ---
 
@@ -153,7 +163,10 @@ ist eine Sichtprobe am Bildschirm + ein automatisierter Test, wo möglich.
 
 ### Z1 – Jeder Körper aus jeder Lage findet die Wasseroberfläche
 Für **jeden** der vier Körper (Kegel, Quader, Pyramide, **Boot**):
-- 20 zufällige Störungen (Seed-Reihe festgehalten), je Körper,
+- **Sichtprobe:** 5 zufällige Störungen je Körper interaktiv (Seed-Reihe festgehalten),
+- **automatisierter Batch:** 20 Störungen je Körper als Seed-Test in `tests/test_stoerung.py`
+  (Block S) – wegen der Solver-Performance (~0,26 s pro Kraftfunktions-Aufruf, §9) bewusst
+  nicht interaktiv in einer Sitzung,
 - in jedem Fall konvergiert der Solver **oder** meldet sauber `SolverFehler` (Z5),
 - bei Konvergenz: Endlage ist eine **stabile Gleichgewichtslage auf der Wasseroberfläche** –
   Wasserlinie exakt am Schnitt (Verfahren B), Restkraft/Restmoment unter Toleranz,
@@ -182,9 +195,10 @@ In der Endlage zeigt das Kräftebild (Taste 7):
 - Kein Actor-Leak über viele Wiederholungen (Actor-Zahl im Plotter bleibt konstant).
 
 ### Z5 – Randfälle und Fehlerbild
-- Komplett aus dem Wasser / komplett untertaucht (St-4): keine Exception, keine Hängung;
-  der Solver findet daraus die Oberfläche (Auftrieb 0 bzw. voll tauchend sind zulässige
-  Zwischenzustände der Kraftfunktion).
+- Komplett aus dem Wasser / komplett untertaucht (St-4): keine Exception, keine Hängung.
+  Mit dem Kontaktstart (St-8) findet der Solver daraus die Wasseroberfläche; scheitert der
+  Kontaktstart, ist eine saubere `SolverFehler`-Meldung akzeptiert (Befund, kein Bug).
+  Auftrieb 0 bzw. voll tauchend sind zulässige Zwischenzustände der Kraftfunktion.
 - Kopfüber-/Seitenlagen nahe ±180°: Wenn der Störleiter (D9: 5→15→30→44°) erschöpft ist,
   erscheint eine **saubere Meldung** in Statuszeile + Konsole (`SolverFehler`), die Szene
   bleibt bedienbar. Das ist ein **Befund, kein Bug** (vgl. Voxel-Treppen-Notiz im LIESMICH).
@@ -200,7 +214,7 @@ In der Endlage zeigt das Kräftebild (Taste 7):
 ### Sichtproben-Checkliste (Abnahme)
 1. `n` → 10× `v`: Körper bleibt jeweils stehen, Darstellung sauber. ✅/❌
 2. `s` → `v`: Countdown läuft 5 s, dann Solver; Endlage + Protokoll korrekt. ✅/❌
-3. Alle 4 Körper je 20 Störungen (Seed-Reihe): Z1 erfüllt. ✅/❌
+3. Je Körper 5 Störungen interaktiv + Batch-Test (20 je Körper, Seed-Reihe): Z1 erfüllt. ✅/❌
 4. Taste 7 in der Endlage: Z2 + Z3 erfüllt. ✅/❌
 5. Extremfälle +2 m/−2 m/kopfüber: Z5 erfüllt. ✅/❌
 6. Objektwechsel/Layerwechsel während Countdown und nach Solve: keine Actor-Reste. ✅/❌
@@ -211,7 +225,8 @@ In der Endlage zeigt das Kräftebild (Taste 7):
 
 | Nr. | Artefakt | Inhalt |
 |---|---|---|
-| 1 | `core/stoerung.py` (NEU, rein) | `ziehe_stoerung(rng)` → $(\Delta\mathbf{p}, \alpha, \beta, \gamma)$; `stoerpose(p, R, stoerung)` → $(\mathbf{p}', R')$; `projektiere_pose(R')` → $(z, \varphi)$-Anteil (St-6) |
+| 1 | `core/stoerung.py` (NEU, rein) | `ziehe_stoerung(rng)` → $(\Delta\mathbf{p}, \alpha, \beta, \gamma)$; `stoerpose(p, R, stoerung)` → $(\mathbf{p}', R')$; `projektiere_pose(R')` → $(z, \varphi)$-Anteil (St-6); `kontakt_start(z_start)` → Startwert
+mit Kontakt (St-8) |
 | 2 | `core/sim_modus.py` (ERWEITERT) | Zustand STÖRUNG mit 5-s-Countdown (nur im Pfad STATISCH); vollvermascht testbar wie Schritt 1 |
 | 3 | `core/kraefte_bild.py` (ERWEITERT) | `moment_bogen(erg, r_s, skala)` (St-7) |
 | 4 | `grafik_bruecke.py` (ERWEITERT) | Stör-Pose anwenden (analog `statische_pose_setzen`, aber freie 3-achsige Rotation), Moment-Bogen-Actor, Countdown-Statuszeile |
@@ -237,4 +252,4 @@ Konfigurator P6, Mehrfach-Solver für alle Objekte gleichzeitig.
 
 ---
 
-*Ende der Spezifikation. Freigabe durch Auftraggeber erforderlich, bevor die Implementierung (§8) beginnt.*
+*Ende der Spezifikation (Rev B). Freigabe erteilt (12.10.2026); Umsetzung (§8) ausstehend.*
