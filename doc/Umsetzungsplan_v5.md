@@ -1,7 +1,7 @@
 # Umsetzungsplan V5 – P5c Physik-Wiederaufnahme
-**Stand:** 12.10.2026 · Revision 3 · Status: Phase A offen · Vorgänger: Umsetzungsplan_v4 (Schritte 0–4 abgeschlossen, Tag `v4.0-schritt4`)
+**Stand:** 12.10.2026 · Revision 4 · Status: Phase A offen · Vorgänger: Umsetzungsplan_v4 (Schritte 0–4 abgeschlossen, Tag `v4.0-schritt4`)
 
-**Revisionshistorie:** rev 1 Erstfassung · rev 2 Konsistenzkorrekturen F1–F5 · rev 3 Tiefenprüfung F6–F10, Entscheidungen D7/D8
+**Revisionshistorie:** rev 1 Erstfassung · rev 2 Konsistenzkorrekturen F1–F5 · rev 3 Tiefenprüfung F6–F10, Entscheidungen D7/D8 · rev 4 Zweitprüfung F11–F12
 
 ## §0 Grundprinzip (aus Spec V4, unverändert)
 
@@ -21,7 +21,8 @@ Darstellungsschicht.
 ### Berechnungskette (Phase A)
 
 1. **Verdrängtes Volumen V_tauch:** `wasser_schnitt.schneide_am_wasser` schneidet jedes Blatt-Mesh
-   an z=0; Tetraeder-Integration liefert das getauchte Teilvolumen → Summe über alle Blätter
+   an z=0; Tetraeder-Integration liefert die getauchten Teilvolumina → Summe über die
+   **wirksamen** (vereinigten) Volumina gemäß D7 – nicht die blinde Blattsumme (rev 4, F11)
 2. **Auftriebskraft:** F_A = rho_W * g * V_tauch, Richtung +z
 3. **Auftriebssummenpunkt K:** **volumengewichtetes** Mittel der Teilschwerpunkte der getauchten
    Tetraeder (rev 2, F1) – der Schwerpunkt *des verdrängten Volumens*, nicht des Körpers
@@ -66,7 +67,8 @@ und summiert – die Additivität aus Testblock C4, nur unter Wasser, gültig f�
 | Quader, Tauchtiefe t | V = a·b·t, K in t/2 Tiefe |
 | Quader vollständig getaucht | V = abc, K = Quaderzentrum |
 | Schwimmender Quader | Gleichgewicht bei t = (rho_K/rho_W)·h |
-| Gekrängter Quader | Restmoment ≠ 0, Vorzeichen stabilisierend |
+| Gekrängter Ponton | Restmoment ≠ 0, Vorzeichen **stabilisierend** (Moment zieht zurück zu φ = 0) (rev 4, F12) |
+| Gekrängter instabiler Würfel | Restmoment ≠ 0, Vorzeichen **destabilisierend**, Betrag analytisch (GM = −b/12 bei t = b/2) – prüft das Vorzeichen in der Gegenrichtung (rev 4, F12) |
 | Segel über Wasser | trägt null zum Auftrieb bei |
 | Additivität (disjunkt) | Auftrieb der Gruppe = Summe der Blätter (C4-Pendant) |
 | Überlappung (D7) | Zwei teilüberlappende Würfel: Voxel-Vereinigung = Summe minus Schnittvolumen (Schnittvolumen analytisch); Voxel-Fehler ≤ Schranke (rev 3) |
@@ -130,6 +132,11 @@ quasi-aperiodisches Einschwingen). Sie ist ein **expliziter, dokumentierter Mode
 `physik.json` (kein versteckter Hack) – getrennt für Tauchung und Krängung.
 **Später wird die Dämpfung über hydro- bzw. aerodynamische Effekte gerechnet** und ersetzt dann
 diesen Übergangswert. Bis dahin gilt: Physik korrekt, Bewegung visuell ruhig.
+
+*Design-Notiz (rev 4):* Bei linearer Dämpfung verschwindet die Dämpfungskraft für den Solver
+automatisch (er ruft mit v = ω = 0). Ob die Dämpfung daher in die gemeinsame Kraftfunktion zieht
+oder in `dynamik.py` bleibt, wird entschieden, wenn die Hydro-/Aero-Dämpfung (nichtlinear) gebaut
+wird – bis dahin ist beides äquivalent.
 
 **Tests Block Q:** STATISCH-Lösung als Startzustand → Boot bleibt liegen (Verkettungs-Gegenprobe) ·
 Energie **nicht zunehmend über Beobachtungsfenster** mit Toleranz (diskrete Integration ist nicht
