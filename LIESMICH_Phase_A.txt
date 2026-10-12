@@ -1,0 +1,26 @@
+Phase A (Umsetzungsplan V5 rev 9) - Kraftfunktion Auftrieb
+==========================================================
+
+Dateien:
+  segelphysik/core/auftrieb.py          NEU - Kraftfunktion (Voxel-Standardpfad
+                                        D7/D10, exakter Referenzpfad, theta-Wache D6,
+                                        D11-Pose, F19-Bindung, wasserdichtheit fuer N0)
+  segelphysik/core/konfig_lader.py      ERWEITERT - lade_physik() + PhysikParameter
+                                        (D8: dt, g, Daempfung, Voxel mit zwei Schranken F24)
+  doc/physik_vorlage.json               NEU - Vorlage fuer konfigurationen/physik.json
+  tests/test_auftrieb.py                NEU - Block N (N0-N17, 20 Tests, alle analytisch)
+
+Einbau:
+  1. Dateien an ihre Pfade kopieren
+  2. doc/physik_vorlage.json -> konfigurationen/physik.json kopieren
+  3. python -m pytest tests/test_auftrieb.py -v   (20 bestanden erwartet)
+  4. python -m pytest tests/ -q                   (Gesamtsuite: 127 erwartbar)
+
+Ergebnis Sandbox-Prueflauf: 20/20 bestanden.
+
+Hinweise:
+- rho_W kommt aus dem Wasser-Block der materialien.json (F5), g aus physik.json (D4).
+- Voxel-Aufloesung ist fester Betriebswert (F22); Kalibrierung einmalig nach
+  Vorlagen-Kommentar.
+- N17 nutzt die echte Koerper-Klasse (F19-Adapter, P1-Schwerpunktframe-Semantik;
+  in der Sandbox ohne koerper.py als Skip markiert).

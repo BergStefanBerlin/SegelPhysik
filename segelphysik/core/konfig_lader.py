@@ -17,6 +17,11 @@ sind beide Farben Teil des Pflicht-Tripels.
 
 Glanz (Schritt 4, K3): optionaler Schluessel 'glanz' [0..1] im MATERIAL-Block
 (Anknuepfung an die Materialtabelle, Spec P7). Fehlt er, gilt 0.15 (matt).
+
+physik.json (D8, Umsetzungsplan V5 rev 9 §6): dritte Eingabedatei nach dem
+P3-Muster - dt, g, Daempfung (Tauchung/Kraengung getrennt), Voxel-Parameter
+(Aufloesung + zwei getrennte Schranken fuer Volumen und Punktlage, F24).
+Vorlage: doc/physik_vorlage.json. Lader: lade_physik().
 """
 import json, os
 
@@ -55,6 +60,12 @@ def _lies(pfad, vorlage):
 def _positive_zahl(w, wo):
     if isinstance(w, bool) or not isinstance(w, (int, float)) or not w > 0:
         raise KonfigFehler("%s: positive Zahl erwartet, gefunden: %r" % (wo, w))
+    return float(w)
+
+def _nichtnegative_zahl(w, wo):
+    if isinstance(w, bool) or not isinstance(w, (int, float)) or w < 0:
+        raise KonfigFehler(
+            "%s: nicht-negative Zahl erwartet, gefunden: %r" % (wo, w))
     return float(w)
 
 def _val_hex(w, wo):
@@ -256,3 +267,106 @@ def lade_konfig(ordner=KONFIG_ORDNER):
     _val_materialien(m, mpfad)
     _val_koerper(k, m["materialien"], kpfad)
     return Konfiguration(m, k, ordner)
+
+
+# ---------------- physik.json (D8, Umsetzungsplan V5 rev 9 §6) ----------------
+
+PHYSIK_DATEI = "physik.json"
+VORLAGE_PHYSIK = os.path.join("doc", "physik_vorlage.json")
+
+_PHYSIK_ERLAUBT = ("dt_s", "g_m_pro_s2", "daempfung", "voxel")
+_DAEMPFUNG_ERLAUBT = ("tauchung", "kraengung")
+_VOXEL_ERLAUBT = ("aufloesung_m", "schranke_volumen_m3", "schranke_punkt_m")
+
+
+class PhysikParameter:
+    """Unveraenderliche Physik-Parameter aus physik.json (D8).
+
+    Daempfung (D2): Uebergangsmodell - zunaechst stark (kaum Schwingung,
+    quasi-aperiodisch), spaeter Ersatz durch Hydro-/Aerodynamik.
+    Voxel (D7/D10): Aufloesung = fester Betriebswert; die Halbierungs-
+    Kalibrierung ist eine einmalige Vorschrift (F22). Zwei getrennte
+    Schranken: Volumen (m^3) und Punktlage (m) (F24).
+    """
+
+    __slots__ = ("dt_s", "g_m_pro_s2", "daempfung_tauchung",
+                 "daempfung_kraengung", "voxel_aufloesung_m",
+                 "schranke_volumen_m3", "schranke_punkt_m")
+
+    def __init__(self, dt_s, g_m_pro_s2, daempfung_tauchung,
+                 daempfung_kraengung, voxel_aufloesung_m,
+                 schranke_volumen_m3, schranke_punkt_m):
+        self.dt_s = dt_s
+        self.g_m_pro_s2 = g_m_pro_s2
+        self.daempfung_tauchung = daempfung_tauchung
+        self.daempfung_kraengung = daempfung_kraengung
+        self.voxel_aufloesung_m = voxel_aufloesung_m
+        self.schranke_volumen_m3 = schranke_volumen_m3
+        self.schranke_punkt_m = schranke_punkt_m
+
+    def __repr__(self):
+        return ("PhysikParameter(dt=%g s, g=%g, daempfung=(%g, %g), "
+                "voxel=%g m, schranken=(%g m^3, %g m))"
+                % (self.dt_s, self.g_m_pro_s2, self.daempfung_tauchung,
+                   self.daempfung_kraengung, self.voxel_aufloesung_m,
+                   self.schranke_volumen_m3, self.schranke_punkt_m))
+
+
+def _val_physik(d, pfad):
+    if not isinstance(d, dict):
+        raise KonfigFehler("%s: Objekt erwartet" % pfad)
+    fremd_top = [s for s in d if s != "physik" and not s.startswith("_")]
+    if fremd_top or "physik" not in d:
+        raise KonfigFehler(
+            "%s: alleiniger Abschnitt 'physik' erwartet, fremd: %s"
+            % (pfad, fremd_top))
+    p = d["physik"]
+    if not isinstance(p, dict):
+        raise KonfigFehler("%s.physik: Objekt erwartet" % pfad)
+    fremd = [s for s in p if s not in _PHYSIK_ERLAUBT and not s.startswith("_")]
+    if fremd:
+        raise KonfigFehler(
+            "%s.physik: unbekannte Schluessel %s (erlaubt: %s; "
+            "Unterstrich-Schluessel sind Doku)"
+            % (pfad, fremd, ", ".join(_PHYSIK_ERLAUBT)))
+    dt = _positive_zahl(p.get("dt_s"), "%s.physik.dt_s" % pfad)
+    g = _positive_zahl(p.get("g_m_pro_s2"), "%s.physik.g_m_pro_s2" % pfad)
+    dae = p.get("daempfung")
+    if not isinstance(dae, dict):
+        raise KonfigFehler("%s.physik.daempfung: Objekt erwartet" % pfad)
+    fremd_d = [s for s in dae
+               if s not in _DAEMPFUNG_ERLAUBT and not s.startswith("_")]
+    if fremd_d:
+        raise KonfigFehler(
+            "%s.physik.daempfung: unbekannte Schluessel %s (erlaubt: %s)"
+            % (pfad, fremd_d, ", ".join(_DAEMPFUNG_ERLAUBT)))
+    d_tauc = _nichtnegative_zahl(dae.get("tauchung"),
+                                 "%s.physik.daempfung.tauchung" % pfad)
+    d_krae = _nichtnegative_zahl(dae.get("kraengung"),
+                                 "%s.physik.daempfung.kraengung" % pfad)
+    vox = p.get("voxel")
+    if not isinstance(vox, dict):
+        raise KonfigFehler("%s.physik.voxel: Objekt erwartet" % pfad)
+    fremd_v = [s for s in vox
+               if s not in _VOXEL_ERLAUBT and not s.startswith("_")]
+    if fremd_v:
+        raise KonfigFehler(
+            "%s.physik.voxel: unbekannte Schluessel %s (erlaubt: %s)"
+            % (pfad, fremd_v, ", ".join(_VOXEL_ERLAUBT)))
+    auf = _positive_zahl(vox.get("aufloesung_m"),
+                         "%s.physik.voxel.aufloesung_m" % pfad)
+    sv = _positive_zahl(vox.get("schranke_volumen_m3"),
+                        "%s.physik.voxel.schranke_volumen_m3" % pfad)
+    sp = _positive_zahl(vox.get("schranke_punkt_m"),
+                        "%s.physik.voxel.schranke_punkt_m" % pfad)
+    return dict(dt_s=dt, g_m_pro_s2=g, daempfung_tauchung=d_tauc,
+                daempfung_kraengung=d_krae, voxel_aufloesung_m=auf,
+                schranke_volumen_m3=sv, schranke_punkt_m=sp)
+
+
+def lade_physik(ordner=KONFIG_ORDNER):
+    """Liest und validiert physik.json (D8; kein stiller Fallback, Spec J)."""
+    pfad = os.path.join(ordner, PHYSIK_DATEI)
+    d = _lies(pfad, VORLAGE_PHYSIK)
+    w = _val_physik(d, pfad)
+    return PhysikParameter(**w)
