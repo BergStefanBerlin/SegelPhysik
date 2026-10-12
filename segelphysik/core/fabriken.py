@@ -1,35 +1,36 @@
 """Fabriken (Spec R4): duenne Erzeuger fuer die vier bekannten Koerper.
-Alle Werte (Materialien, Farben, DeltaL) kommen aus konfiguration.json.
-Modelle liegen je Boot in modelle/<bootname>/ (z. B. modelle/yacht1/)."""
+Alle Werte (Materialien, Farben, DeltaL) kommen aus konfigurationen/.
+Modelle liegen je Boot in modelle/<bootname>/ (z. B. modelle/yacht1/).
+Farben (Spec P4, 12.10.): farbe/farbe_unter_wasser je BLATT optional;
+ohne Angabe gilt darstellung.farbe_standard + automatische Aufhellung."""
 import os
 from . import koerper_formen as formen_alt
 from . import boot_bau
 from .koerper import Koerper
 
-# Standard-Modellboot; weitere Boote spaeter als eigene Ordner daneben
 YACHT_ORDNER = os.path.join(boot_bau.MODELL_ORDNER, "yacht1")
 
 
 def baue_kegel(konfig=None, H=2.0, R=1.0, dichte=1000.0):
-    farbe, delta = _werte(konfig)
+    farbe, delta = _werte(konfig, "cone")
     return Koerper(form=formen_alt.bau_kegel(H, R), dichte=dichte,
                    farbe=farbe, delta_helligkeit=delta)
 
 
 def baue_quader(konfig=None, dx=2.0, dy=2.0, dz=2.0, dichte=1000.0):
-    farbe, delta = _werte(konfig)
+    farbe, delta = _werte(konfig, "box")
     return Koerper(form=formen_alt.bau_quader(dx, dy, dz), dichte=dichte,
                    farbe=farbe, delta_helligkeit=delta)
 
 
 def baue_pyramide(konfig=None, a=2.0, H=2.0, dichte=1000.0):
-    farbe, delta = _werte(konfig)
+    farbe, delta = _werte(konfig, "pyramid")
     return Koerper(form=formen_alt.bau_pyramide(a, H), dichte=dichte,
                    farbe=farbe, delta_helligkeit=delta)
 
 
 def baue_boot(konfig, skala=boot_bau.SKALA, ordner=YACHT_ORDNER):
-    """Boot aus konfiguration.json + OBJ-Teilen (rekursiv: kielsystem/rigg).
+    """Boot aus konfigurationen/ + OBJ-Teilen (rekursiv: kielsystem/rigg).
 
     Rueckgabe (koerper, r_modell): r_modell ist der Masseschwerpunkt im
     geladenen Modell-Frame - fuer die Welt-Platzierung (Position += r_modell),
@@ -42,15 +43,20 @@ def baue_boot(konfig, skala=boot_bau.SKALA, ordner=YACHT_ORDNER):
     return k, k._r_eingabe.copy()
 
 
-def _werte(konfig):
+def _werte(konfig, typ=None):
     if konfig is None:
         return "#c9c9c9", 0.25
-    return konfig.farbe_standard, konfig.delta_helligkeit
+    farbe = konfig.farbe_standard
+    gk = getattr(konfig, "grundkoerper_farben", None) or {}
+    if typ and typ in gk:
+        farbe = gk[typ]
+    return farbe, konfig.delta_helligkeit
 
 
 def _specs_aus_konfig(eintraege, konfig, skala, ordner):
-    """Neues Schema (Spec P3): 'material' = Name ODER Dichte-Zahl,
-    optional 'wanddicke_m' -> Schale mit fm = rho*t."""
+    """Neues Schema (Spec P3/P4): 'material' = Name ODER Dichte-Zahl,
+    optional 'wanddicke_m' -> Schale mit fm = rho*t;
+    optional 'farbe'/'farbe_unter_wasser' -> Farb-Kanal je Blatt (P4)."""
     specs = []
     for eintrag in eintraege:
         name = eintrag["name"]
@@ -60,7 +66,15 @@ def _specs_aus_konfig(eintraege, konfig, skala, ordner):
             continue
         p, f = boot_bau.baue_teil(name, skala=skala, ordner=ordner)
         spec = {"form": (p, f), "_name": name}
-        rho = konfig.dichte_von(eintrag["material"])
+        if "material" in eintrag:
+            rho = konfig.dichte_von(eintrag["material"])
+            farbe, farbe_uw = konfig.farben_von(eintrag["material"])
+        else:
+            rho = float(eintrag["dichte_kg_pro_m3"])
+            farbe = eintrag["farbe"]
+            farbe_uw = eintrag["farbe_unter_wasser"]
+        spec["farbe"] = farbe
+        spec["farbe_unter_wasser"] = farbe_uw
         if "wanddicke_m" in eintrag:
             t = float(eintrag["wanddicke_m"])
             spec["flaechenmasse"] = rho * t
@@ -69,6 +83,10 @@ def _specs_aus_konfig(eintraege, konfig, skala, ordner):
         else:
             spec["dichte"] = rho
             konfig.protokoll.append("%s: VOLUMEN  rho=%g kg/m^3" % (name, rho))
+        for key in ("farbe", "farbe_unter_wasser"):
+            if key in eintrag:
+                spec[key] = eintrag[key]
+                konfig.protokoll.append("%s: %s=%s" % (name, key, eintrag[key]))
         specs.append(spec)
     return specs
 

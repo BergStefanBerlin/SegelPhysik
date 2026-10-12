@@ -1,12 +1,27 @@
 {
-  "_beschreibung": "Stoffdaten fuer SegelPhysik (Spec P3/J): Materialdichten und Wasser-Dichten, ausschliesslich SI (kg/m^3). EINZIGE Quelle fuer Stoffdaten – keine stillen Duplikate im Code. Felder mit fuehrendem Unterstrich sind Dokumentation.",
+  "_beschreibung": "Stoffdaten (Spec P3/P4): JEDES Material ist ein Block mit dichte_kg_pro_m3 + farbe + farbe_unter_wasser. EINZIGE Quelle fuer Stoffdaten UND Aussehen. Fuehrende Unterstriche = Doku.",
   "materialien": {
-    "_einheit": "Dichte in kg/m^3",
-    "Holz": 600,
-    "GfK": 1900,
-    "Stahl": 7850,
-    "Blei": 11340,
-    "Aluminium": 2700
+    "_einheit": "dichte_kg_pro_m3 in kg/m^3, Farben als Hex (#rgb oder #rrggbb)",
+    "GfK": {
+      "dichte_kg_pro_m3": 1900,
+      "farbe": "#1f4e79",
+      "farbe_unter_wasser": "#7a8a99"
+    },
+    "Stahl": {
+      "dichte_kg_pro_m3": 7850,
+      "farbe": "#4a4f55",
+      "farbe_unter_wasser": "#3a3e43"
+    },
+    "Blei": {
+      "dichte_kg_pro_m3": 11340,
+      "farbe": "#23262a",
+      "farbe_unter_wasser": "#17191c"
+    },
+    "Aluminium": {
+      "dichte_kg_pro_m3": 2700,
+      "farbe": "#c4c8cd",
+      "farbe_unter_wasser": "#9aa0a8"
+    }
   },
   "wasser": {
     "_einheit": "Dichten in kg/m^3",

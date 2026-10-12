@@ -63,7 +63,10 @@ def _kopie(vorlage):
 # ---------------- Block A: Konfig-Lader (Spec J, Schema-Reform) ----------------
 
 def test_tc_a1_arbeitsdateien_entsprechen_vorlagen(konfig, mat_vorlage, kor_vorlage):
-    assert konfig.materialien == mat_vorlage["materialien"]
+    assert konfig.materialien == {
+        n: b["dichte_kg_pro_m3"]
+        for n, b in mat_vorlage["materialien"].items()
+        if not n.startswith("_")}
     assert konfig.wasser_dichten == mat_vorlage["wasser"]["dichten_kg_pro_m3"]
     assert konfig.farbe_standard == kor_vorlage["darstellung"]["farbe_standard"]
     assert konfig.delta_helligkeit == kor_vorlage["darstellung"]["delta_helligkeit_unterwasser"]
@@ -140,7 +143,9 @@ def test_tc_a8_leere_gruppe_fehler(tmp_path, mat_vorlage, kor_vorlage):
     assert "leer" in str(info.value)
 
 
-def test_tc_a9_direkte_dichte_zahl_zulaessig(tmp_path, mat_vorlage, kor_vorlage):
+def test_tc_a9_material_als_zahl_abgeschafft(tmp_path, mat_vorlage, kor_vorlage):
+    """MIGRATIONS-WACHE: 'material': <Zahl> ist seit der Material-Reform ein
+    Fehler - direkte Dichte gehoert ins Direkt-Tripel (Spec P3/P4)."""
     kor = _kopie(kor_vorlage)
     for e in kor["boot"]["teile"]:
         if e["name"] == "kielsystem":
@@ -148,11 +153,8 @@ def test_tc_a9_direkte_dichte_zahl_zulaessig(tmp_path, mat_vorlage, kor_vorlage)
                 if kind["name"] == "bulb":
                     kind["material"] = 11340
     od = _temp_konfig(tmp_path, mat_vorlage, kor)
-    k = lade_konfig(od)
-    assert k.dichte_von(11340) == 11340.0
-
-
-# ---------------- Block B: Massen einzelner Koerper ----------------
+    with pytest.raises(KonfigFehler):
+        lade_konfig(od)
 
 def test_tc_b1_quader_exakt():
     v, f = formen.bau_quader(2.0, 2.0, 2.0)
@@ -446,10 +448,11 @@ def test_tc_e2_beide_farben_gesetzt():
     assert k.unterwasser_farbe() == "#654321"
 
 
-def test_tc_e3_default_farbe_aus_konfig(konfig):
+def test_tc_e3_farbe_aus_konfig(konfig):
+    """Grundkoerper-Farbe: grundkoerper-Block hat Vorrang, sonst farbe_standard."""
     k = fabriken.baue_kegel(konfig)
-    assert k.farbe == konfig.farbe_standard == "#c9c9c9"
-
+    erwartung = konfig.grundkoerper_farben.get("cone", konfig.farbe_standard)
+    assert k.farbe == erwartung
 
 def test_tc_e4_delta_aus_konfig(tmp_path, mat_vorlage, kor_vorlage):
     kor = _kopie(kor_vorlage)
@@ -457,13 +460,16 @@ def test_tc_e4_delta_aus_konfig(tmp_path, mat_vorlage, kor_vorlage):
     k4 = lade_konfig(_temp_konfig(tmp_path, mat_vorlage, kor))
     k = fabriken.baue_kegel(k4)
     assert k.delta_helligkeit == 0.4
-    assert k.unterwasser_farbe() == helle_auf("#c9c9c9", 0.4)
+    assert k.unterwasser_farbe() == helle_auf(k.farbe, 0.4)   # palettfest (Reform 12.10.)
 
 
 # ---------------- Block F: Regression ----------------
 
 def test_tc_f4_keine_stillen_duplikate(konfig, mat_vorlage, kor_vorlage):
-    assert konfig.materialien == mat_vorlage["materialien"]
+    assert konfig.materialien == {
+        n: b["dichte_kg_pro_m3"]
+        for n, b in mat_vorlage["materialien"].items()
+        if not n.startswith("_")}
     assert konfig.wasser_dichten == mat_vorlage["wasser"]["dichten_kg_pro_m3"]
     assert konfig.farbe_standard == kor_vorlage["darstellung"]["farbe_standard"]
     assert konfig.delta_helligkeit == kor_vorlage["darstellung"]["delta_helligkeit_unterwasser"]

@@ -66,6 +66,40 @@ def _dreiecks_polydaten(pv, punkte, dreiecke):
                        np.hstack([kopf, dreiecke]).ravel())
 
 
+def _farbgruppen(koerper):
+    """Farbgruppen eines Koerpers (P4 nach der Material-Reform).
+
+    Blatt: genau eine Gruppe (eigene Farbe aus Materialtabelle oder
+    Direkt-Tripel). Verband: rekursive Zerlegung je Blatt, Punkte im
+    Verbands-Schwerpunktframe (P1) komponiert. Die Reihenfolge folgt der
+    Teile-Hierarchie und entspricht damit exakt der Anordnung in
+    koerper.punkte (das prueft der Verifikationslauf).
+    """
+    if not getattr(koerper, "teile", None):
+        return [{"punkte": np.asarray(koerper.punkte, float),
+                 "dreiecke": np.asarray(koerper.dreiecke, np.int64),
+                 "farbe_oben": koerper.farbe,
+                 "farbe_unten": koerper.unterwasser_farbe()}]
+    blaetter = []
+
+    def sammle(k, R, t):
+        if k.teile:
+            for kind, (R2, t2) in k.teile:
+                sammle(kind, R @ np.asarray(R2, float),
+                       t + R @ np.asarray(t2, float))
+        else:
+            blaetter.append((k, R, t))
+
+    sammle(koerper, np.eye(3), np.zeros(3))
+    gruppen = []
+    for kind, R, t in blaetter:
+        gruppen.append({"punkte": kind.punkte @ R.T + t,
+                        "dreiecke": np.asarray(kind.dreiecke, np.int64),
+                        "farbe_oben": kind.farbe,
+                        "farbe_unten": kind.unterwasser_farbe()})
+    return gruppen
+
+
 class GrafikBruecke:
     """Baut das Fenster mit dem ORIGINAL-Renderer; haelt MEHRERE Koerper."""
 
@@ -140,41 +174,67 @@ class GrafikBruecke:
     def koerper_objekt_setzen(self, name, koerper, position=(0.0, 0.0, 0.0),
                               achse=None, phase=0.0,
                               farbe_unten=None, farbe_oben=None):
-        """Haengt einen Koerper (core.koerper.Koerper) ein (Spec V4).
+        """Haengt einen Koerper (core.koerper.Koerper) ein (Spec V4/P4).
 
-        Ohne Farb-Override gelten die P4-Farben des Koerpers (aktiv ab
-        Schritt 2.5); mit Override bleibt das alte Erscheinungsbild
-        exakt erhalten (Schritt 1: visuell unveraendert).
+        Seit der Material-Reform kommen die Farben je BLATT aus der
+        Materialtabelle bzw. dem Direkt-Tripel. Ein Verband traegt selbst
+        keine Farbe (P2.5) - er wird hier in Farbgruppen zerlegt (eine
+        Gruppe je Blatt) und gruppenweise eingefaerbt, inklusive
+        Wasserlinien-Schnitt je Gruppe. Explizite Overrides faerben
+        alles einheitlich (altes Verhalten).
         """
-        self.mesh_setzen(name, koerper.punkte, koerper.dreiecke,
-                         position=position,
-                         farbe_unten=(farbe_unten if farbe_unten is not None
-                                      else koerper.unterwasser_farbe()),
-                         farbe_oben=(farbe_oben if farbe_oben is not None
-                                     else koerper.farbe))
+        import pyvista as pv
+        gruppen = _farbgruppen(koerper)
+        if farbe_oben is not None or farbe_unten is not None:
+            for g in gruppen:
+                if farbe_oben is not None:
+                    g["farbe_oben"] = farbe_oben
+                if farbe_unten is not None:
+                    g["farbe_unten"] = farbe_unten
+        for g in gruppen:
+            pd = _dreiecks_polydaten(pv, g["punkte"], g["dreiecke"])
+            pd["referenz_punkte"] = pd.points.copy()
+            g["pd"] = pd
+        erster = gruppen[0]
+        self._koerper[name] = {"typ": "mesh", "dims": {}, "achse": None,
+                               "phase": 0.0,
+                               "position": np.asarray(position, float),
+                               "pd": erster["pd"], "aktiv": True,
+                               "farbe_unten": erster["farbe_unten"],
+                               "farbe_oben": erster["farbe_oben"],
+                               "gruppen": gruppen}
         if achse is not None:
             self._koerper[name]["achse"] = tuple(achse)
             self._koerper[name]["phase"] = phase
-        # Schritt 3 (P5a/P5b): Koerper-Objekt + Overlay-Skala merken, damit
-        # die Overlays (r_S, Hauptachsen) pro Frame aus der Wahrheit des
-        # Koerpers projiziert werden koennen (nie im Koerper gespeichert).
+        # Schritt 3 (P5a/P5b): Koerper-Objekt + Overlay-Skala merken.
         self._koerper[name]["koerper"] = koerper
         self._koerper[name]["overlay_skala"] = self._overlay_skala(koerper)
+        self._einhaengen(name)
 
     def _actor_namen(self, name):
-        return ("koerper_%s_unten" % name, "koerper_%s_oben" % name,
-                "kontur_%s" % name)
+        namen = ["koerper_%s_unten" % name, "koerper_%s_oben" % name,
+                 "kontur_%s" % name]
+        for i in range(len(self._koerper.get(name, {}).get("gruppen", []))):
+            namen += ["koerper_%s_g%d_unten" % (name, i),
+                      "koerper_%s_g%d_oben" % (name, i),
+                      "kontur_%s_g%d" % (name, i)]
+        return namen
 
     def _einhaengen(self, name):
         k = self._koerper[name]
         welt = k["pd"]["referenz_punkte"] + k["position"]
         k["pd"].points = welt
+        for g in k.get("gruppen", []):
+            g["pd"].points = g["pd"]["referenz_punkte"] + k["position"]
         self._actors_aktualisieren(name, welt)
 
     def _actors_aktualisieren(self, name, welt):
+        k = self._koerper[name]
+        if k.get("gruppen"):
+            self._gruppen_actors(name, k)
+            return
         import pyvista as pv
         p = self._plotter
-        k = self._koerper[name]
         farbe_u = k.get("farbe_unten", FARBE_UNTEN)
         farbe_o = k.get("farbe_oben", FARBE_OBEN)
         pd = k["pd"]
@@ -255,7 +315,16 @@ class GrafikBruecke:
                 R, _ = kin.koerper_pose(t, achse=k["achse"], phase=k["phase"])
                 welt = pd["referenz_punkte"] @ R.T + k["position"]
             pd.points = welt
-            self._actors_aktualisieren(name, welt)
+            if k.get("gruppen"):
+                for g in k["gruppen"]:
+                    if k["achse"] is None:
+                        gw = g["pd"]["referenz_punkte"] + k["position"]
+                    else:
+                        gw = g["pd"]["referenz_punkte"] @ R.T + k["position"]
+                    g["pd"].points = gw
+                self._gruppen_actors(name, k)
+            else:
+                self._actors_aktualisieren(name, welt)
             self._overlays_aktualisieren(name, k, R)
         return True
 
@@ -352,6 +421,51 @@ class GrafikBruecke:
                 self._plotter.remove_actor(n)
             except Exception:
                 pass
+
+    def _gruppen_actors(self, name, k):
+        """Faerbt die Farbgruppen je Blatt (Material-Reform): Wasserlinien-
+        Schnitt pro Gruppe, Farben aus der Materialtabelle/Direkt-Tripel."""
+        import pyvista as pv
+        p = self._plotter
+        refs = k.setdefault("actors", {})
+        for i, g in enumerate(k["gruppen"]):
+            n_u = "koerper_%s_g%d_unten" % (name, i)
+            n_o = "koerper_%s_g%d_oben" % (name, i)
+            n_k = "kontur_%s_g%d" % (name, i)
+            u_p, u_t, o_p, o_t, kontur = ws.schneide_am_wasser(
+                np.asarray(g["pd"].points, float), g["dreiecke"])
+            if len(u_t):
+                un = _dreiecks_polydaten(pv, u_p, u_t)
+                refs[n_u] = p.add_mesh(un, color=g["farbe_unten"], opacity=0.95,
+                                       show_edges=False, smooth_shading=True,
+                                       name=n_u)
+            else:
+                refs.pop(n_u, None)
+                try:
+                    p.remove_actor(n_u)
+                except Exception:
+                    pass
+            if len(o_t):
+                ob = _dreiecks_polydaten(pv, o_p, o_t)
+                refs[n_o] = p.add_mesh(ob, color=g["farbe_oben"], opacity=0.95,
+                                       show_edges=False, smooth_shading=True,
+                                       name=n_o)
+            else:
+                refs.pop(n_o, None)
+                try:
+                    p.remove_actor(n_o)
+                except Exception:
+                    pass
+            if len(kontur):
+                linien = pv.line_segments_from_points(kontur)
+                refs[n_k] = p.add_mesh(linien, color="black", line_width=3,
+                                       name=n_k)
+            else:
+                refs.pop(n_k, None)
+                try:
+                    p.remove_actor(n_k)
+                except Exception:
+                    pass
 
 
 def _gesichter(pd):
