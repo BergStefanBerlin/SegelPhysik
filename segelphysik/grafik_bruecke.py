@@ -18,6 +18,12 @@ Phase C (P5c, Umsetzungsplan V5 rev 9 §5): Layer 'kraefte' (Taste 7).
 Die Kraefte-Daten (Auftriebsergebnis + Skala) setzt die Demo ueber
 kraefte_daten_setzen(); die Bruecke projiziert sie pro Frame (P5a-Muster:
 Daten setzen, Renderer projiziert). D1: gemeinsame fixe Skala.
+
+Spec V4A rev B: stoer_pose_setzen() friert einen Koerper in einer
+voll 3-achsig gestoerten Anzeige-Pose ein (Basis wird gesichert und beim
+Loeschen restauriert). Im Kraeftebild wird zusaetzlich der Drehmoment-
+Bogenpfeil um die Rollachse gerendert (kb.moment_bogen, violett); im
+Gleichgewicht verschwindet er automatisch (Zielbild Z3).
 """
 from __future__ import annotations
 import numpy as np
@@ -320,7 +326,7 @@ class GrafikBruecke:
                 continue
             pd = k["pd"]
             if k.get("statisch_R") is not None:
-                R = k["statisch_R"]   # Phase B2: eingefrorene Gleichgewichtslage
+                R = k["statisch_R"]   # B2/V4A: eingefrorene (statische oder Stoer-) Lage
             elif k["achse"] is None:
                 R = np.eye(3)
             else:
@@ -363,10 +369,10 @@ class GrafikBruecke:
 
     def _kraefte_namen(self, name):
         return ["kraefte_%s_fg" % name, "kraefte_%s_fa" % name,
-                "kraefte_%s_arm" % name]
+                "kraefte_%s_arm" % name, "kraefte_%s_moment" % name]
 
     def _kraefte_actors(self, name):
-        """Baut die drei Kraefte-Actors aus den gesetzten Daten."""
+        """Baut die Kraefte-Actors aus den gesetzten Daten (inkl. Moment-Bogen)."""
         from .core import kraefte_bild as kb
         import pyvista as pv
         daten = self._kraefte_daten.get(name)
@@ -380,7 +386,7 @@ class GrafikBruecke:
         fg, fa = kb.kraft_pfeile(daten["erg"], r_s, daten["masse"],
                                  daten["g"], daten["skala"])
         store = k.setdefault("kraefte_actors", {})
-        n_fg, n_fa, n_arm = self._kraefte_namen(name)
+        n_fg, n_fa, n_arm, n_moment = self._kraefte_namen(name)
 
         def _pfeil(p, farbe, n):
             try:
@@ -410,6 +416,32 @@ class GrafikBruecke:
         except Exception:
             pass
 
+        # Spec V4A SS6: Drehmoment-Bogenpfeil um die Rollachse (violett).
+        m_x = float(daten["erg"].M.as_array()[0])
+        bogen_radius = 0.45 * daten["skala"] * daten["masse"] * daten["g"]
+        bogen = kb.moment_bogen(m_x, r_s, radius=bogen_radius)
+        if bogen is not None:
+            try:
+                kurve = pv.lines_from_points(bogen["punkte"]).tube(
+                    radius=max(0.3 * bogen["kopf_radius"], 0.004), n_sides=8)
+                kopf = pv.Cone(
+                    center=tuple(0.5 * (bogen["punkte"][-1] + bogen["spitze"])),
+                    direction=tuple(bogen["richtung"]),
+                    height=bogen["kopf_laenge"], radius=bogen["kopf_radius"])
+                store[n_moment] = self._plotter.add_mesh(
+                    kurve + kopf, color=kb.FARBE_MOMENT, name=n_moment,
+                    smooth_shading=True)
+            except Exception:
+                seg = pv.line_segments_from_points(bogen["punkte"])
+                store[n_moment] = self._plotter.add_mesh(
+                    seg, color=kb.FARBE_MOMENT, line_width=4, name=n_moment)
+        else:
+            store.pop(n_moment, None)
+            try:
+                self._plotter.remove_actor(n_moment)
+            except Exception:
+                pass
+
     def _kraefte_entfernen(self, name):
         store = self._koerper.get(name, {}).get("kraefte_actors", {})
         for n in self._kraefte_namen(name):
@@ -421,8 +453,7 @@ class GrafikBruecke:
 
     def statische_pose_setzen(self, name, z, phi):
         """Phase B2: friert den Koerper in der statischen Gleichgewichts-
-        lage ein (D11: r_S bei Welt-z = z, Rotation R_x(phi) um r_S).
-        Die Basis-Position wird gesichert und beim Loeschen restauriert."""
+        lage ein (D11: r_S bei Welt-z = z, Rotation R_x(phi) um r_S)."""
         k = self._koerper.get(name)
         if k is None:
             return False
@@ -437,6 +468,24 @@ class GrafikBruecke:
         k["position"] = np.array([basis[0], basis[1], float(z)])
         self._statisch_anwenden(name, k)
         return True
+
+    def stoer_pose_setzen(self, name, R, position):
+        """Spec V4A: friert den Koerper in der voll 3-achsig gestoerten
+        Anzeige-Pose ein (St-2). Basis wird einmalig gesichert und beim
+        Loeschen restauriert - kein Drift ueber mehrere Stoerungen (Z4)."""
+        k = self._koerper.get(name)
+        if k is None:
+            return False
+        if "position_basis" not in k:
+            k["position_basis"] = np.asarray(k["position"], float).copy()
+        k["statisch_R"] = np.asarray(R, float)
+        k["position"] = np.asarray(position, float).copy()
+        self._statisch_anwenden(name, k)
+        return True
+
+    def stoer_pose_loeschen(self, name):
+        """Gibt die Stoerpose frei (Basis zurueck, Animation uebernimmt)."""
+        return self.statische_pose_loeschen(name)
 
     def statische_pose_loeschen(self, name):
         """Gibt die Pose wieder frei (Modus r/z): Basis-Position zurueck,

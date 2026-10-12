@@ -5,7 +5,20 @@ Farben (Spec P4, 12.10.): farbe/farbe_unter_wasser je BLATT optional;
 ohne Angabe gilt darstellung.farbe_standard + automatische Aufhellung.
 
 Schritt 4 (K3): Glanzgrad kommt je Blatt aus der Materialtabelle
-(materialien.json, Schluessel 'glanz'); bei Direkt-Tripel gilt der Default."""
+(materialien.json, Schluessel 'glanz'); bei Direkt-Tripel gilt der Default.
+
+rev E (Sichtprobe 12.10.): Die bisherigen Default-Dichten 1000.0 waren
+exakt WASSERDICHTE. Ein solcher Koerper schwebt volltauchend in JEDEM
+Tiefgang und JEDER Rollage (F_A = m*g erst bei voller Untertauchung,
+dann M identisch 0) - es gibt keine eindeutige Gleichgewichtslage, der
+statische Solver kann per Definition keine finden (Kalibrierlauf mit
+dem echten Voxel-Kern). Neu (schwimmfaehig, Kalibrierlauf F2):
+  Kegel    500 kg/m^3: liegt SEITLICH - physikalisch korrekt (wie eine
+           Schwimmstange; aufrecht ist bei GM<0 instabil). Verifiziert:
+           phi* nahe 90 Grad, stabil, Restkraft < 5 % m*g.
+  Quader   950 kg/m^3: tiefe, stabile aufrechte Lage.
+  Pyramide 500 kg/m^3: stabile aufrechte Lage (GM = +0.087 m).
+"""
 import os
 from . import koerper_formen as formen_alt
 from . import boot_bau
@@ -13,20 +26,24 @@ from .koerper import Koerper
 
 YACHT_ORDNER = os.path.join(boot_bau.MODELL_ORDNER, "yacht1")
 
+DICHTE_KEGEL = 500.0      # rev E: siehe Moduldokumentation
+DICHTE_QUADER = 950.0     # rev E
+DICHTE_PYRAMIDE = 500.0   # rev E
 
-def baue_kegel(konfig=None, H=2.0, R=1.0, dichte=1000.0):
+
+def baue_kegel(konfig=None, H=2.0, R=1.0, dichte=DICHTE_KEGEL):
     farbe, delta = _werte(konfig, "cone")
     return Koerper(form=formen_alt.bau_kegel(H, R), dichte=dichte,
                    farbe=farbe, delta_helligkeit=delta)
 
 
-def baue_quader(konfig=None, dx=2.0, dy=2.0, dz=2.0, dichte=1000.0):
+def baue_quader(konfig=None, dx=2.0, dy=2.0, dz=2.0, dichte=DICHTE_QUADER):
     farbe, delta = _werte(konfig, "box")
     return Koerper(form=formen_alt.bau_quader(dx, dy, dz), dichte=dichte,
                    farbe=farbe, delta_helligkeit=delta)
 
 
-def baue_pyramide(konfig=None, a=2.0, H=2.0, dichte=1000.0):
+def baue_pyramide(konfig=None, a=2.0, H=2.0, dichte=DICHTE_PYRAMIDE):
     farbe, delta = _werte(konfig, "pyramid")
     return Koerper(form=formen_alt.bau_pyramide(a, H), dichte=dichte,
                    farbe=farbe, delta_helligkeit=delta)
@@ -80,10 +97,10 @@ def _specs_aus_konfig(eintraege, konfig, skala, ordner):
         spec["farbe"] = farbe
         spec["farbe_unter_wasser"] = farbe_uw
         if "wanddicke_m" in eintrag:
-            t = float(eintrag["wanddicke_m"])
-            spec["flaechenmasse"] = rho * t
+            tt = float(eintrag["wanddicke_m"])
+            spec["flaechenmasse"] = rho * tt
             konfig.protokoll.append(
-                "%s: SCHALE  rho=%g * t=%g = %.3f kg/m^2" % (name, rho, t, rho * t))
+                "%s: SCHALE  rho=%g * t=%g = %.3f kg/m^2" % (name, rho, tt, rho * tt))
         else:
             spec["dichte"] = rho
             konfig.protokoll.append("%s: VOLUMEN  rho=%g kg/m^3" % (name, rho))

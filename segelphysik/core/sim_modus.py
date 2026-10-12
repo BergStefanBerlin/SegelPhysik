@@ -1,16 +1,8 @@
 """P5c Schritt 1 - Simulationsmodi (nur Umschaltung, KEINE Physik).
 
-Drei Modi (Beschluss 12.10.):
-  RUHEND   - Grafik only (heutiger Zustand)
-  STATISCH - Solver sucht Gleichgewicht (spaeter)
-  ECHTZEIT - Integration mit festem dt (spaeter)
-
-Diese Stufe implementiert ausschliesslich den Zustaandsautomaten und seine
-Textdarstellung - bewusst ohne jede Physik-Funktion ("langsam langsam").
-
-Tasten (Beschluss 12.10.): r -> RUHEND, s -> STATISCH, z -> ECHTZEIT.
-Regeln: gleiche Taste im selben Modus ist ein No-op; unbekannte Tasten
-veraendern nichts; der Zaehler erfasst nur echte Wechsel.
+Modi: RUHEND / STATISCH / ECHTZEIT, Tasten r / s / z.
+StoerSequenz (Spec V4A rev B): reiner Countdown zwischen Stoerpose und
+Solver-Start (Standard 5 s, nur STATISCH). Rein, vollvermascht testbar.
 """
 from __future__ import annotations
 from enum import Enum
@@ -23,6 +15,8 @@ class Modus(Enum):
 
 
 MODUS_TASTEN = {"r": Modus.RUHEND, "s": Modus.STATISCH, "z": Modus.ECHTZEIT}
+
+COUNTDOWN_S = 5.0
 
 
 class SimSteuerung:
@@ -46,3 +40,42 @@ class SimSteuerung:
     def text(self):
         """Textdarstellung fuer die Statuszeile."""
         return "MODUS: %s" % self.modus.value
+
+
+class StoerSequenz:
+    """Countdown zwischen Stoerpose und Solver-Start (Spec V4A, rein).
+
+    starten() setzt den Timer; tick(dt) liefert GENAU EINMAL True beim
+    Ablauf; abbrechen() bricht ab (Moduswechsel waehrend des Countdowns).
+    """
+
+    def __init__(self, dauer_s=COUNTDOWN_S):
+        self.dauer = float(dauer_s)
+        if self.dauer <= 0.0:
+            raise ValueError("dauer_s muss positiv sein")
+        self.rest = 0.0
+        self.aktiv = False
+
+    def starten(self):
+        self.aktiv = True
+        self.rest = self.dauer
+
+    def abbrechen(self):
+        self.aktiv = False
+        self.rest = 0.0
+
+    def tick(self, dt):
+        """Zaehlt herunter. True genau beim Ablauf (einmalig)."""
+        if not self.aktiv:
+            return False
+        self.rest = max(0.0, self.rest - float(dt))
+        if self.rest <= 0.0:
+            self.aktiv = False
+            return True
+        return False
+
+    def text(self):
+        """Statuszeilentext waehrend des Countdowns (leer, wenn aus)."""
+        if not self.aktiv:
+            return ""
+        return "Solver in %.1f s" % self.rest
