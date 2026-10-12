@@ -1,7 +1,7 @@
 # Umsetzungsplan V5 – P5c Physik-Wiederaufnahme
-**Stand:** 12.10.2026 · Revision 7 · Status: Phase A offen · Vorgänger: Umsetzungsplan_v4 (Schritte 0–4 abgeschlossen, Tag `v4.0-schritt4`)
+**Stand:** 12.10.2026 · Revision 8 · Status: Phase A offen · Vorgänger: Umsetzungsplan_v4 (Schritte 0–4 abgeschlossen, Tag `v4.0-schritt4`)
 
-**Revisionshistorie:** rev 1 Erstfassung · rev 2 Konsistenzkorrekturen F1–F5 · rev 3 Tiefenprüfung F6–F10, Entscheidungen D7/D8 · rev 4 Zweitprüfung F11–F12 · rev 5 Drittprüfung F13–F16, Entscheidung D9 · rev 6 Viertprüfung F17–F19, Präzisierung D9 · rev 7 Fünftprüfung F20, Entscheidung D10
+**Revisionshistorie:** rev 1 Erstfassung · rev 2 Konsistenzkorrekturen F1–F5 · rev 3 Tiefenprüfung F6–F10, Entscheidungen D7/D8 · rev 4 Zweitprüfung F11–F12 · rev 5 Drittprüfung F13–F16, Entscheidung D9 · rev 6 Viertprüfung F17–F19, Präzisierung D9 · rev 7 Fünftprüfung F20, Entscheidung D10 · rev 8 Sechstprüfung F21–F23
 
 ## §0 Grundprinzip (aus Spec V4, unverändert)
 
@@ -21,8 +21,11 @@ Darstellungsschicht.
 ### Berechnungskette (Phase A)
 
 1. **Verdrängtes Volumen V_tauch:** `wasser_schnitt.schneide_am_wasser` schneidet jedes Blatt-Mesh
-   an z=0; Tetraeder-Integration liefert die getauchten Teilvolumina → Summe über die
-   **wirksamen** (vereinigten) Volumina gemäß D7 – nicht die blinde Blattsumme (rev 4, F11)
+   an z=0; aus den Schnitt-Meshes wird V_tauch über die **wirksamen** (vereinigten) Volumina
+   gemäß D7 bestimmt – nicht die blinde Blattsumme (rev 4, F11). Zwei Wege (rev 8, F21):
+   **Standardpfad** = Voxelgitter direkt auf den Schnitt-Meshes (D10);
+   **exakter Pfad** = Tetraeder-Integration je Blatt + Summe, nur für disjunkte
+   Testgeometrien als Referenz (D10).
 2. **Auftriebskraft:** F_A = rho_W * g * V_tauch, Richtung +z
 3. **Auftriebssummenpunkt K:** der Schwerpunkt *des verdrängten Volumens*, nicht des Körpers
    (rev 2, F1). K wird **mit derselben Methode** gerechnet wie V_tauch (rev 5, F13): im exakten
@@ -35,9 +38,11 @@ Darstellungsschicht.
 Rumpf) werden **nur einmal** gezählt – gerechnet wird die **Vereinigungsmenge** der getauchten
 Geometrie, nicht die Blattsumme. Verfahren: deterministisches **Voxelgitter** über dem getauchten
 Bereich; ein Voxel zählt, wenn sein Mittelpunkt in mindestens einem getauchten Blatt-Volumen liegt.
-Auflösung und Konvergenzschranke stehen in `physik.json` (D8); die Fehlerschranke wird durch
-Gitterverfeinerung bestimmt (Voxelauflösung halbieren, bis die Änderung von V_tauch unter der
-Schranke liegt). Disjunkte Konfigurationen (Testgeometrien) bleiben exakt rechenbar – der
+Auflösung und Konvergenzschranke stehen in `physik.json` (D8). Die Auflösung ist der **feste
+Betriebswert**; die Halbierungs-Prozedur (Voxelauflösung halbieren, bis die Änderung von V_tauch
+unter der Schranke liegt) ist eine **einmalige Kalibrierungs-Vorschrift** zur Wahl dieses Werts
+(dokumentiert im Vorlagen-Kommentar) und optional als Validierungstest in Block N – sie läuft
+nicht in jedem Kraftfunktions-Aufruf (rev 8, F22). Disjunkte Konfigurationen (Testgeometrien) bleiben exakt rechenbar – der
 Voxel-Pfad wird gegen die exakte Tetraeder-Summe verifiziert (Block N).
 
 **Pfadauswahl (D10, rev 7):** Der **Voxel-Pfad ist der Standardpfad** für zusammengesetzte
@@ -96,7 +101,9 @@ Mesh offen, entscheidet man zwischen Mesh-Reparatur oder Wanddicke-Modell
 **Neu:** `segelphysik/core/statisch.py`
 
 - Newton-Iteration über **(z, φ)** (Trim später): Startwert = aktuelle Pose,
-  Konvergenzkriterium auf |Restmoment| und |ΔF|
+  Konvergenzkriterium auf Residuen: **z-Komponente der Restkraft** (F_A − F_G) und
+  **Rollachskomponente des Moments** (rev 8, F23 – die übrigen Momentkomponenten sind bei
+  θ-Wache unerreichbar und würden überkonstrainieren)
 - Rückgabe: Lösung + Iterationszahl + **metazentrische Höhe** (Nebenprodukt für die
   **aufrechte Lage** – dort ist sie definiert und dient als Referenzgröße für Block P;
   rev 6, F18)
@@ -132,7 +139,7 @@ Mesh offen, entscheidet man zwischen Mesh-Reparatur oder Wanddicke-Modell
   der Restart findet die stabile 45°-Lage (rev 5, F16) – mit eskalierenden Störgrößen
   (rev 6, F17), denn kleine Störungen konvergieren erneut zur instabilen Wurzel
 - Nicht-Konvergenz wird sauber gemeldet (kein Endlosloop, Iterationsbudget)
-- STATISCH-Lösung ist exakt kraftfrei (Residuum < ε)
+- STATISCH-Lösung ist in beiden definierten Residuen kraftfrei (Residuum < ε; rev 8, F23)
 
 ## §5 Phase C – Kräftebild (Pfeile)
 
