@@ -1,0 +1,1 @@
+"""SegelPhysik-GUI (PySide6)."""

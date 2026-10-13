@@ -1,70 +1,103 @@
 {
-  "_beschreibung": "Koerperdefinitionen (Spec P2/P3/P4, Reform 12.10.). 'teile' = reine Gruppe (P2.5). BLATT - genau EINE Form: (a) 'material': Name -> Dichte UND Farben aus materialien.json; (b) ohne 'material': dichte_kg_pro_m3 + farbe + farbe_unter_wasser direkt. Optional 'wanddicke_m' => SCHALE fm=rho*t; ohne => VOLUMEN m=rho*V.",
-  "boot": {
-    "teile": [
-      {
-        "name": "rumpf",
-        "material": "GfK",
-        "wanddicke_m": 0.005
+  "_beschreibung": "J-1",
+  "summenkoerper": {
+    "_zweck": "Alle Hauptobjekte",
+    "yacht1": {
+      "teile": [
+        {
+          "name": "rumpf",
+          "material": "GfK",
+          "wanddicke_m": 0.005
+        },
+        {
+          "name": "ruder",
+          "material": "GfK",
+          "wanddicke_m": 0.005
+        },
+        {
+          "name": "kielsystem",
+          "teile": [
+            {
+              "name": "kiel",
+              "material": "Stahl"
+            },
+            {
+              "name": "bulb",
+              "material": "Blei"
+            }
+          ]
+        },
+        {
+          "name": "rigg",
+          "teile": [
+            {
+              "name": "mast",
+              "material": "Aluminium",
+              "wanddicke_m": 0.002
+            },
+            {
+              "name": "boom",
+              "material": "Aluminium",
+              "wanddicke_m": 0.002
+            },
+            {
+              "name": "grosssegel",
+              "dichte_kg_pro_m3": 1250,
+              "farbe": "#fbfaf7",
+              "farbe_unter_wasser": "#d9d7cf",
+              "wanddicke_m": 0.0004
+            },
+            {
+              "name": "fock",
+              "dichte_kg_pro_m3": 1250,
+              "farbe": "#fbfaf7",
+              "farbe_unter_wasser": "#d9d7cf",
+              "wanddicke_m": 0.0004
+            }
+          ]
+        }
+      ]
+    },
+    "kegel": {
+      "form": {
+        "typ": "cone",
+        "H_m": 2.0,
+        "R_m": 1.0
       },
-      {
-        "name": "ruder",
-        "material": "GfK",
-        "wanddicke_m": 0.005
+      "dichte_kg_pro_m3": 500,
+      "farbe": "#ff6a00",
+      "farbe_unter_wasser": "#b34700"
+    },
+    "quader": {
+      "form": {
+        "typ": "box",
+        "dx_m": 2.0,
+        "dy_m": 2.0,
+        "dz_m": 2.0
       },
-      {
-        "name": "kielsystem",
-        "teile": [
-          {
-            "name": "kiel",
-            "material": "Stahl"
-          },
-          {
-            "name": "bulb",
-            "material": "Blei"
-          }
-        ]
+      "dichte_kg_pro_m3": 950,
+      "farbe": "#00b140",
+      "farbe_unter_wasser": "#00802e"
+    },
+    "pyramide": {
+      "form": {
+        "typ": "pyramid",
+        "a_m": 2.0,
+        "H_m": 2.0
       },
-      {
-        "name": "rigg",
-        "teile": [
-          {
-            "name": "mast",
-            "material": "Aluminium",
-            "wanddicke_m": 0.002
-          },
-          {
-            "name": "boom",
-            "material": "Aluminium",
-            "wanddicke_m": 0.002
-          },
-          {
-            "name": "grosssegel",
-            "dichte_kg_pro_m3": 1250,
-            "farbe": "#fbfaf7",
-            "farbe_unter_wasser": "#d9d7cf",
-            "wanddicke_m": 0.0004
-          },
-          {
-            "name": "fock",
-            "dichte_kg_pro_m3": 1250,
-            "farbe": "#fbfaf7",
-            "farbe_unter_wasser": "#d9d7cf",
-            "wanddicke_m": 0.0004
-          }
-        ]
-      }
-    ]
+      "dichte_kg_pro_m3": 500,
+      "farbe": "#d40078",
+      "farbe_unter_wasser": "#99005a"
+    }
   },
   "darstellung": {
     "grundkoerper": {
-      "_zweck": "Farben der drei Demo-Grundkoerper (Tasten 1/2/3)",
       "cone": "#ff6a00",
       "box": "#00b140",
       "pyramid": "#d40078"
     },
-    "_einheit": "delta [0..1]; farbe_standard nur noch Default fuer Grundkoerper",
     "delta_helligkeit_unterwasser": 0.4,
-    "farbe_standard": "#c9c9c9"
+    "farbe_standard": "#c9c9c9",
+    "standard_ansicht": "quader"
   }
 }

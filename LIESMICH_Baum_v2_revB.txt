@@ -1,0 +1,23 @@
+LIESMICH Baum v2 rev B (Schritt 2: J-1..J-5 + T-4-Vorbereitung)
+================================================================
+
+INHALT
+  konfigurationen/koerper.json   NEU (summenkoerper + standard_ansicht)
+  doc/koerper_vorlage.json       NEU (identisch mit koerper.json)
+  segelphysik/core/konfig_lader.py   NEU (J-2: validiert summenkoerper)
+  segelphysik/core/fabriken.py       NEU (J-3: baue_form/baue_summenkoerper)
+  segelphysik/gui/baum.py            NEU (Baum v2: C-1..C-8, J-1, T-2)
+  tests/test_konfig_schema.py        NEU (J-5 + Block-H-Faelle)
+  tests/test_baum_regeln.py          NEU (P-1..P-5)
+
+WICHTIG
+1) koerper.json UND konfig_lader.py IMMER ZUSAMMEN kopieren - der neue
+   Loader lehnt die alte 'boot'-Struktur bewusst mit klarer Meldung ab.
+2) demo_app.py bleibt UNVERAENDERT lauffaehig (boot_teile-Kompatibilitaet).
+3) materialien.json/physik.json/core-Physik: unveraendert (J-6).
+4) Die GUI-Ansichtsdateien (baum_widget/hauptfenster/app) folgen im
+   naechsten Schritt als rev C - dieses Zip enthaelt die Daten-/Kern-Seite.
+5) standard_ansicht: "quader" in der JSON steuert den Default-Check (T-2).
+
+TESTS (lokal)
+  .venv\Scripts\python.exe -m pytest tests/test_konfig_schema.py tests/test_baum_regeln.py -q

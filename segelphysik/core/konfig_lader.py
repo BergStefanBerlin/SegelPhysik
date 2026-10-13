@@ -1,372 +1,290 @@
-"""Lader fuer die Konfig-Dateien (Spec V4, J; Material-Reform 12.10.):
-  konfigurationen/materialien.json  - Stoffdaten: Materialien (Dichte + Farben) + Wasser
-  konfigurationen/koerper.json      - Koerper-Hierarchie + Darstellung
-Vorlagen: doc/materialien_vorlage.json + doc/koerper_vorlage.json.
-Doppelschluessel-Erkennung (object_pairs_hook) auf BEIDEN Dateien,
-rekursive Validierung, Cross-File-Materialpruefung, kein stiller Fallback.
-
-Massen-Regel (Spec P3, ein Kanal pro Groesse) - am BLATT genau EINE Form:
-  (a) "material": "<Name>"  -> Dichte UND Farben aus der Materialtabelle
-  (b) ohne "material": dichte_kg_pro_m3 + farbe + farbe_unter_wasser direkt
-Optional wanddicke_m (>0) -> SCHALE: fm = rho * t; fehlt -> VOLUMEN: m = rho*V.
-Jeder andere Massenschluessel ist ein Validierungsfehler.
-
-Farb-Regel (Spec P4, Reform 12.10.): Farbe ist eine STOFF-Eigenschaft. Ein
-Blatt MIT 'material' traegt keine eigenen Farb-Schluessel; ohne 'material'
-sind beide Farben Teil des Pflicht-Tripels.
-
-Glanz (Schritt 4, K3): optionaler Schluessel 'glanz' [0..1] im MATERIAL-Block
-(Anknuepfung an die Materialtabelle, Spec P7). Fehlt er, gilt 0.15 (matt).
-
-physik.json (D8, Umsetzungsplan V5 rev 9 §6): dritte Eingabedatei nach dem
-P3-Muster - dt, g, Daempfung (Tauchung/Kraengung getrennt), Voxel-Parameter
-(Aufloesung + zwei getrennte Schranken fuer Volumen und Punktlage, F24).
-Vorlage: doc/physik_vorlage.json. Lader: lade_physik().
-"""
+# -*- coding: utf-8 -*-
+# Lader fuer die Konfig-Dateien (Spec V4 J; J-1/J-2 13.10.: summenkoerper).
+# koerper.json: 'summenkoerper' (beliebig viele Hauptobjekte; 'teile'=Verband,
+# 'form'=einfache Figur cone/box/pyramid) + darstellung (standard_ansicht T-2).
+# Kein stiller Fallback; der feste Schluessel 'boot' ist entfernt (klare
+# Meldung); unbekannte Top-Level-Abschnitte werden abgelehnt.
+# Massen-Regel P3 am Blatt: 'material' ODER Direkt-Tripel
+# (dichte_kg_pro_m3+farbe+farbe_unter_wasser); optional wanddicke_m -> Schale.
+# Farb-Regel P4: Farbe ist Stoff-Eigenschaft. physik.json (D8): lade_physik().
 import json, os
-
-KONFIG_ORDNER = "konfigurationen"
-MATERIAL_DATEI = "materialien.json"
-KOERPER_DATEI = "koerper.json"
-VORLAGE_MATERIAL = os.path.join("doc", "materialien_vorlage.json")
-VORLAGE_KOERPER = os.path.join("doc", "koerper_vorlage.json")
-_VERBOTEN_BLATT = ("masse", "dichte", "flaechenmasse_kg_pro_m2")
-_VERBOTEN_GRUPPE = _VERBOTEN_BLATT + ("material", "wanddicke_m",
-                                      "dichte_kg_pro_m3",
-                                      "farbe", "farbe_unter_wasser")
+KONFIG_ORDNER="konfigurationen"; MATERIAL_DATEI="materialien.json"
+KOERPER_DATEI="koerper.json"; PHYSIK_DATEI="physik.json"
+VORLAGE_MATERIAL=os.path.join("doc","materialien_vorlage.json")
+VORLAGE_KOERPER=os.path.join("doc","koerper_vorlage.json")
+VORLAGE_PHYSIK=os.path.join("doc","physik_vorlage.json")
+_VERBOTEN_BLATT=("masse","dichte","flaechenmasse_kg_pro_m2")
+_VERBOTEN_GRUPPE=_VERBOTEN_BLATT+("material","wanddicke_m","dichte_kg_pro_m3","farbe","farbe_unter_wasser")
+GLANZ_DEFAULT=0.15
 
 class KonfigFehler(ValueError):
     """Verstoss gegen die Regeln der Eingabedateien (Spec J)."""
 
 def _hook(paar):
-    gesehen = set()
-    for s, _w in paar:
-        if s in gesehen:
-            raise KonfigFehler("Doppelter Schluessel: '%s'" % s)
-        gesehen.add(s)
+    g=set()
+    for s,_w in paar:
+        if s in g: raise KonfigFehler("Doppelter Schluessel: '%s'"%s)
+        g.add(s)
     return dict(paar)
 
-def _lies(pfad, vorlage):
+def _lies(pfad,vorlage):
     if not os.path.exists(pfad):
-        raise KonfigFehler(
-            "'%s' nicht gefunden. Bitte einmalig aus der Vorlage kopieren: %s. "
-            "Kein stiller Fallback (Spec J)." % (pfad, vorlage))
-    with open(pfad, encoding="utf-8") as f:
-        try:
-            return json.load(f, object_pairs_hook=_hook)
-        except json.JSONDecodeError as e:
-            raise KonfigFehler("Ungueltiges JSON in %s: %s" % (pfad, e)) from e
+        raise KonfigFehler("'%s' nicht gefunden. Bitte einmalig aus der Vorlage kopieren: %s. Kein stiller Fallback (Spec J)."%(pfad,vorlage))
+    try:
+        return json.load(open(pfad,encoding="utf-8"),object_pairs_hook=_hook)
+    except json.JSONDecodeError as e:
+        raise KonfigFehler("Ungueltiges JSON in %s: %s"%(pfad,e)) from e
 
-def _positive_zahl(w, wo):
-    if isinstance(w, bool) or not isinstance(w, (int, float)) or not w > 0:
-        raise KonfigFehler("%s: positive Zahl erwartet, gefunden: %r" % (wo, w))
+def _pos(w,wo):
+    if isinstance(w,bool) or not isinstance(w,(int,float)) or not w>0:
+        raise KonfigFehler("%s: positive Zahl erwartet, gefunden: %r"%(wo,w))
     return float(w)
 
-def _nichtnegative_zahl(w, wo):
-    if isinstance(w, bool) or not isinstance(w, (int, float)) or w < 0:
-        raise KonfigFehler(
-            "%s: nicht-negative Zahl erwartet, gefunden: %r" % (wo, w))
+def _nneg(w,wo):
+    if isinstance(w,bool) or not isinstance(w,(int,float)) or w<0:
+        raise KonfigFehler("%s: nicht-negative Zahl erwartet, gefunden: %r"%(wo,w))
     return float(w)
 
-def _val_hex(w, wo):
-    if (not isinstance(w, str) or not w.startswith("#")
-            or len(w) not in (4, 7)):
-        raise KonfigFehler("%s: Hex-Farbe (#rgb oder #rrggbb) erwartet, "
-                           "gefunden: %r" % (wo, w))
-    erlaubt = set("0123456789abcdefABCDEF")
-    if any(z not in erlaubt for z in w[1:]):
-        raise KonfigFehler("%s: ungueltige Hex-Zeichen in %r" % (wo, w))
+def _hex(w,wo):
+    if not isinstance(w,str) or not w.startswith("#") or len(w) not in (4,7) \
+       or any(z not in set("0123456789abcdefABCDEF") for z in w[1:]):
+        raise KonfigFehler("%s: Hex-Farbe erwartet, gefunden: %r"%(wo,w))
 
-GLANZ_DEFAULT = 0.15
+def _glanz(w,wo):
+    if isinstance(w,bool) or not isinstance(w,(int,float)) or not 0.0<=float(w)<=1.0:
+        raise KonfigFehler("%s: Zahl [0..1] erwartet, gefunden: %r"%(wo,w))
 
-def _val_glanz(w, wo):
-    """K3: Glanzgrad [0..1] (0 = matt, 1 = Spiegel)."""
-    ok = (not isinstance(w, bool)) and isinstance(w, (int, float))
-    if (not ok) or (not 0.0 <= float(w) <= 1.0):
-        raise KonfigFehler("%s: Zahl [0..1] erwartet, gefunden: %r" % (wo, w))
+def _val_materialien(d,pfad):
+    mat=d.get("materialien")
+    if not isinstance(mat,dict) or not mat:
+        raise KonfigFehler("%s: Abschnitt 'materialien' fehlt oder leer"%pfad)
+    for n,b in mat.items():
+        if n.startswith("_"): continue
+        h="%s.materialien.%s"%(pfad,n)
+        if not isinstance(b,dict): raise KonfigFehler("%s: Block erwartet"%h)
+        _pos(b.get("dichte_kg_pro_m3"),h+".dichte_kg_pro_m3")
+        _hex(b.get("farbe"),h+".farbe"); _hex(b.get("farbe_unter_wasser"),h+".farbe_unter_wasser")
+        if "glanz" in b: _glanz(b["glanz"],h+".glanz")
+    w=d.get("wasser")
+    if not isinstance(w,dict): raise KonfigFehler("%s: Abschnitt 'wasser' fehlt"%pfad)
+    dic=w.get("dichten_kg_pro_m3")
+    if not isinstance(dic,dict) or not dic:
+        raise KonfigFehler("%s: wasser.dichten_kg_pro_m3 fehlt oder leer"%pfad)
+    for n,x in dic.items():
+        if not n.startswith("_"): _pos(x,"%s.wasser.%s"%(pfad,n))
+    if w.get("standard") not in dic:
+        raise KonfigFehler("%s: wasser.standard: unbekannter Name"%pfad)
 
-def _val_materialien(d, pfad):
-    mat = d.get("materialien")
-    if not isinstance(mat, dict) or not mat:
-        raise KonfigFehler("%s: Abschnitt 'materialien' fehlt oder leer" % pfad)
-    for n, block in mat.items():
-        if n.startswith("_"):
-            continue
-        hier = "%s.materialien.%s" % (pfad, n)
-        if not isinstance(block, dict):
-            raise KonfigFehler(
-                "%s: Material ist seit der Reform ein Block mit "
-                "dichte_kg_pro_m3 + farbe + farbe_unter_wasser" % hier)
-        _positive_zahl(block.get("dichte_kg_pro_m3"), "%s.dichte_kg_pro_m3" % hier)
-        _val_hex(block.get("farbe"), "%s.farbe" % hier)
-        _val_hex(block.get("farbe_unter_wasser"), "%s.farbe_unter_wasser" % hier)
-        if "glanz" in block:
-            _val_glanz(block["glanz"], "%s.glanz" % hier)
-    wasser = d.get("wasser")
-    if not isinstance(wasser, dict):
-        raise KonfigFehler("%s: Abschnitt 'wasser' fehlt" % pfad)
-    dic = wasser.get("dichten_kg_pro_m3")
-    if not isinstance(dic, dict) or not dic:
-        raise KonfigFehler("%s: wasser.dichten_kg_pro_m3 fehlt oder leer" % pfad)
-    for n, w in dic.items():
-        if not n.startswith("_"):
-            _positive_zahl(w, "%s.wasser.%s" % (pfad, n))
-    if wasser.get("standard") not in dic:
-        raise KonfigFehler("%s: wasser.standard: unbekannter Name" % pfad)
-
-def _val_teil(e, pfad, materialien):
-    if not isinstance(e, dict) or "name" not in e:
-        raise KonfigFehler("%s: Eintrag ohne 'name'" % pfad)
-    hier = "%s (%s)" % (pfad, e["name"])
+def _val_teil(e,pfad,mats):
+    if not isinstance(e,dict) or "name" not in e:
+        raise KonfigFehler("%s: Eintrag ohne 'name'"%pfad)
+    h="%s (%s)"%(pfad,e["name"])
     if "teile" in e:
-        verboten = [s for s in _VERBOTEN_GRUPPE if s in e]
-        if verboten:
-            raise KonfigFehler("%s: reine Gruppe ohne Massengroesse (P2.5): %s"
-                               % (hier, verboten))
-        teile = e["teile"]
-        if not isinstance(teile, list) or not teile:
-            raise KonfigFehler("%s: leere Gruppe" % hier)
-        for i, t in enumerate(teile):
-            _val_teil(t, "%s.teile[%d]" % (hier, i), materialien)
+        v=[s for s in _VERBOTEN_GRUPPE if s in e]
+        if v: raise KonfigFehler("%s: reine Gruppe ohne Massengroesse (P2.5): %s"%(h,v))
+        t=e["teile"]
+        if not isinstance(t,list) or not t: raise KonfigFehler("%s: leere Gruppe"%h)
+        for i,x in enumerate(t): _val_teil(x,"%s.teile[%d]"%(h,i),mats)
         return
-    verboten = [s for s in _VERBOTEN_BLATT if s in e]
-    if verboten:
-        raise KonfigFehler(
-            "%s: unzulaessiger Massenschluessel %s (P3): 'material' (Name) "
-            "oder das Direkt-Tripel verwenden" % (hier, verboten))
-    hat_mat = "material" in e
-    hat_direkt = "dichte_kg_pro_m3" in e
-    if hat_mat and hat_direkt:
-        raise KonfigFehler(
-            "%s: 'material' UND 'dichte_kg_pro_m3' gesetzt - genau EINE Form "
-            "(P3): Materialname ODER direkte Stoffangabe" % hier)
-    if not hat_mat and not hat_direkt:
-        raise KonfigFehler(
-            "%s: weder 'material' noch das Direkt-Tripel (dichte_kg_pro_m3 "
-            "+ farbe + farbe_unter_wasser) - genau EINE Form (P3/P4)" % hier)
-    if hat_mat:
-        mat = e["material"]
-        if not isinstance(mat, str):
-            raise KonfigFehler(
-                "%s: 'material' muss ein Name aus materialien.json sein; "
-                "eine direkte Dichte gehoert in 'dichte_kg_pro_m3' "
-                "(mit Farben)" % hier)
-        if mat not in materialien:
-            raise KonfigFehler("%s: unbekanntes Material '%s' (nicht in "
-                               "materialien.json)" % (hier, mat))
-        farbschluessel = [s for s in ("farbe", "farbe_unter_wasser") if s in e]
-        if farbschluessel:
-            raise KonfigFehler(
-                "%s: Farb-Schluessel %s am Blatt unzulaessig - Farbe ist eine "
-                "STOFF-Eigenschaft (P4): Werte in materialien.json pflegen "
-                "oder Material wechseln" % (hier, farbschluessel))
+    v=[s for s in _VERBOTEN_BLATT if s in e]
+    if v: raise KonfigFehler("%s: unzulaessiger Massenschluessel %s (P3)"%(h,v))
+    hm="material" in e; hd="dichte_kg_pro_m3" in e
+    if hm and hd: raise KonfigFehler("%s: 'material' UND 'dichte_kg_pro_m3' gesetzt - genau EINE Form (P3)"%h)
+    if not hm and not hd: raise KonfigFehler("%s: weder 'material' noch Direkt-Tripel (P3/P4)"%h)
+    if hm:
+        m=e["material"]
+        if not isinstance(m,str) or m not in mats:
+            raise KonfigFehler("%s: unbekanntes Material %r (nicht in materialien.json)"%(h,m))
+        fs=[s for s in ("farbe","farbe_unter_wasser") if s in e]
+        if fs: raise KonfigFehler("%s: Farb-Schluessel %s unzulaessig - Farbe ist STOFF-Eigenschaft (P4)"%(h,fs))
     else:
-        _positive_zahl(e.get("dichte_kg_pro_m3"),
-                       "%s.dichte_kg_pro_m3" % hier)
-        _val_hex(e.get("farbe"), "%s.farbe" % hier)
-        _val_hex(e.get("farbe_unter_wasser"), "%s.farbe_unter_wasser" % hier)
-    if "wanddicke_m" in e:
-        _positive_zahl(e["wanddicke_m"], "%s.wanddicke_m" % hier)
+        _pos(e.get("dichte_kg_pro_m3"),h+".dichte_kg_pro_m3")
+        _hex(e.get("farbe"),h+".farbe"); _hex(e.get("farbe_unter_wasser"),h+".farbe_unter_wasser")
+    if "wanddicke_m" in e: _pos(e["wanddicke_m"],h+".wanddicke_m")
 
-def _val_koerper(d, materialien, pfad):
-    boot = d.get("boot")
-    if not isinstance(boot, dict) or "teile" not in boot:
-        raise KonfigFehler("%s: boot.teile fehlt" % pfad)
-    teile = boot["teile"]
-    if not isinstance(teile, list) or not teile:
-        raise KonfigFehler("%s: boot.teile leer" % pfad)
-    for i, t in enumerate(teile):
-        _val_teil(t, "%s.boot.teile[%d]" % (pfad, i), materialien)
-    da = d.get("darstellung")
-    if not isinstance(da, dict):
-        raise KonfigFehler("%s: Abschnitt 'darstellung' fehlt" % pfad)
-    dl = da.get("delta_helligkeit_unterwasser")
-    if isinstance(dl, bool) or not isinstance(dl, (int, float)) or not 0.0 <= float(dl) <= 1.0:
-        raise KonfigFehler("%s: darstellung.delta_helligkeit_unterwasser: Zahl [0..1]" % pfad)
-    if not isinstance(da.get("farbe_standard"), str):
-        raise KonfigFehler("%s: darstellung.farbe_standard: Hex-String erwartet" % pfad)
-    gk = da.get("grundkoerper")
+_KOERPER_TOP=("summenkoerper","darstellung")
+_FORM={"cone":("H_m","R_m"),"box":("dx_m","dy_m","dz_m"),"pyramid":("a_m","H_m")}
+
+def _val_form(e,h,mats):
+    f=e.get("form")
+    if not isinstance(f,dict) or "typ" not in f:
+        raise KonfigFehler("%s: 'form' mit 'typ' erwartet"%h)
+    t=f["typ"]
+    if t not in _FORM:
+        raise KonfigFehler("%s.form.typ: unbekannte Form '%s' (erlaubt: %s)"%(h,t,", ".join(sorted(_FORM))))
+    fr=[s for s in f if s!="typ" and s not in _FORM[t] and not s.startswith("_")]
+    if fr: raise KonfigFehler("%s.form: unbekannte Schluessel %s (fuer '%s': %s)"%(h,fr,t,", ".join(_FORM[t])))
+    for k in _FORM[t]: _pos(f.get(k),"%s.form.%s"%(h,k))
+    v=[s for s in _VERBOTEN_BLATT if s in e]
+    if v: raise KonfigFehler("%s: unzulaessiger Massenschluessel %s (P3)"%(h,v))
+    hm="material" in e; hd="dichte_kg_pro_m3" in e
+    if hm and hd: raise KonfigFehler("%s: 'material' UND 'dichte_kg_pro_m3' gesetzt - genau EINE Form (P3)"%h)
+    if not hm and not hd: raise KonfigFehler("%s: weder 'material' noch Direkt-Tripel (P3/P4)"%h)
+    if hm:
+        m=e["material"]
+        if not isinstance(m,str) or m not in mats: raise KonfigFehler("%s: unbekanntes Material %r"%(h,m))
+        fs=[s for s in ("farbe","farbe_unter_wasser") if s in e]
+        if fs: raise KonfigFehler("%s: Farb-Schluessel %s unzulaessig (P4)"%(h,fs))
+    else:
+        _pos(e.get("dichte_kg_pro_m3"),h+".dichte_kg_pro_m3")
+        _hex(e.get("farbe"),h+".farbe"); _hex(e.get("farbe_unter_wasser"),h+".farbe_unter_wasser")
+    if "wanddicke_m" in e: _pos(e["wanddicke_m"],h+".wanddicke_m")
+
+def _val_koerper(d,mats,pfad):
+    fr=[s for s in d if s not in _KOERPER_TOP and not s.startswith("_")]
+    if fr: raise KonfigFehler("%s: unbekannte Abschnitte %s (erlaubt: %s; Unterstrich = Doku)"%(pfad,fr,", ".join(_KOERPER_TOP)))
+    if "boot" in d and "summenkoerper" not in d:
+        raise KonfigFehler("%s: Schema geaendert (J-1): der feste Schluessel 'boot' gehoert jetzt unter 'summenkoerper' (z. B. 'yacht1'); Vorlage: doc/koerper_vorlage.json"%pfad)
+    sk=d.get("summenkoerper")
+    if not isinstance(sk,dict) or not sk:
+        raise KonfigFehler("%s: Abschnitt 'summenkoerper' fehlt oder leer"%pfad)
+    for n,e in sk.items():
+        if n.startswith("_"): continue
+        h="%s.summenkoerper.%s"%(pfad,n)
+        if not isinstance(e,dict): raise KonfigFehler("%s: Objekt erwartet"%h)
+        ht="teile" in e; hf="form" in e
+        if ht and hf: raise KonfigFehler("%s: 'teile' UND 'form' - genau eines (J-1)"%h)
+        if ht:
+            t=e["teile"]
+            if not isinstance(t,list) or not t: raise KonfigFehler("%s: teile leer"%h)
+            for i,x in enumerate(t): _val_teil(x,"%s.teile[%d]"%(h,i),mats)
+        elif hf: _val_form(e,h,mats)
+        else: raise KonfigFehler("%s: weder 'teile' noch 'form' (J-1)"%h)
+    da=d.get("darstellung")
+    if not isinstance(da,dict): raise KonfigFehler("%s: Abschnitt 'darstellung' fehlt"%pfad)
+    dl=da.get("delta_helligkeit_unterwasser")
+    if isinstance(dl,bool) or not isinstance(dl,(int,float)) or not 0.0<=float(dl)<=1.0:
+        raise KonfigFehler("%s: darstellung.delta_helligkeit_unterwasser: Zahl [0..1]"%pfad)
+    if not isinstance(da.get("farbe_standard"),str):
+        raise KonfigFehler("%s: darstellung.farbe_standard: Hex-String erwartet"%pfad)
+    sa=da.get("standard_ansicht")
+    if sa is not None:
+        if not isinstance(sa,str):
+            raise KonfigFehler("%s: darstellung.standard_ansicht: String erwartet (T-2)"%pfad)
+        if sa.startswith("_") or sa not in sk:
+            raise KonfigFehler("%s: darstellung.standard_ansicht: '%s' ist kein Summenkoerper-Name (T-2)"%(pfad,sa))
+    gk=da.get("grundkoerper")
     if gk is not None:
-        if not isinstance(gk, dict):
-            raise KonfigFehler(
-                "%s: darstellung.grundkoerper: Objekt erwartet" % pfad)
-        for schluessel, wert in gk.items():
-            if schluessel.startswith("_"):
-                continue   # Doku-Schluessel (Projektkonvention)
-            if schluessel not in ("cone", "box", "pyramid"):
-                raise KonfigFehler(
-                    "%s: darstellung.grundkoerper: unbekannter Schluessel "
-                    "'%s' (erlaubt: cone, box, pyramid)" % (pfad, schluessel))
-            _val_hex(wert, "%s.grundkoerper.%s" % (pfad, schluessel))
+        if not isinstance(gk,dict): raise KonfigFehler("%s: darstellung.grundkoerper: Objekt erwartet"%pfad)
+        for k,w in gk.items():
+            if k.startswith("_"): continue
+            if k not in ("cone","box","pyramid"):
+                raise KonfigFehler("%s: darstellung.grundkoerper: unbekannter Schluessel '%s' (erlaubt: cone, box, pyramid)"%(pfad,k))
+            _hex(w,"%s.grundkoerper.%s"%(pfad,k))
 
 class Konfiguration:
-    def __init__(self, m, k, ordner):
-        self._m = m; self._k = k; self.ordner = ordner; self.protokoll = []
+    def __init__(self,m,k,ordner):
+        self._m=m; self._k=k; self.ordner=ordner; self.protokoll=[]
     @property
     def materialien(self):
-        """Flaches Dichte-Dict {name: kg/m^3} (kompatibel zur Klasse)."""
-        return {n: float(b["dichte_kg_pro_m3"])
-                for n, b in self._m["materialien"].items()
-                if not n.startswith("_")}
+        return {n:float(b["dichte_kg_pro_m3"]) for n,b in self._m["materialien"].items() if not n.startswith("_")}
     @property
     def materialien_blocks(self):
-        """Volle Material-Bloecke (Dichte + Farben)."""
-        return {n: b for n, b in self._m["materialien"].items()
-                if not n.startswith("_")}
+        return {n:b for n,b in self._m["materialien"].items() if not n.startswith("_")}
     @property
     def wasser_dichten(self): return dict(self._m["wasser"]["dichten_kg_pro_m3"])
-    def wasser_dichte(self, x=None):
-        if x is None: x = self._m["wasser"]["standard"]
-        if isinstance(x, (int, float)): return float(x)
+    def wasser_dichte(self,x=None):
+        if x is None: x=self._m["wasser"]["standard"]
+        if isinstance(x,(int,float)): return float(x)
         try: return float(self._m["wasser"]["dichten_kg_pro_m3"][x])
-        except KeyError: raise KonfigFehler("Unbekanntes Wasser: '%s'" % x) from None
+        except KeyError: raise KonfigFehler("Unbekanntes Wasser: '%s'"%x) from None
     @property
-    def boot_teile(self): return self._k["boot"]["teile"]
+    def summenkoerper(self):
+        # J-1: Dict aller Hauptobjekte {name: eintrag}
+        return self._k["summenkoerper"]
+    @property
+    def standard_ansicht(self):
+        # T-2: Start-Hauptobjekt oder None
+        return self._k["darstellung"].get("standard_ansicht")
+    @property
+    def boot_teile(self):
+        # Kompatibilitaet (J-3): Teile des ersten zusammengesetzten Hauptobjekts
+        sk=self._k["summenkoerper"]
+        for b in ("yacht1","boot"):
+            e=sk.get(b)
+            if isinstance(e,dict) and "teile" in e: return e["teile"]
+        for n,e in sk.items():
+            if not n.startswith("_") and isinstance(e,dict) and "teile" in e: return e["teile"]
+        return None
     @property
     def delta_helligkeit(self): return float(self._k["darstellung"]["delta_helligkeit_unterwasser"])
     @property
     def farbe_standard(self): return self._k["darstellung"]["farbe_standard"]
-
     @property
-    def grundkoerper_farben(self):
-        """Optionale Farben der Demo-Grundkoerper (darstellung.grundkoerper)."""
-        return dict(self._k["darstellung"].get("grundkoerper") or {})
-    def dichte_von(self, material):
-        """Dichte zu Material-Name (aus Block) oder Zahl."""
-        if isinstance(material, str):
-            try:
-                return float(self._m["materialien"][material]["dichte_kg_pro_m3"])
-            except KeyError:
-                raise KonfigFehler("Unbekanntes Material: '%s'" % material) from None
+    def grundkoerper_farben(self): return dict(self._k["darstellung"].get("grundkoerper") or {})
+    def dichte_von(self,material):
+        if isinstance(material,str):
+            try: return float(self._m["materialien"][material]["dichte_kg_pro_m3"])
+            except KeyError: raise KonfigFehler("Unbekanntes Material: '%s'"%material) from None
         return float(material)
-    def farben_von(self, material):
-        """(farbe, farbe_unter_wasser) zu Material-Name; None bei Direktangabe."""
-        if isinstance(material, str):
+    def farben_von(self,material):
+        if isinstance(material,str):
             try:
-                b = self._m["materialien"][material]
-                return b["farbe"], b["farbe_unter_wasser"]
-            except KeyError:
-                raise KonfigFehler("Unbekanntes Material: '%s'" % material) from None
+                b=self._m["materialien"][material]; return b["farbe"],b["farbe_unter_wasser"]
+            except KeyError: raise KonfigFehler("Unbekanntes Material: '%s'"%material) from None
         return None
-    def glanz_von(self, material):
-        """K3: Glanzgrad [0..1] zu Material-Name; GLANZ_DEFAULT wenn nicht gesetzt."""
-        if isinstance(material, str):
-            try:
-                b = self._m["materialien"][material]
-            except KeyError:
-                raise KonfigFehler("Unbekanntes Material: '%s'" % material) from None
-            return float(b.get("glanz", GLANZ_DEFAULT))
+    def glanz_von(self,material):
+        if isinstance(material,str):
+            try: b=self._m["materialien"][material]
+            except KeyError: raise KonfigFehler("Unbekanntes Material: '%s'"%material) from None
+            return float(b.get("glanz",GLANZ_DEFAULT))
         return GLANZ_DEFAULT
 
 def lade_konfig(ordner=KONFIG_ORDNER):
-    """Liest und validiert BEIDE Konfig-Dateien (kein stiller Fallback, Spec J)."""
-    mpfad = os.path.join(ordner, MATERIAL_DATEI)
-    kpfad = os.path.join(ordner, KOERPER_DATEI)
-    m = _lies(mpfad, VORLAGE_MATERIAL)
-    k = _lies(kpfad, VORLAGE_KOERPER)
-    _val_materialien(m, mpfad)
-    _val_koerper(k, m["materialien"], kpfad)
-    return Konfiguration(m, k, ordner)
+    mp=os.path.join(ordner,MATERIAL_DATEI); kp=os.path.join(ordner,KOERPER_DATEI)
+    m=_lies(mp,VORLAGE_MATERIAL); k=_lies(kp,VORLAGE_KOERPER)
+    _val_materialien(m,mp); _val_koerper(k,m["materialien"],kp)
+    return Konfiguration(m,k,ordner)
 
-
-# ---------------- physik.json (D8, Umsetzungsplan V5 rev 9 §6) ----------------
-
-PHYSIK_DATEI = "physik.json"
-VORLAGE_PHYSIK = os.path.join("doc", "physik_vorlage.json")
-
-_PHYSIK_ERLAUBT = ("dt_s", "g_m_pro_s2", "daempfung", "voxel")
-_DAEMPFUNG_ERLAUBT = ("tauchung", "kraengung")
-_VOXEL_ERLAUBT = ("aufloesung_m", "schranke_volumen_m3", "schranke_punkt_m")
-
+_PHYSIK=("dt_s","g_m_pro_s2","daempfung","voxel")
+_DAEMPFUNG=("tauchung","kraengung")
+_VOXEL=("aufloesung_m","schranke_volumen_m3","schranke_punkt_m")
 
 class PhysikParameter:
-    """Unveraenderliche Physik-Parameter aus physik.json (D8).
-
-    Daempfung (D2): Uebergangsmodell - zunaechst stark (kaum Schwingung,
-    quasi-aperiodisch), spaeter Ersatz durch Hydro-/Aerodynamik.
-    Voxel (D7/D10): Aufloesung = fester Betriebswert; die Halbierungs-
-    Kalibrierung ist eine einmalige Vorschrift (F22). Zwei getrennte
-    Schranken: Volumen (m^3) und Punktlage (m) (F24).
-    """
-
-    __slots__ = ("dt_s", "g_m_pro_s2", "daempfung_tauchung",
-                 "daempfung_kraengung", "voxel_aufloesung_m",
-                 "schranke_volumen_m3", "schranke_punkt_m")
-
-    def __init__(self, dt_s, g_m_pro_s2, daempfung_tauchung,
-                 daempfung_kraengung, voxel_aufloesung_m,
-                 schranke_volumen_m3, schranke_punkt_m):
-        self.dt_s = dt_s
-        self.g_m_pro_s2 = g_m_pro_s2
-        self.daempfung_tauchung = daempfung_tauchung
-        self.daempfung_kraengung = daempfung_kraengung
-        self.voxel_aufloesung_m = voxel_aufloesung_m
-        self.schranke_volumen_m3 = schranke_volumen_m3
-        self.schranke_punkt_m = schranke_punkt_m
-
+    __slots__=("dt_s","g_m_pro_s2","daempfung_tauchung","daempfung_kraengung",
+               "voxel_aufloesung_m","schranke_volumen_m3","schranke_punkt_m")
+    def __init__(self,dt_s,g_m_pro_s2,daempfung_tauchung,daempfung_kraengung,
+                 voxel_aufloesung_m,schranke_volumen_m3,schranke_punkt_m):
+        self.dt_s=dt_s; self.g_m_pro_s2=g_m_pro_s2
+        self.daempfung_tauchung=daempfung_tauchung
+        self.daempfung_kraengung=daempfung_kraengung
+        self.voxel_aufloesung_m=voxel_aufloesung_m
+        self.schranke_volumen_m3=schranke_volumen_m3
+        self.schranke_punkt_m=schranke_punkt_m
     def __repr__(self):
-        return ("PhysikParameter(dt=%g s, g=%g, daempfung=(%g, %g), "
-                "voxel=%g m, schranken=(%g m^3, %g m))"
-                % (self.dt_s, self.g_m_pro_s2, self.daempfung_tauchung,
-                   self.daempfung_kraengung, self.voxel_aufloesung_m,
-                   self.schranke_volumen_m3, self.schranke_punkt_m))
+        return ("PhysikParameter(dt=%g s, g=%g, daempfung=(%g, %g), voxel=%g m, "
+                "schranken=(%g m^3, %g m))"%(self.dt_s,self.g_m_pro_s2,
+                self.daempfung_tauchung,self.daempfung_kraengung,
+                self.voxel_aufloesung_m,self.schranke_volumen_m3,self.schranke_punkt_m))
 
-
-def _val_physik(d, pfad):
-    if not isinstance(d, dict):
-        raise KonfigFehler("%s: Objekt erwartet" % pfad)
-    fremd_top = [s for s in d if s != "physik" and not s.startswith("_")]
-    if fremd_top or "physik" not in d:
-        raise KonfigFehler(
-            "%s: alleiniger Abschnitt 'physik' erwartet, fremd: %s"
-            % (pfad, fremd_top))
-    p = d["physik"]
-    if not isinstance(p, dict):
-        raise KonfigFehler("%s.physik: Objekt erwartet" % pfad)
-    fremd = [s for s in p if s not in _PHYSIK_ERLAUBT and not s.startswith("_")]
-    if fremd:
-        raise KonfigFehler(
-            "%s.physik: unbekannte Schluessel %s (erlaubt: %s; "
-            "Unterstrich-Schluessel sind Doku)"
-            % (pfad, fremd, ", ".join(_PHYSIK_ERLAUBT)))
-    dt = _positive_zahl(p.get("dt_s"), "%s.physik.dt_s" % pfad)
-    g = _positive_zahl(p.get("g_m_pro_s2"), "%s.physik.g_m_pro_s2" % pfad)
-    dae = p.get("daempfung")
-    if not isinstance(dae, dict):
-        raise KonfigFehler("%s.physik.daempfung: Objekt erwartet" % pfad)
-    fremd_d = [s for s in dae
-               if s not in _DAEMPFUNG_ERLAUBT and not s.startswith("_")]
-    if fremd_d:
-        raise KonfigFehler(
-            "%s.physik.daempfung: unbekannte Schluessel %s (erlaubt: %s)"
-            % (pfad, fremd_d, ", ".join(_DAEMPFUNG_ERLAUBT)))
-    d_tauc = _nichtnegative_zahl(dae.get("tauchung"),
-                                 "%s.physik.daempfung.tauchung" % pfad)
-    d_krae = _nichtnegative_zahl(dae.get("kraengung"),
-                                 "%s.physik.daempfung.kraengung" % pfad)
-    vox = p.get("voxel")
-    if not isinstance(vox, dict):
-        raise KonfigFehler("%s.physik.voxel: Objekt erwartet" % pfad)
-    fremd_v = [s for s in vox
-               if s not in _VOXEL_ERLAUBT and not s.startswith("_")]
-    if fremd_v:
-        raise KonfigFehler(
-            "%s.physik.voxel: unbekannte Schluessel %s (erlaubt: %s)"
-            % (pfad, fremd_v, ", ".join(_VOXEL_ERLAUBT)))
-    auf = _positive_zahl(vox.get("aufloesung_m"),
-                         "%s.physik.voxel.aufloesung_m" % pfad)
-    sv = _positive_zahl(vox.get("schranke_volumen_m3"),
-                        "%s.physik.voxel.schranke_volumen_m3" % pfad)
-    sp = _positive_zahl(vox.get("schranke_punkt_m"),
-                        "%s.physik.voxel.schranke_punkt_m" % pfad)
-    return dict(dt_s=dt, g_m_pro_s2=g, daempfung_tauchung=d_tauc,
-                daempfung_kraengung=d_krae, voxel_aufloesung_m=auf,
-                schranke_volumen_m3=sv, schranke_punkt_m=sp)
-
+def _val_physik(d,pfad):
+    if not isinstance(d,dict): raise KonfigFehler("%s: Objekt erwartet"%pfad)
+    ft=[s for s in d if s!="physik" and not s.startswith("_")]
+    if ft or "physik" not in d:
+        raise KonfigFehler("%s: alleiniger Abschnitt 'physik' erwartet, fremd: %s"%(pfad,ft))
+    p=d["physik"]
+    if not isinstance(p,dict): raise KonfigFehler("%s.physik: Objekt erwartet"%pfad)
+    fr=[s for s in p if s not in _PHYSIK and not s.startswith("_")]
+    if fr: raise KonfigFehler("%s.physik: unbekannte Schluessel %s (erlaubt: %s)"%(pfad,fr,", ".join(_PHYSIK)))
+    dt=_pos(p.get("dt_s"),"%s.physik.dt_s"%pfad)
+    g=_pos(p.get("g_m_pro_s2"),"%s.physik.g_m_pro_s2"%pfad)
+    dae=p.get("daempfung")
+    if not isinstance(dae,dict): raise KonfigFehler("%s.physik.daempfung: Objekt erwartet"%pfad)
+    fd=[s for s in dae if s not in _DAEMPFUNG and not s.startswith("_")]
+    if fd: raise KonfigFehler("%s.physik.daempfung: unbekannte Schluessel %s"%(pfad,fd))
+    dta=_nneg(dae.get("tauchung"),"%s.physik.daempfung.tauchung"%pfad)
+    dk=_nneg(dae.get("kraengung"),"%s.physik.daempfung.kraengung"%pfad)
+    vox=p.get("voxel")
+    if not isinstance(vox,dict): raise KonfigFehler("%s.physik.voxel: Objekt erwartet"%pfad)
+    fv=[s for s in vox if s not in _VOXEL and not s.startswith("_")]
+    if fv: raise KonfigFehler("%s.physik.voxel: unbekannte Schluessel %s"%(pfad,fv))
+    au=_pos(vox.get("aufloesung_m"),"%s.physik.voxel.aufloesung_m"%pfad)
+    sv=_pos(vox.get("schranke_volumen_m3"),"%s.physik.voxel.schranke_volumen_m3"%pfad)
+    sp=_pos(vox.get("schranke_punkt_m"),"%s.physik.voxel.schranke_punkt_m"%pfad)
+    return dict(dt_s=dt,g_m_pro_s2=g,daempfung_tauchung=dta,daempfung_kraengung=dk,
+                voxel_aufloesung_m=au,schranke_volumen_m3=sv,schranke_punkt_m=sp)
 
 def lade_physik(ordner=KONFIG_ORDNER):
-    """Liest und validiert physik.json (D8; kein stiller Fallback, Spec J)."""
-    pfad = os.path.join(ordner, PHYSIK_DATEI)
-    d = _lies(pfad, VORLAGE_PHYSIK)
-    w = _val_physik(d, pfad)
+    pf=os.path.join(ordner,PHYSIK_DATEI)
+    d=_lies(pf,VORLAGE_PHYSIK); w=_val_physik(d,pf)
     return PhysikParameter(**w)
