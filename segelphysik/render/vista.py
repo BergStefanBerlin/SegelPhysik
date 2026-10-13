@@ -346,11 +346,6 @@ class PyVistaRenderer:
                 p.add_mesh(self._surf, color="tab:blue", opacity=0.6,
                            show_edges=False, **light)
         p.add_axes(xlabel="x (Bug)", ylabel="y (Backbord)", zlabel="z")
-        p.add_text("SegelPhysik v0.4 | [g/G] g  [w/W] Wind  [space] Pause"
-                   "  [r] Reset  [s] Kugel  [n] Typ  [Klick] Spawn  [q] Ende",
-                   position="upper_left", font_size=10)
-        self._hud_actor = p.add_text(" ", position="upper_right",
-                                     font_size=10, color="black")
         self._status_actor = p.add_text(" ", position="lower_right",
                                         font_size=10, color="black")
         self._plotter = p

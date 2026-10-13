@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QPushButton,
+    QButtonGroup, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QPushButton,
     QDockWidget, QTextEdit, QLabel, QCheckBox, QTreeWidget, QTreeWidgetItem,
 )
 
@@ -57,6 +57,10 @@ class HauptFenster(QMainWindow):
         self._btn_statisch.setChecked(True)
         self._btn_echtzeit = QPushButton("Echtzeit")
         self._btn_echtzeit.setCheckable(True)
+        self._modusgruppe = QButtonGroup(self)
+        self._modusgruppe.setExclusive(True)
+        self._modusgruppe.addButton(self._btn_statisch)
+        self._modusgruppe.addButton(self._btn_echtzeit)
         self._btn_rueck = QPushButton("<")
         self._btn_halt = QPushButton("=")
         self._btn_vor = QPushButton(">")
@@ -70,7 +74,10 @@ class HauptFenster(QMainWindow):
         h.addWidget(self._btn_vor)
         h.addStretch(1)
         layout.addWidget(zeile)
-        self._steuerzeile_umschalten(True)
+        self._modusgruppe.buttonClicked.connect(
+            lambda _knopf: self._steuerzeile_umschalten(
+                self._btn_statisch.isChecked()))
+        self._steuerzeile_umschalten(self._btn_statisch.isChecked())
 
         # Ansichtsbereich unter der Steuerzeile
         self.label_3d = QLabel(
@@ -92,6 +99,9 @@ class HauptFenster(QMainWindow):
     def _steuerzeile_umschalten(self, statisch_aktiv):
         for b in (self._btn_rueck, self._btn_halt, self._btn_vor):
             b.setEnabled(not statisch_aktiv)
+            b.setStyleSheet(
+                "QPushButton { background-color: #0078d4; color: white; }"
+                if not statisch_aktiv else "")
 
     def _baue_docks(self):
         self.baum = BaumWidget()
