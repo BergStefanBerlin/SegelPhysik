@@ -4,8 +4,9 @@ phi positiv nach Steuerbord, Momente positiv Richtung wachsendem phi.
 Voxel-Toleranzen sind O(h*A) ehrlich gesetzt; die scharfen Referenzen
 prueft der exakte Pfad (D10: Testreferenz).
 """
-import os, json, sys
+import os, json, sys, tempfile
 import numpy as np
+import pytest
 
 sys.path.insert(0, os.getcwd())
 
@@ -250,3 +251,9 @@ def test_n16_vorlage_selbst_gueltig():
         d = json.load(f)
     w = kl._val_physik(d, "vorlage")
     assert w["dt_s"] > 0 and w["g_m_pro_s2"] == 9.80665
+
+def test_n17_physik_doppelter_schluessel_fehler():
+    with tempfile.TemporaryDirectory() as od:
+        _schreibe(od, '{"physik": {}, "physik": {}}')
+        with pytest.raises(KonfigFehler, match="Doppelter"):
+            kl.lade_physik(od)

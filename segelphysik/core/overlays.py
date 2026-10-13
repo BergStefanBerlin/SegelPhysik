@@ -9,8 +9,8 @@ P5b: Ohne Physik darstellbar: Masseschwerpunkt (Layer 'schwerpunkt') und
 Haupttraegheitsachsen (Layer 'hauptachsen', Eigenvektoren von I_S).
 Rein numpy, pyvista-frei -> deterministisch, unit-testbar.
 
-Phase C (P5c, Umsetzungsplan V5 rev 9 §5): Layer 'kraefte' (Kraeftebild,
-Taste 7) - ebenfalls nur ein globaler Sichtbarkeits-Schalter; die
+Phase C (P5c, Umsetzungsplan V5 rev 9 §5): Layer 'kraefte' (Kraeftebild)
+- ebenfalls nur ein globaler Sichtbarkeits-Schalter; die
 Geometrie liefert core.kraefte_bild, die Wahrheit core.auftrieb.
 """
 import numpy as np
@@ -18,7 +18,9 @@ import numpy as np
 LAYER_SCHWERPUNKT = "schwerpunkt"
 LAYER_HAUPTACHSEN = "hauptachsen"
 LAYER_KRAEFTE = "kraefte"
-LAYER_ALL = (LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN, LAYER_KRAEFTE)
+LAYER_MOMENTE = "momente"
+LAYER_ALL = (LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN,
+             LAYER_KRAEFTE, LAYER_MOMENTE)
 
 
 class LayerRegistry:

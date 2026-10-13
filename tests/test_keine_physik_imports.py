@@ -13,7 +13,8 @@ def test_keine_physik_referenzen():
     for rel in NEU:
         pfad = os.path.join(ROOT, rel)
         assert os.path.isfile(pfad), f"fehlt: {rel}"
-        src = open(pfad, encoding="utf-8").read()
+        with open(pfad, encoding="utf-8") as datei:
+            src = datei.read()
         for schlecht in VERBOTEN:
             treffer = re.findall(r"(?:import|from)\s+\S*" + schlecht, src)
             assert not treffer, f"{rel} referenziert Physik ({schlecht}): {treffer}"

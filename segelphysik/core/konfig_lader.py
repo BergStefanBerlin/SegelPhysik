@@ -31,7 +31,10 @@ def _lies(pfad,vorlage):
     if not os.path.exists(pfad):
         raise KonfigFehler("'%s' nicht gefunden. Bitte einmalig aus der Vorlage kopieren: %s. Kein stiller Fallback (Spec J)."%(pfad,vorlage))
     try:
-        return json.load(open(pfad,encoding="utf-8"),object_pairs_hook=_hook)
+        with open(pfad, encoding="utf-8") as datei:
+            return json.load(datei, object_pairs_hook=_hook)
+    except OSError as e:
+        raise KonfigFehler("'%s' konnte nicht gelesen werden: %s" % (pfad, e)) from e
     except json.JSONDecodeError as e:
         raise KonfigFehler("Ungueltiges JSON in %s: %s"%(pfad,e)) from e
 
@@ -155,8 +158,7 @@ def _val_koerper(d,mats,pfad):
     dl=da.get("delta_helligkeit_unterwasser")
     if isinstance(dl,bool) or not isinstance(dl,(int,float)) or not 0.0<=float(dl)<=1.0:
         raise KonfigFehler("%s: darstellung.delta_helligkeit_unterwasser: Zahl [0..1]"%pfad)
-    if not isinstance(da.get("farbe_standard"),str):
-        raise KonfigFehler("%s: darstellung.farbe_standard: Hex-String erwartet"%pfad)
+    _hex(da.get("farbe_standard"), "%s.darstellung.farbe_standard" % pfad)
     sa=da.get("standard_ansicht")
     if sa is not None:
         if not isinstance(sa,str):

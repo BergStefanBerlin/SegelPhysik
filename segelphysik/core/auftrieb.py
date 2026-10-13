@@ -252,10 +252,12 @@ def _y_intervalle_saeule_v(u_p, u_t, x0, z0):
     ok = np.abs(d) >= 1e-15
     if not ok.any():
         return []
-    w1 = ((x0 - p0[:, 0]) * (p2[:, 2] - p0[:, 2])
-          - (p2[:, 0] - p0[:, 0]) * (z0 - p0[:, 2])) / d
-    w2 = ((p1[:, 0] - p0[:, 0]) * (z0 - p0[:, 2])
-          - (x0 - p0[:, 0]) * (p1[:, 2] - p0[:, 2])) / d
+    n1 = ((x0 - p0[:, 0]) * (p2[:, 2] - p0[:, 2])
+          - (p2[:, 0] - p0[:, 0]) * (z0 - p0[:, 2]))
+    n2 = ((p1[:, 0] - p0[:, 0]) * (z0 - p0[:, 2])
+          - (x0 - p0[:, 0]) * (p1[:, 2] - p0[:, 2]))
+    w1 = np.divide(n1, d, out=np.zeros_like(d), where=ok)
+    w2 = np.divide(n2, d, out=np.zeros_like(d), where=ok)
     drin = ok & (w1 >= -1e-12) & (w2 >= -1e-12) & (w1 + w2 <= 1.0 + 1e-12)
     if not drin.any():
         return []

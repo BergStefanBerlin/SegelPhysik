@@ -3,7 +3,8 @@ import numpy as np
 
 from segelphysik.core import kraefte_bild as kb
 from segelphysik.core.overlays import (LayerRegistry, LAYER_KRAEFTE,
-                                       LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN)
+                                       LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN,
+                                       LAYER_MOMENTE)
 
 
 class _V:
@@ -34,7 +35,7 @@ def _wirft(funktion, *args):
 def test_r1_registry_kraefte_layer():
     reg = LayerRegistry()
     assert set(reg.zustand()) == {LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN,
-                                  LAYER_KRAEFTE}
+                                  LAYER_KRAEFTE, LAYER_MOMENTE}
     assert not reg.ist_an(LAYER_KRAEFTE)
     assert reg.umschalten(LAYER_KRAEFTE) is True
     assert reg.ist_an(LAYER_KRAEFTE)
@@ -103,7 +104,7 @@ def test_r10_bridge_kraefte_api_ohne_pyvista():
     from segelphysik.grafik_bruecke import GrafikBruecke
     b = GrafikBruecke()
     assert b._kraefte_namen("boot") == ["kraefte_boot_fg", "kraefte_boot_fa",
-                                        "kraefte_boot_arm"]
+                                        "kraefte_boot_arm", "kraefte_boot_moment"]
     erg = _Erg(1.0, (0, 0, 0), 981.0, (0, 0, 0))
     b.kraefte_daten_setzen("boot", erg, 100.0, 9.81, 1e-3)
     assert "boot" in b._kraefte_daten

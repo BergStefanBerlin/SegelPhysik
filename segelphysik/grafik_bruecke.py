@@ -14,7 +14,7 @@ Lektion: keine GPU-abhaengigen Effekte in der Standard-Ansicht). K4
 Tube-Overlays: Hauptachsen als Roehren (pv.Line().tube()), Fallback dicke
 Linie; Farben gold/cyan/magenta unveraendert.
 
-Phase C (P5c, Umsetzungsplan V5 rev 9 §5): Layer 'kraefte' (Taste 7).
+Phase C (P5c, Umsetzungsplan V5 rev 9 §5): globaler GUI-Layer 'kraefte'.
 Die Kraefte-Daten (Auftriebsergebnis + Skala) setzt die Demo ueber
 kraefte_daten_setzen(); die Bruecke projiziert sie pro Frame (P5a-Muster:
 Daten setzen, Renderer projiziert). D1: gemeinsame fixe Skala.
@@ -33,7 +33,8 @@ try:
 except ImportError:
     from segelphysik import wasser_schnitt as ws
 from .core.overlays import (LayerRegistry, hauptachsen,
-                            LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN, LAYER_KRAEFTE)
+                            LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN,
+                            LAYER_KRAEFTE, LAYER_MOMENTE)
 
 FARBE_UNTEN = "#2166ac"
 FARBE_OBEN = "#b2182b"
@@ -142,29 +143,7 @@ class GrafikBruecke:
         self._renderer.skip_surf = False
         p = self._renderer.build()
         self._plotter = p
-        self._hilfetext_ersetzen(
-            "SegelPhysik v4 | [1/2/3] Koerper  [4] Boot  [a] alle  [F1-F4] Kamera  "
-            "[Leertaste] Pause  [r] Reset  [+/-] Tempo  [q] Ende")
         return p
-
-    def _hilfetext_ersetzen(self, text):
-        p = self._plotter
-        aktoren = []
-        for attribut in ("text_actors", "_text_actors"):
-            aktoren = getattr(p, attribut, None) or []
-            if aktoren:
-                break
-        for a in aktoren:
-            try:
-                alt = a.GetInput()
-            except Exception:
-                continue
-            if isinstance(alt, str) and "v0.4" in alt:
-                try:
-                    a.SetInput(text)
-                    a.Modified()
-                except Exception:
-                    pass
 
     def koerper_setzen(self, name, typ, dims, achse, phase, position=(0.0, 0.0, 0.0)):
         from .core import koerper_formen as formen
@@ -197,6 +176,7 @@ class GrafikBruecke:
                               achse=None, phase=0.0,
                               farbe_unten=None, farbe_oben=None):
         """Haengt einen Koerper (core.koerper.Koerper) ein (Spec V4/P4)."""
+        self._koerper_ersetzen(name)
         import pyvista as pv
         gruppen = _farbgruppen(koerper)
         if farbe_oben is not None or farbe_unten is not None:
@@ -223,6 +203,18 @@ class GrafikBruecke:
         self._koerper[name]["koerper"] = koerper
         self._koerper[name]["overlay_skala"] = self._overlay_skala(koerper)
         self._einhaengen(name)
+
+    def _koerper_ersetzen(self, name):
+        alt = self._koerper.get(name)
+        if alt is None:
+            return
+        if self._plotter is not None:
+            namen = (self._actor_namen(name) + self._overlay_namen(name)
+                     + self._kraefte_namen(name))
+            for actor_name in namen:
+                self._plotter.remove_actor(actor_name)
+        self._koerper.pop(name)
+        self._kraefte_daten.pop(name, None)
 
     def _actor_namen(self, name):
         namen = ["koerper_%s_unten" % name, "koerper_%s_oben" % name,
@@ -349,9 +341,98 @@ class GrafikBruecke:
     def hud(self, text):
         self._renderer.set_hud(text)
 
+    def kamera_preset_setzen(self, preset):
+        if self._plotter is None:
+            return False
+        from .grafik_optimierung import kamera_presets
+        presets = kamera_presets(
+            self.app.cfg.basin["lx"], self.app.cfg.basin["ly"],
+            self.app.cfg.water["depth"])
+        if preset not in presets:
+            raise ValueError("Unbekanntes Kamera-Preset: %s" % preset)
+        self._plotter.camera_position = presets[preset]
+        self.render()
+        return True
+
+    def hintergrund_setzen(self, preset):
+        if self._plotter is None:
+            return False
+        hintergruende = {
+            "verlauf": ("#f2f7fc", "#9dc3e6"),
+            "weiss": ("white", None),
+            "dunkel": ("#202124", None),
+        }
+        if preset not in hintergruende:
+            raise ValueError("Unbekannter Hintergrund: %s" % preset)
+        farbe, oben = hintergruende[preset]
+        if oben is None:
+            self._plotter.set_background(farbe)
+        else:
+            self._plotter.set_background(farbe, top=oben)
+        self.render()
+        return True
+
+    def beleuchtung_setzen(self, aktiviert):
+        if self._plotter is None:
+            return False
+        if aktiviert:
+            self._plotter.enable_lightkit()
+        else:
+            self._plotter.remove_all_lights()
+        self.render()
+        return True
+
+    def ssao_setzen(self, aktiviert):
+        if self._plotter is None:
+            return False
+        if aktiviert:
+            try:
+                self._plotter.enable_ssao(radius=0.8, bias=0.002)
+            except TypeError:
+                self._plotter.enable_ssao()
+        else:
+            self._plotter.disable_ssao()
+        self.render()
+        return True
+
+    def wasser_sichtbar_setzen(self, sichtbar):
+        if self._renderer is None:
+            return False
+        gesetzt = self._renderer.wasser_sichtbar_setzen(sichtbar)
+        if gesetzt:
+            self.render()
+        return gesetzt
+
+    def wasseroptik_setzen(self, aktiviert):
+        if self._renderer is None:
+            return False
+        gesetzt = self._renderer.wasseroptik_setzen(aktiviert)
+        if gesetzt:
+            self.render()
+        return gesetzt
+
+    def render(self):
+        if self._plotter is None:
+            return False
+        self._plotter.render()
+        return True
+
     def layer_umschalten(self, layer):
         """Globaler Layer-Schalter (P5a)."""
-        return self._layer.umschalten(layer)
+        aktiv = self._layer.umschalten(layer)
+        self._layer_aktualisieren()
+        return aktiv
+
+    def layer_setzen(self, layer, aktiv):
+        """Setzt einen globalen Layer und aktualisiert seine Geometrie."""
+        self._layer.setzen(layer, aktiv)
+        self._layer_aktualisieren()
+
+    def _layer_aktualisieren(self):
+        for name, k in self._koerper.items():
+            if k.get("aktiv"):
+                self._overlays_aktualisieren(
+                    name, k, k.get("statisch_R", np.eye(3)))
 
     def layer_ist_an(self, layer):
         return self._layer.ist_an(layer)
@@ -406,39 +487,52 @@ class GrafikBruecke:
                 store[n] = self._plotter.add_mesh(linie, color=farbe,
                                                   line_width=5, name=n)
 
-        _pfeil(fg, kb.FARBE_FG, n_fg)
-        _pfeil(fa, kb.FARBE_FA, n_fa)
-        a, b = kb.hebelarm_segment(daten["erg"].K.as_array() + cm, r_s)
-        try:
-            arm = pv.line_segments_from_points([tuple(a), tuple(b)])
-            store[n_arm] = self._plotter.add_mesh(arm, color=kb.FARBE_ARM,
-                                                  line_width=2, name=n_arm)
-        except Exception:
-            pass
-
-        # Spec V4A SS6: Drehmoment-Bogenpfeil um die Rollachse (violett).
-        m_x = float(daten["erg"].M.as_array()[0])
-        bogen_radius = 0.45 * daten["skala"] * daten["masse"] * daten["g"]
-        bogen = kb.moment_bogen(m_x, r_s, radius=bogen_radius)
-        if bogen is not None:
+        if self._layer.ist_an(LAYER_KRAEFTE):
+            _pfeil(fg, kb.FARBE_FG, n_fg)
+            _pfeil(fa, kb.FARBE_FA, n_fa)
+            a, b = kb.hebelarm_segment(daten["erg"].K.as_array() + cm, r_s)
             try:
-                kurve = pv.lines_from_points(bogen["punkte"]).tube(
-                    radius=max(0.3 * bogen["kopf_radius"], 0.004), n_sides=8)
-                kopf = pv.Cone(
-                    center=tuple(0.5 * (bogen["punkte"][-1] + bogen["spitze"])),
-                    direction=tuple(bogen["richtung"]),
-                    height=bogen["kopf_laenge"], radius=bogen["kopf_radius"])
-                store[n_moment] = self._plotter.add_mesh(
-                    kurve + kopf, color=kb.FARBE_MOMENT, name=n_moment,
-                    smooth_shading=True)
+                arm = pv.line_segments_from_points([tuple(a), tuple(b)])
+                store[n_arm] = self._plotter.add_mesh(
+                    arm, color=kb.FARBE_ARM, line_width=2, name=n_arm)
             except Exception:
-                seg = pv.line_segments_from_points(bogen["punkte"])
-                store[n_moment] = self._plotter.add_mesh(
-                    seg, color=kb.FARBE_MOMENT, line_width=4, name=n_moment)
+                pass
         else:
-            store.pop(n_moment, None)
+            self._kraefte_actors_entfernen(name, (n_fg, n_fa, n_arm))
+
+        if self._layer.ist_an(LAYER_MOMENTE):
+            m_x = float(daten["erg"].M.as_array()[0])
+            bogen_radius = 0.45 * daten["skala"] * daten["masse"] * daten["g"]
+            bogen = kb.moment_bogen(m_x, r_s, radius=bogen_radius)
+            if bogen is not None:
+                try:
+                    kurve = pv.lines_from_points(bogen["punkte"]).tube(
+                        radius=max(0.3 * bogen["kopf_radius"], 0.004),
+                        n_sides=8)
+                    kopf = pv.Cone(
+                        center=tuple(0.5 * (bogen["punkte"][-1]
+                                            + bogen["spitze"])),
+                        direction=tuple(bogen["richtung"]),
+                        height=bogen["kopf_laenge"],
+                        radius=bogen["kopf_radius"])
+                    store[n_moment] = self._plotter.add_mesh(
+                        kurve + kopf, color=kb.FARBE_MOMENT, name=n_moment,
+                        smooth_shading=True)
+                except Exception:
+                    seg = pv.line_segments_from_points(bogen["punkte"])
+                    store[n_moment] = self._plotter.add_mesh(
+                        seg, color=kb.FARBE_MOMENT, line_width=4, name=n_moment)
+            else:
+                self._kraefte_actors_entfernen(name, (n_moment,))
+        else:
+            self._kraefte_actors_entfernen(name, (n_moment,))
+
+    def _kraefte_actors_entfernen(self, name, namen):
+        store = self._koerper.get(name, {}).get("kraefte_actors", {})
+        for actor_name in namen:
+            store.pop(actor_name, None)
             try:
-                self._plotter.remove_actor(n_moment)
+                self._plotter.remove_actor(actor_name)
             except Exception:
                 pass
 
@@ -454,6 +548,10 @@ class GrafikBruecke:
     def statische_pose_setzen(self, name, z, phi):
         """Phase B2: friert den Koerper in der statischen Gleichgewichts-
         lage ein (D11: r_S bei Welt-z = z, Rotation R_x(phi) um r_S)."""
+        return self.physik_pose_setzen(name, z, phi)
+
+    def physik_pose_setzen(self, name, z, phi):
+        """Wendet Tauchposition und Kraengung auf einen Laufzeitkoerper an."""
         k = self._koerper.get(name)
         if k is None:
             return False
@@ -572,7 +670,9 @@ class GrafikBruecke:
         else:
             self._overlay_hauptachsen_entfernen(name)
         # Phase C: Kraeftebild nur, wenn Layer an UND Daten vorliegen.
-        if self._layer.ist_an(LAYER_KRAEFTE) and name in self._kraefte_daten:
+        if ((self._layer.ist_an(LAYER_KRAEFTE)
+             or self._layer.ist_an(LAYER_MOMENTE))
+                and name in self._kraefte_daten):
             self._kraefte_actors(name)
         else:
             self._kraefte_entfernen(name)

@@ -9,11 +9,13 @@ Layout je Zeile (Nutzerfestlegung 13.10.):
 """
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtCore import QPoint
 from PySide6.QtGui import QColor, QIcon, QPainter, QPixmap, QPen, QBrush, QPolygon
 from PySide6.QtWidgets import (
-    QHeaderView, QStyledItemDelegate, QTreeWidget, QTreeWidgetItem,
+    QComboBox, QDoubleSpinBox, QFormLayout, QHeaderView, QMenu,
+    QMessageBox, QStyledItemDelegate, QTreeWidget, QTreeWidgetItem,
+    QDialog, QDialogButtonBox, QWidget,
 )
 
 from .baum import (
@@ -74,6 +76,8 @@ class TeilaktivDelegate(QStyledItemDelegate):
 
 
 class BaumWidget(QTreeWidget):
+    laufzeit_aenderung = Signal(str)
+
     def __init__(self, eltern=None):
         super().__init__(eltern)
         self.setColumnCount(2)
@@ -86,10 +90,12 @@ class BaumWidget(QTreeWidget):
             SPALTE_CHECK, TeilaktivDelegate(self))
         self.setRootIsDecorated(True)
         self.setExpandsOnDoubleClick(False)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self._welt = None
         self._in_update = False
         self._nur_aktives_bedienbar = False
         self.itemChanged.connect(self._geaendert)
+        self.customContextMenuRequested.connect(self._kontextmenue)
 
     def lade(self, welt_knoten):
         expansion = self._expansion_speichern() if self._welt is not None else None
@@ -159,7 +165,9 @@ class BaumWidget(QTreeWidget):
         else:
             eltern_item.addChild(item)
         for label, wert in knoten.eigenschaften:
-            zeile = QTreeWidgetItem(["      %s: %s" % (label, wert), ""])
+            zeile = QTreeWidgetItem(["%s: %s" % (label, wert), ""])
+            zeile.setData(SPALTE_NAME, Qt.ItemDataRole.UserRole,
+                          (knoten, label))
             zeile.setFlags(zeile.flags() & ~Qt.ItemIsUserCheckable)
             zeile.setForeground(SPALTE_NAME, QColor("#707070"))
             item.addChild(zeile)
@@ -170,6 +178,126 @@ class BaumWidget(QTreeWidget):
     @staticmethod
     def _hat_aktive_blaetter(knoten):
         return any(n.art == ART_BLATT and n.aktiv for n in knoten.iteriere())
+
+    def _kontextmenue(self, position):
+        zeile = self.itemAt(position)
+        if zeile is None or not isinstance(
+                zeile.data(SPALTE_NAME, Qt.ItemDataRole.UserRole), tuple):
+            return
+        knoten, eigenschaft = zeile.data(
+            SPALTE_NAME, Qt.ItemDataRole.UserRole)
+        menue = QMenu(self)
+        bearbeiten = menue.addAction("%s ändern …" % eigenschaft)
+        if menue.exec(self.viewport().mapToGlobal(position)) == bearbeiten:
+            self._eigenschaft_bearbeiten(knoten, eigenschaft)
+
+    def _eigenschaft_bearbeiten(self, knoten, eigenschaft):
+        if (knoten.eintrag is None
+                or getattr(self._welt, "konfiguration", None) is None):
+            return
+        index = next((i for i, (name, _) in enumerate(knoten.eigenschaften)
+                      if name == eigenschaft), None)
+        if index is None:
+            return
+        wert = knoten.eigenschaften[index][1]
+        if eigenschaft == "Material":
+            materialien = self._materialnamen_laden()
+            if not materialien:
+                QMessageBox.warning(
+                    self, "Materialien", "Keine Materialien gefunden.")
+                return
+            eingabe = QComboBox()
+            eingabe.addItems(materialien)
+            eingabe.setCurrentText(str(wert))
+            titel = "Material ändern"
+            formular = QFormLayout()
+            formular.addRow("Material:", eingabe)
+        elif eigenschaft in ("Dichte", "Wanddicke"):
+            eingabe = QDoubleSpinBox()
+            eingabe.setDecimals(6)
+            eingabe.setMinimum(0.000001)
+            eingabe.setMaximum(1_000_000_000)
+            eingabe.setValue(self._zahlwert(eigenschaft, wert))
+            eingabe.setSuffix(" kg/m³" if eigenschaft == "Dichte" else " mm")
+            titel = "%s ändern" % eigenschaft
+            formular = QFormLayout()
+            formular.addRow("%s:" % eigenschaft, eingabe)
+        else:
+            return
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle(titel)
+        formular.addRow(self._dialog_buttons(dialog))
+        dialog.setLayout(formular)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        try:
+            self._eigenschaft_setzen(
+                knoten, eigenschaft,
+                eingabe.currentText() if eigenschaft == "Material"
+                else eingabe.value())
+        except ValueError as fehler:
+            QMessageBox.warning(self, "Eigenschaft ändern", str(fehler))
+
+    def _eigenschaft_setzen(self, knoten, eigenschaft, wert):
+        eintrag = knoten.eintrag
+        if eintrag is None:
+            raise ValueError("Knoten hat keinen Konfigurationseintrag.")
+        index = next((i for i, (name, _) in enumerate(knoten.eigenschaften)
+                      if name == eigenschaft), None)
+        if index is None:
+            raise ValueError("Eigenschaft nicht im Baum gefunden: %s" % eigenschaft)
+
+        if eigenschaft == "Material":
+            materialien = self._materialnamen_laden()
+            if wert not in materialien:
+                raise ValueError("Unbekanntes Material: %r" % (wert,))
+            eintrag["material"] = wert
+            anzeige = str(wert)
+        elif eigenschaft == "Dichte":
+            dichte = float(wert)
+            if dichte <= 0:
+                raise ValueError("Die Dichte muss groesser als 0 sein.")
+            eintrag["dichte_kg_pro_m3"] = dichte
+            anzeige = self._zahlwert_anzeigen(eigenschaft, dichte)
+        elif eigenschaft == "Wanddicke":
+            dicke_m = float(wert) / 1000.0
+            if dicke_m <= 0:
+                raise ValueError("Die Wanddicke muss groesser als 0 sein.")
+            eintrag["wanddicke_m"] = dicke_m
+            anzeige = self._zahlwert_anzeigen(eigenschaft, float(wert))
+        else:
+            raise ValueError("Nicht editierbare Eigenschaft: %s" % eigenschaft)
+
+        knoten.eigenschaften[index] = (eigenschaft, anzeige)
+        self.lade(self._welt)
+        self.laufzeit_aenderung.emit("eigenschaft")
+
+    @staticmethod
+    def _dialog_buttons(dialog):
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok |
+            QDialogButtonBox.StandardButton.Cancel)
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
+        return buttons
+
+    @staticmethod
+    def _zahlwert(eigenschaft, text):
+        return float(str(text).split()[0])
+
+    @staticmethod
+    def _zahlwert_anzeigen(eigenschaft, zahl):
+        if eigenschaft == "Dichte":
+            return "%g kg/m3" % zahl
+        return "%g mm" % zahl
+
+    def _materialnamen_laden(self):
+        konfiguration = getattr(self._welt, "konfiguration", None)
+        if konfiguration is None:
+            return []
+        return sorted(konfiguration.materialien_blocks)
 
     def _geaendert(self, item, spalte):
         if self._in_update or spalte != SPALTE_CHECK:
@@ -196,4 +324,8 @@ class BaumWidget(QTreeWidget):
         finally:
             self._in_update = False
         from PySide6.QtCore import QTimer
-        QTimer.singleShot(0, lambda: self.lade(self._welt))
+        QTimer.singleShot(0, self._baum_zustand_geaendert)
+
+    def _baum_zustand_geaendert(self):
+        self.lade(self._welt)
+        self.laufzeit_aenderung.emit("auswahl")

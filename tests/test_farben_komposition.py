@@ -34,7 +34,8 @@ def _basis():
     mat = {"materialien": {"Test": {"dichte_kg_pro_m3": 1000, "farbe": "#cccccc",
                                     "farbe_unter_wasser": "#999999"}},
            "wasser": {"dichten_kg_pro_m3": {"Suess": 1000}, "standard": "Suess"}}
-    kor = {"boot": {"teile": [{"name": "kiel", "material": "Test"}]},
+    kor = {"summenkoerper": {
+               "yacht1": {"teile": [{"name": "kiel", "material": "Test"}]}},
            "darstellung": {"delta_helligkeit_unterwasser": 0.4,
                            "farbe_standard": "#c9c9c9"}}
     return mat, kor
@@ -95,7 +96,7 @@ def test_i3_ohne_expizite_unterwasserfarbe_wird_aufgehellt():
 
 def test_i4_farbe_am_blatt_trotz_material_fehler(tmp_path):
     mat, kor = _basis()
-    kor["boot"]["teile"][0]["farbe"] = "#ff0000"
+    kor["summenkoerper"]["yacht1"]["teile"][0]["farbe"] = "#ff0000"
     with pytest.raises(KonfigFehler):
         lade_konfig(_temp_konfig(tmp_path, mat, kor))
 
@@ -109,7 +110,7 @@ def test_i5_material_ohne_farbe_in_tabelle_fehler(tmp_path):
 
 def test_i6_mischform_material_und_dichte_fehler(tmp_path):
     mat, kor = _basis()
-    kor["boot"]["teile"][0]["dichte_kg_pro_m3"] = 500
+    kor["summenkoerper"]["yacht1"]["teile"][0]["dichte_kg_pro_m3"] = 500
     with pytest.raises(KonfigFehler):
         lade_konfig(_temp_konfig(tmp_path, mat, kor))
 
@@ -117,7 +118,7 @@ def test_i6_mischform_material_und_dichte_fehler(tmp_path):
 def test_i7_direkttripel_vollstaendig_pflicht(tmp_path):
     """Direkt-Tripel ohne 'farbe' ist unvollstaendig -> Fehler."""
     mat, kor = _basis()
-    blatt = kor["boot"]["teile"][0]
+    blatt = kor["summenkoerper"]["yacht1"]["teile"][0]
     del blatt["material"]
     blatt["dichte_kg_pro_m3"] = 1000
     blatt["farbe_unter_wasser"] = "#999999"   # 'farbe' FEHLT absichtlich
@@ -127,7 +128,7 @@ def test_i7_direkttripel_vollstaendig_pflicht(tmp_path):
 
 def test_i8_direkttripel_valide_und_farben_am_koerper(tmp_path):
     mat, kor = _basis()
-    blatt = kor["boot"]["teile"][0]
+    blatt = kor["summenkoerper"]["yacht1"]["teile"][0]
     del blatt["material"]
     blatt.update({"dichte_kg_pro_m3": 1000,
                   "farbe": "#123456",

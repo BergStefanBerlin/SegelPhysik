@@ -60,9 +60,9 @@ MATERIALIEN_BASIS = {
 
 KOERPER_BASIS = {
     "_beschreibung": "Test",
-    "boot": {"teile": [
+    "summenkoerper": {"yacht1": {"teile": [
         {"name": "rumpf", "material": "GfK", "wanddicke_m": 0.005},
-    ]},
+    ]}},
     "darstellung": {"delta_helligkeit_unterwasser": 0.4,
                     "farbe_standard": "#c9c9c9"},
 }

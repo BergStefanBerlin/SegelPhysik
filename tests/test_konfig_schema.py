@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 """Block H (J-5): Schema-Tests fuer die summenkoerper-Struktur (J-1)."""
 import json, os, tempfile
+import pytest
 from segelphysik.core.konfig_lader import lade_konfig, KonfigFehler
 
 def _schreibe(od, mat, kor):
-    open(os.path.join(od,"materialien.json"),"w",encoding="utf-8").write(json.dumps(mat))
-    open(os.path.join(od,"koerper.json"),"w",encoding="utf-8").write(json.dumps(kor))
+    with open(os.path.join(od,"materialien.json"),"w",encoding="utf-8") as f:
+        json.dump(mat, f)
+    with open(os.path.join(od,"koerper.json"),"w",encoding="utf-8") as f:
+        json.dump(kor, f)
 
 def _mat():
     return {"materialien":{"Test":{"dichte_kg_pro_m3":1000,"farbe":"#cccccc","farbe_unter_wasser":"#999999"}},
@@ -108,8 +111,10 @@ def test_h4_unbekanntes_material_cross_file():
 def test_h5_doppelter_schluessel_beide_dateien():
     with tempfile.TemporaryDirectory() as od:
         roh='{"materialien": {"A": 1, "A": 2}, "wasser": {"dichten_kg_pro_m3": {"S": 1000}, "standard": "S"}}'
-        open(os.path.join(od,"materialien.json"),"w",encoding="utf-8").write(roh)
-        open(os.path.join(od,"koerper.json"),"w",encoding="utf-8").write(json.dumps(_kor()))
+        with open(os.path.join(od,"materialien.json"),"w",encoding="utf-8") as f:
+            f.write(roh)
+        with open(os.path.join(od,"koerper.json"),"w",encoding="utf-8") as f:
+            json.dump(_kor(), f)
         try:
             lade_konfig(od); assert False,"KonfigFehler erwartet"
         except KonfigFehler:
@@ -123,3 +128,19 @@ def test_h6_gruppe_mit_masseschluessel_fehler():
             lade_konfig(od); assert False,"KonfigFehler erwartet"
         except KonfigFehler:
             pass
+
+def test_h7_doppelter_schluessel_koerperdatei():
+    with tempfile.TemporaryDirectory() as od:
+        _schreibe(od, _mat(), _kor())
+        with open(os.path.join(od, "koerper.json"), "w", encoding="utf-8") as f:
+            f.write('{"summenkoerper": {}, "summenkoerper": {}, "darstellung": {}}')
+        with pytest.raises(KonfigFehler, match="Doppelter"):
+            lade_konfig(od)
+
+def test_h8_ungueltige_standardfarbe_fehler():
+    with tempfile.TemporaryDirectory() as od:
+        kor = _kor()
+        kor["darstellung"]["farbe_standard"] = "nicht-hex"
+        _schreibe(od, _mat(), kor)
+        with pytest.raises(KonfigFehler, match="farbe_standard"):
+            lade_konfig(od)

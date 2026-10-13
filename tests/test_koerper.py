@@ -90,7 +90,7 @@ def test_tc_a3_doppelschluessel_wird_erkannt(tmp_path, mat_vorlage, kor_vorlage)
 
 def test_tc_a4_unbekanntes_material_cross_file(tmp_path, mat_vorlage, kor_vorlage):
     kor = _kopie(kor_vorlage)
-    for e in kor["boot"]["teile"]:
+    for e in kor["summenkoerper"]["yacht1"]["teile"]:
         if e["name"] == "rumpf":
             e["material"] = "Unobtainium"
     od = _temp_konfig(tmp_path, mat_vorlage, kor)
@@ -101,7 +101,7 @@ def test_tc_a4_unbekanntes_material_cross_file(tmp_path, mat_vorlage, kor_vorlag
 
 def test_tc_a5_gruppe_mit_masse_fehler(tmp_path, mat_vorlage, kor_vorlage):
     kor = _kopie(kor_vorlage)
-    for e in kor["boot"]["teile"]:
+    for e in kor["summenkoerper"]["yacht1"]["teile"]:
         if e["name"] == "kielsystem":
             e["dichte"] = 500.0
     od = _temp_konfig(tmp_path, mat_vorlage, kor)
@@ -112,7 +112,7 @@ def test_tc_a5_gruppe_mit_masse_fehler(tmp_path, mat_vorlage, kor_vorlage):
 
 def test_tc_a6_blatt_ohne_material_fehler(tmp_path, mat_vorlage, kor_vorlage):
     kor = _kopie(kor_vorlage)
-    for e in kor["boot"]["teile"]:
+    for e in kor["summenkoerper"]["yacht1"]["teile"]:
         if e["name"] == "rumpf":
             del e["material"]
     od = _temp_konfig(tmp_path, mat_vorlage, kor)
@@ -123,7 +123,7 @@ def test_tc_a6_blatt_ohne_material_fehler(tmp_path, mat_vorlage, kor_vorlage):
 
 def test_tc_a7_fremder_massenschluessel_fehler(tmp_path, mat_vorlage, kor_vorlage):
     kor = _kopie(kor_vorlage)
-    for e in kor["boot"]["teile"]:
+    for e in kor["summenkoerper"]["yacht1"]["teile"]:
         if e["name"] == "rumpf":
             e["flaechenmasse_kg_pro_m2"] = 9.5
     od = _temp_konfig(tmp_path, mat_vorlage, kor)
@@ -134,7 +134,7 @@ def test_tc_a7_fremder_massenschluessel_fehler(tmp_path, mat_vorlage, kor_vorlag
 
 def test_tc_a8_leere_gruppe_fehler(tmp_path, mat_vorlage, kor_vorlage):
     kor = _kopie(kor_vorlage)
-    for e in kor["boot"]["teile"]:
+    for e in kor["summenkoerper"]["yacht1"]["teile"]:
         if e["name"] == "rigg":
             e["teile"] = []
     od = _temp_konfig(tmp_path, mat_vorlage, kor)
@@ -147,7 +147,7 @@ def test_tc_a9_material_als_zahl_abgeschafft(tmp_path, mat_vorlage, kor_vorlage)
     """MIGRATIONS-WACHE: 'material': <Zahl> ist seit der Material-Reform ein
     Fehler - direkte Dichte gehoert ins Direkt-Tripel (Spec P3/P4)."""
     kor = _kopie(kor_vorlage)
-    for e in kor["boot"]["teile"]:
+    for e in kor["summenkoerper"]["yacht1"]["teile"]:
         if e["name"] == "kielsystem":
             for kind in e["teile"]:
                 if kind["name"] == "bulb":

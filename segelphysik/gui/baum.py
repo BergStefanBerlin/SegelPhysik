@@ -25,6 +25,7 @@ class Knoten:
         self.name=name; self.art=art; self.icon_art=icon_art
         self.aktiv=aktiv; self.sichtbar=sichtbar; self.grau=False
         self.eigenschaften=[]; self.kinder=[]; self.eltern=None
+        self.eintrag=None
     def hinzufuegen(self,kind):
         kind.eltern=self; self.kinder.append(kind); return kind
     def iteriere(self):
@@ -67,8 +68,18 @@ def _form_knoten(name,eintrag):
 
 def welt_aus_konfig(konfig):
     """T-4: baut den Welt-Knoten aus dem Konfiguration-Objekt (J-1)."""
-    return welt_aus_json({"summenkoerper": konfig.summenkoerper,
-                          "darstellung": {"standard_ansicht": konfig.standard_ansicht}})
+    welt=welt_aus_json({"summenkoerper": konfig.summenkoerper,
+                        "darstellung": {"standard_ansicht": konfig.standard_ansicht}})
+    welt.konfiguration=konfig
+
+    def binde_eintraege(knoten, eintrag):
+        knoten.eintrag=eintrag
+        for kind, teil in zip(knoten.kinder, eintrag.get("teile", [])):
+            binde_eintraege(kind, teil)
+
+    for haupt in summenkoerper(welt):
+        binde_eintraege(haupt, konfig.summenkoerper[haupt.name])
+    return welt
 
 def welt_aus_json(daten):
     """Baut den Welt-Knoten aus geparsten JSON-Daten (J-1; Uebergangszeit

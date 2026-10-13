@@ -225,6 +225,8 @@ class PyVistaRenderer:
         self.X, self.Y = np.meshgrid(self._xs, self._ys)
         self._Xr, self._Yr = self.X, self.Y
         self._plotter = None; self._surf = None
+        self._surf_actor = None
+        self._wasser_opazitaet = 0.7
         self._bodies = {}
         self._body_pd = {}
         self._extents = {}
@@ -339,17 +341,47 @@ class PyVistaRenderer:
             if self.color_by_depth:
                 self._surf[self._elev_key] = np.zeros(self._Xr.size,
                                                       dtype=np.float64)
-                p.add_mesh(self._surf, scalars=self._elev_key,
-                           cmap="Blues_r", opacity=0.7, show_edges=False,
-                           clim=(-0.5, 0.5), show_scalar_bar=False, **light)
+                self._wasser_opazitaet = 0.7
+                self._surf_actor = p.add_mesh(
+                    self._surf, scalars=self._elev_key,
+                    cmap="Blues_r", opacity=self._wasser_opazitaet,
+                    show_edges=False, clim=(-0.5, 0.5),
+                    show_scalar_bar=False, **light)
             else:
-                p.add_mesh(self._surf, color="tab:blue", opacity=0.6,
-                           show_edges=False, **light)
+                self._wasser_opazitaet = 0.6
+                self._surf_actor = p.add_mesh(
+                    self._surf, color="tab:blue",
+                    opacity=self._wasser_opazitaet, show_edges=False, **light)
         p.add_axes(xlabel="x (Bug)", ylabel="y (Backbord)", zlabel="z")
         self._status_actor = p.add_text(" ", position="lower_right",
                                         font_size=10, color="black")
         self._plotter = p
         return p
+
+    def wasser_sichtbar_setzen(self, sichtbar):
+        if self._surf_actor is None:
+            return False
+        self._surf_actor.SetVisibility(bool(sichtbar))
+        return True
+
+    def wasseroptik_setzen(self, aktiviert):
+        if self._surf_actor is None:
+            return False
+        eigenschaften = self._surf_actor.GetProperty()
+        eigenschaften.SetInterpolationToPhong()
+        if aktiviert:
+            eigenschaften.SetSpecular(1.0)
+            eigenschaften.SetSpecularPower(120.0)
+            eigenschaften.SetDiffuse(0.85)
+            eigenschaften.SetAmbient(0.10)
+            eigenschaften.SetOpacity(0.85)
+        else:
+            eigenschaften.SetSpecular(0.8)
+            eigenschaften.SetSpecularPower(60.0)
+            eigenschaften.SetDiffuse(0.9)
+            eigenschaften.SetAmbient(0.15)
+            eigenschaften.SetOpacity(self._wasser_opazitaet)
+        return True
 
     def set_hud(self, text):
         a = self._hud_actor
