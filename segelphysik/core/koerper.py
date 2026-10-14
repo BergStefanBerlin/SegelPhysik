@@ -37,7 +37,16 @@ def _rel_pose(rel):
     if rel is None:
         return np.eye(3), np.zeros(3)
     R, t = rel
-    return np.asarray(R, float), np.asarray(t, float)
+    R = np.asarray(R, dtype=float)
+    t = np.asarray(t, dtype=float)
+    if R.shape != (3, 3) or t.shape != (3,):
+        raise KoerperFehler("Relative Pose muss aus einer 3x3-Rotation und 3D-Verschiebung bestehen")
+    if not np.isfinite(R).all() or not np.isfinite(t).all():
+        raise KoerperFehler("Relative Pose enthält nicht-endliche Werte")
+    if (not np.allclose(R.T @ R, np.eye(3), rtol=0.0, atol=1e-8)
+            or not np.isclose(np.linalg.det(R), 1.0, rtol=0.0, atol=1e-8)):
+        raise KoerperFehler("Relative Orientierung muss eine gültige Rotation sein")
+    return R, t
 
 class Koerper:
     """Ein starrer Koerper (auch zusammengesetzt) im eigenen Schwerpunktframe."""
@@ -67,33 +76,61 @@ class Koerper:
             raise KoerperFehler("'form' und 'teile' gleichzeitig ist mehrdeutig - nur eines")
         if anzahl != 1:
             raise KoerperFehler("P3 Genau-eins-Regel: genau eine Massengroesse ist Pflicht (gefunden: %d)" % anzahl)
-        punkte = np.asarray(form[0], float)
-        dreiecke = np.asarray(form[1], np.int64)
-        volumen = ma.mesh_volumen(punkte, dreiecke)
+        volumennetz_erforderlich = dichte is not None or material is not None
+        try:
+            (punkte, dreiecke, volumen, flaeche,
+             geschlossen, _kanten_fehler) = ma.validiere_mesh(
+                 form[0], form[1],
+                 geschlossen_erforderlich=volumennetz_erforderlich)
+        except ValueError as fehler:
+            if (volumennetz_erforderlich
+                    and str(fehler).startswith("Volumenmesh muss")):
+                raise KoerperFehler(
+                    "P3: Dichte/Material erfordert ein geschlossenes, konsistent "
+                    "orientiertes Volumenmesh; für offene Schalen flaechenmasse "
+                    "verwenden. %s" % fehler) from fehler
+            raise KoerperFehler("Ungültiges Körper-Mesh: %s" % fehler) from fehler
         if volumen < 0.0:
             dreiecke = dreiecke[:, [0, 2, 1]]
             volumen = -volumen
-        self._volumen = abs(volumen)
-        self._flaeche = ma.mesh_flaeche(punkte, dreiecke)
+        self._volumen = abs(volumen) if geschlossen else 0.0
+        self._flaeche = flaeche
+        self.verdrangend = bool(geschlossen and self._volumen >= VOLUMEN_EPS)
         if dichte is not None or material is not None:
             rho = float(dichte) if dichte is not None else self._material_dichte(material, materialien)
-            if self._volumen < VOLUMEN_EPS:
+            if not np.isfinite(rho) or rho <= 0.0:
+                raise KoerperFehler("P3: Dichte muss endlich und positiv sein")
+            if not geschlossen or self._volumen < VOLUMEN_EPS:
                 raise KoerperFehler("P3: volumenloses Mesh (z. B. Segel) verlangt flaechenmasse, nicht dichte/material")
             self.masse = rho * self._volumen
             r, _ = ma.schwerpunkt_homogen(punkte, dreiecke)
             I = ma.traegheitstensor_homogen(punkte, dreiecke, rho)
         elif masse is not None:
             self.masse = float(masse)
-            if self._volumen > VOLUMEN_EPS:
+            if not np.isfinite(self.masse) or self.masse <= 0.0:
+                raise KoerperFehler("P3: Masse muss endlich und positiv sein")
+            if self.verdrangend:
                 r, _ = ma.schwerpunkt_homogen(punkte, dreiecke)
                 I = ma.traegheitstensor_homogen(punkte, dreiecke, self.masse / self._volumen)
             else:
+                if self._flaeche <= 0.0:
+                    raise KoerperFehler("P3: Fläche muss für eine flächenbasierte Masse positiv sein")
                 r, _ = ma.schwerpunkt_flaechig(punkte, dreiecke)
-                I = ma.traegheitstensor_flaechig(punkte, dreiecke, self.masse / self._flaeche)
+                I = ma.traegheitstensor_flaechig(
+                    punkte, dreiecke, self.masse / self._flaeche)
         else:
-            self.masse = float(flaechenmasse) * self._flaeche
+            flaechenmasse = float(flaechenmasse)
+            if not np.isfinite(flaechenmasse) or flaechenmasse <= 0.0:
+                raise KoerperFehler("P3: Flächenmasse muss endlich und positiv sein")
+            self.masse = flaechenmasse * self._flaeche
             r, _ = ma.schwerpunkt_flaechig(punkte, dreiecke)
-            I = ma.traegheitstensor_flaechig(punkte, dreiecke, float(flaechenmasse))
+            I = ma.traegheitstensor_flaechig(punkte, dreiecke, flaechenmasse)
+        if not np.isfinite(self.masse) or self.masse <= 0.0:
+            raise KoerperFehler("P3: berechnete Masse muss endlich und positiv sein")
+        try:
+            I = ma.validiere_traegheitstensor(I)
+        except ValueError as fehler:
+            raise KoerperFehler("Ungültiger Trägheitstensor: %s" % fehler) from fehler
         self.punkte = punkte - r
         self.dreiecke = dreiecke
         self.traegheitstensor = I
@@ -131,6 +168,13 @@ class Koerper:
         self.teile = [(kind, (R, t - r_s)) for kind, R, t in kinder]
         self._volumen = None
         self._flaeche = None
+        self.verdrangend = any(
+            kind.verdrangend for kind, _R, _t in kinder)
+        try:
+            self.traegheitstensor = ma.validiere_traegheitstensor(I_ges)
+        except ValueError as fehler:
+            raise KoerperFehler(
+                "Ungültiger Trägheitstensor des Verbands: %s" % fehler) from fehler
         self._r_eingabe = r_s
 
     @classmethod

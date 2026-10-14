@@ -14,6 +14,7 @@ Kein Physik-Anteil (V3: rein kinematisch/statisch).
 from __future__ import annotations
 import os
 import numpy as np
+from .massen import validiere_mesh_eingaben
 
 MODELL_ORDNER = os.path.normpath(os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "..", "modelle"))
@@ -35,7 +36,13 @@ def lade_obj(pfad):
                 idx = [int(tok.split("/")[0]) - 1 for tok in t[1:]]
                 for k in range(1, len(idx) - 1):
                     gesichter.append([idx[0], idx[k], idx[k + 1]])
-    return np.asarray(punkte, dtype=np.float64), np.asarray(gesichter, dtype=np.int64)
+    try:
+        punkte, gesichter, _flaechen = validiere_mesh_eingaben(
+            np.asarray(punkte, dtype=np.float64),
+            np.asarray(gesichter, dtype=np.int64))
+    except ValueError as fehler:
+        raise ValueError("Ungültiges OBJ-Mesh in %s: %s" % (pfad, fehler)) from fehler
+    return punkte, gesichter
 
 
 def baue_boot(skala=SKALA, teile=TEILE, ordner=MODELL_ORDNER):

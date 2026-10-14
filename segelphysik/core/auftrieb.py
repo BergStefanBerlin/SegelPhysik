@@ -330,11 +330,11 @@ def als_bindung(koerper):
             for kind, (Rk, tk) in k.teile:
                 sammle(kind, R @ Rk, t + R @ tk)
         else:
+            if not getattr(k, "verdrangend", True):
+                return
             blaetter.append((np.asarray(k.punkte, float) @ R.T + t,
                              np.asarray(k.dreiecke, np.int64)))
     sammle(koerper, np.eye(3), np.zeros(3))
-    if not blaetter:
-        raise AuftriebFehler("Koerper enthaelt keine Blatt-Meshes")
     class _Bindung: pass
     b = _Bindung(); b.blatt_meshes = blaetter; b.r_S = np.zeros(3)
     return b
@@ -357,13 +357,10 @@ def baue_kraftfunktion(koerper, rho_w=1000.0, g=G_NORM, aufloesung=0.05,
 def wasserdichtheit(punkte, gesichter):
     """N0-Kriterium: Ein geschlossenes Mesh hat JEDE Kante genau 2x.
     Rueckgabe: (ist_geschlossen, anzahl_schlechter_kanten, signiertes_V)."""
-    P = np.asarray(punkte, dtype=float).reshape(-1, 3)
-    F = np.asarray(gesichter, dtype=np.int64).reshape(-1, 3)
-    if len(F) == 0:
-        return False, 0, 0.0
-    E = np.vstack([F[:, [0, 1]], F[:, [1, 2]], F[:, [2, 0]]])
-    E.sort(axis=1)
-    _, counts = np.unique(E, axis=0, return_counts=True)
-    schlecht = int((counts != 2).sum())
-    vol6, _ = _tetraeder_beitraege(P, F)
-    return schlecht == 0, schlecht, float(vol6.sum())
+    from .massen import validiere_mesh
+    try:
+        _P, _F, volumen, _flaeche, geschlossen, schlecht = validiere_mesh(
+            punkte, gesichter)
+    except ValueError:
+        return False, 1, 0.0
+    return geschlossen, schlecht, volumen
