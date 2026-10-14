@@ -302,7 +302,9 @@ und wird über `requirements-gpu.txt` installiert.
    eine CPU-Referenz des körperfesten Rasters implementieren. Den aktuellen
    globalen Voxelpfad in `core/auftrieb.py` als Vergleichsreferenz erhalten,
    bis neue CPU-Ausgaben analytisch und gegen den exakten
-   Mesh-/Tetraederpfad geprüft sind.
+   Mesh-/Tetraederpfad geprüft sind. Der neue Referenzpfad wird zunächst
+   explizit als `voxel_koerperfest` angefordert; der bestehende Standardpfad
+   bleibt bis zur repräsentativen Leistungs- und Genauigkeitsbewertung aktiv.
 2. Beim Laden dieser validierten und gegebenenfalls dauerhaft korrigierten
    Geometrie ein körperfestes Raster einmalig
    vorbereiten. Rasterursprung, Auflösung und Abdeckung sind deterministisch;
@@ -314,8 +316,14 @@ und wird über `requirements-gpu.txt` installiert.
    verdrängtes Volumen und Volumenschwerpunkt.
 4. Wasserlinienfläche und Flächenträgheit in einer klaren
    Hydrostatik-Ausgabe verfügbar machen, sobald die Stabilitätsdiagnostik sie
-   benötigt. Ein fehlender Wasserlinienschnitt und verschwindendes Volumen
-   ergeben definierte, endliche Ergebnisse ohne Division durch null.
+   benötigt. `core/hydrostatik.py` stellt dafür Fläche, Welt-Schwerpunkt und
+   zentrierten 2x2-Flächenträgheitstensor bereit; die Pose-API verarbeitet
+   körperlokale Meshes. Die Matrixdiagonale ist
+   `(int(y² dA), int(x² dA))`, die Nebendiagonale `-int(xy dA)`.
+   Ein fehlender Schnitt ergibt endliche Nullwerte. Eine exakt tangential
+   berührte ebene Fläche gilt als geometrischer Schnitt und behält ihre
+   Schnittfläche; damit sind Nullvolumen und Wasserlinienfläche unabhängig
+   definiert und eine Division durch null wird vermieden.
 5. Voxel-Union und Überlappungskorrektur auf eine gemeinsame,
    korrigierte Geometrie beziehen; keine doppelte Volumenzählung.
 6. Nach der CPU-Referenz die endgültige Zuordnung für Vorbereitung und
@@ -326,10 +334,11 @@ und wird über `requirements-gpu.txt` installiert.
 ### Betroffene Bereiche und Tests
 
 - Produktionskandidaten: `core/auftrieb.py`, `wasser_schnitt.py`,
-  Geometrie-/Körperdaten aus Phase 1; bei Bedarf ein eigenes
-  `core/voxelmodell.py`.
+  Geometrie-/Körperdaten aus Phase 1 sowie `core/hydrostatik.py` für
+  Wasserlinienkennwerte; `core/voxelmodell.py` für das körperfeste Raster.
 - Bestehende Tests erweitern: `tests/test_auftrieb.py`,
-  `tests/test_wasser_schnitt.py`, `tests/test_wasserlinie_geometrie.py`.
+  `tests/test_wasser_schnitt.py`, `tests/test_wasserlinie_geometrie.py`;
+  analytische Hydrostatikfälle in `tests/test_hydrostatik.py`.
 
 ### Prüfungen und Abnahme
 

@@ -276,7 +276,8 @@ def _y_intervalle_saeule_v(u_p, u_t, x0, z0):
 
 
 def kraftfunktion_berechne(koerper, lage, v=None, omega=None, rho_w=1000.0,
-                           g=G_NORM, aufloesung=0.05, pfad="voxel"):
+                           g=G_NORM, aufloesung=0.05, pfad="voxel",
+                           voxelmodell=None):
     """Kernrechnung der Kraftfunktion (Plan §3). Der Koerper wird als
     Argument uebergeben; die GEBUNDENE Signatur (F19) liefert
     baue_kraftfunktion().
@@ -290,8 +291,19 @@ def kraftfunktion_berechne(koerper, lage, v=None, omega=None, rho_w=1000.0,
     z, phi, theta = lage_pruefen(lage)
     T = pose_matrix(z, phi, theta)
 
-    blatt_welt = [(_in_welt(P, T), np.asarray(F, dtype=np.int64))
-                  for P, F in koerper.blatt_meshes]
+    if pfad == "voxel_koerperfest":
+        if voxelmodell is None:
+            from .voxelmodell import KoerperfestesVoxelmodell
+            voxelmodell = KoerperfestesVoxelmodell(
+                koerper.blatt_meshes, aufloesung)
+        V, K = voxelmodell.auswerten(z, phi)
+    elif pfad in ("exakt", "voxel"):
+        blatt_welt = [(_in_welt(P, T), np.asarray(F, dtype=np.int64))
+                      for P, F in koerper.blatt_meshes]
+    else:
+        raise AuftriebFehler(
+            "pfad muss 'voxel', 'voxel_koerperfest' oder 'exakt' sein: %r"
+            % pfad)
 
     if pfad == "exakt":
         V = 0.0
@@ -306,8 +318,6 @@ def kraftfunktion_berechne(koerper, lage, v=None, omega=None, rho_w=1000.0,
         K = K_sum / V if V > 1e-15 else np.zeros(3)
     elif pfad == "voxel":
         V, K = _voxel_koerper(blatt_welt, aufloesung)
-    else:
-        raise AuftriebFehler("pfad muss 'voxel' oder 'exakt' sein: %r" % pfad)
 
     F_A = np.array([0.0, 0.0, rho_w * g * V])
     r_S_welt = _in_welt(np.asarray(koerper.r_S, dtype=float).reshape(1, 3),
@@ -346,10 +356,17 @@ def baue_kraftfunktion(koerper, rho_w=1000.0, g=G_NORM, aufloesung=0.05,
     (lage, v, omega) -> Auftriebsergebnis. v/omega stehen in der
     Schnittstelle (F9) und werden in Phase A ignoriert (Daempfung §6)."""
 
+    voxelmodell = None
+    if pfad == "voxel_koerperfest":
+        from .voxelmodell import KoerperfestesVoxelmodell
+        voxelmodell = KoerperfestesVoxelmodell(
+            als_bindung(koerper).blatt_meshes, aufloesung)
+
     def funktion(lage, v=None, omega=None):
         return kraftfunktion_berechne(koerper, lage, v=v, omega=omega,
                                       rho_w=rho_w, g=g,
-                                      aufloesung=aufloesung, pfad=pfad)
+                                      aufloesung=aufloesung, pfad=pfad,
+                                      voxelmodell=voxelmodell)
 
     return funktion
 
