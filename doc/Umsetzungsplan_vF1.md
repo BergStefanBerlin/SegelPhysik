@@ -189,8 +189,18 @@ Toleranzen.
   endlich sind, gelten als Fehler und nicht als Erfolg.
 - Neue Laufzeitabhängigkeiten werden nur nach erfolgreichem Zielhardwaretest
   in `requirements.txt` und gegebenenfalls `requirements-dev.txt`
-  aufgenommen. Der CPU-Betrieb darf nicht von optionalen GPU-Paketen
-  abhängen.
+  aufgenommen. Optionale GPU-Abhängigkeiten gehören in eine separate
+  `requirements-gpu.txt`; der CPU-Betrieb darf nicht von ihnen abhängen.
+
+Der OpenCL-Kompatibilitätsprototyp wurde unter Windows x64 mit Python 3.14.8,
+PyOpenCL 2026.1.4 und AMD Radeon 760M (`gfx1103`, Treiber 3652.0) erfolgreich
+ausgeführt. Kernelkompilierung, Host-/Gerätetransfers und numerische Ausgabe
+wurden Ende-zu-Ende geprüft; der Treiber meldet 13.066.846.208 Byte
+OpenCL-Gerätespeicher (gemeinsam genutzter Speicher, keine Aussage über
+dedizierten Grafikspeicher). Dieser Prototyp weist nur die technische
+Kompatibilität nach; die Zuordnung der Hydrostatik und der repräsentative
+CPU/GPU-Benchmark bleiben Phase 4 vorbehalten. PyOpenCL ist daher optional
+und wird über `requirements-gpu.txt` installiert.
 
 ### Prüfungen und Abnahme
 

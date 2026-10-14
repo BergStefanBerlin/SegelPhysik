@@ -39,6 +39,19 @@ def _finde_koerper_json():
     return None
 
 
+def _gpu_praesenz_protokollieren():
+    from ..core.physik_backend import BackendNichtVerfuegbar, OpenCLBackend
+    try:
+        geraete = OpenCLBackend.gpu_namen_ermitteln()
+    except BackendNichtVerfuegbar as fehler:
+        _log("OpenCL-GPU nicht verfügbar; CPU bleibt einsatzbereit: %s" % fehler)
+        return
+    if geraete:
+        _log("OpenCL-GPU vorhanden: %s" % ", ".join(geraete))
+    else:
+        _log("Keine OpenCL-GPU vorhanden; CPU bleibt einsatzbereit.")
+
+
 def welt_laden():
     from .baum import (welt_aus_konfig, einfache_figur, Knoten,
                        sichtbarkeit_setzen, summenkoerper)
@@ -123,6 +136,8 @@ def main():
             traceback.format_exception(typ, wert, tb)))
         sys.__excepthook__(typ, wert, tb)
     sys.excepthook = _excepthook
+
+    _gpu_praesenz_protokollieren()
 
     try:
         fenster.baum_setzen(welt_laden())
