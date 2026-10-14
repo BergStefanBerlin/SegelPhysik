@@ -50,8 +50,14 @@ _STAG_ANTEIL = 0.05
 
 def _residuum(funktion, z, phi, m, g):
     erg = funktion((float(z), float(phi), 0.0))
-    return np.array([float(erg.F_A.as_array()[2]) - m * g,
-                     float(erg.M.as_array()[0])])
+    residuum = np.array([float(erg.F_A.as_array()[2]) - m * g,
+                         float(erg.M.as_array()[0])])
+    if not np.all(np.isfinite(residuum)):
+        raise SolverFehler(
+            "Kraftfunktion lieferte nicht-endliche Restkraefte oder Momente",
+            status="ungueltige_rechenergebnisse",
+            diagnose={"z": float(z), "phi": float(phi)})
+    return residuum
 
 
 def _fd_spalte(funktion, z, phi, m, g, index, schritte):
@@ -108,7 +114,7 @@ def _dmdphi(funktion, z, phi, m, g):
 
 def _newton_versuch(funktion, start, m, g, tol, max_iter, stag_anteil):
     """Ein Newton-Versuch. Rueckgabe: (lage, r, iterationen, stagnation)
-    oder None (nicht konvergiert - Aufrufer entscheidet ueber Restart)."""
+    plus Abbruchursache; der Aufrufer entscheidet ueber einen Restart."""
     z, phi = float(start[0]), float(start[1])
     r = _residuum(funktion, z, phi, m, g)
     best_n = float(np.linalg.norm(r))
@@ -116,7 +122,7 @@ def _newton_versuch(funktion, start, m, g, tol, max_iter, stag_anteil):
     schlechte = 0
     for it in range(1, int(max_iter) + 1):
         if best_n < tol:
-            return (best[0], best[1]), best[2], it, False
+            return (best[0], best[1]), best[2], it, False, "konvergiert"
         J = np.column_stack([
             _fd_spalte(funktion, z, phi, m, g, 0, _SCHRITTE_Z),
             _fd_spalte(funktion, z, phi, m, g, 1, _SCHRITTE_PHI)])
@@ -161,12 +167,27 @@ def _newton_versuch(funktion, start, m, g, tol, max_iter, stag_anteil):
             if schlechte >= _STAG_WARTEN:
                 grenze = max(tol, stag_anteil * m * g)
                 if best_n <= grenze:
-                    return (best[0], best[1]), best[2], it, True
-                return None
+                    return (best[0], best[1]), best[2], it, True, "stagnation"
+                return (best[0], best[1]), best[2], it, False, "stagnation"
     grenze = max(tol, stag_anteil * m * g)
     if best_n <= grenze:
-        return (best[0], best[1]), best[2], int(max_iter), True
-    return None
+        return (best[0], best[1]), best[2], int(max_iter), True, "stagnation"
+    return (best[0], best[1]), best[2], int(max_iter), False, "budget_erschoepft"
+
+
+def _diagnose(lage, r, iterationen, restarts, stagnation, stabil=None):
+    werte = {
+        "z": float(lage[0]),
+        "phi": float(lage[1]),
+        "restkraft": float(abs(r[0])),
+        "restmoment": float(abs(r[1])),
+        "iterationen": int(iterationen),
+        "restarts": int(restarts),
+        "stagnation": bool(stagnation),
+    }
+    if stabil is not None:
+        werte["stabil"] = bool(stabil)
+    return werte
 
 
 def loese_robust(funktion, m, g=G_NORM, start=(0.0, 0.0), tol=1e-8,
@@ -180,15 +201,13 @@ def loese_robust(funktion, m, g=G_NORM, start=(0.0, 0.0), tol=1e-8,
     while True:
         ergebnis = _newton_versuch(funktion, aktuelle, m, g, tol,
                                    max_iter, stagnation_anteil)
-        if ergebnis is not None:
-            lage, r, it, stag = ergebnis
+        lage, r, it, stag, abbruch = ergebnis
+        diagnose = _diagnose(lage, r, it, restarts, stag)
+        if abbruch == "konvergiert" or (abbruch == "stagnation" and stag):
             dM = _dmdphi(funktion, lage[0], lage[1], m, g)
             neutral = bool(abs(dM) <= 1e-9 * max(m * g, 1.0)
                            and abs(float(r[1])) <= 1e-6 * max(m * g, 1.0))
-            basis = {"z": lage[0], "phi": lage[1], "iterationen": int(it),
-                     "restarts": int(restarts), "restkraft": float(abs(r[0])),
-                     "restmoment": float(abs(r[1])),
-                     "stagnation": bool(stag), "neutral": neutral,
+            basis = {**diagnose, "neutral": neutral,
                      # rev E: dM<0 ist der direkte Stabilitaetsnachweis
                      # (restaurierendes Moment). GM-Schaetzung kann an der
                      # Voxel-Treppe leer bleiben - dann traegt dieses Flag.
@@ -209,14 +228,16 @@ def loese_robust(funktion, m, g=G_NORM, start=(0.0, 0.0), tol=1e-8,
             if restarts >= len(leiter):
                 raise SolverFehler(
                     "Stoerleiter erschoepft (%d Stufen), lage=%r"
-                    % (len(leiter), lage))
+                    % (len(leiter), lage),
+                    status="instabile_lage", diagnose=basis)
             aktuelle = (lage[0], lage[1] + math.radians(leiter[restarts]))
             restarts += 1
         else:
             if restarts >= len(leiter):
+                diagnose["restarts"] = restarts
                 raise SolverFehler(
                     "Keine Konvergenz, Stoerleiter erschoepft (%d Stufen)"
-                    % len(leiter))
+                    % len(leiter), status=abbruch, diagnose=diagnose)
             aktuelle = (aktuelle[0],
                         aktuelle[1] + math.radians(leiter[restarts]))
             restarts += 1

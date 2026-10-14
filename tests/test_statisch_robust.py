@@ -136,6 +136,54 @@ def test_t6_treppe_aus_gestoerter_lage():
     assert abs(erg["phi"]) < 0.05
 
 
+def test_t7_budgetende_enthaelt_letzte_residuen():
+    def keine_verbesserung(_lage, theta=0.0, trim=0.0):
+        return _Erg(_V3([0.0, 0.0, 0.0]), _V3([1e6, 0.0, 0.0]),
+                    _V3([0.0, 0.0, 0.0]), 0.0)
+
+    try:
+        loese_robust(keine_verbesserung, _M, 9.81, max_iter=6,
+                     stoerleiter=())
+        raise AssertionError("Erschoepftes Budget muss fehlschlagen")
+    except SolverFehler as fehler:
+        assert fehler.status == "stagnation"
+        assert fehler.diagnose["restkraft"] == _M * 9.81
+        assert fehler.diagnose["restmoment"] == 1e6
+        assert fehler.diagnose["iterationen"] == 6
+
+
+def test_t8_instabile_lage_wird_mit_diagnose_abgelehnt():
+    def instabil(lage, theta=0.0, trim=0.0):
+        erg = _glatt_kf(lage, theta, trim)
+        return _Erg(erg.F_A, _V3([-erg.M.as_array()[0], 0.0, 0.0]),
+                    erg.K, erg.V_tauch)
+
+    try:
+        loese_robust(instabil, _M, 9.81, start=(-0.25, 0.0),
+                     stoerleiter=())
+        raise AssertionError("Instabile Gleichgewichtslage muss fehlschlagen")
+    except SolverFehler as fehler:
+        assert fehler.status == "instabile_lage"
+        assert fehler.diagnose["stabil"] is False
+        assert fehler.diagnose["restkraft"] < 1e-8
+        assert fehler.diagnose["restmoment"] < 1e-8
+
+
+def test_t9_nichtendliche_kraefte_werden_klassifiziert():
+    def ungueltig(_lage, theta=0.0, trim=0.0):
+        return _Erg(_V3([0.0, 0.0, float("nan")]),
+                    _V3([float("nan"), 0.0, 0.0]),
+                    _V3([0.0, 0.0, 0.0]), 0.0)
+
+    try:
+        loese_robust(ungueltig, _M, 9.81)
+        raise AssertionError("Nicht-endliche Kraefte muessen fehlschlagen")
+    except SolverFehler as fehler:
+        assert fehler.status == "ungueltige_rechenergebnisse"
+        assert fehler.diagnose["z"] == 0.0
+        assert fehler.diagnose["phi"] == 0.0
+
+
 if __name__ == "__main__":
     fehler = 0
     tests = [(n, f) for n, f in sorted(globals().items())

@@ -7,7 +7,7 @@ import os
 import time
 
 import numpy as np
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt, QObject, QRunnable, QThreadPool, QTimer, Signal
 from PySide6.QtWidgets import (
     QButtonGroup, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QPushButton,
     QDockWidget, QTextEdit, QLabel, QCheckBox, QTreeWidget, QTreeWidgetItem,
@@ -20,6 +20,81 @@ from ..core.overlays import (LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN,
 
 
 _aktives_fenster = None
+_ECHTZEIT_MAX_SCHRITTE_PRO_AUFGABE = 4
+
+
+class _EchtzeitAufgabeSignale(QObject):
+    abgeschlossen = Signal(int, object, object, object)
+
+
+class _EchtzeitAufgabe(QRunnable):
+    def __init__(self, generation, zustand, kraftfunktion, koerper, physik,
+                 dt, anzahl_schritte, signale):
+        super().__init__()
+        self.generation = generation
+        self.zustand = zustand
+        self.kraftfunktion = kraftfunktion
+        self.koerper = koerper
+        self.physik = physik
+        self.dt = dt
+        self.anzahl_schritte = anzahl_schritte
+        self.signale = signale
+
+    def run(self):
+        from ..core.dynamik import schritt_mit_kraeften
+
+        ergebnis = None
+        try:
+            for _ in range(self.anzahl_schritte):
+                self.zustand, ergebnis = schritt_mit_kraeften(
+                    self.zustand, self.kraftfunktion, self.koerper.masse,
+                    self.koerper.traegheitstensor[0, 0], self.dt,
+                    self.physik.g_m_pro_s2,
+                    self.physik.daempfung_tauchung,
+                    self.physik.daempfung_kraengung)
+        except (ArithmeticError, KeyError, ValueError) as fehler:
+            self.signale.abgeschlossen.emit(
+                self.generation, None, None, fehler)
+            return
+        self.signale.abgeschlossen.emit(
+            self.generation, self.zustand, ergebnis, None)
+
+
+class _StatischeAufgabeSignale(QObject):
+    abgeschlossen = Signal(int, object, object, object, object)
+
+
+class _StatischeAufgabe(QRunnable):
+    def __init__(self, generation, name, koerper, ordner, rho_w, signale):
+        super().__init__()
+        self.generation = generation
+        self.name = name
+        self.koerper = koerper
+        self.ordner = ordner
+        self.rho_w = rho_w
+        self.signale = signale
+
+    def run(self):
+        from ..core.statisch import SolverFehler
+        from ..core.auftrieb import baue_kraftfunktion
+        from ..core.konfig_lader import lade_physik
+        from ..core.statisch_robust import loese_robust
+
+        try:
+            physik = lade_physik(self.ordner)
+            kraftfunktion = baue_kraftfunktion(
+                self.koerper, rho_w=self.rho_w,
+                g=physik.g_m_pro_s2,
+                aufloesung=physik.voxel_aufloesung_m)
+            ergebnis = loese_robust(
+                kraftfunktion, self.koerper.masse,
+                g=physik.g_m_pro_s2)
+        except (ImportError, OSError, ValueError, SolverFehler) as fehler:
+            self.signale.abgeschlossen.emit(
+                self.generation, self.name, None, None, fehler)
+            return
+        self.signale.abgeschlossen.emit(
+            self.generation, self.name, ergebnis, (kraftfunktion, physik), None)
 
 
 class HauptFenster(QMainWindow):
@@ -39,6 +114,15 @@ class HauptFenster(QMainWindow):
         self._echtzeit_kraftfunktion = None
         self._echtzeit_physik = None
         self._echtzeit_name = None
+        self._echtzeit_generation = 0
+        self._echtzeit_aufgabe_laeuft = False
+        self._echtzeit_signale = _EchtzeitAufgabeSignale()
+        self._echtzeit_signale.abgeschlossen.connect(
+            self._echtzeit_aufgabe_abgeschlossen)
+        self._statisch_generation = 0
+        self._statisch_signale = _StatischeAufgabeSignale()
+        self._statisch_signale.abgeschlossen.connect(
+            self._statische_aufgabe_abgeschlossen)
         self._statische_ergebnisse = {}
 
     def _baue_menues(self):
@@ -154,8 +238,10 @@ class HauptFenster(QMainWindow):
         status = QTreeWidget()
         status.setHeaderLabels(["Eigenschaft", "Wert"])
         self._solver_werte = {}
-        for schluessel, wert in (("z*", "-"), ("phi*", "-"), ("GM", "-"),
-                                 ("Iterationen", "-"), ("Lösungstyp", "-")):
+        for schluessel, wert in (
+                ("z*", "-"), ("phi*", "-"), ("GM", "-"),
+                ("Restkraft", "-"), ("Restmoment", "-"),
+                ("Iterationen", "-"), ("Lösungstyp", "-")):
             self._solver_werte[schluessel] = QTreeWidgetItem(
                 status, [schluessel, wert])
         status.setRootIsDecorated(False)
@@ -413,6 +499,7 @@ class HauptFenster(QMainWindow):
             korrekturen += 1
 
     def _laufzeit_objekte_aktualisieren(self, grund="auswahl"):
+        self._statisch_generation += 1
         bruecke = getattr(self, "_bruecke", None)
         welt = self.baum._welt
         konfiguration = getattr(welt, "konfiguration", None)
@@ -473,10 +560,12 @@ class HauptFenster(QMainWindow):
         statisch = self._btn_statisch.isChecked()
         self._steuerzeile_umschalten(statisch)
         if statisch:
+            self._statisch_generation += 1
             self._zeit_pausieren()
             self._echtzeit_name = None
             self._statische_simulation_ausfuehren()
         else:
+            self._statisch_generation += 1
             bruecke = getattr(self, "_bruecke", None)
             if bruecke is not None:
                 for name in self._laufzeit_koerper:
@@ -484,6 +573,8 @@ class HauptFenster(QMainWindow):
             self._echtzeit_starten()
 
     def _statische_simulation_ausfuehren(self):
+        self._statisch_generation += 1
+        generation = self._statisch_generation
         welt = self.baum._welt
         konfiguration = getattr(welt, "konfiguration", None)
         if konfiguration is None:
@@ -500,48 +591,86 @@ class HauptFenster(QMainWindow):
         if koerper is None or bruecke is None:
             return
 
-        from ..core.auftrieb import baue_kraftfunktion
-        from ..core.konfig_lader import lade_physik
-        from ..core.statisch_robust import SolverFehler, loese_robust
-        try:
-            physik = lade_physik(konfiguration.ordner)
-            kraftfunktion = baue_kraftfunktion(
-                koerper, rho_w=konfiguration.wasser_dichte(),
-                g=physik.g_m_pro_s2,
-                aufloesung=physik.voxel_aufloesung_m)
-            ergebnis = loese_robust(
-                kraftfunktion, koerper.masse, g=physik.g_m_pro_s2)
-        except (ImportError, OSError, ValueError, SolverFehler) as fehler:
-            bruecke.statische_pose_loeschen(hauptkoerper.name)
-            self._statische_ergebnisse.pop(hauptkoerper.name, None)
-            self._solver_status_aktualisieren(
-                {"Lösungstyp": "Fehler: %s" % fehler})
+        self._solver_status_aktualisieren(
+            {"Lösungstyp": "Statische Berechnung läuft"})
+        aufgabe = _StatischeAufgabe(
+            generation, hauptkoerper.name, koerper,
+            konfiguration.ordner, konfiguration.wasser_dichte(),
+            self._statisch_signale)
+        QThreadPool.globalInstance().start(aufgabe)
+
+    def _statische_aufgabe_abgeschlossen(
+            self, generation, name, ergebnis, arbeitsdaten, fehler):
+        if (generation != self._statisch_generation
+                or not self._btn_statisch.isChecked()):
+            return
+        bruecke = getattr(self, "_bruecke", None)
+        koerper = self._laufzeit_koerper.get(name)
+        if bruecke is None or koerper is None:
+            return
+        if fehler is not None:
+            from ..core.statisch import SolverFehler
+
+            bruecke.statische_pose_loeschen(name)
+            self._statische_ergebnisse.pop(name, None)
+            status = "Fehler: %s" % fehler
+            werte = {
+                "z*": "-", "phi*": "-", "GM": "-",
+                "Restkraft": "-", "Restmoment": "-",
+                "Lösungstyp": status,
+            }
+            if isinstance(fehler, SolverFehler):
+                diagnose = fehler.diagnose
+                statusnamen = {
+                    "instabile_lage": "Instabile Lage",
+                    "stagnation": "Stagnation",
+                    "budget_erschoepft": "Budget erschöpft",
+                    "ungueltige_rechenergebnisse":
+                        "Ungültige Rechenergebnisse",
+                }
+                werte["Lösungstyp"] = "%s: %s" % (
+                    statusnamen.get(fehler.status, fehler.status), fehler)
+                if "restkraft" in diagnose:
+                    werte["Restkraft"] = "%.3g N" % diagnose["restkraft"]
+                if "restmoment" in diagnose:
+                    werte["Restmoment"] = "%.3g N·m" % diagnose["restmoment"]
+                if "z" in diagnose:
+                    werte["z*"] = "%.4f m" % diagnose["z"]
+                if "phi" in diagnose:
+                    werte["phi*"] = "%.2f°" % math.degrees(diagnose["phi"])
+            self._solver_status_aktualisieren(werte)
             self.protokoll_schreiben(
-                "Statischer Solver (%s): %s" % (hauptkoerper.name, fehler))
+                "Statischer Solver (%s): %s" % (name, fehler))
             return
 
+        kraftfunktion, physik = arbeitsdaten
         self._kraftbild_daten_setzen(
-            bruecke, hauptkoerper.name, koerper, kraftfunktion, physik,
+            bruecke, name, koerper, kraftfunktion, physik,
             ergebnis["z"], ergebnis["phi"])
         if not bruecke.statische_pose_setzen(
-                hauptkoerper.name, ergebnis["z"], ergebnis["phi"]):
+                name, ergebnis["z"], ergebnis["phi"]):
             self._solver_status_aktualisieren(
                 {"Lösungstyp": "Körper in 3D-Ansicht fehlt"})
             return
-        self._statische_ergebnisse[hauptkoerper.name] = ergebnis
+        self._statische_ergebnisse[name] = ergebnis
         gm = ergebnis["gm"]
         self._solver_status_aktualisieren({
             "z*": "%.4f m" % ergebnis["z"],
             "phi*": "%.2f°" % math.degrees(ergebnis["phi"]),
             "GM": "-" if gm is None else "%.4f m" % gm,
+            "Restkraft": "%.3g N" % ergebnis["restkraft"],
+            "Restmoment": "%.3g N·m" % ergebnis["restmoment"],
             "Iterationen": str(ergebnis["iterationen"]),
-            "Lösungstyp": ("neutral" if ergebnis.get("neutral")
-                           else "stabil"),
+            "Lösungstyp": (
+                "neutral" if ergebnis.get("neutral")
+                else "stabil (Stagnation)" if ergebnis.get("stagnation")
+                else "stabil"),
         })
 
     def _echtzeit_starten(self, zustand=None, auto_start=True):
         if self._echtzeit_timer.isActive():
             self._echtzeit_timer.stop()
+        self._echtzeit_generation += 1
         self._echtzeit_letzte_wandzeit = None
         self._echtzeit_akkumulator = 0.0
         welt = self.baum._welt
@@ -603,12 +732,14 @@ class HauptFenster(QMainWindow):
             self._zeit_fortsetzen()
 
     def _zeit_pausieren(self):
-        if not self._echtzeit_timer.isActive():
-            return
-        self._echtzeit_timer.stop()
+        war_laufend = self._echtzeit_timer.isActive()
+        self._echtzeit_generation += 1
+        if war_laufend:
+            self._echtzeit_timer.stop()
         self._echtzeit_letzte_wandzeit = None
         self._echtzeit_akkumulator = 0.0
-        self._solver_status_aktualisieren({"Lösungstyp": "Pausiert"})
+        if war_laufend:
+            self._solver_status_aktualisieren({"Lösungstyp": "Pausiert"})
 
     def _zeit_fortsetzen(self):
         if (not self._btn_echtzeit.isChecked()
@@ -629,21 +760,43 @@ class HauptFenster(QMainWindow):
         self._echtzeit_akkumulator += max(
             0.0, jetzt - self._echtzeit_letzte_wandzeit)
         self._echtzeit_letzte_wandzeit = jetzt
-        from ..core.dynamik import schritt_mit_kraeften
         dt = self._echtzeit_physik.dt_s
-        letztes_kraefteresultat = None
-        try:
-            while self._echtzeit_akkumulator >= dt:
-                koerper = self._laufzeit_koerper[self._echtzeit_name]
-                (self._echtzeit_zustand,
-                 letztes_kraefteresultat) = schritt_mit_kraeften(
-                    self._echtzeit_zustand, self._echtzeit_kraftfunktion,
-                    koerper.masse, koerper.traegheitstensor[0, 0], dt,
-                    self._echtzeit_physik.g_m_pro_s2,
-                    self._echtzeit_physik.daempfung_tauchung,
-                    self._echtzeit_physik.daempfung_kraengung)
-                self._echtzeit_akkumulator -= dt
-        except (ArithmeticError, KeyError, ValueError) as fehler:
+        if not math.isfinite(dt) or dt <= 0.0:
+            self._zeit_pausieren()
+            self._solver_status_aktualisieren(
+                {"Lösungstyp": "Fehler: ungültiger Physik-Zeitschritt"})
+            self.protokoll_schreiben(
+                "Echtzeit-Simulation (%s): ungültiger Physik-Zeitschritt"
+                % self._echtzeit_name)
+            return
+        if self._echtzeit_aufgabe_laeuft:
+            return
+        anzahl_schritte = min(
+            int((self._echtzeit_akkumulator + 1e-12) / dt),
+            _ECHTZEIT_MAX_SCHRITTE_PRO_AUFGABE)
+        if anzahl_schritte == 0:
+            return
+        self._echtzeit_akkumulator -= anzahl_schritte * dt
+        koerper = self._laufzeit_koerper.get(self._echtzeit_name)
+        if koerper is None:
+            self._zeit_pausieren()
+            self._solver_status_aktualisieren(
+                {"Lösungstyp": "Fehler: Laufzeitkörper fehlt"})
+            return
+        aufgabe = _EchtzeitAufgabe(
+            self._echtzeit_generation, self._echtzeit_zustand,
+            self._echtzeit_kraftfunktion, koerper, self._echtzeit_physik,
+            dt, anzahl_schritte, self._echtzeit_signale)
+        self._echtzeit_aufgabe_laeuft = True
+        QThreadPool.globalInstance().start(aufgabe)
+
+    def _echtzeit_aufgabe_abgeschlossen(
+            self, generation, zustand, kraefteresultat, fehler):
+        self._echtzeit_aufgabe_laeuft = False
+        if (generation != self._echtzeit_generation
+                or not self._btn_echtzeit.isChecked()):
+            return
+        if fehler is not None:
             self._zeit_pausieren()
             self._solver_status_aktualisieren(
                 {"Lösungstyp": "Fehler: %s" % fehler})
@@ -651,18 +804,21 @@ class HauptFenster(QMainWindow):
                 "Echtzeit-Simulation (%s): %s"
                 % (self._echtzeit_name, fehler))
             return
+        self._echtzeit_zustand = zustand
         bruecke = getattr(self, "_bruecke", None)
         if bruecke is not None:
-            pose = self._echtzeit_zustand
+            pose = zustand
             if (bruecke.layer_ist_an(LAYER_KRAEFTE)
-                    or bruecke.layer_ist_an(LAYER_MOMENTE)) \
-                    and letztes_kraefteresultat is not None:
-                koerper = self._laufzeit_koerper[self._echtzeit_name]
+                    or bruecke.layer_ist_an(LAYER_MOMENTE)):
+                koerper = self._laufzeit_koerper.get(self._echtzeit_name)
+            else:
+                koerper = None
+            if koerper is not None and kraefteresultat is not None:
                 self._kraftbild_daten_setzen(
                     bruecke, self._echtzeit_name, koerper,
                     self._echtzeit_kraftfunktion, self._echtzeit_physik,
                     pose.z, pose.phi, pose.v_z, pose.omega_x,
-                    ergebnis=letztes_kraefteresultat)
+                    ergebnis=kraefteresultat)
             if not bruecke.physik_pose_setzen(
                     self._echtzeit_name, pose.z, pose.phi):
                 self._zeit_pausieren()

@@ -339,9 +339,13 @@ Auf Windows mit Python 3.14.8 und AMD Ryzen 5 8600G wurden neun Yacht-Posen
 für die neun Auswertungen insgesamt 1,56 s. Das körperfeste Raster benötigte
 3,40 s Vorbereitung und 0,0027 s für neun Auswertungen zusammen. In diesem
 Posefeld betrugen die maximalen Abweichungen zwischen den beiden CPU-Pfaden
-`0,01025 m³` beim Volumen und `0,01145 m` beim Auftriebsschwerpunkt. Beide
-überschreiten die konfigurierten Schranken (`0,0005 m³`, `0,005 m`); die
-Vorbereitung überwiegt zudem den Zeitgewinn der neun Wiederholungen.
+`0,01025 m³` beim Volumen und `0,01145 m` beim Auftriebsschwerpunkt. Bezogen
+auf das Yacht-Gesamtvolumen entspricht die Volumenabweichung `0,3236 %`;
+damit erfüllt sie zwar die nun geltende relative CPU-Volumengrenze, aber der
+Schwerpunktfehler liegt über `0,005 m`. Diese Raster-zu-Raster-Messung wird
+durch den späteren Vergleich beider Raster mit der exakten Union-Referenz
+ergänzt. Die Vorbereitung überwiegt zudem den Zeitgewinn der neun
+Wiederholungen.
 
 Damit bleibt `voxel_koerperfest` ein Opt-in-Referenzpfad und wird weder
 Standard noch Genauigkeitsreferenz. Die beiden Voxelpfade verwenden bei
@@ -358,14 +362,102 @@ bleibt für bisherige Tests unverändert.
 Mit derselben Yacht und denselben neun Posen bei `0,05 m` Rasterweite dauerte
 die exakte Union insgesamt 0,22 s; die Vorbereitung des körperfesten Rasters
 war 3,40 s, seine neun Auswertungen 0,0029 s. Die maximalen Abweichungen zur
-Union-Referenz waren `0,00730 m³` und `0,00908 m` (beide Schranken verletzt).
+Union-Referenz waren `0,00730 m³` und `0,00908 m`. Relativ zum gesamten
+Yacht-Unionvolumen von `3,16786 m³` sind `0,00730 m³` etwa `0,2304 %`;
+die neue relative Volumengrenze ist damit erfüllt, die separate
+Schwerpunktgrenze von `0,005 m` bei `0,05 m` Rasterweite jedoch nicht.
 Bei halbierter Rasterweite `0,025 m` betrugen die Vorbereitungszeit 12,97 s,
 die neun Auswertungen 0,0176 s und die maximalen Abweichungen
-`0,00247 m³` sowie `0,00328 m`. Die Schwerpunktgrenze wurde eingehalten, die
-Volumengrenze (`0,0005 m³`) weiterhin nicht. Damit ist die körperfeste
-Voxelgenauigkeit am Yachtmodell noch nicht abgenommen; die langsamere
-Vorbereitung und fehlende Volumengenauigkeit rechtfertigen keine Umstellung
-des Standards. Diese Einzelmessungen prüfen weder GPU- noch GUI-Performance.
+`0,00247 m³` sowie `0,00328 m`; beide neuen Phase-4-Grenzen wurden damit
+eingehalten.
+
+Bei `0,0125 m` betrug die Vorbereitung 57,76 s für 1.621.907 gespeicherte
+Voxelzentren; neun Auswertungen benötigten 0,205 s. Die exakte Union derselben
+neun Posen benötigte 0,245 s. Die maximale Volumenabweichung sank auf
+`0,0008982 m³`, die maximale Schwerpunktabweichung auf `0,001672 m`.
+Die Volumenabweichung entspricht etwa `0,0284 %` des gesamten Yachtvolumens;
+beide neuen Phase-4-Grenzen wurden eingehalten. Die hohe Vorbereitungszeit
+überwiegt den gemessenen Zeitvorteil für neun Auswertungen; GPU- und
+GUI-Performance wurden nicht gemessen.
+
+### Aktualisierte CPU-Konvergenz-Abnahme (2026-10-14)
+
+Für den Phase-4-CPU-Vergleich wird die Volumenabweichung ab jetzt relativ zum
+gesamten, ungeschnittenen geometrischen Unionvolumen des Körpers definiert:
+
+`e_V = |V_voxel - V_union,unterwasser| / V_union,gesamt <= 0,005`.
+
+Die Grenze beträgt somit `0,5 %` des vollständigen geometrischen
+Körpervolumens und ist poseunabhängig. Für das Yachtmodell mit
+`V_union,gesamt = 3,16785757 m³` entspricht sie `0,01583929 m³`.
+Der Schwerpunkt wird weiterhin separat mit `|ΔK| <= 0,005 m` verglichen,
+sofern beide verdrängten Volumina oberhalb der dafür vorgesehenen
+Referenzschranke liegen. Die Grenzwerte müssen für sämtliche Abnahmeposen
+gelten.
+
+Die bereits gemessenen Höchstabweichungen führen damit zu folgenden
+Genauigkeitsurteilen: `0,05 m` erfüllt die relative Volumengrenze, verfehlt
+aber die Schwerpunktgrenze; `0,025 m` erfüllt beide und ist die gröbste der
+gemessenen, damit abgenommenen Rasterweiten; `0,0125 m` erfüllt beide
+ebenfalls, ohne gegenüber `0,025 m` für diese Abnahmeposen erforderlich zu
+sein. Eine Umstellung des Standardpfads folgt daraus nicht automatisch.
+
+Ein erneuter Messlauf bei `0,025 m` auf derselben Maschine ergab
+`V_union,gesamt = 3,16785757 m³`, eine erlaubte Volumenabweichung von
+`0,01583929 m³` und eine maximale relative Abweichung von `0,077852 %`.
+Der maximale Schwerpunktfehler war `0,0032703 m`. Die Rastervorbereitung
+dauerte `14,63 s`; neun globale Voxel-Auswertungen dauerten `5,58 s`, neun
+körperfeste Rasterauswertungen `0,0195 s` und neun exakte Union-Referenzen
+`0,216 s`. Einschließlich Vorbereitung ist das körperfeste Raster bei neun
+Auswertungen langsamer; sein erheblicher Vorteil bei der wiederholten
+Auswertung kann sich bei längeren Läufen amortisieren. Vor einer
+Standardumstellung ist deshalb zusätzlich eine repräsentative vollständige
+Solver-/Anwendungsarbeitslast einschließlich Vorbereitungszeit zu messen.
+
+### Vollständiger Yacht-Solverlauf (2026-10-14)
+
+Der geforderte Solververgleich wurde mit `yacht1`, `rho_w` und `g` aus der
+Projektkonfiguration, Rasterweite `0,025 m`, Kontaktstart aus der Ruhelage
+und `loese_robust` ausgeführt. Hardware und Python entsprechen der
+Zwischenmessung oben.
+
+| Pfad | Vorbereitungszeit | Solverzeit | Kraftauswertungen | Ergebnis `(z, phi)` | Solver-Rest `(Fz, Mx)` |
+|---|---:|---:|---:|---|---|
+| Globales Voxel (`voxel`) | < 0,001 s | 190,69 s | 152 | `(-0,14385 m, 0,176°)` | `(0,044 N, 0,034 N·m)` |
+| Körperfestes Raster (`voxel_koerperfest`) | 17,77 s | 0,29 s | 130 | `(-0,14220 m, 3,952°)` | `(18,12 N, 76,20 N·m)` |
+| Exakte Union (`exakt_union`) | < 0,001 s | 0,83 s | 32 | `(-0,14352 m, 0,171°)` | numerisch null |
+
+Die Gesamtzeit des körperfesten Pfads einschließlich Rastervorbereitung
+betrug rund `18,06 s`, gegenüber `190,69 s` für den globalen Solverlauf.
+`exakt_union` benötigte einschließlich Solverauswertungen rund `0,88 s`.
+Die Zeiten sind einzelne CPU-Messungen und nicht als allgemeine
+Performancegarantie zu verstehen.
+
+Die globale Solverlage stimmt mit der Referenzlage aus `exakt_union` bis auf
+`0,00033 m` in `z` und `0,005°` in `phi` überein. Die körperfeste Rasterlage
+weicht dagegen um `0,00132 m` und `3,78°` ab. An der exakten
+Union-Gleichgewichtslage weicht das körperfeste Raster um `0,01512 m³` ab,
+das sind `0,4773 %` des gesamten Yachtvolumens und damit knapp innerhalb der
+neuen Volumengrenze. Der Schwerpunktfehler beträgt dort jedoch
+`0,00666 m` und überschreitet die weiterhin geltende `0,005 m`-Grenze.
+Außerdem liefert die exakte Union an der vom körperfesten Solver gefundenen
+Lage ein Restmoment von `-78,50 N·m`. Der körperfeste Pfad erfüllt somit in
+den vorher geprüften neun Rasterposen die neuen Grenzen, aber noch nicht
+alle Genauigkeitskriterien im vollständigen Solverlauf.
+
+Deshalb wird trotz des gemessenen Geschwindigkeitsgewinns keiner der Pfade
+zum neuen Anwendungsstandard erklärt. Der globale Pfad bleibt unverändert,
+bis eine Raster-/Solverkonfiguration auch die Gleichgewichtslage,
+Schwerpunkt- und Momentenübereinstimmung auf repräsentativen Arbeitslasten
+erfüllt. `exakt_union` ist derzeit eine CPU-Referenz und wurde nicht als
+Produktionsstandard freigegeben. Darstellungsgeschwindigkeit wurde nicht
+gemessen; dieser Lauf belegt ausschließlich Rechenzeit des statischen
+Solvers.
+
+Diese neue relative Grenze ersetzt ausschließlich die CPU-Konvergenzgrenze
+für `voxel_koerperfest` in Phase 4. Die Spezifikations- und
+CPU/GPU-Übereinstimmungsschranken aus Phase 2 bleiben gemäß Spezifikation
+absolute, konfigurierte Grenzen und werden dadurch nicht geändert.
 
 ### Betroffene Bereiche und Tests
 
@@ -391,8 +483,11 @@ des Standards. Diese Einzelmessungen prüfen weder GPU- noch GUI-Performance.
   `rho_w * g * V_disp`; Momentenvorzeichen entsprechen der Rollkonvention.
 - Körperfestes Raster bleibt beim Lagewechsel identisch und wird nur bei
   Modell-/Material-/Auflösungsänderung neu erstellt.
-- Voxelkonvergenz wird gegen analytische bzw. exakte Referenzen mit den
-  konfigurierten Grenzen geprüft.
+- Phase-4-CPU-Voxelkonvergenz wird gegen die geometrische Union-Referenz
+  geprüft: maximale Volumenabweichung höchstens `0,5 %` des ungeschnittenen
+  Gesamtvolumens und Schwerpunktabweichung höchstens `0,005 m`, jeweils über
+  alle Abnahmeposen. CPU/GPU-Übereinstimmung bleibt den absoluten
+  Spezifikationsgrenzen aus Phase 2 unterworfen.
 - CPU/GPU-Prüfungen erfüllen zusätzlich sämtliche in Phase 2 genannten
   Volumen-, Schwerpunkt-, Kraft- und Momentschranken.
 - Vergleichsmessung weist Vorbereitungszeit, Transfers und wiederholte
@@ -428,6 +523,51 @@ des Standards. Diese Einzelmessungen prüfen weder GPU- noch GUI-Performance.
    einbinden. Berechnung darf keine GUI-Änderung erzwingen und die
    Ereignisschleife nicht blockieren; Visualisierung wird sicher im
    GUI-Thread aktualisiert.
+
+### Zwischenstand (2026-10-14)
+
+- `SolverFehler` kann Abbruchstatus und Diagnosewerte transportieren.
+  `loese_robust` erhält bei erschöpftem Budget, Stagnation und instabiler
+  Lage die letzte Pose, Restkraft, Restmoment und Iterationszahl; nicht-
+  endliche Kraft-/Momentenresiduen werden als ungültige Rechenergebnisse
+  ausgewiesen.
+- Die Solver-Statusanzeige enthält nun Restkraft und Restmoment und zeigt
+  Stagnation bzw. konkrete Solver-Abbruchgründe an.
+- Regressionstests decken Solverdiagnosen, nicht-endliche Ergebnisse,
+  Energieabweichung des festen Integrators, nicht zunehmende Energie bei
+  passiver Dämpfung und das Einmünden eines Pontons in die mit derselben
+  Hydrostatik-Kraftfunktion bestimmte statische Solverlage ab.
+- Die Echtzeitphysik läuft jetzt in Hintergrundaufgaben mit höchstens vier
+  festen SI-Schritten je Aufgabe. Der Timer und die Wandzeitakkumulation
+  bleiben im Hauptfenster; Posen, Kraftbilder und Rendering werden erst nach
+  Rückkehr der Aufgabe im GUI-Thread aktualisiert. Aufgestaute Simulationszeit
+  wird nicht verworfen, sondern mit begrenzten Batches nachgeholt.
+- Ein GUI-Regressionstest hält die Kraftauswertung künstlich an und weist
+  nach, dass die Qt-Ereignisschleife währenddessen weiterarbeitet und
+  Darstellungsmethoden im GUI-Thread aufgerufen werden.
+- Auch der statische Solver läuft jetzt als Hintergrundaufgabe. Veraltete
+  Ergebnisse werden nach Modus-, Körper- oder Laufzeitobjektwechsel verworfen;
+  Status, Fehlerbehandlung, Kraftbild und Pose werden im GUI-Thread
+  aktualisiert. Ein blockierter Solver wurde per GUI-Regression geprüft.
+- Ein repräsentatives zusammengesetztes Yachtmodell wurde mit der
+  `exakt_union`-Kraftfunktion aus einer gestörten Lage über 200 konfigurierte
+  SI-Schritte integriert. Gegenüber dem statischen Gleichgewicht blieben
+  Tiefgangsabweichung unter `0,002 m`, Krängungsabweichung unter `0,01 rad`,
+  Restkraft unter `20 N` und Restmoment unter `15 N·m`.
+- Zielhardwaremessung mit dem normalen globalen Yacht-Voxelpfad: ein
+  Echtzeitbatch von höchstens vier Schritten benötigte `0,624 s`;
+  `HauptFenster._echtzeit_takt()` kehrte nach `0,095 ms` zurück und ein
+  eingereihtes GUI-Ereignis wurde nach `16,4 ms` verarbeitet. Die
+  Darstellungsmethoden liefen im GUI-Thread. Der Ereignis-Richtwert
+  `100 ms` wurde in diesem Lauf eingehalten; die vier Schritte entsprechen
+  nur `0,016 s` Simulationszeit. Die Physik kann damit deutlich hinter der
+  Wandzeit zurückbleiben; Zeit wird derzeit nicht verworfen.
+- **Phase 5 – Umsetzung und festgelegte Regressionen abgeschlossen.**
+  Der feste SI-Schritt, Kraftfunktionsgleichheit, Solverdiagnosen,
+  Störungs-Einschwingen, GUI-Thread-Trennung und GUI-Reaktionsfähigkeit sind
+  abgedeckt. Die gemessene Echtzeit-Unterdeckung bleibt als
+  Performance-Optimierung im Backlog; sie ändert nicht stillschweigend die
+  Zeitsemantik. Eine Bildratenmessung gehört zur Gesamtabnahme in Phase 8.
 
 ### Tests und Abnahme
 

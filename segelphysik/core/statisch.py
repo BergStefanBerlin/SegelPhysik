@@ -22,6 +22,11 @@ from .auftrieb import G_NORM
 class SolverFehler(RuntimeError):
     """Solver konnte keine stabile Gleichgewichtslage finden."""
 
+    def __init__(self, nachricht, *, status="fehler", diagnose=None):
+        super().__init__(nachricht)
+        self.status = status
+        self.diagnose = dict(diagnose or {})
+
 
 STOERLEITER_GRAD = (5.0, 15.0, 30.0, 44.0)
 

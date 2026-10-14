@@ -7,9 +7,12 @@ import pytest
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QTimer
 
 from segelphysik.core.konfig_lader import lade_konfig
-from segelphysik.gui.baum import finde, sichtbarkeit_setzen, welt_aus_konfig
+from segelphysik.gui.baum import (
+    aktive_blaetter, finde, sichtbarkeit_setzen, welt_aus_konfig,
+)
 from segelphysik.gui.baum_widget import BaumWidget
 from segelphysik.gui.hauptfenster import HauptFenster
 
@@ -28,7 +31,7 @@ def _konfig_kopie(tmp_path):
 
 
 def test_gui_aenderungen_bleiben_sitzungsgebunden(tmp_path):
-    _qt_app()
+    app = _qt_app()
     konfig = _konfig_kopie(tmp_path)
     dateien = ("materialien.json", "koerper.json")
     vorher = {name: (tmp_path / name).read_bytes() for name in dateien}
@@ -216,8 +219,9 @@ def test_abgebrochene_geometriekorrektur_stoppt_physiklauf(
 def test_statisch_modus_ruft_solver_auf_und_zeigt_ergebnis(
         monkeypatch, tmp_path):
     import math
+    import time
 
-    _qt_app()
+    app = _qt_app()
     konfig = _konfig_kopie(tmp_path)
     welt = welt_aus_konfig(konfig)
     sichtbarkeit_setzen(welt, "yacht1")
@@ -260,12 +264,22 @@ def test_statisch_modus_ruft_solver_auf_und_zeigt_ergebnis(
         "segelphysik.core.statisch_robust.loese_robust",
         lambda kraft, masse, g: solveraufrufe.append((kraft, masse, g)) or {
             "z": 0.12, "phi": math.radians(5.0), "gm": 0.42,
-            "iterationen": 7, "neutral": False,
+            "iterationen": 7, "neutral": False, "stagnation": False,
+            "restkraft": 0.0, "restmoment": 0.0,
         })
 
     fenster._btn_echtzeit.click()
     fenster._btn_statisch.click()
+    ende = time.monotonic() + 2.0
+    while not solveraufrufe and time.monotonic() < ende:
+        app.processEvents()
+        time.sleep(0.005)
+    while fenster._solver_werte["Lösungstyp"].text(1) == \
+            "Statische Berechnung läuft" and time.monotonic() < ende:
+        app.processEvents()
+        time.sleep(0.005)
 
+    assert solveraufrufe
     assert len(kraftaufrufe) == 2
     assert kraftaufrufe[0][0] is koerper
     assert kraftaufrufe[0][1]["rho_w"] == konfig.wasser_dichte()
@@ -277,6 +291,8 @@ def test_statisch_modus_ruft_solver_auf_und_zeigt_ergebnis(
     assert fenster._solver_werte["z*"].text(1) == "0.1200 m"
     assert fenster._solver_werte["phi*"].text(1) == "5.00°"
     assert fenster._solver_werte["GM"].text(1) == "0.4200 m"
+    assert fenster._solver_werte["Restkraft"].text(1) == "0 N"
+    assert fenster._solver_werte["Restmoment"].text(1) == "0 N·m"
     assert fenster._solver_werte["Iterationen"].text(1) == "7"
     assert fenster._solver_werte["Lösungstyp"].text(1) == "stabil"
     fenster.close()
@@ -284,9 +300,10 @@ def test_statisch_modus_ruft_solver_auf_und_zeigt_ergebnis(
 
 def test_echtzeit_gui_integriert_feste_physikschritte(monkeypatch, tmp_path):
     import numpy as np
+    import threading
     import time
 
-    _qt_app()
+    app = _qt_app()
     welt = welt_aus_konfig(_konfig_kopie(tmp_path))
     sichtbarkeit_setzen(welt, "yacht1")
     fenster = HauptFenster()
@@ -299,11 +316,15 @@ def test_echtzeit_gui_integriert_feste_physikschritte(monkeypatch, tmp_path):
         def __init__(self):
             self.poses = []
             self.renders = 0
+            self.gui_thread = threading.get_ident()
+            self.pose_thread = None
+            self.render_thread = None
 
         def statische_pose_loeschen(self, name):
             pass
 
         def physik_pose_setzen(self, name, z, phi):
+            self.pose_thread = threading.get_ident()
             self.poses.append((name, z, phi))
             return True
 
@@ -311,6 +332,7 @@ def test_echtzeit_gui_integriert_feste_physikschritte(monkeypatch, tmp_path):
             return False
 
         def render(self):
+            self.render_thread = threading.get_ident()
             self.renders += 1
 
     bruecke = Bruecke()
@@ -327,14 +349,309 @@ def test_echtzeit_gui_integriert_feste_physikschritte(monkeypatch, tmp_path):
     fenster._btn_echtzeit.click()
 
     fenster._echtzeit_letzte_wandzeit = 10.0
+    fenster._echtzeit_timer.stop()
     monkeypatch.setattr(time, "perf_counter", lambda: 10.006)
     fenster._echtzeit_takt()
+    ende = time.monotonic() + 2.0
+    while fenster._echtzeit_aufgabe_laeuft and time.monotonic() < ende:
+        app.processEvents()
+        time.sleep(0.005)
 
-    assert fenster._echtzeit_zustand.v_z == pytest.approx(-9.81 * 0.004)
+    assert not fenster._echtzeit_aufgabe_laeuft
+    assert fenster._echtzeit_zustand.v_z == pytest.approx(-9.81 * 0.004), (
+        fenster._echtzeit_aufgabe_laeuft,
+        fenster._echtzeit_generation,
+        fenster._solver_werte["Lösungstyp"].text(1),
+        fenster.protokoll.toPlainText())
     assert fenster._echtzeit_zustand.z == pytest.approx(-9.81 * 0.004 ** 2)
     assert bruecke.poses[-1][0] == "yacht1"
     assert bruecke.poses[-1][1:] == pytest.approx(
         (-9.81 * 0.004 ** 2, 0.0))
     assert bruecke.renders == 1
+    assert bruecke.pose_thread == bruecke.gui_thread
+    assert bruecke.render_thread == bruecke.gui_thread
+    assert fenster._echtzeit_akkumulator == pytest.approx(0.002)
+    fenster._zeit_pausieren()
+    fenster.close()
+
+
+def test_echtzeit_physik_blockiert_gui_nicht_und_verwirft_pause_ergebnis(
+        monkeypatch, tmp_path):
+    import threading
+    import time
+
+    import numpy as np
+
+    app = _qt_app()
+    welt = welt_aus_konfig(_konfig_kopie(tmp_path))
+    sichtbarkeit_setzen(welt, "yacht1")
+    fenster = HauptFenster()
+    fenster.baum_setzen(welt)
+    fenster._laufzeit_koerper["yacht1"] = SimpleNamespace(
+        masse=2.0, traegheitstensor=np.diag([3.0, 1.0, 1.0]))
+
+    class Bruecke:
+        def __init__(self):
+            self.gui_thread = threading.get_ident()
+            self.pose_thread = None
+            self.render_thread = None
+
+        def statische_pose_loeschen(self, _name):
+            pass
+
+        def physik_pose_setzen(self, _name, _z, _phi):
+            self.pose_thread = threading.get_ident()
+            return True
+
+        def layer_ist_an(self, _layer):
+            return False
+
+        def render(self):
+            self.render_thread = threading.get_ident()
+
+    bruecke = Bruecke()
+    fenster._bruecke = bruecke
+    physik = SimpleNamespace(
+        dt_s=0.004, g_m_pro_s2=9.81, daempfung_tauchung=0.0,
+        daempfung_kraengung=0.0, voxel_aufloesung_m=0.05)
+    gestartet = threading.Event()
+    freigeben = threading.Event()
+    monkeypatch.setattr(
+        "segelphysik.core.konfig_lader.lade_physik", lambda _ordner: physik)
+
+    def langsame_kraftfunktion(*_args, **_kwargs):
+        gestartet.set()
+        freigeben.wait(timeout=2.0)
+        return SimpleNamespace(F_A=SimpleNamespace(z=0.0),
+                               M=SimpleNamespace(x=0.0))
+
+    monkeypatch.setattr(
+        "segelphysik.core.auftrieb.baue_kraftfunktion",
+        lambda *_args, **_kwargs: langsame_kraftfunktion)
+    fenster._btn_echtzeit.click()
+    fenster._echtzeit_timer.stop()
+    bruecke.pose_thread = None
+    bruecke.render_thread = None
+    fenster._echtzeit_letzte_wandzeit = 10.0
+    monkeypatch.setattr(time, "perf_counter", lambda: 10.006)
+    fenster._echtzeit_takt()
+    assert gestartet.wait(timeout=1.0)
+
+    gui_ereignis = threading.Event()
+    QTimer.singleShot(0, gui_ereignis.set)
+    ende = time.monotonic() + 0.1
+    while not gui_ereignis.is_set() and time.monotonic() < ende:
+        app.processEvents()
+        time.sleep(0.005)
+    assert gui_ereignis.is_set()
+
+    fenster._zeit_pausieren()
+    freigeben.set()
+    ende = time.monotonic() + 2.0
+    while fenster._echtzeit_aufgabe_laeuft and time.monotonic() < ende:
+        app.processEvents()
+        time.sleep(0.005)
+    assert not fenster._echtzeit_aufgabe_laeuft
+    assert bruecke.pose_thread is None
+    assert bruecke.render_thread is None
+    fenster.close()
+
+
+def test_solverfehler_zeigt_abbruchgrund_und_letzte_residuen(
+        monkeypatch, tmp_path):
+    import time
+
+    from segelphysik.core.statisch import SolverFehler
+
+    _qt_app()
+    welt = welt_aus_konfig(_konfig_kopie(tmp_path))
+    sichtbarkeit_setzen(welt, "yacht1")
+    fenster = HauptFenster()
+    fenster.baum_setzen(welt)
+    fenster._laufzeit_koerper["yacht1"] = SimpleNamespace(masse=10.0)
+
+    class Bruecke:
+        def statische_pose_loeschen(self, _name):
+            pass
+
+    fenster._bruecke = Bruecke()
+    monkeypatch.setattr(
+        "segelphysik.core.konfig_lader.lade_physik",
+        lambda _ordner: SimpleNamespace(g_m_pro_s2=9.81,
+                                         voxel_aufloesung_m=0.05))
+    monkeypatch.setattr(
+        "segelphysik.core.auftrieb.baue_kraftfunktion",
+        lambda *_args, **_kwargs: object())
+
+    def solverfehler(*_args, **_kwargs):
+        raise SolverFehler(
+            "Störleiter erschöpft", status="instabile_lage",
+            diagnose={"z": -0.2, "phi": 0.1, "restkraft": 2.5,
+                      "restmoment": 4.0})
+
+    monkeypatch.setattr(
+        "segelphysik.core.statisch_robust.loese_robust", solverfehler)
+
+    fenster._statische_simulation_ausfuehren()
+    ende = time.monotonic() + 2.0
+    while fenster._solver_werte["Lösungstyp"].text(1) == \
+            "Statische Berechnung läuft" and time.monotonic() < ende:
+        QApplication.processEvents()
+        time.sleep(0.005)
+
+    assert fenster._solver_werte["Lösungstyp"].text(1).startswith(
+        "Instabile Lage:")
+    assert fenster._solver_werte["Restkraft"].text(1) == "2.5 N"
+    assert fenster._solver_werte["Restmoment"].text(1) == "4 N·m"
+    assert fenster._solver_werte["z*"].text(1) == "-0.2000 m"
+    assert fenster._solver_werte["phi*"].text(1) == "5.73°"
+    fenster.close()
+
+
+def test_statischer_solver_blockiert_gui_nicht_und_verwirft_altes_ergebnis(
+        monkeypatch, tmp_path):
+    import threading
+    import time
+
+    app = _qt_app()
+    welt = welt_aus_konfig(_konfig_kopie(tmp_path))
+    sichtbarkeit_setzen(welt, "yacht1")
+    fenster = HauptFenster()
+    fenster.baum_setzen(welt)
+    fenster._laufzeit_koerper["yacht1"] = SimpleNamespace(masse=10.0)
+    gestartet = threading.Event()
+    freigeben = threading.Event()
+
+    class Bruecke:
+        def __init__(self):
+            self.poses = []
+            self.geloescht = []
+
+        def statische_pose_setzen(self, *pose):
+            self.poses.append(pose)
+            return True
+
+        def statische_pose_loeschen(self, name):
+            self.geloescht.append(name)
+
+    bruecke = Bruecke()
+    fenster._bruecke = bruecke
+    monkeypatch.setattr(
+        "segelphysik.core.konfig_lader.lade_physik",
+        lambda _ordner: SimpleNamespace(g_m_pro_s2=9.81,
+                                         voxel_aufloesung_m=0.05))
+    monkeypatch.setattr(
+        "segelphysik.core.auftrieb.baue_kraftfunktion",
+        lambda *_args, **_kwargs: "kraftfunktion")
+
+    def langsamer_solver(*_args, **_kwargs):
+        gestartet.set()
+        freigeben.wait(timeout=2.0)
+        return {
+            "z": 0.1, "phi": 0.2, "gm": 0.3, "iterationen": 4,
+            "restkraft": 0.0, "restmoment": 0.0,
+            "neutral": False, "stagnation": False,
+        }
+
+    monkeypatch.setattr(
+        "segelphysik.core.statisch_robust.loese_robust", langsamer_solver)
+    fenster._kraftbild_daten_setzen = lambda *_args, **_kwargs: None
+    fenster._statische_simulation_ausfuehren()
+    assert gestartet.wait(timeout=1.0)
+
+    gui_ereignis = threading.Event()
+    QTimer.singleShot(0, gui_ereignis.set)
+    ende = time.monotonic() + 0.1
+    while not gui_ereignis.is_set() and time.monotonic() < ende:
+        app.processEvents()
+        time.sleep(0.005)
+    assert gui_ereignis.is_set()
+
+    fenster._echtzeit_starten = lambda **_kwargs: None
+    fenster._btn_echtzeit.click()
+    freigeben.set()
+    ende = time.monotonic() + 2.0
+    while fenster._solver_werte["Lösungstyp"].text(1) == \
+            "Statische Berechnung läuft" and time.monotonic() < ende:
+        app.processEvents()
+        time.sleep(0.005)
+
+    assert not bruecke.poses
+    assert fenster._solver_werte["Lösungstyp"].text(1) != "stabil"
+    fenster.close()
+
+
+def test_echtzeit_yacht_voxel_last_laesst_gui_reagieren(
+        monkeypatch, tmp_path):
+    import threading
+    import time
+
+    import numpy as np
+
+    app = _qt_app()
+    konfiguration = _konfig_kopie(tmp_path)
+    welt = welt_aus_konfig(konfiguration)
+    sichtbarkeit_setzen(welt, "yacht1")
+    yacht_knoten = finde(welt, "yacht1")
+    from segelphysik.core.fabriken import baue_summenkoerper
+    from segelphysik.core.konfig_lader import lade_physik
+
+    koerper, _ = baue_summenkoerper(
+        konfiguration, "yacht1",
+        aktive_blaetter=aktive_blaetter(yacht_knoten))
+    projektordner = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    physik = lade_physik(os.path.join(projektordner, "konfigurationen"))
+    fenster = HauptFenster()
+    fenster.baum_setzen(welt)
+    fenster._laufzeit_koerper["yacht1"] = koerper
+
+    class Bruecke:
+        def __init__(self):
+            self.gui_thread = threading.get_ident()
+            self.pose_thread = None
+            self.render_thread = None
+
+        def statische_pose_loeschen(self, _name):
+            pass
+
+        def physik_pose_setzen(self, _name, _z, _phi):
+            self.pose_thread = threading.get_ident()
+            return True
+
+        def layer_ist_an(self, _layer):
+            return False
+
+        def render(self):
+            self.render_thread = threading.get_ident()
+
+    bruecke = Bruecke()
+    fenster._bruecke = bruecke
+    monkeypatch.setattr(
+        "segelphysik.core.konfig_lader.lade_physik",
+        lambda _ordner: physik)
+    fenster._btn_echtzeit.click()
+    fenster._echtzeit_timer.stop()
+    fenster._echtzeit_letzte_wandzeit = time.perf_counter() - 0.016
+
+    gui_ereignis = threading.Event()
+    QTimer.singleShot(0, gui_ereignis.set)
+    ereignis_start = time.perf_counter()
+    fenster._echtzeit_takt()
+    ende = time.monotonic() + 30.0
+    while not gui_ereignis.is_set() and time.monotonic() < ende:
+        app.processEvents()
+        time.sleep(0.001)
+    reaktionszeit = time.perf_counter() - ereignis_start
+    assert gui_ereignis.is_set()
+    assert reaktionszeit < 0.1
+
+    ende = time.monotonic() + 30.0
+    while fenster._echtzeit_aufgabe_laeuft and time.monotonic() < ende:
+        app.processEvents()
+        time.sleep(0.005)
+    assert not fenster._echtzeit_aufgabe_laeuft
+    assert bruecke.pose_thread == bruecke.gui_thread
+    assert bruecke.render_thread == bruecke.gui_thread
+    assert fenster._echtzeit_zustand is not None
     fenster._zeit_pausieren()
     fenster.close()
