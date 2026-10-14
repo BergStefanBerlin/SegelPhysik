@@ -45,6 +45,27 @@ def test_union_doppelter_und_getrennter_volumina_zaehlt_voxel_nur_einmal(
     assert nebeneinander.auswerten(-0.5, 0.0)[0] == pytest.approx(12.0)
 
 
+def test_union_teilweise_ueberlappender_koerper_zaehlt_schnittmenge_nur_einmal(
+        quader):
+    ueberlappend = (
+        quader[0] + np.array((1.0, 0.0, -0.5)), quader[1])
+    koerper = SimpleNamespace(
+        blatt_meshes=[(quader[0] + np.array((0.0, 0.0, -0.5)), quader[1]),
+                      ueberlappend],
+        r_S=np.zeros(3), teile=[])
+
+    raster = vm.KoerperfestesVoxelmodell(
+        koerper.blatt_meshes, aufloesung=0.5)
+    volumen, schwerpunkt = raster.auswerten(z=0.0, phi=0.0)
+    globales = auftrieb.kraftfunktion_berechne(
+        koerper, (0.0, 0.0, 0.0), aufloesung=0.5, pfad="voxel")
+
+    assert volumen == pytest.approx(9.0)
+    assert schwerpunkt == pytest.approx((0.5, 0.0, -0.75))
+    assert globales.V_tauch == pytest.approx(9.0)
+    assert globales.K.as_array() == pytest.approx(schwerpunkt)
+
+
 def test_geneigte_wasserhalbebene_wird_im_koerperfesten_raster_ausgewertet(
         quader):
     raster = vm.KoerperfestesVoxelmodell([quader], aufloesung=0.5)

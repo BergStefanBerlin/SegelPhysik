@@ -331,6 +331,27 @@ und wird über `requirements-gpu.txt` installiert.
    festlegen. Anschließend nur die laut Code GPU-zugeordneten Aufgaben
    implementieren. Der CPU-Pfad bleibt immer eigenständig ausführbar.
 
+### Zwischenmessung CPU-Referenz (2026-10-14)
+
+Auf Windows mit Python 3.14.8 und AMD Ryzen 5 8600G wurden neun Yacht-Posen
+(`z = -0,1/0/0,1 m`, `phi = 0/10/20°`) bei der konfigurierten Auflösung
+`0,05 m` einmal durch beide Voxelpfade ausgewertet. Der globale Pfad benötigte
+für die neun Auswertungen insgesamt 1,56 s. Das körperfeste Raster benötigte
+3,40 s Vorbereitung und 0,0027 s für neun Auswertungen zusammen. In diesem
+Posefeld betrugen die maximalen Abweichungen zwischen den beiden CPU-Pfaden
+`0,01025 m³` beim Volumen und `0,01145 m` beim Auftriebsschwerpunkt. Beide
+überschreiten die konfigurierten Schranken (`0,0005 m³`, `0,005 m`); die
+Vorbereitung überwiegt zudem den Zeitgewinn der neun Wiederholungen.
+
+Damit bleibt `voxel_koerperfest` ein Opt-in-Referenzpfad und wird weder
+Standard noch Genauigkeitsreferenz. Die beiden Voxelpfade verwenden bei
+geneigter Lage unterschiedlich orientierte Raster. Der exakte Pfad summiert
+Einzelblattvolumina statt eine Boolesche Vereinigung zu berechnen und ist
+daher für die zusammengesetzte Yacht keine gültige Union-Referenz. Ein
+belastbarer Genauigkeitsnachweis für das Gesamtmodell erfordert eine
+union-konsistente Referenz. Die Messung ist ein einzelner CPU-Lauf und kein
+GPU- oder GUI-Performance-Abnahmelauf.
+
 ### Betroffene Bereiche und Tests
 
 - Produktionskandidaten: `core/auftrieb.py`, `wasser_schnitt.py`,
