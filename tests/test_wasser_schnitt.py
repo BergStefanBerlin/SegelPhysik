@@ -57,6 +57,33 @@ def test_gekippter_quader_45_grad():
     _keine_entarteten(u_p,u_t); _keine_entarteten(o_p,o_t)
 
 
+def test_direkte_wasserlinie_und_deckel_stimmen_mit_teilschnitt_ueberein():
+    winkel = 0.37
+    rotation = np.array([
+        [np.cos(winkel), 0.0, np.sin(winkel)],
+        [0.0, 1.0, 0.0],
+        [-np.sin(winkel), 0.0, np.cos(winkel)],
+    ])
+    punkte = Q_V @ rotation.T + np.array((0.0, 0.0, 0.13))
+    plain_u_p, plain_u_t, plain_o_p, plain_o_t, _ = ws.schneide_am_wasser(
+        punkte, Q_F)
+    unten_p, unten_t, oben_p, oben_t, kontur = ws.schneide_am_wasser(
+        punkte, Q_F, mit_deckel=True)
+    unten_kontur = ws.wasserlinie_aus_teilmesh(plain_u_p, plain_u_t)
+    oben_kontur = ws.wasserlinie_aus_teilmesh(plain_o_p, plain_o_t)
+
+    def segmente(k):
+        paare = np.asarray(k).reshape(-1, 2, 3)
+        return {tuple(sorted(
+            tuple(np.round(p, 10)) for p in paar)) for paar in paare}
+
+    assert segmente(kontur) == segmente(
+        np.vstack((unten_kontur, oben_kontur)))
+    assert np.all(kontur.reshape(-1, 2, 3)[:, :, 2] == 0.0)
+    assert abs(ws.mesh_volumen(unten_p, unten_t)
+               + ws.mesh_volumen(oben_p, oben_t) - 8.0) < 1e-9
+
+
 def test_pyramide_auf_wasserlinie():
     pv_, pf_ = formen.bau_pyramide(a=2.0, H=2.0)
     u_p,u_t,o_p,o_t,k = ws.schneide_am_wasser(pv_, pf_)

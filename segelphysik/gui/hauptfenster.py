@@ -9,7 +9,8 @@ import time
 import numpy as np
 from PySide6.QtCore import Qt, QObject, QRunnable, QThreadPool, QTimer, Signal
 from PySide6.QtWidgets import (
-    QButtonGroup, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QPushButton,
+    QApplication, QButtonGroup, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
+    QPushButton,
     QDockWidget, QTextEdit, QLabel, QCheckBox, QTreeWidget, QTreeWidgetItem,
     QComboBox, QMessageBox,
 )
@@ -24,12 +25,12 @@ _ECHTZEIT_MAX_SCHRITTE_PRO_AUFGABE = 4
 
 
 class _EchtzeitAufgabeSignale(QObject):
-    abgeschlossen = Signal(int, object, object, object)
+    abgeschlossen = Signal(int, object, object, object, float)
 
 
 class _EchtzeitAufgabe(QRunnable):
     def __init__(self, generation, zustand, kraftfunktion, koerper, physik,
-                 dt, anzahl_schritte, signale):
+                 dt, anzahl_schritte, signale, prozess_executor=None):
         super().__init__()
         self.generation = generation
         self.zustand = zustand
@@ -39,25 +40,52 @@ class _EchtzeitAufgabe(QRunnable):
         self.dt = dt
         self.anzahl_schritte = anzahl_schritte
         self.signale = signale
+        self.prozess_executor = prozess_executor
 
     def run(self):
-        from ..core.dynamik import schritt_mit_kraeften
+        if hasattr(self.kraftfunktion, "aktualisieren"):
+            self.kraftfunktion.aktualisieren()
+        if self.prozess_executor is not None:
+            from concurrent.futures import CancelledError
+            from concurrent.futures.process import BrokenProcessPool
+            import pickle
+            from ..core.echtzeit_prozess import schritte_berechnen
 
+            startzeit = time.perf_counter()
+            try:
+                zustand, ergebnis, fehler, dauer = (
+                    self.prozess_executor.submit(
+                        schritte_berechnen, self.zustand,
+                        self.anzahl_schritte).result())
+            except (BrokenProcessPool, CancelledError, EOFError, OSError,
+                    pickle.PickleError, RuntimeError, TypeError,
+                    ValueError) as fehler:
+                self.signale.abgeschlossen.emit(
+                    self.generation, None, None, fehler,
+                    time.perf_counter() - startzeit)
+                return
+            self.signale.abgeschlossen.emit(
+                self.generation, zustand, ergebnis, fehler, dauer)
+            return
+
+        from ..core.dynamik_6dof import schritt
+
+        startzeit = time.perf_counter()
         ergebnis = None
         try:
             for _ in range(self.anzahl_schritte):
-                self.zustand, ergebnis = schritt_mit_kraeften(
+                self.zustand, ergebnis = schritt(
                     self.zustand, self.kraftfunktion, self.koerper.masse,
-                    self.koerper.traegheitstensor[0, 0], self.dt,
-                    self.physik.g_m_pro_s2,
-                    self.physik.daempfung_tauchung,
-                    self.physik.daempfung_kraengung)
+                    self.koerper.traegheitstensor, self.dt,
+                    self.physik.g_m_pro_s2)
         except (ArithmeticError, KeyError, ValueError) as fehler:
             self.signale.abgeschlossen.emit(
-                self.generation, None, None, fehler)
+                self.generation, None, None, fehler,
+                time.perf_counter() - startzeit)
             return
         self.signale.abgeschlossen.emit(
-            self.generation, self.zustand, ergebnis, None)
+            self.generation, self.zustand, ergebnis, None,
+            time.perf_counter() - startzeit)
 
 
 class _StatischeAufgabeSignale(QObject):
@@ -78,6 +106,7 @@ class _StatischeAufgabe(QRunnable):
         from ..core.statisch import SolverFehler
         from ..core.auftrieb import baue_kraftfunktion
         from ..core.konfig_lader import lade_physik
+        from ..core.kraftmodell import baue_kraftmodell
         from ..core.statisch_robust import loese_robust
 
         try:
@@ -85,7 +114,9 @@ class _StatischeAufgabe(QRunnable):
             kraftfunktion = baue_kraftfunktion(
                 self.koerper, rho_w=self.rho_w,
                 g=physik.g_m_pro_s2,
-                aufloesung=physik.voxel_aufloesung_m)
+                aufloesung=physik.voxel_aufloesung_m,
+                pfad="exakt_union")
+            kraftfunktion = baue_kraftmodell(kraftfunktion, physik)
             ergebnis = loese_robust(
                 kraftfunktion, self.koerper.masse,
                 g=physik.g_m_pro_s2)
@@ -108,14 +139,31 @@ class HauptFenster(QMainWindow):
         self._echtzeit_timer = QTimer(self)
         self._echtzeit_timer.setInterval(16)
         self._echtzeit_timer.timeout.connect(self._echtzeit_takt)
+        self._echtzeit_render_timer = QTimer(self)
+        self._echtzeit_render_timer.setInterval(33)
+        self._echtzeit_render_timer.setTimerType(Qt.TimerType.PreciseTimer)
+        self._echtzeit_render_timer.timeout.connect(
+            self._echtzeit_render_takt)
         self._echtzeit_akkumulator = 0.0
         self._echtzeit_letzte_wandzeit = None
         self._echtzeit_zustand = None
         self._echtzeit_kraftfunktion = None
+        self._echtzeit_kraefteresultat = None
         self._echtzeit_physik = None
         self._echtzeit_name = None
         self._echtzeit_generation = 0
         self._echtzeit_aufgabe_laeuft = False
+        self._echtzeit_schritte_laufend = 0
+        self._echtzeit_prozess_executor = None
+        self._echtzeit_prozess_koerper = None
+        self._echtzeit_aktiver_prozess_executor = None
+        self._echtzeit_anzeige_start = None
+        self._echtzeit_anzeige_ziel = None
+        self._echtzeit_anzeige_startzeit = None
+        self._echtzeit_anzeige_dauer = 0.0
+        self._echtzeit_fps_start = time.perf_counter()
+        self._echtzeit_fps_zaehler = 0
+        self._echtzeit_angeforderte_fps = 0.0
         self._echtzeit_signale = _EchtzeitAufgabeSignale()
         self._echtzeit_signale.abgeschlossen.connect(
             self._echtzeit_aufgabe_abgeschlossen)
@@ -241,7 +289,8 @@ class HauptFenster(QMainWindow):
         for schluessel, wert in (
                 ("z*", "-"), ("phi*", "-"), ("GM", "-"),
                 ("Restkraft", "-"), ("Restmoment", "-"),
-                ("Iterationen", "-"), ("Lösungstyp", "-")):
+                ("Iterationen", "-"), ("Bildrate", "-"),
+                ("Physik-Rückstand", "-"), ("Lösungstyp", "-")):
             self._solver_werte[schluessel] = QTreeWidgetItem(
                 status, [schluessel, wert])
         status.setRootIsDecorated(False)
@@ -670,9 +719,12 @@ class HauptFenster(QMainWindow):
     def _echtzeit_starten(self, zustand=None, auto_start=True):
         if self._echtzeit_timer.isActive():
             self._echtzeit_timer.stop()
+        if self._echtzeit_render_timer.isActive():
+            self._echtzeit_render_timer.stop()
         self._echtzeit_generation += 1
         self._echtzeit_letzte_wandzeit = None
         self._echtzeit_akkumulator = 0.0
+        self._echtzeit_schritte_laufend = 0
         welt = self.baum._welt
         konfiguration = getattr(welt, "konfiguration", None)
         bruecke = getattr(self, "_bruecke", None)
@@ -691,16 +743,23 @@ class HauptFenster(QMainWindow):
                 {"Lösungstyp": "Kein Laufzeitkörper verfügbar"})
             return
 
-        from ..core.auftrieb import baue_kraftfunktion
-        from ..core.dynamik import Bewegungszustand
+        from ..core.auftrieb import baue_kraftfunktion_6dof
+        from ..core.dynamik_6dof import Zustand6DOF, quaternion_matrix
         from ..core.konfig_lader import lade_physik
+        from ..core.kraftmodell import (
+            KraftmodellMitHydroCache, baue_kraftmodell)
         try:
             physik = lade_physik(konfiguration.ordner)
-            kraftfunktion = baue_kraftfunktion(
+            kraftfunktion = baue_kraftfunktion_6dof(
                 koerper, rho_w=konfiguration.wasser_dichte(),
-                g=physik.g_m_pro_s2,
-                aufloesung=physik.voxel_aufloesung_m)
-        except (ImportError, OSError, ValueError) as fehler:
+                g=physik.g_m_pro_s2)
+            kraftfunktion = KraftmodellMitHydroCache(
+                baue_kraftmodell(kraftfunktion, physik), intervall=1)
+            basisposition = bruecke.physik_basis_position_ermitteln(
+                hauptkoerper.name)
+            prozess_executor = self._echtzeit_prozess_pool_aktualisieren(
+                koerper, konfiguration.wasser_dichte(), physik)
+        except (ImportError, OSError, RuntimeError, ValueError) as fehler:
             self._zeit_pausieren()
             self._solver_status_aktualisieren(
                 {"Lösungstyp": "Fehler: %s" % fehler})
@@ -710,20 +769,36 @@ class HauptFenster(QMainWindow):
 
         if zustand is None:
             loesung = self._statische_ergebnisse.get(hauptkoerper.name)
-            zustand = Bewegungszustand(
-                z=loesung["z"] if loesung else 0.0,
-                phi=loesung["phi"] if loesung else 0.0)
+            z = loesung["z"] if loesung else 0.0
+            phi = loesung["phi"] if loesung else 0.0
+            zustand = Zustand6DOF(
+                position=(basisposition[0], basisposition[1], z),
+                quaternion=(math.cos(phi / 2.0), math.sin(phi / 2.0),
+                            0.0, 0.0))
+        elif not isinstance(zustand, Zustand6DOF):
+            raise TypeError("Echtzeit-Zustand muss ein Zustand6DOF sein")
         self._echtzeit_name = hauptkoerper.name
         self._echtzeit_zustand = zustand
+        self._echtzeit_anzeige_start = zustand
+        self._echtzeit_anzeige_ziel = zustand
+        self._echtzeit_anzeige_startzeit = None
+        self._echtzeit_anzeige_dauer = 0.0
         self._echtzeit_physik = physik
         self._echtzeit_kraftfunktion = kraftfunktion
+        self._echtzeit_aktiver_prozess_executor = prozess_executor
+        self._echtzeit_kraefteresultat = None
         if (bruecke.layer_ist_an(LAYER_KRAEFTE)
                 or bruecke.layer_ist_an(LAYER_MOMENTE)):
+            self._echtzeit_kraefteresultat = kraftfunktion(
+                (zustand.position, zustand.quaternion),
+                v=quaternion_matrix(zustand.quaternion)
+                @ np.asarray(zustand.geschwindigkeit_koerper),
+                omega=quaternion_matrix(zustand.quaternion)
+                @ np.asarray(zustand.winkelgeschwindigkeit_koerper))
             self._kraftbild_daten_setzen(
                 bruecke, hauptkoerper.name, koerper, kraftfunktion, physik,
-                zustand.z, zustand.phi, zustand.v_z, zustand.omega_x)
-        if not bruecke.physik_pose_setzen(
-                hauptkoerper.name, zustand.z, zustand.phi):
+                0.0, 0.0, ergebnis=self._echtzeit_kraefteresultat)
+        if not self._echtzeit_pose_anzeigen(zustand, render=True):
             self._solver_status_aktualisieren(
                 {"Lösungstyp": "Körper in 3D-Ansicht fehlt"})
             return
@@ -731,24 +806,129 @@ class HauptFenster(QMainWindow):
         if auto_start:
             self._zeit_fortsetzen()
 
+    def _echtzeit_prozess_pool_aktualisieren(self, koerper, rho_w, physik):
+        if (not hasattr(koerper, "teile")
+                or QApplication.platformName().casefold()
+                in ("offscreen", "minimal")):
+            return None
+        if (self._echtzeit_prozess_executor is not None
+                and self._echtzeit_prozess_koerper is koerper):
+            return self._echtzeit_prozess_executor
+        from concurrent.futures import ProcessPoolExecutor
+        from multiprocessing import get_context
+        from ..core.echtzeit_prozess import initialisieren
+
+        vorher = self._echtzeit_prozess_executor
+        if vorher is not None:
+            vorher.shutdown(wait=False, cancel_futures=True)
+        executor = ProcessPoolExecutor(
+            max_workers=1, mp_context=get_context("spawn"),
+            initializer=initialisieren,
+            initargs=(koerper, rho_w, physik))
+        self._echtzeit_prozess_executor = executor
+        self._echtzeit_prozess_koerper = koerper
+        return executor
+
     def _zeit_pausieren(self):
         war_laufend = self._echtzeit_timer.isActive()
         self._echtzeit_generation += 1
         if war_laufend:
             self._echtzeit_timer.stop()
+        if self._echtzeit_render_timer.isActive():
+            self._echtzeit_render_timer.stop()
+        if self._echtzeit_schritte_laufend and self._echtzeit_physik is not None:
+            self._echtzeit_akkumulator += (
+                self._echtzeit_schritte_laufend * self._echtzeit_physik.dt_s)
+            self._echtzeit_schritte_laufend = 0
         self._echtzeit_letzte_wandzeit = None
-        self._echtzeit_akkumulator = 0.0
+        if self._echtzeit_zustand is not None:
+            self._echtzeit_anzeige_start = self._echtzeit_zustand
+            self._echtzeit_anzeige_ziel = self._echtzeit_zustand
+            self._echtzeit_anzeige_startzeit = None
+            self._echtzeit_anzeige_dauer = 0.0
         if war_laufend:
-            self._solver_status_aktualisieren({"Lösungstyp": "Pausiert"})
+            self._solver_status_aktualisieren({
+                "Lösungstyp": "Pausiert",
+                "Physik-Rückstand": self._rueckstand_text(),
+            })
+            self._echtzeit_pose_anzeigen(self._echtzeit_zustand, render=True)
 
     def _zeit_fortsetzen(self):
         if (not self._btn_echtzeit.isChecked()
                 or self._echtzeit_timer.isActive()
                 or self._echtzeit_kraftfunktion is None):
             return
-        self._echtzeit_letzte_wandzeit = time.perf_counter()
+        jetzt = time.perf_counter()
+        self._echtzeit_letzte_wandzeit = jetzt
+        self._echtzeit_fps_start = jetzt
+        self._echtzeit_fps_zaehler = 0
         self._echtzeit_timer.start()
-        self._solver_status_aktualisieren({"Lösungstyp": "Echtzeit"})
+        self._echtzeit_render_timer.start()
+        self._solver_status_aktualisieren({
+            "Lösungstyp": "Echtzeit",
+            "Physik-Rückstand": self._rueckstand_text(),
+        })
+
+    def _rueckstand_text(self):
+        dt = getattr(self._echtzeit_physik, "dt_s", 0.0)
+        rueckstand = self._echtzeit_akkumulator
+        if dt > 0.0:
+            rueckstand += self._echtzeit_schritte_laufend * dt
+        return "%.3f s" % rueckstand
+
+    def _echtzeit_pose_anzeigen(self, pose, render=False):
+        if pose is None:
+            return False
+        bruecke = getattr(self, "_bruecke", None)
+        if bruecke is None or self._echtzeit_name is None:
+            return False
+        from ..core.dynamik_6dof import quaternion_matrix
+        if not bruecke.physik_pose_6dof_setzen(
+                self._echtzeit_name, quaternion_matrix(pose.quaternion),
+                np.asarray(pose.position, dtype=np.float64)):
+            return False
+        if render:
+            bruecke.render()
+        return True
+
+    def _echtzeit_render_takt(self):
+        start = self._echtzeit_anzeige_start
+        ziel = self._echtzeit_anzeige_ziel
+        if start is None or ziel is None:
+            return
+        jetzt = time.perf_counter()
+        if self._echtzeit_anzeige_startzeit is None:
+            anteil = 1.0
+        elif self._echtzeit_anzeige_dauer <= 0.0:
+            anteil = 1.0
+        else:
+            anteil = min(
+                1.0, max(0.0, (jetzt - self._echtzeit_anzeige_startzeit)
+                         / self._echtzeit_anzeige_dauer))
+        from ..core.dynamik_6dof import quaternion_slerp
+        position = (
+            np.asarray(start.position)
+            + anteil * (np.asarray(ziel.position) - start.position))
+        pose = type(ziel)(
+            position=tuple(position),
+            quaternion=tuple(quaternion_slerp(
+                start.quaternion, ziel.quaternion, anteil)),
+            geschwindigkeit_koerper=ziel.geschwindigkeit_koerper,
+            winkelgeschwindigkeit_koerper=(
+                ziel.winkelgeschwindigkeit_koerper))
+        if not self._echtzeit_pose_anzeigen(pose, render=True):
+            return
+        self._echtzeit_fps_zaehler += 1
+        vergangen = jetzt - self._echtzeit_fps_start
+        if vergangen >= 1.0:
+            self._echtzeit_angeforderte_fps = (
+                self._echtzeit_fps_zaehler / vergangen)
+            self._echtzeit_fps_zaehler = 0
+            self._echtzeit_fps_start = jetzt
+            self._solver_status_aktualisieren({
+                "Bildrate": "%.1f FPS" % self._echtzeit_angeforderte_fps,
+                "Physik-Rückstand": self._rueckstand_text(),
+            })
 
     def _echtzeit_takt(self):
         if (self._echtzeit_letzte_wandzeit is None
@@ -786,17 +966,24 @@ class HauptFenster(QMainWindow):
         aufgabe = _EchtzeitAufgabe(
             self._echtzeit_generation, self._echtzeit_zustand,
             self._echtzeit_kraftfunktion, koerper, self._echtzeit_physik,
-            dt, anzahl_schritte, self._echtzeit_signale)
+            dt, anzahl_schritte, self._echtzeit_signale,
+            prozess_executor=self._echtzeit_aktiver_prozess_executor)
         self._echtzeit_aufgabe_laeuft = True
+        self._echtzeit_schritte_laufend = anzahl_schritte
         QThreadPool.globalInstance().start(aufgabe)
 
     def _echtzeit_aufgabe_abgeschlossen(
-            self, generation, zustand, kraefteresultat, fehler):
+            self, generation, zustand, kraefteresultat, fehler, dauer_s):
         self._echtzeit_aufgabe_laeuft = False
+        anzahl_schritte = self._echtzeit_schritte_laufend
+        self._echtzeit_schritte_laufend = 0
         if (generation != self._echtzeit_generation
                 or not self._btn_echtzeit.isChecked()):
             return
         if fehler is not None:
+            if self._echtzeit_physik is not None:
+                self._echtzeit_akkumulator += (
+                    self._echtzeit_physik.dt_s * anzahl_schritte)
             self._zeit_pausieren()
             self._solver_status_aktualisieren(
                 {"Lösungstyp": "Fehler: %s" % fehler})
@@ -804,7 +991,15 @@ class HauptFenster(QMainWindow):
                 "Echtzeit-Simulation (%s): %s"
                 % (self._echtzeit_name, fehler))
             return
+        vorherige_anzeige = (
+            self._echtzeit_anzeige_ziel or self._echtzeit_zustand)
         self._echtzeit_zustand = zustand
+        self._echtzeit_kraefteresultat = kraefteresultat
+        self._echtzeit_anzeige_start = vorherige_anzeige
+        self._echtzeit_anzeige_ziel = zustand
+        self._echtzeit_anzeige_startzeit = time.perf_counter()
+        self._echtzeit_anzeige_dauer = max(
+            float(dauer_s), 1.0 / 60.0)
         bruecke = getattr(self, "_bruecke", None)
         if bruecke is not None:
             pose = zustand
@@ -817,15 +1012,10 @@ class HauptFenster(QMainWindow):
                 self._kraftbild_daten_setzen(
                     bruecke, self._echtzeit_name, koerper,
                     self._echtzeit_kraftfunktion, self._echtzeit_physik,
-                    pose.z, pose.phi, pose.v_z, pose.omega_x,
-                    ergebnis=kraefteresultat)
-            if not bruecke.physik_pose_setzen(
-                    self._echtzeit_name, pose.z, pose.phi):
-                self._zeit_pausieren()
-                self._solver_status_aktualisieren(
-                    {"Lösungstyp": "Körper in 3D-Ansicht fehlt"})
+                    0.0, 0.0, ergebnis=kraefteresultat)
+            if self._echtzeit_render_timer.isActive():
                 return
-            bruecke.render()
+            self._echtzeit_pose_anzeigen(pose, render=True)
 
     def _aktuelles_kraftbild_aktualisieren(self):
         if (self._echtzeit_name is None or self._echtzeit_zustand is None
@@ -836,10 +1026,19 @@ class HauptFenster(QMainWindow):
         bruecke = getattr(self, "_bruecke", None)
         if koerper is not None and bruecke is not None:
             pose = self._echtzeit_zustand
+            ergebnis = self._echtzeit_kraefteresultat
+            if ergebnis is None:
+                from ..core.dynamik_6dof import quaternion_matrix
+                rotation = quaternion_matrix(pose.quaternion)
+                ergebnis = self._echtzeit_kraftfunktion(
+                    (pose.position, pose.quaternion),
+                    v=rotation @ np.asarray(pose.geschwindigkeit_koerper),
+                    omega=rotation @ np.asarray(
+                        pose.winkelgeschwindigkeit_koerper))
             self._kraftbild_daten_setzen(
                 bruecke, self._echtzeit_name, koerper,
                 self._echtzeit_kraftfunktion, self._echtzeit_physik,
-                pose.z, pose.phi, pose.v_z, pose.omega_x)
+                0.0, 0.0, ergebnis=ergebnis)
 
     def _kraftbild_daten_setzen(self, bruecke, name, koerper, kraftfunktion,
                                 physik, z, phi, v_z=0.0, omega_x=0.0,
@@ -873,6 +1072,13 @@ class HauptFenster(QMainWindow):
 
 
         self.protokoll.append(text)
+
+    def closeEvent(self, ereignis):
+        executor = self._echtzeit_prozess_executor
+        if executor is not None:
+            executor.shutdown(wait=False, cancel_futures=True)
+            self._echtzeit_prozess_executor = None
+        super().closeEvent(ereignis)
 
     def _protokoll_umschalten(self):
         self._dock_protokoll.setVisible(self._act_protokoll.isChecked())

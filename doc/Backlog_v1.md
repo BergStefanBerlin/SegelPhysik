@@ -29,19 +29,19 @@ Messbarkeit und Regressionen zu prüfen.
 ### B-02 – Globalen Voxelpfad und Solver-Arbeitslast profilieren
 
 - **Priorität:** Hoch
-- **Status:** Offen
+- **Status:** Profiling abgeschlossen; als interaktiver Standard abgelehnt
 - **Befund:** Im Yacht-Solververgleich bei `0,025 m` wurden 152
-  Kraftauswertungen benötigt und der globale Pfad brauchte 190,69 s. Eine
-  frühere Vektorisierung der Säulenberechnung hatte den Yacht-Start von
-  Minuten auf unter eine Sekunde verkürzt; der aktuelle vollständige
-  Solverlauf zeigt weiterhin hohe Kosten pro Auswertung.
-- **Später prüfen:** Zeiten getrennt für Wasserlinienschnitt, Mesh-
-  Transformation, Säulen-/Voxelklassifikation und Solver messen. Erst den
-  dominanten Anteil optimieren; numerische Referenz und bestehende
-  Voxel-Union-Semantik erhalten.
-- **Abnahme:** Wiederholbare Messung gleicher Körper, Posen und Auflösung;
-  keine Verschlechterung der festgelegten Genauigkeits- und Kraft-/Moment-
-  grenzen.
+  Kraftauswertungen benötigt und der globale Pfad brauchte 190,69 s. Die
+  wiederholbare F1a-Messung bei `0,05 m` ergab für Yachtposen `0,306 s`
+  Median und `0,475 s` P95; der Solver brauchte `94,33 s`. Die Posewerte
+  überschritten mit bis zu `2,20 %` Momentabweichung das F1a-Budget.
+- **Ergebnis:** Die besonders teure Mesh-/Wasserlinienarbeit wurde für die
+  Darstellung vektorisiert und Renderer-Actors werden wiederverwendet. Das
+  beschleunigt die GUI, ändert aber nicht die Ablehnung des globalen
+  Voxelkraftpfads.
+- **Später prüfen:** Den Voxel-Kraftpfad nur nach einer getrennten,
+  messbaren Beschleunigung erneut erwägen; Referenz, Semantik und
+  Genauigkeitsgrenzen erhalten.
 
 ### B-03 – Körperfestes Raster schneller vorbereiten und korrekt in den
 Solver integrieren
@@ -54,7 +54,11 @@ Solver integrieren
   inklusive Vorbereitung war deutlich schneller als der globale Voxelpfad
   (etwa 18,06 s statt 190,69 s), fand aber eine um rund `3,78°` abweichende
   Rollage. Am exakten Union-Gleichgewicht lag der Schwerpunktfehler über der
-  geltenden Grenze von `0,005 m`.
+  damaligen Grenze von `0,005 m`. Im F1a-Vergleich bei `0,05 m` dauerte die
+  Vorbereitung `4,01 s` und eine Pose `0,66 ms`; trotz `0,29 %`
+  Volumenabweichung lagen Auftrieb um `1,96 %` und Moment um `4,20 %`
+  daneben. Damit besteht dieser Pfad das gelockerte F1a-Budget ebenfalls
+  nicht.
 - **Später prüfen:** Rastererzeugung profilieren und beschleunigen;
   Solvergleichgewicht und Momentenrest gegen `exakt_union` validieren. Keine
   Standardumstellung, solange Gleichgewichtslage, Schwerpunkt und Momente
@@ -68,31 +72,34 @@ Solver integrieren
 ### B-04 – Wiederholbare Benchmark-Suite für vollständige Arbeitslasten
 
 - **Priorität:** Hoch
-- **Status:** Offen
+- **Status:** Benchmarkwerkzeug umgesetzt und ausgeführt
 - **Befund:** Bisherige CPU-Messungen waren einzelne manuelle Läufe. Die
   Vergleichbarkeit litt zudem an doppelter Rastervorbereitung in einem
   Solver-Benchmark; der dokumentierte Wert wurde anschließend durch einen
   Einmal-Aufbau-Lauf korrigiert.
-- **Später prüfen:** Ein kleines Benchmarkwerkzeug ergänzen, das Hardware,
-  Python-/Backendversion, Geometrie, Posefolge, Rasterweite, Vorbereitung,
-  Kraftauswertungen, Solverzeit, Aufrufanzahl und Abweichungen zur
-  `exakt_union`-Referenz getrennt ausgibt. Messungen mehrfach wiederholen und
-  Streuung berichten.
-- **Abnahme:** Gleiche Eingaben liefern reproduzierbare Ergebniswerte;
-  Vorbereitung wird genau einmal gezählt und von wiederholter Auswertung
-  getrennt ausgewiesen.
+- **Ergebnis:** `werkzeuge/benchmark_physik.py` erfasst Plattform,
+  Versionen, Geometrie, Posen, Rasterweite, getrennte Vorbereitungs-,
+  Pose- und Solverzeiten, Wiederholungen sowie Genauigkeits- und
+  Solverabweichungen. Drei Posewiederholungen und je ein vollständiger
+  Solverlauf wurden ausgeführt; die Solverreferenz wird ausdrücklich mit
+  Winkel-, Lage- und Restkraftkriterien verglichen.
+- **Abnahme:** Vorbereitung und wiederholte Auswertung sind getrennt
+  ausgewiesen. Genauigkeitsgrenzen erscheinen als explizites
+  `genauigkeit_bestanden` statt nur als Messwert.
 
 ### B-05 – Exakte Union-Referenz bei Bedarf beschleunigen
 
 - **Priorität:** Mittel
-- **Status:** Beobachten
+- **Status:** Exakter Unionpfad für Solver und Echtzeit ausgewählt
 - **Befund:** `exakt_union` benötigte für neun Yachtposen ungefähr `0,22 s`
   und für den vollständigen Solverlauf ungefähr `0,83 s`. Der Pfad ist
-  derzeit die union-konsistente CPU-Referenz, nicht der freigegebene
-  Produktionsstandard.
-- **Später prüfen:** Mesh-Konvertierung und Manifold3D-Union getrennt
-  profilieren. Wiederverwendbare Daten nur dann cachen, wenn Pose- und
-  Geometrieinvalidierung eindeutig bleibt.
+  union-konsistent und wird mit einmalig vorbereiteter Geometrie in Solver
+  und Echtzeit wiederverwendet. Die neue Yachtmessung ergab `20,8 ms`
+  Vorbereitung, `8,52 ms` Median und `12,39 ms` P95 je Pose; der vollständige
+  Solverlauf brauchte `225,6 ms` bei fünf Iterationen.
+- **Später prüfen:** Vorbereitung und Cacheinvalidierung bei künftig
+  veränderlicher Geometrie erneut profilieren; die aktuelle GUI ersetzt den
+  Laufzeitkörper nach Geometrieänderung statt alte Uniondaten weiterzuverwenden.
 - **Abnahme:** Referenzwerte stimmen mit analytischen und
   Booleschen Regressionstests überein; Fehler werden ausdrücklich gemeldet,
   nicht als Erfolg oder Nullvolumen kaschiert.
@@ -100,20 +107,28 @@ Solver integrieren
 ### B-06 – Darstellung und GPU-Nutzung separat messen
 
 - **Priorität:** Mittel
-- **Status:** Offen – keine Beschleunigung belegt
+- **Status:** Live-Yachtlauf mit exakter Physik und QtInteractor gemessen; GPU-Physik nicht aktiviert
 - **Befund:** Die bisher dokumentierten Leistungswerte betreffen CPU-
-  Berechnung. Eine signifikant schnellere Darstellung wurde nicht gemessen.
-  GPU-Präsenz bzw. der OpenCL-Prototyp belegen keine GPU-beschleunigte
-  Physikberechnung; Rendering und Physikbackend sind getrennte Arbeitslasten.
-- **Später prüfen:** Bildrate, Eingabereaktionszeit und Renderzeit unter
-  repräsentativer Szene messen; GPU-Rechenaufgaben nur anhand der
-  Arbeitslastmessung zuordnen. Mesh-LOD oder GPU-Berechnung sind Kandidaten,
-  falls ein Profil einen Engpass bestätigt.
-- **Abnahme:** Zielwerte und CPU/GPU-Genauigkeitsgrenzen der Spezifikation
-  einhalten (unter anderem höchstens `100 ms` Eingabereaktionszeit und
-  mindestens `30 FPS` in der definierten Referenzszene); kein GUI-Blockieren
-  und keine sichtbare Änderung der physikalischen Geometrie durch reine
-  Darstellungsoptimierung.
+  Berechnung; anschließend wurde ein realer Yacht-Actor in einem sichtbaren
+  Windows-QtInteractor vermessen. Nach Vektorisierung des Wasserlinienschnitts
+  und Wiederverwendung von Mesh-, Achsen- und Kräfte-Actors lief ein
+  zehnsekündiger Ende-zu-Ende-Test mit aktivierten Achsen-/Kräfte-Layern bei
+  `30,34 FPS`. Die Poseaktualisierung lag bei `14,50 ms` Median (`20,20 ms`
+  P95), der Renderer bei `4,55 ms` Median (`6,63 ms` P95). Ein 50-ms-
+  Ereignis wurde über einen separaten Thread in die Qt-Ereignisschleife
+  eingereiht: `18,83 ms` P95 und `25,66 ms` maximale Dispatch-Latenz.
+  Historische render-only Messungen von `40,1–49,7 FPS` sind kein Ersatz für
+  diesen integrierten Lasttest.
+- **Grenze:** Diese Messung belegt die CPU-gestützte Darstellung, nicht
+  GPU-beschleunigte Physik. Der Physik-Rückstand wuchs im zehnsekündigen
+  Live-Test auf etwa `7,47 s`; die genaue Physik rechnet langsamer als
+  Wandzeit, ohne Schritte zu verwerfen. Ein GPU-Kernel wird nicht als
+  Produktionspfad ausgewiesen.
+- **Später prüfen:** Andere Körper, höhere Meshkomplexität, Layer/SSAO und
+  längere Lastläufe ebenfalls messen; Optimierungen dürfen weder Geometrie
+  noch sichtbare Darstellung stillschweigend ändern.
+- **Abnahme:** Yacht-Referenzszene erfüllt `>=30 FPS` und die gemessene
+  Ereignisreaktion bleibt unter `100 ms`.
 
 ### B-07 – Raster- und Geometriecache über Laufzeitänderungen verwalten
 
@@ -134,21 +149,49 @@ Solver integrieren
 ### B-08 – Echtzeit-Rückstand unter Last messen
 
 - **Priorität:** Mittel
-- **Status:** Gemessen – Durchsatzoptimierung offen
+- **Status:** Exakte Echtzeit-Hydrostatik verifiziert; Durchsatzoptimierung offen
 - **Befund:** Die Echtzeitphysik wird jetzt außerhalb der GUI-Ereignisschleife
-  in Batches mit höchstens vier festen SI-Schritten berechnet. Aufgelaufene
-  Simulationszeit bleibt erhalten, damit überlastete Berechnung keine
-  Physikschritte stillschweigend verwirft. Auf der Zielhardware dauerte ein
-  Batch mit höchstens vier Yacht-Voxel-Schritten `0,624 s` für höchstens
-  `0,016 s` Simulationszeit. Die GUI blieb bedienbar, aber der Rechenkern
-  schafft unter dieser Last nicht Wandzeitgeschwindigkeit.
-- **Später prüfen:** Globalen Voxelpfad profilieren/beschleunigen und
-  Durchsatz mit repräsentativen Körpern und Auflösungen erneut messen. Eine
-  Begrenzung oder Verwerfung aufgelaufener Simulationszeit wäre eine
-  Verhaltensentscheidung und darf nicht stillschweigend eingeführt werden.
+  in Batches mit höchstens vier festen SI-Schritten berechnet. Der zuvor
+  getestete Hydrostatik-Cache mit vier-Schritt-Intervall verursachte in einer
+  fünfsekündigen Yacht-Trajektorie zwar nur `0,0055 %` Volumen-/Kraftfehler,
+  aber bis zu `9,95 N·m` absoluten Momentfehler (relativ sehr groß bei
+  Momenten nahe null). Er wurde deshalb aus dem Echtzeitpfad entfernt;
+  Hydrostatik wird jetzt bei jedem Physikschritt exakt ausgewertet.
+- **Neuer Messstand:** Der exakte Pfad vergleicht in 500 Schritten über fünf
+  Sekunden exakt gleich mit sich selbst (keine Cacheabweichung; maximale
+  Positionsdifferenz `0 m`, Winkelabweichung numerisch unter `0,000002°`).
+  Vier exakte Schritte dauerten im Live-Prozess median `37,24 ms` (P95
+  `50,78 ms`) für `0,016 s` Simulationszeit. Der Rückstand wuchs im
+  zehnsekündigen Test auf etwa `7,47 s`; keine
+  aufgelaufene Simulationszeit wird stillschweigend verworfen.
+- **Später prüfen:** Den Physikdurchsatz separat weiter optimieren oder eine
+  ausdrücklich festgelegte Regel für Überlast und Simulationszeit vereinbaren.
+  Eine Zeitbegrenzung bzw. Verwerfung darf nicht stillschweigend eingeführt
+  werden.
 - **Abnahme:** Noch offen: Rechenleistung verbessert oder eine ausdrücklich
   festgelegte Regel für Überlast und Simulationszeit vereinbart. GUI-
   Reaktionsfähigkeit unter der gemessenen Last ist bereits nachgewiesen.
+
+### B-09 – Wasserlinienschnitt und Actor-Neuaufbau pro Frame
+
+- **Priorität:** Hoch
+- **Status:** Optimiert und unter integrierter Live-Last gemessen
+- **Befund:** Poseprofiling zeigte vor der Änderung bei der Yacht `43 ms`
+  für Wasserlinienschnitte und `39 ms` für wiederholtes `add_mesh` pro Frame;
+  insgesamt waren es nur etwa `8,5 FPS`.
+- **Ergebnis:** Vollständige, nicht geschnittene Dreiecke werden vektorisiert
+  verarbeitet, Schnittsegmente direkt aus durchstochenen Dreiecken gewonnen
+  und vorhandene Actor-Mapper auch für Achsen und Kräfte wiederverwendet.
+  Exakte Schnittgeometrie-Regressionen bestehen. Die Yacht-Referenzszene
+  erreicht mit exakten Physikschritten und aktiven Achsen-/Kräfte-Layern
+  über zehn Sekunden `30,34 FPS`; das frühere render-only Ergebnis bleibt
+  separat historisch.
+- **Wiederholen:** `.venv\\Scripts\\python.exe werkzeuge\\benchmark_gui_live.py`
+  startet denselben sichtbaren Test; `--duration 10` verlängert die Messung.
+- **Abnahme:** Wasserliniensegmente stimmen geometrisch mit dem Mesh-Schnitt
+  überein, Deckelvolumen bleibt erhalten und der integrierte Yachtlauf erreicht
+  mindestens `30 FPS`. Die Physik selbst läuft weiterhin langsamer als
+  Wandzeit; siehe B-08.
 
 ## Messkontext und Grenzen
 
@@ -159,10 +202,12 @@ Solver integrieren
   ungeschnittenen Gesamtvolumens und Schwerpunktabweichung höchstens
   `0,005 m`. Das ersetzt nicht die absoluten, separat geltenden
   CPU/GPU-Schranken der Spezifikation.
-- Solver- und Rasterzeiten sind Einzelmessungen; sie sind keine
-  Laufzeitgarantie. Für eine Standardpfad- oder Backendentscheidung ist ein
-  wiederholbarer vollständiger Anwendungslauf erforderlich.
-- Es wurde bisher keine beschleunigte Darstellung nachgewiesen.
+- Solverzeiten sind Einzelmessungen; sie sind keine Laufzeitgarantie.
+- Der Rendering-Smoke-Test umfasst einen realen QtInteractor, den Yacht-Actor
+  und eine repräsentative Posefolge; er ersetzt keine Langzeitmessung aller
+  Darstellungsoptionen.
+- Der Echtzeit-Physikdurchsatz bleibt niedriger als die Wandzeit. Physik-
+  Rückstand wird angezeigt, nicht verworfen.
 - Weiterführende Quellen: [Umsetzungsplan](./Umsetzungsplan_vF1.md),
   [Spezifikation](./Spezifikation_v1.1.md),
   [Voxelmodell](../segelphysik/core/voxelmodell.py),

@@ -49,6 +49,31 @@ def _fan_triangulieren(polygon):
             for i in range(1, len(polygon) - 1)]
 
 
+def _schnittkontur_berechnen(punkte, gesichter, abstand, ebene_z):
+    """Liefert Schnittsegmente direkt aus den durchstochenen Dreiecken."""
+    schnitt = np.any(abstand < 0.0, axis=1) & np.any(abstand > 0.0, axis=1)
+    if not schnitt.any():
+        return np.zeros((0, 3))
+    dreiecke = np.asarray(punkte, dtype=float)[
+        np.asarray(gesichter, dtype=np.int64)[schnitt]]
+    dz = abstand[schnitt]
+    segmente = []
+    for a, b in ((0, 1), (1, 2), (2, 0)):
+        kreuzt = ((dz[:, a] < 0.0) & (dz[:, b] > 0.0)
+                  | (dz[:, a] > 0.0) & (dz[:, b] < 0.0))
+        start = dreiecke[:, a]
+        delta = dreiecke[:, b] - start
+        t = np.divide(
+            -dz[:, a], dz[:, b] - dz[:, a],
+            out=np.zeros_like(dz[:, a]), where=kreuzt)
+        schnittpunkte = start + t[:, None] * delta
+        schnittpunkte[:, 2] = ebene_z
+        segmente.append((schnittpunkte, kreuzt))
+    kandidaten = np.stack([punkte for punkte, _maske in segmente], axis=1)
+    maske = np.stack([maske for _punkte, maske in segmente], axis=1)
+    return kandidaten[maske].reshape(-1, 3)
+
+
 def wasserlinie_aus_teilmesh(punkte, dreiecke, ebene_z=0.0, tol=1e-9):
     """Randkanten eines Teil-Meshes, die vollstaendig auf Schnitthoehe liegen."""
     P = np.asarray(punkte, dtype=float)
@@ -77,52 +102,116 @@ def schneide_am_wasser(punkte, gesichter, ebene_z=0.0, mit_deckel=False):
         kontur : (2s,3) Wasserlinien-Segmentendpunkte (Paare)"""
     P = np.asarray(punkte, dtype=float)
     F = np.asarray(gesichter, dtype=np.int64)
+    abstand = P[F, 2] - ebene_z
+    alle_oben = np.all(abstand >= -EPS, axis=1)
+    alle_unten = ~alle_oben & np.all(abstand <= EPS, axis=1)
+    geschnitten = np.flatnonzero(~alle_oben & ~alle_unten)
 
-    unten_pts, unten_tris = [], []
-    oben_pts, oben_tris = [], []
+    def vollstaendige_teile(maske):
+        flaechen = F[maske]
+        if len(flaechen) == 0:
+            return (np.zeros((0, 3)), np.zeros((0, 3), dtype=np.int64))
+        teile_punkte = P[flaechen].reshape(-1, 3)
+        teile_dreiecke = np.arange(
+            len(teile_punkte), dtype=np.int64).reshape(-1, 3)
+        return teile_punkte, teile_dreiecke
 
-    def register(liste, punkt):
-        liste.append(punkt)
-        return len(liste) - 1
+    unten_p_teile, unten_t_teile = [], []
+    oben_p_teile, oben_t_teile = [], []
+    unten_p, unten_t = vollstaendige_teile(alle_unten)
+    oben_p, oben_t = vollstaendige_teile(alle_oben)
+    if len(unten_p):
+        unten_p_teile.append(unten_p)
+        unten_t_teile.append(unten_t)
+    if len(oben_p):
+        oben_p_teile.append(oben_p)
+        oben_t_teile.append(oben_t)
 
-    for tri in F:
-        eck = [P[tri[0]], P[tri[1]], P[tri[2]]]
-        dz = [p[2] - ebene_z for p in eck]
-        alle_oben = all(d > 0 or abs(d) <= EPS for d in dz)
-        alle_unten = all(d < 0 or abs(d) <= EPS for d in dz)
-        if alle_oben:
-            for poly in _fan_triangulieren(eck):
-                idx = [register(oben_pts, p) for p in poly]
-                oben_tris.append(idx)
-            continue
-        if alle_unten:
-            for poly in _fan_triangulieren(eck):
-                idx = [register(unten_pts, p) for p in poly]
-                unten_tris.append(idx)
-            continue
-        poly_unten = _clip_polygon(eck, ebene_z, oberhalb=False)
-        poly_oben = _clip_polygon(eck, ebene_z, oberhalb=True)
-        for poly, pts, tris in ((poly_unten, unten_pts, unten_tris),
-                                (poly_oben, oben_pts, oben_tris)):
-            if len(poly) >= 3:
-                for dtri in _fan_triangulieren(poly):
-                    idx = [register(pts, p) for p in dtri]
-                    tris.append(idx)
+    def geschnittene_teile(ebene, oberhalb, punkte_teile, dreiecke_teile):
+        offset = sum(len(teil) for teil in punkte_teile)
+        if not len(geschnitten):
+            return
+        dreiecke = P[F[geschnitten]]
+        dz = abstand[geschnitten]
+        innerhalb = dz >= 0.0 if oberhalb else dz <= 0.0
+        anzahl_innerhalb = np.count_nonzero(innerhalb, axis=1)
+        nenner = dz - np.roll(dz, -1, axis=1)
+        t = np.divide(
+            dz, nenner, out=np.zeros_like(dz),
+            where=np.abs(nenner) > EPS)
+        schnittpunkte = (
+            dreiecke + t[:, :, None]
+            * (np.roll(dreiecke, -1, axis=1) - dreiecke))
+        schnittpunkte[:, :, 2] = ebene
+        erzeugt = []
+        for index in range(3):
+            einzeln = (anzahl_innerhalb == 1) & innerhalb[:, index]
+            if einzeln.any():
+                vorher = (index - 1) % 3
+                erzeugt.append(np.stack((
+                    dreiecke[einzeln, index],
+                    schnittpunkte[einzeln, index],
+                    schnittpunkte[einzeln, vorher]), axis=1))
 
-    unten_p = np.asarray(unten_pts, dtype=float).reshape(-1, 3)
-    oben_p = np.asarray(oben_pts, dtype=float).reshape(-1, 3)
-    unten_t = np.asarray(unten_tris, dtype=np.int64).reshape(-1, 3)
-    oben_t = np.asarray(oben_tris, dtype=np.int64).reshape(-1, 3)
+            ausserhalb = (anzahl_innerhalb == 2) & ~innerhalb[:, index]
+            if ausserhalb.any():
+                start = (index + 1) % 3
+                ende = (index + 2) % 3
+                a = np.stack((
+                    dreiecke[ausserhalb, start],
+                    dreiecke[ausserhalb, ende],
+                    schnittpunkte[ausserhalb, ende]), axis=1)
+                b = np.stack((
+                    dreiecke[ausserhalb, start],
+                    schnittpunkte[ausserhalb, ende],
+                    schnittpunkte[ausserhalb, index]), axis=1)
+                erzeugt.extend((a, b))
+        if not erzeugt:
+            return
+        dreiecke_punkte = np.concatenate(erzeugt, axis=0)
+        kanten = np.roll(dreiecke_punkte, -1, axis=1) - dreiecke_punkte
+        nicht_entartet = np.all(
+            np.linalg.norm(kanten, axis=2) > EPS, axis=1)
+        dreiecke_punkte = dreiecke_punkte[nicht_entartet]
+        if not len(dreiecke_punkte):
+            return
+        dreiecke_punkte = dreiecke_punkte.reshape(-1, 3)
+        indices = np.arange(
+            offset, offset + len(dreiecke_punkte),
+            dtype=np.int64).reshape(-1, 3)
+        punkte_teile.append(dreiecke_punkte)
+        dreiecke_teile.append(indices)
 
-    kontur = [wasserlinie_aus_teilmesh(unten_p, unten_t, ebene_z),
-              wasserlinie_aus_teilmesh(oben_p, oben_t, ebene_z)]
-    kontur_p = (np.vstack([k for k in kontur if len(k)])
-                if any(len(k) for k in kontur) else np.zeros((0, 3)))
+    geschnittene_teile(
+        ebene_z, False, unten_p_teile, unten_t_teile)
+    geschnittene_teile(
+        ebene_z, True, oben_p_teile, oben_t_teile)
+
+    def zusammenfuehren(punkte_teile, dreiecke_teile):
+        if not punkte_teile:
+            return (np.zeros((0, 3)), np.zeros((0, 3), dtype=np.int64))
+        return np.concatenate(punkte_teile), np.concatenate(dreiecke_teile)
+
+    unten_p, unten_t = zusammenfuehren(unten_p_teile, unten_t_teile)
+    oben_p, oben_t = zusammenfuehren(oben_p_teile, oben_t_teile)
+
+    direkte_kontur = not np.any(np.abs(abstand) <= EPS)
+    if direkte_kontur:
+        kontur_p = _schnittkontur_berechnen(P, F, abstand, ebene_z)
+    else:
+        kontur = [wasserlinie_aus_teilmesh(unten_p, unten_t, ebene_z),
+                  wasserlinie_aus_teilmesh(oben_p, oben_t, ebene_z)]
+        kontur_p = (np.vstack([k for k in kontur if len(k)])
+                    if any(len(k) for k in kontur) else np.zeros((0, 3)))
     if mit_deckel:
         unten_p, unten_t = _deckel_setzen(unten_p, unten_t, ebene_z,
-                                          teil_oben=False)
+                                          teil_oben=False,
+                                          rand=kontur_p if direkte_kontur
+                                          else None)
         oben_p, oben_t = _deckel_setzen(oben_p, oben_t, ebene_z,
-                                        teil_oben=True)
+                                        teil_oben=True,
+                                        rand=kontur_p if direkte_kontur
+                                        else None)
     return unten_p, unten_t, oben_p, oben_t, kontur_p
 
 
@@ -239,7 +328,7 @@ def _punkt_in_ring(p, ring):
     return drinnen
 
 
-def _deckel_setzen(punkte, dreiecke, ebene_z, teil_oben):
+def _deckel_setzen(punkte, dreiecke, ebene_z, teil_oben, rand=None):
     """Schliesst die Schnittkante an z=ebene_z mit Deckeldreiecken.
     teil_oben=True  -> Teil-Mesh liegt oberhalb, Deckelnormale nach unten (-z).
     teil_oben=False -> Teil-Mesh liegt unterhalb, Deckelnormale nach oben (+z).
@@ -248,7 +337,8 @@ def _deckel_setzen(punkte, dreiecke, ebene_z, teil_oben):
     T = np.asarray(dreiecke, dtype=np.int64).reshape(-1, 3)
     if len(T) == 0:
         return P, T
-    rand = wasserlinie_aus_teilmesh(P, T, ebene_z)
+    if rand is None:
+        rand = wasserlinie_aus_teilmesh(P, T, ebene_z)
     if len(rand) == 0:
         return P, T
     ringe = _ketten(rand)

@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from segelphysik.grafik_bruecke import GrafikBruecke
+from segelphysik.grafik_bruecke import GrafikBruecke, _mesh_actor_setzen
 from segelphysik.grafik_optimierung import kamera_presets
 
 
@@ -85,3 +85,90 @@ def test_ssao_und_wasseroptik_sind_unabhaengig_schaltbar():
 def test_unbekanntes_kamera_preset_wird_abgelehnt():
     with pytest.raises(ValueError, match="Unbekanntes Kamera-Preset"):
         _bruecke().kamera_preset_setzen("unbekannt")
+
+
+def test_mesh_actor_wird_beim_poseupdate_wiederverwendet():
+    class Mapper:
+        def __init__(self):
+            self.mesh = None
+            self.modified = 0
+
+        def SetInputData(self, mesh):
+            self.mesh = mesh
+
+        def Modified(self):
+            self.modified += 1
+
+    class Actor:
+        def __init__(self):
+            self.mapper = Mapper()
+            self.visible = True
+
+        def SetVisibility(self, sichtbar):
+            self.visible = sichtbar
+
+    class Plotter:
+        def __init__(self):
+            self.add_calls = 0
+
+        def add_mesh(self, _mesh, **_kwargs):
+            self.add_calls += 1
+            return Actor()
+
+    plotter = Plotter()
+    actor = Actor()
+    refs = {"koerper_unten": actor}
+    mesh = object()
+
+    _mesh_actor_setzen(plotter, refs, "koerper_unten", mesh)
+
+    assert refs["koerper_unten"] is actor
+    assert actor.mapper.mesh is mesh
+    assert actor.mapper.modified == 1
+    assert actor.visible
+    assert plotter.add_calls == 0
+
+    _mesh_actor_setzen(plotter, refs, "koerper_unten", None)
+    assert not actor.visible
+
+
+def test_overlay_roehre_aktualisiert_actor_statt_neu_einzufuegen():
+    class Mapper:
+        def __init__(self):
+            self.mesh = None
+            self.modified = 0
+
+        def SetInputData(self, mesh):
+            self.mesh = mesh
+
+        def Modified(self):
+            self.modified += 1
+
+    class Actor:
+        def __init__(self):
+            self.mapper = Mapper()
+            self.visible = False
+
+        def SetVisibility(self, sichtbar):
+            self.visible = sichtbar
+
+    class Line:
+        def tube(self, **_kwargs):
+            return object()
+
+    class PyVista:
+        @staticmethod
+        def Line(*_args):
+            return Line()
+
+    bruecke = _bruecke()
+    actor = Actor()
+
+    result = bruecke._roehre_oder_linie(
+        PyVista, (0, 0, 0), (1, 0, 0), "gold", 0.02, "axis", actor=actor)
+
+    assert result is actor
+    assert actor.mapper.mesh is not None
+    assert actor.mapper.modified == 1
+    assert actor.visible
+    assert bruecke._plotter.calls == []

@@ -803,3 +803,92 @@ Hydrostatik abgenommen sind.
 - Erfundenes Speichern von Sitzungs-Materialänderungen in Konfigurations-JSON.
 - Widerstands-/Added-Mass-Koeffizienten ohne fachliche Grundlage.
 - Änderungen an der Simulationszeitsemantik ohne ausdrückliche Vereinbarung.
+
+## 14. Durchführung und Abnahmestand vF1a
+
+Die noch offenen Umsetzungsarbeiten aus Phase 5a sowie die davon abhängigen
+Phasen 6 und 7 wurden ausgeführt. Der genaue Arbeitsbaum- und Teststand wird
+nach dem abschließenden Lauf dokumentiert. Die Phasen 0–5 bleiben gemäß der
+Regel in Abschnitt 1 historische Grundlage und werden durch diese
+F1a-Messungen nicht nachträglich umgedeutet.
+
+### Leistung und Genauigkeit
+
+- **Hydrostatik-Benchmark:** Yachtmodell mit `3,16786 m³` Unionvolumen,
+  `7,68377 m` Referenzlänge und `0,05 m` Rasterweite auf Windows 11,
+  Python 3.14.8, NumPy 2.5.4 und Manifold3D 3.5.4. Das Benchmarkwerkzeug
+  vergleicht vier repräsentative Posen und gibt Vorbereitungszeit,
+  Poseauswertung, P95 und budgetbezogene Abnahme getrennt aus.
+- **Exakte Union:** `20,8 ms` Vorbereitung, `8,52 ms` Median und `12,39 ms`
+  P95 je Yachtpose. Der vollständige statische Solverlauf benötigte `225,6 ms`
+  bei fünf Iterationen; gegenüber der exakten Referenz sind Lage und Winkel
+  erwartungsgemäß identisch. Der gefundene Winkel beträgt `0,1710°`.
+- **Globaler Voxelpfad:** Drei wiederholte Posebenchmarkläufe ergaben
+  `306 ms` Median und `475 ms` P95. Die Volumenabweichung blieb unter `0,03 %`,
+  die Momentabweichung erreichte jedoch `2,20 %`; der vollständige Solverlauf
+  benötigte `94,33 s`. Der Pfad ist trotz einer Solverwinkelabweichung von
+  `0,435°` nicht für interaktive Physik freigegeben, weil nicht alle
+  Ergebnisgrößen das 1-%-Budget einhalten.
+- **Körperfestes Voxelraster:** `4,01 s` Vorbereitung und `0,66 ms` Median je
+  Pose. Volumen lag innerhalb `0,29 %`, Auftrieb wich bis `1,96 %` und Moment
+  bis `4,20 %` ab. Auch dieser schnelle Auswertungspfad besteht das
+  Genauigkeitsbudget nicht und bleibt deaktiviert.
+- **Darstellung unter Live-Last:** Die historischen render-only Messungen
+  erreichten nach der ersten Schnitt-/Actor-Optimierung `40,1–49,7 FPS` und
+  gelten nicht als Ende-zu-Ende-Abnahme. Nach Wiederverwendung der
+  Achsen-/Kräfte-Actors wurde ein zehnsekündiger sichtbarer
+  Windows-QtInteractor-Lauf mit
+  realem Yachtmodell, 6-DOF-Physik und aktivierten Achsen-/Kräfte-Layern mit
+  `30,34 FPS` gemessen. Die Poseaktualisierung lag bei `14,50 ms` Median
+  (`20,20 ms` P95), der Renderer bei `4,55 ms` Median (`6,63 ms` P95).
+  Ein 50-ms-Ereignis wurde aus einem separaten Thread in die Qt-
+  Ereignisschleife eingereiht; die Dispatch-Latenz betrug `18,83 ms` P95
+  und `25,66 ms` maximal. Der präzise 33-ms-Render-Timer zählt nur
+  erfolgreiche Pose- und Renderaufrufe.
+  Wiederholbar ist der Lauf mit
+  `werkzeuge\\benchmark_gui_live.py --duration 10`.
+- **Genauigkeit der Echtzeit-Hydrostatik:** Ein versuchsweise verwendeter
+  Vier-Schritt-Cache wurde über eine fünfsekündige Yachtbewegung mit 500
+  Schritten gegen die exakte Poseauswertung verglichen. Der Volumenfehler
+  blieb bei `0,0055 %`, der Momentfehler erreichte aber `9,95 N·m` und wegen
+  Referenzmomenten nahe null sehr hohe relative Werte; diese Abkürzung ist
+  daher deaktiviert. Die Echtzeit berechnet jetzt jeden Hydrostatikschritt
+  exakt. Eine zusätzliche 500-Schritt-Prüfung ergab identische Kräfte,
+  Momente und Positionen zur exakten Referenz (Winkeldifferenz nur
+  numerisches Rundungsrauschen).
+- **Verbleibender Physikdurchsatz:** Bei `dt = 0,004 s` dauerten vier exakte
+  Schritte im Windows-Prozessworker median `37,24 ms` (P95 `50,78 ms`) für
+  `0,016 s` Simulationszeit. Während des zehnsekündigen Live-Tests wuchs der
+  sichtbare Rückstand auf etwa `7,47 s`. Die Physik läuft damit langsamer als
+  Wandzeit; aufgelaufene Zeit wird nicht verworfen. Eine andere Zeitsemantik
+  oder künstliche Begrenzung des Rückstands ist nicht Teil dieser Umsetzung.
+
+### Umgesetzte Schnittstellen und Prüfungen
+
+- Der exakte, einmal vorbereitete Unionpfad wird sowohl im statischen Solver
+  als auch in der Echtzeit-Hydrostatik verwendet. Seine Vorbereitung wird bei
+  wiederholten Posen wiederverwendet.
+- Konfigurierbare Widerstands-, Fluid- und Added-Mass-Module teilen eine
+  gemeinsame Kraftschnittstelle. Unbelegte Koeffizienten bleiben deaktiviert;
+  das Vorlageformat erläutert Einheiten und Aktivierung.
+- Die Echtzeitdynamik verwendet sechs Freiheitsgrade mit körperfester
+  Geschwindigkeit und Trägheit, Weltkräften/-momenten und Quaternion-
+  Orientierung. Die GUI stellt vollständige 3D-Posen interpoliert dar,
+  trennt Physik- und Render-Takt und meldet Rückstand/Fehler nachvollziehbar.
+- Die Anzeigeoptimierung vektorisiert ungeschnittene Dreiecke, berechnet
+  Wasserliniensegmente direkt für nichtdegenerierte Schnitte und aktualisiert
+  vorhandene Renderer-Actors für Körper, Achsen und Kräfte. Für Schnitte mit
+  Ebenen-/Kantenberührung bleibt der getestete Randkanten-Fallback erhalten.
+- Die numerischen Genauigkeitsgrenzen und die integrierte Yacht-Referenz-
+  Bildrate sind mit exakter Echtzeit-Hydrostatik geprüft. Die angeforderte
+  Qt-Ereignisreaktion bleibt im zehnsekündigen Messlauf deutlich unter
+  `100 ms` (maximal `25,66 ms`). Der Physik-Wandzeitdurchsatz bleibt
+  ausdrücklich offen; ein GPU-Physikpfad wurde nicht freigegeben.
+- Die Nutzermodelle und `konfigurationen/*.json` wurden nicht geändert.
+  Benchmark- und GUI-Tests verwenden die produktiven Modelle lesend;
+  bearbeitete Konfigurationsvorlagen und Programmmodule sind getrennt davon.
+- Abschlussprüfung: `350` Tests bestanden (`23,20 s`), `pip check` ohne
+  Abhängigkeitsfehler, `git diff --check` ohne Beanstandungen. Es wurden keine
+  Dateien unter `konfigurationen/` verändert.
+- Änderungen bleiben uncommittet. Ein Commit oder Push ist gemäß Abschnitt 1
+  nicht Teil dieses Auftrags.

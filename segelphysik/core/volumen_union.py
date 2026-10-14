@@ -10,12 +10,7 @@ class VolumenUnionFehler(ValueError):
     """Ungültige Eingabe oder fehlgeschlagene Mesh-Vereinigung."""
 
 
-def volumen_schwerpunkt_union(blatt_meshes, ebene_z=None):
-    """Gibt Volumen und Schwerpunkt einer Mesh-Union zurück.
-
-    Wenn `ebene_z` angegeben ist, wird nur der Bereich unterhalb dieser
-    horizontalen Ebene integriert; Manifold3D schließt dabei die Schnittfläche.
-    """
+def _manifolds_aus_meshes(blatt_meshes):
     try:
         import manifold3d as m3d
     except ImportError as fehler:
@@ -41,6 +36,11 @@ def volumen_schwerpunkt_union(blatt_meshes, ebene_z=None):
                 "Manifold3D hat Volumenmesh %d zurückgewiesen: %s"
                 % (index, teil.status()))
         solide.append(teil)
+    return m3d, solide
+
+
+def _volumen_schwerpunkt_aus_soliden(solide, ebene_z=None):
+    import manifold3d as m3d
 
     if not solide:
         return 0.0, np.zeros(3, dtype=np.float64)
@@ -53,6 +53,12 @@ def volumen_schwerpunkt_union(blatt_meshes, ebene_z=None):
         raise VolumenUnionFehler(
             "Boolesche Volumen-Union lieferte ungültigen Status: %s"
             % union.status())
+    return _volumen_schwerpunkt_aus_union(union, ebene_z)
+
+
+def _volumen_schwerpunkt_aus_union(union, ebene_z=None):
+    import manifold3d as m3d
+
     if union.is_empty() or union.volume() <= 1e-15:
         return 0.0, np.zeros(3, dtype=np.float64)
     if ebene_z is not None:
@@ -97,3 +103,51 @@ def volumen_schwerpunkt_union(blatt_meshes, ebene_z=None):
         raise VolumenUnionFehler(
             "Union-Schwerpunkt ist nicht endlich")
     return volumen, schwerpunkt
+
+
+class VorbereitetesUnionModell:
+    """Vereint starre Teilmeshes einmalig und wertet Posen wiederholt aus."""
+
+    def __init__(self, blatt_meshes):
+        m3d, solide = _manifolds_aus_meshes(blatt_meshes)
+        if not solide:
+            self._union = None
+            return
+        try:
+            union = m3d.Manifold.batch_boolean(solide, m3d.OpType.Add)
+        except (ValueError, RuntimeError) as fehler:
+            raise VolumenUnionFehler(
+                "Boolesche Volumen-Union ist fehlgeschlagen: %s"
+                % fehler) from fehler
+        if union.status() != m3d.Error.NoError:
+            raise VolumenUnionFehler(
+                "Boolesche Volumen-Union lieferte ungültigen Status: %s"
+                % union.status())
+        self._union = union
+
+    def auswerten(self, transform=None, ebene_z=None):
+        if self._union is None:
+            return 0.0, np.zeros(3, dtype=np.float64)
+        union = self._union
+        if transform is not None:
+            matrix = np.asarray(transform, dtype=np.float64)
+            if matrix.shape != (3, 4) or not np.isfinite(matrix).all():
+                raise VolumenUnionFehler(
+                    "Pose muss eine endliche affine 3x4-Matrix sein")
+            try:
+                union = union.transform(matrix.tolist())
+            except (TypeError, ValueError, RuntimeError) as fehler:
+                raise VolumenUnionFehler(
+                    "Union-Pose konnte nicht angewendet werden: %s"
+                    % fehler) from fehler
+        return _volumen_schwerpunkt_aus_union(union, ebene_z)
+
+
+def volumen_schwerpunkt_union(blatt_meshes, ebene_z=None):
+    """Gibt Volumen und Schwerpunkt einer Mesh-Union zurück.
+
+    Wenn `ebene_z` angegeben ist, wird nur der Bereich unterhalb dieser
+    horizontalen Ebene integriert; Manifold3D schließt dabei die Schnittfläche.
+    """
+    _m3d, solide = _manifolds_aus_meshes(blatt_meshes)
+    return _volumen_schwerpunkt_aus_soliden(solide, ebene_z)

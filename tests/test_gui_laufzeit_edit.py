@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QTimer
 
 from segelphysik.core.konfig_lader import lade_konfig
+from segelphysik.core.auftrieb import Vektor
 from segelphysik.gui.baum import (
     aktive_blaetter, finde, sichtbarkeit_setzen, welt_aus_konfig,
 )
@@ -19,6 +20,17 @@ from segelphysik.gui.hauptfenster import HauptFenster
 
 def _qt_app():
     return QApplication.instance() or QApplication([])
+
+
+def _physik_stub(g=9.81, aufloesung=0.05, dt=0.004):
+    return SimpleNamespace(
+        dt_s=dt, g_m_pro_s2=g, daempfung_tauchung=0.0,
+        daempfung_kraengung=0.0, voxel_aufloesung_m=aufloesung,
+        linear_widerstand=(0.0,) * 6,
+        quadratischer_widerstand=(0.0,) * 6,
+        fluidgeschwindigkeit=(0.0,) * 3,
+        fluidwinkelgeschwindigkeit=(0.0,) * 3,
+        added_mass_diagonal=(0.0,) * 6)
 
 
 def _konfig_kopie(tmp_path):
@@ -245,21 +257,34 @@ def test_statisch_modus_ruft_solver_auf_und_zeigt_ergebnis(
         def physik_pose_setzen(self, name, z, phi):
             return True
 
+        def physik_basis_position_ermitteln(self, _name):
+            return np.zeros(3)
+
+        def physik_pose_6dof_setzen(self, _name, _rotation, _position):
+            return True
+
         def layer_ist_an(self, _layer):
             return False
 
+        def render(self):
+            pass
+
     bruecke = Bruecke()
     fenster._bruecke = bruecke
-    params = SimpleNamespace(g_m_pro_s2=9.7, voxel_aufloesung_m=0.03)
+    params = _physik_stub(g=9.7, aufloesung=0.03)
     kraftaufrufe = []
     solveraufrufe = []
+    hydrostatik = lambda *_args, **_kwargs: None
     monkeypatch.setattr(
         "segelphysik.core.konfig_lader.lade_physik",
         lambda ordner: params)
     monkeypatch.setattr(
         "segelphysik.core.auftrieb.baue_kraftfunktion",
         lambda koerper_arg, **kwargs:
-            kraftaufrufe.append((koerper_arg, kwargs)) or "kraftfunktion")
+            kraftaufrufe.append((koerper_arg, kwargs)) or hydrostatik)
+    monkeypatch.setattr(
+        "segelphysik.core.auftrieb.baue_kraftfunktion_6dof",
+        lambda *_args, **_kwargs: hydrostatik)
     monkeypatch.setattr(
         "segelphysik.core.statisch_robust.loese_robust",
         lambda kraft, masse, g: solveraufrufe.append((kraft, masse, g)) or {
@@ -280,12 +305,14 @@ def test_statisch_modus_ruft_solver_auf_und_zeigt_ergebnis(
         time.sleep(0.005)
 
     assert solveraufrufe
-    assert len(kraftaufrufe) == 2
+    assert len(kraftaufrufe) == 1
     assert kraftaufrufe[0][0] is koerper
     assert kraftaufrufe[0][1]["rho_w"] == konfig.wasser_dichte()
     assert kraftaufrufe[0][1]["g"] == params.g_m_pro_s2
     assert kraftaufrufe[0][1]["aufloesung"] == params.voxel_aufloesung_m
-    assert solveraufrufe == [("kraftfunktion", koerper.masse, 9.7)]
+    assert len(solveraufrufe) == 1
+    assert solveraufrufe[0][0].hydrostatik is hydrostatik
+    assert solveraufrufe[0][1:] == (koerper.masse, 9.7)
     assert bruecke.poses[0][0] == "yacht1"
     assert bruecke.poses[0][1:] == (0.12, math.radians(5.0))
     assert fenster._solver_werte["z*"].text(1) == "0.1200 m"
@@ -328,6 +355,14 @@ def test_echtzeit_gui_integriert_feste_physikschritte(monkeypatch, tmp_path):
             self.poses.append((name, z, phi))
             return True
 
+        def physik_basis_position_ermitteln(self, _name):
+            return np.zeros(3)
+
+        def physik_pose_6dof_setzen(self, name, rotation, position):
+            self.pose_thread = threading.get_ident()
+            self.poses.append((name, rotation, position))
+            return True
+
         def layer_ist_an(self, _layer):
             return False
 
@@ -337,15 +372,14 @@ def test_echtzeit_gui_integriert_feste_physikschritte(monkeypatch, tmp_path):
 
     bruecke = Bruecke()
     fenster._bruecke = bruecke
-    physik = SimpleNamespace(
-        dt_s=0.004, g_m_pro_s2=9.81, daempfung_tauchung=0.0,
-        daempfung_kraengung=0.0, voxel_aufloesung_m=0.05)
+    physik = _physik_stub()
     monkeypatch.setattr(
         "segelphysik.core.konfig_lader.lade_physik", lambda _ordner: physik)
     monkeypatch.setattr(
-        "segelphysik.core.auftrieb.baue_kraftfunktion",
+        "segelphysik.core.auftrieb.baue_kraftfunktion_6dof",
         lambda *_args, **_kwargs: lambda *_a, **_k: SimpleNamespace(
-            F_A=SimpleNamespace(z=0.0), M=SimpleNamespace(x=0.0)))
+            F_A=Vektor((0.0, 0.0, 0.0)),
+            M=Vektor((0.0, 0.0, 0.0))))
     fenster._btn_echtzeit.click()
 
     fenster._echtzeit_letzte_wandzeit = 10.0
@@ -358,20 +392,60 @@ def test_echtzeit_gui_integriert_feste_physikschritte(monkeypatch, tmp_path):
         time.sleep(0.005)
 
     assert not fenster._echtzeit_aufgabe_laeuft
-    assert fenster._echtzeit_zustand.v_z == pytest.approx(-9.81 * 0.004), (
+    assert fenster._echtzeit_zustand.geschwindigkeit_koerper[2] \
+        == pytest.approx(-9.81 * 0.004), (
         fenster._echtzeit_aufgabe_laeuft,
         fenster._echtzeit_generation,
         fenster._solver_werte["Lösungstyp"].text(1),
         fenster.protokoll.toPlainText())
-    assert fenster._echtzeit_zustand.z == pytest.approx(-9.81 * 0.004 ** 2)
+    assert fenster._echtzeit_zustand.position[2] \
+        == pytest.approx(-9.81 * 0.004 ** 2)
+    monkeypatch.setattr(time, "perf_counter", lambda: 10.03)
+    fenster._echtzeit_render_takt()
     assert bruecke.poses[-1][0] == "yacht1"
-    assert bruecke.poses[-1][1:] == pytest.approx(
-        (-9.81 * 0.004 ** 2, 0.0))
-    assert bruecke.renders == 1
+    assert bruecke.poses[-1][2] == pytest.approx(
+        (0.0, 0.0, -9.81 * 0.004 ** 2))
+    assert bruecke.renders == 2
     assert bruecke.pose_thread == bruecke.gui_thread
     assert bruecke.render_thread == bruecke.gui_thread
     assert fenster._echtzeit_akkumulator == pytest.approx(0.002)
     fenster._zeit_pausieren()
+    fenster.close()
+
+
+def test_echtzeit_render_timer_misst_erfolgreiche_frames():
+    from PySide6.QtCore import QEventLoop, QTimer
+    from segelphysik.core.dynamik_6dof import Zustand6DOF
+
+    _qt_app()
+    fenster = HauptFenster()
+
+    class Bruecke:
+        def __init__(self):
+            self.renders = 0
+
+        def physik_pose_6dof_setzen(self, _name, _rotation, _position):
+            return True
+
+        def render(self):
+            self.renders += 1
+
+    bruecke = Bruecke()
+    fenster._bruecke = bruecke
+    fenster._echtzeit_name = "yacht1"
+    pose = Zustand6DOF()
+    fenster._echtzeit_anzeige_start = pose
+    fenster._echtzeit_anzeige_ziel = pose
+    schleife = QEventLoop()
+    QTimer.singleShot(1150, schleife.quit)
+    fenster._echtzeit_render_timer.start()
+    schleife.exec()
+
+    fenster._echtzeit_render_timer.stop()
+    assert fenster._echtzeit_render_timer.interval() == 33
+    assert fenster._echtzeit_render_timer.timerType().name == "PreciseTimer"
+    assert bruecke.renders >= 30
+    assert fenster._echtzeit_angeforderte_fps >= 27.0
     fenster.close()
 
 
@@ -403,6 +477,13 @@ def test_echtzeit_physik_blockiert_gui_nicht_und_verwirft_pause_ergebnis(
             self.pose_thread = threading.get_ident()
             return True
 
+        def physik_basis_position_ermitteln(self, _name):
+            return np.zeros(3)
+
+        def physik_pose_6dof_setzen(self, _name, _rotation, _position):
+            self.pose_thread = threading.get_ident()
+            return True
+
         def layer_ist_an(self, _layer):
             return False
 
@@ -411,9 +492,7 @@ def test_echtzeit_physik_blockiert_gui_nicht_und_verwirft_pause_ergebnis(
 
     bruecke = Bruecke()
     fenster._bruecke = bruecke
-    physik = SimpleNamespace(
-        dt_s=0.004, g_m_pro_s2=9.81, daempfung_tauchung=0.0,
-        daempfung_kraengung=0.0, voxel_aufloesung_m=0.05)
+    physik = _physik_stub()
     gestartet = threading.Event()
     freigeben = threading.Event()
     monkeypatch.setattr(
@@ -422,11 +501,12 @@ def test_echtzeit_physik_blockiert_gui_nicht_und_verwirft_pause_ergebnis(
     def langsame_kraftfunktion(*_args, **_kwargs):
         gestartet.set()
         freigeben.wait(timeout=2.0)
-        return SimpleNamespace(F_A=SimpleNamespace(z=0.0),
-                               M=SimpleNamespace(x=0.0))
+        return SimpleNamespace(
+            F_A=Vektor((0.0, 0.0, 0.0)),
+            M=Vektor((0.0, 0.0, 0.0)))
 
     monkeypatch.setattr(
-        "segelphysik.core.auftrieb.baue_kraftfunktion",
+        "segelphysik.core.auftrieb.baue_kraftfunktion_6dof",
         lambda *_args, **_kwargs: langsame_kraftfunktion)
     fenster._btn_echtzeit.click()
     fenster._echtzeit_timer.stop()
@@ -477,11 +557,10 @@ def test_solverfehler_zeigt_abbruchgrund_und_letzte_residuen(
     fenster._bruecke = Bruecke()
     monkeypatch.setattr(
         "segelphysik.core.konfig_lader.lade_physik",
-        lambda _ordner: SimpleNamespace(g_m_pro_s2=9.81,
-                                         voxel_aufloesung_m=0.05))
+        lambda _ordner: _physik_stub())
     monkeypatch.setattr(
         "segelphysik.core.auftrieb.baue_kraftfunktion",
-        lambda *_args, **_kwargs: object())
+        lambda *_args, **_kwargs: lambda *_a, **_k: None)
 
     def solverfehler(*_args, **_kwargs):
         raise SolverFehler(
@@ -538,11 +617,10 @@ def test_statischer_solver_blockiert_gui_nicht_und_verwirft_altes_ergebnis(
     fenster._bruecke = bruecke
     monkeypatch.setattr(
         "segelphysik.core.konfig_lader.lade_physik",
-        lambda _ordner: SimpleNamespace(g_m_pro_s2=9.81,
-                                         voxel_aufloesung_m=0.05))
+        lambda _ordner: _physik_stub())
     monkeypatch.setattr(
         "segelphysik.core.auftrieb.baue_kraftfunktion",
-        lambda *_args, **_kwargs: "kraftfunktion")
+        lambda *_args, **_kwargs: lambda *_a, **_k: None)
 
     def langsamer_solver(*_args, **_kwargs):
         gestartet.set()
@@ -618,6 +696,12 @@ def test_echtzeit_yacht_voxel_last_laesst_gui_reagieren(
             self.pose_thread = threading.get_ident()
             return True
 
+        def physik_basis_position_ermitteln(self, _name):
+            return np.zeros(3)
+
+        def physik_pose_6dof_setzen(self, _name, _rotation, _position):
+            self.pose_thread = threading.get_ident()
+            return True
         def layer_ist_an(self, _layer):
             return False
 
@@ -649,7 +733,9 @@ def test_echtzeit_yacht_voxel_last_laesst_gui_reagieren(
     while fenster._echtzeit_aufgabe_laeuft and time.monotonic() < ende:
         app.processEvents()
         time.sleep(0.005)
+
     assert not fenster._echtzeit_aufgabe_laeuft
+    fenster._echtzeit_render_takt()
     assert bruecke.pose_thread == bruecke.gui_thread
     assert bruecke.render_thread == bruecke.gui_thread
     assert fenster._echtzeit_zustand is not None

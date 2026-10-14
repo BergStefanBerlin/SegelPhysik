@@ -94,6 +94,20 @@ def _dreiecks_polydaten(pv, punkte, dreiecke):
                        np.hstack([kopf, dreiecke]).ravel())
 
 
+def _mesh_actor_setzen(plotter, refs, name, mesh, **kwargs):
+    actor = refs.get(name)
+    if mesh is None:
+        if actor is not None:
+            actor.SetVisibility(False)
+        return
+    if actor is None:
+        refs[name] = plotter.add_mesh(mesh, name=name, **kwargs)
+        return
+    actor.mapper.SetInputData(mesh)
+    actor.mapper.Modified()
+    actor.SetVisibility(True)
+
+
 def _farbgruppen(koerper):
     """Farbgruppen eines Koerpers (P4 nach der Material-Reform)."""
     if not getattr(koerper, "teile", None):
@@ -254,38 +268,18 @@ class GrafikBruecke:
         if glanz is not None:
             kw_basis.update(glanz_kw(glanz))
 
-        if len(u_t):
-            un = _dreiecks_polydaten(pv, u_p, u_t)
-            refs[n_unten] = p.add_mesh(un, color=farbe_u, name=n_unten,
-                                       **kw_basis)
-        else:
-            refs.pop(n_unten, None)
-            try:
-                p.remove_actor(n_unten)
-            except Exception:
-                pass
-
-        if len(o_t):
-            ob = _dreiecks_polydaten(pv, o_p, o_t)
-            refs[n_oben] = p.add_mesh(ob, color=farbe_o, name=n_oben,
-                                      **kw_basis)
-        else:
-            refs.pop(n_oben, None)
-            try:
-                p.remove_actor(n_oben)
-            except Exception:
-                pass
-
-        if len(kontur):
-            linien = pv.line_segments_from_points(kontur)
-            refs[n_kontur] = p.add_mesh(linien, color="black", line_width=3,
-                                        name=n_kontur)
-        else:
-            refs.pop(n_kontur, None)
-            try:
-                p.remove_actor(n_kontur)
-            except Exception:
-                pass
+        _mesh_actor_setzen(
+            p, refs, n_unten,
+            _dreiecks_polydaten(pv, u_p, u_t) if len(u_t) else None,
+            color=farbe_u, **kw_basis)
+        _mesh_actor_setzen(
+            p, refs, n_oben,
+            _dreiecks_polydaten(pv, o_p, o_t) if len(o_t) else None,
+            color=farbe_o, **kw_basis)
+        _mesh_actor_setzen(
+            p, refs, n_kontur,
+            pv.line_segments_from_points(kontur) if len(kontur) else None,
+            color="black", line_width=3)
 
     def sichtbar_setzen(self, name, sichtbar):
         """Ein-/Ausblenden (Fix nach Sichtprobe)."""
@@ -310,6 +304,9 @@ class GrafikBruecke:
                     self._plotter.remove_actor(n)
                 except Exception:
                     pass
+            k["actors"] = {}
+            k["overlay_actors"] = {}
+            k["kraefte_actors"] = {}
 
     def aktualisieren(self, t):
         from .core import bewegung as kin
@@ -479,13 +476,15 @@ class GrafikBruecke:
                                direction=tuple(p["richtung"]),
                                height=p["kopf_laenge"],
                                radius=p["kopf_radius"])
-                store[n] = self._plotter.add_mesh(
-                    schaft + kopf, color=farbe, name=n, smooth_shading=True)
+                _mesh_actor_setzen(
+                    self._plotter, store, n, schaft + kopf,
+                    color=farbe, smooth_shading=True)
             except Exception:
                 linie = pv.line_segments_from_points(
                     [tuple(p["start"]), tuple(p["spitze"])])
-                store[n] = self._plotter.add_mesh(linie, color=farbe,
-                                                  line_width=5, name=n)
+                _mesh_actor_setzen(
+                    self._plotter, store, n, linie, color=farbe,
+                    line_width=5)
 
         if self._layer.ist_an(LAYER_KRAEFTE):
             _pfeil(fg, kb.FARBE_FG, n_fg)
@@ -493,8 +492,9 @@ class GrafikBruecke:
             a, b = kb.hebelarm_segment(daten["erg"].K.as_array() + cm, r_s)
             try:
                 arm = pv.line_segments_from_points([tuple(a), tuple(b)])
-                store[n_arm] = self._plotter.add_mesh(
-                    arm, color=kb.FARBE_ARM, line_width=2, name=n_arm)
+                _mesh_actor_setzen(
+                    self._plotter, store, n_arm, arm,
+                    color=kb.FARBE_ARM, line_width=2)
             except Exception:
                 pass
         else:
@@ -515,13 +515,14 @@ class GrafikBruecke:
                         direction=tuple(bogen["richtung"]),
                         height=bogen["kopf_laenge"],
                         radius=bogen["kopf_radius"])
-                    store[n_moment] = self._plotter.add_mesh(
-                        kurve + kopf, color=kb.FARBE_MOMENT, name=n_moment,
-                        smooth_shading=True)
+                    _mesh_actor_setzen(
+                        self._plotter, store, n_moment, kurve + kopf,
+                        color=kb.FARBE_MOMENT, smooth_shading=True)
                 except Exception:
                     seg = pv.line_segments_from_points(bogen["punkte"])
-                    store[n_moment] = self._plotter.add_mesh(
-                        seg, color=kb.FARBE_MOMENT, line_width=4, name=n_moment)
+                    _mesh_actor_setzen(
+                        self._plotter, store, n_moment, seg,
+                        color=kb.FARBE_MOMENT, line_width=4)
             else:
                 self._kraefte_actors_entfernen(name, (n_moment,))
         else:
@@ -530,7 +531,8 @@ class GrafikBruecke:
     def _kraefte_actors_entfernen(self, name, namen):
         store = self._koerper.get(name, {}).get("kraefte_actors", {})
         for actor_name in namen:
-            store.pop(actor_name, None)
+            if store.pop(actor_name, None) is None:
+                continue
             try:
                 self._plotter.remove_actor(actor_name)
             except Exception:
@@ -539,7 +541,8 @@ class GrafikBruecke:
     def _kraefte_entfernen(self, name):
         store = self._koerper.get(name, {}).get("kraefte_actors", {})
         for n in self._kraefte_namen(name):
-            store.pop(n, None)
+            if store.pop(n, None) is None:
+                continue
             try:
                 self._plotter.remove_actor(n)
             except Exception:
@@ -555,15 +558,42 @@ class GrafikBruecke:
         k = self._koerper.get(name)
         if k is None:
             return False
-        if "position_basis" not in k:
-            k["position_basis"] = np.asarray(k["position"], float).copy()
-        basis = k["position_basis"]
         c, s = np.cos(float(phi)), np.sin(float(phi))
         R = np.array([[1.0, 0.0, 0.0],
                       [0.0, c, -s],
                       [0.0, s, c]])
-        k["statisch_R"] = R
-        k["position"] = np.array([basis[0], basis[1], float(z)])
+        basis = self.physik_basis_position_ermitteln(name)
+        position = np.array([basis[0], basis[1], float(z)])
+        return self.physik_pose_6dof_setzen(name, R, position)
+
+    def physik_basis_position_ermitteln(self, name):
+        """Liefert die unveraenderte Startposition des Koerper-Schwerpunkts."""
+        k = self._koerper.get(name)
+        if k is None:
+            raise ValueError("Koerper %r fehlt in der 3D-Ansicht" % name)
+        basis = k.get("position_basis", k["position"])
+        return np.asarray(basis, dtype=np.float64).copy()
+
+    def physik_pose_6dof_setzen(self, name, rotation, position):
+        """Wendet eine vollstaendige starre 3D-Pose im GUI-Thread an."""
+        k = self._koerper.get(name)
+        if k is None:
+            return False
+        rotation = np.asarray(rotation, dtype=np.float64)
+        position = np.asarray(position, dtype=np.float64)
+        if (rotation.shape != (3, 3) or position.shape != (3,)
+                or not np.isfinite(rotation).all()
+                or not np.isfinite(position).all()
+                or not np.allclose(rotation.T @ rotation, np.eye(3),
+                                   rtol=0.0, atol=1e-8)
+                or not np.isclose(np.linalg.det(rotation), 1.0,
+                                  rtol=0.0, atol=1e-8)):
+            raise ValueError("3D-Pose muss eine endliche starre Rotation "
+                             "und Position enthalten")
+        if "position_basis" not in k:
+            k["position_basis"] = np.asarray(k["position"], float).copy()
+        k["statisch_R"] = rotation.copy()
+        k["position"] = position.copy()
         self._statisch_anwenden(name, k)
         return True
 
@@ -632,16 +662,21 @@ class GrafikBruecke:
         _laenge, marker_radius = self._overlay_skala(koerper)
         return max(0.25 * marker_radius, 0.006)
 
-    def _roehre_oder_linie(self, pv, start, ende, farbe, radius, name):
+    def _roehre_oder_linie(
+            self, pv, start, ende, farbe, radius, name, actor=None):
         """K4: Achsen-Segment als Tube (pv.Line().tube()); Fallback Linie."""
         try:
-            roehre = pv.Line(start, ende).tube(radius=radius, n_sides=12)
-            return self._plotter.add_mesh(roehre, color=farbe, name=name,
-                                          smooth_shading=True)
+            mesh = pv.Line(start, ende).tube(radius=radius, n_sides=12)
+            kwargs = {"color": farbe, "smooth_shading": True}
         except Exception:
-            linie = pv.Line(start, ende)
-            return self._plotter.add_mesh(linie, color=farbe, line_width=4,
-                                          name=name)
+            mesh = pv.Line(start, ende)
+            kwargs = {"color": farbe, "line_width": 4}
+        if actor is None:
+            return self._plotter.add_mesh(mesh, name=name, **kwargs)
+        actor.mapper.SetInputData(mesh)
+        actor.mapper.Modified()
+        actor.SetVisibility(True)
+        return actor
 
     def _overlay_namen(self, name):
         return (["overlay_%s_schwerpunkt" % name]
@@ -681,12 +716,15 @@ class GrafikBruecke:
         import pyvista as pv
         kugel = pv.Sphere(center=tuple(cm), radius=radius)
         n = self._overlay_namen(name)[0]
-        actor = self._plotter.add_mesh(kugel, color="white", name=n)
-        self._koerper[name].setdefault("overlay_actors", {})[n] = actor
+        store = self._koerper[name].setdefault("overlay_actors", {})
+        _mesh_actor_setzen(
+            self._plotter, store, n, kugel, color="white")
 
     def _overlay_schwerpunkt_entfernen(self, name):
         n = self._overlay_namen(name)[0]
-        self._koerper.get(name, {}).get("overlay_actors", {}).pop(n, None)
+        store = self._koerper.get(name, {}).get("overlay_actors", {})
+        if store.pop(n, None) is None:
+            return
         try:
             self._plotter.remove_actor(n)
         except Exception:
@@ -703,13 +741,15 @@ class GrafikBruecke:
             start = cm - l * richtungen[i]
             ende = cm + l * richtungen[i]
             store[namen[i + 1]] = self._roehre_oder_linie(
-                pv, start, ende, OVERLAY_FARBEN_ACHSEN[i], rr, namen[i + 1])
+                pv, start, ende, OVERLAY_FARBEN_ACHSEN[i], rr,
+                namen[i + 1], actor=store.get(namen[i + 1]))
 
     def _overlay_hauptachsen_entfernen(self, name):
         namen = self._overlay_namen(name)
         store = self._koerper.get(name, {}).get("overlay_actors", {})
         for n in namen[1:]:
-            store.pop(n, None)
+            if store.pop(n, None) is None:
+                continue
             try:
                 self._plotter.remove_actor(n)
             except Exception:
@@ -730,36 +770,18 @@ class GrafikBruecke:
             kw_g = {"opacity": 0.95, "show_edges": False, "smooth_shading": True}
             if g.get("glanz") is not None:
                 kw_g.update(glanz_kw(g["glanz"]))
-            if len(u_t):
-                un = _dreiecks_polydaten(pv, u_p, u_t)
-                refs[n_u] = p.add_mesh(un, color=g["farbe_unten"], name=n_u,
-                                       **kw_g)
-            else:
-                refs.pop(n_u, None)
-                try:
-                    p.remove_actor(n_u)
-                except Exception:
-                    pass
-            if len(o_t):
-                ob = _dreiecks_polydaten(pv, o_p, o_t)
-                refs[n_o] = p.add_mesh(ob, color=g["farbe_oben"], name=n_o,
-                                       **kw_g)
-            else:
-                refs.pop(n_o, None)
-                try:
-                    p.remove_actor(n_o)
-                except Exception:
-                    pass
-            if len(kontur):
-                linien = pv.line_segments_from_points(kontur)
-                refs[n_k] = p.add_mesh(linien, color="black", line_width=3,
-                                       name=n_k)
-            else:
-                refs.pop(n_k, None)
-                try:
-                    p.remove_actor(n_k)
-                except Exception:
-                    pass
+            _mesh_actor_setzen(
+                p, refs, n_u,
+                _dreiecks_polydaten(pv, u_p, u_t) if len(u_t) else None,
+                color=g["farbe_unten"], **kw_g)
+            _mesh_actor_setzen(
+                p, refs, n_o,
+                _dreiecks_polydaten(pv, o_p, o_t) if len(o_t) else None,
+                color=g["farbe_oben"], **kw_g)
+            _mesh_actor_setzen(
+                p, refs, n_k,
+                pv.line_segments_from_points(kontur) if len(kontur) else None,
+                color="black", line_width=3)
 
 
 def _gesichter(pd):

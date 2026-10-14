@@ -6,6 +6,7 @@ import pytest
 from segelphysik.core import auftrieb, koerper_formen
 from segelphysik.core.volumen_union import (
     VolumenUnionFehler,
+    VorbereitetesUnionModell,
     volumen_schwerpunkt_union,
 )
 
@@ -82,3 +83,37 @@ def test_leere_union_hat_endliche_nullwerte():
 
     assert volumen == 0.0
     assert np.array_equal(schwerpunkt, np.zeros(3))
+
+
+@pytest.mark.parametrize(("z", "phi"), [
+    (0.0, 0.0), (-0.3, 0.17), (0.2, -0.4),
+])
+def test_vorbereitete_union_bleibt_bei_posewechsel_exakt(quader, z, phi):
+    meshes = [
+        (quader[0] + np.array((-0.25, 0.0, -0.4)), quader[1]),
+        (quader[0] + np.array((0.75, 0.0, -0.4)), quader[1]),
+    ]
+    c, s = np.cos(phi), np.sin(phi)
+    transform = np.array([
+        [1.0, 0.0, 0.0, 0.0],
+        [0.0, c, -s, 0.0],
+        [0.0, s, c, z],
+    ])
+    vorbereitet = VorbereitetesUnionModell(meshes)
+    erwartet = volumen_schwerpunkt_union([
+        (punkte @ transform[:, :3].T + transform[:, 3], dreiecke)
+        for punkte, dreiecke in meshes
+    ], ebene_z=0.0)
+
+    volumen, schwerpunkt = vorbereitet.auswerten(
+        transform=transform, ebene_z=0.0)
+
+    assert volumen == pytest.approx(erwartet[0], abs=1e-12)
+    assert schwerpunkt == pytest.approx(erwartet[1], abs=1e-12)
+
+
+def test_vorbereitete_union_lehnt_ungueltige_pose_ab(quader):
+    vorbereitet = VorbereitetesUnionModell([quader])
+
+    with pytest.raises(VolumenUnionFehler, match="3x4"):
+        vorbereitet.auswerten(transform=np.eye(4))

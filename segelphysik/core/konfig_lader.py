@@ -7,7 +7,7 @@
 # Massen-Regel P3 am Blatt: 'material' ODER Direkt-Tripel
 # (dichte_kg_pro_m3+farbe+farbe_unter_wasser); optional wanddicke_m -> Schale.
 # Farb-Regel P4: Farbe ist Stoff-Eigenschaft. physik.json (D8): lade_physik().
-import json, os
+import json, math, os
 KONFIG_ORDNER="konfigurationen"; MATERIAL_DATEI="materialien.json"
 KOERPER_DATEI="koerper.json"; PHYSIK_DATEI="physik.json"
 VORLAGE_MATERIAL=os.path.join("doc","materialien_vorlage.json")
@@ -238,21 +238,39 @@ def lade_konfig(ordner=KONFIG_ORDNER):
     _val_materialien(m,mp); _val_koerper(k,m["materialien"],kp)
     return Konfiguration(m,k,ordner)
 
-_PHYSIK=("dt_s","g_m_pro_s2","daempfung","voxel")
+_PHYSIK=("dt_s","g_m_pro_s2","daempfung","voxel","kraefte")
 _DAEMPFUNG=("tauchung","kraengung")
 _VOXEL=("aufloesung_m","schranke_volumen_m3","schranke_punkt_m")
+_KRAEFTE=("fluidgeschwindigkeit_m_pro_s",
+          "fluidwinkelgeschwindigkeit_rad_pro_s",
+          "linear_widerstand_kg_pro_s",
+          "quadratischer_widerstand_kg_pro_m",
+          "added_mass_kg_und_kg_m2")
 
 class PhysikParameter:
     __slots__=("dt_s","g_m_pro_s2","daempfung_tauchung","daempfung_kraengung",
-               "voxel_aufloesung_m","schranke_volumen_m3","schranke_punkt_m")
+               "voxel_aufloesung_m","schranke_volumen_m3","schranke_punkt_m",
+               "fluidgeschwindigkeit","fluidwinkelgeschwindigkeit",
+               "linear_widerstand","quadratischer_widerstand",
+               "added_mass_diagonal")
     def __init__(self,dt_s,g_m_pro_s2,daempfung_tauchung,daempfung_kraengung,
-                 voxel_aufloesung_m,schranke_volumen_m3,schranke_punkt_m):
+                 voxel_aufloesung_m,schranke_volumen_m3,schranke_punkt_m,
+                 fluidgeschwindigkeit=(0.0,0.0,0.0),
+                 fluidwinkelgeschwindigkeit=(0.0,0.0,0.0),
+                 linear_widerstand=(0.0,)*6,
+                 quadratischer_widerstand=(0.0,)*6,
+                 added_mass_diagonal=(0.0,)*6):
         self.dt_s=dt_s; self.g_m_pro_s2=g_m_pro_s2
         self.daempfung_tauchung=daempfung_tauchung
         self.daempfung_kraengung=daempfung_kraengung
         self.voxel_aufloesung_m=voxel_aufloesung_m
         self.schranke_volumen_m3=schranke_volumen_m3
         self.schranke_punkt_m=schranke_punkt_m
+        self.fluidgeschwindigkeit=fluidgeschwindigkeit
+        self.fluidwinkelgeschwindigkeit=fluidwinkelgeschwindigkeit
+        self.linear_widerstand=linear_widerstand
+        self.quadratischer_widerstand=quadratischer_widerstand
+        self.added_mass_diagonal=added_mass_diagonal
     def __repr__(self):
         return ("PhysikParameter(dt=%g s, g=%g, daempfung=(%g, %g), voxel=%g m, "
                 "schranken=(%g m^3, %g m))"%(self.dt_s,self.g_m_pro_s2,
@@ -283,8 +301,41 @@ def _val_physik(d,pfad):
     au=_pos(vox.get("aufloesung_m"),"%s.physik.voxel.aufloesung_m"%pfad)
     sv=_pos(vox.get("schranke_volumen_m3"),"%s.physik.voxel.schranke_volumen_m3"%pfad)
     sp=_pos(vox.get("schranke_punkt_m"),"%s.physik.voxel.schranke_punkt_m"%pfad)
+    kraefte=p.get("kraefte",{})
+    if not isinstance(kraefte,dict):
+        raise KonfigFehler("%s.physik.kraefte: Objekt erwartet"%pfad)
+    fk=[s for s in kraefte if s not in _KRAEFTE and not s.startswith("_")]
+    if fk:
+        raise KonfigFehler("%s.physik.kraefte: unbekannte Schluessel %s"
+                           %(pfad,fk))
+
+    def vektor(schluessel, anzahl, nichtnegativ=False):
+        werte=kraefte.get(schluessel,[0.0]*anzahl)
+        if not isinstance(werte,list) or len(werte)!=anzahl:
+            raise KonfigFehler("%s.physik.kraefte.%s: %d Werte erwartet"
+                               %(pfad,schluessel,anzahl))
+        ausgabe=[]
+        for i,wert in enumerate(werte):
+            if (isinstance(wert,bool) or not isinstance(wert,(int,float))
+                    or not math.isfinite(float(wert))
+                    or (nichtnegativ and wert<0.0)):
+                erlaubnis="nicht-negative " if nichtnegativ else ""
+                raise KonfigFehler(
+                    "%s.physik.kraefte.%s[%d]: %sendliche Zahl erwartet"
+                    %(pfad,schluessel,i,erlaubnis))
+            ausgabe.append(float(wert))
+        return tuple(ausgabe)
+
+    fv=vektor("fluidgeschwindigkeit_m_pro_s",3)
+    fw=vektor("fluidwinkelgeschwindigkeit_rad_pro_s",3)
+    linear=vektor("linear_widerstand_kg_pro_s",6,True)
+    quadratisch=vektor("quadratischer_widerstand_kg_pro_m",6,True)
+    added=vektor("added_mass_kg_und_kg_m2",6,True)
     return dict(dt_s=dt,g_m_pro_s2=g,daempfung_tauchung=dta,daempfung_kraengung=dk,
-                voxel_aufloesung_m=au,schranke_volumen_m3=sv,schranke_punkt_m=sp)
+                voxel_aufloesung_m=au,schranke_volumen_m3=sv,schranke_punkt_m=sp,
+                fluidgeschwindigkeit=fv,fluidwinkelgeschwindigkeit=fw,
+                linear_widerstand=linear,quadratischer_widerstand=quadratisch,
+                added_mass_diagonal=added)
 
 def lade_physik(ordner=KONFIG_ORDNER):
     pf=os.path.join(ordner,PHYSIK_DATEI)

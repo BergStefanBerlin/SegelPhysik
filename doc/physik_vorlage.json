@@ -19,6 +19,19 @@
       "aufloesung_m": 0.05,
       "schranke_volumen_m3": 0.0005,
       "schranke_punkt_m": 0.005
+    },
+
+    "_kraefte": "Optionale Hydrodynamik-Module. Nicht eingetragene Werte sind null und deaktiviert; Koeffizienten duerfen nur mit fachlich validierten Messwerten gesetzt werden. Vektorreihenfolge: Welt-x/y/z, Roll/Pitch/Yaw.",
+    "kraefte": {
+      "_fluid": "Fluidgeschwindigkeit relativ zur Welt in m/s und Winkelgeschwindigkeit in rad/s.",
+      "fluidgeschwindigkeit_m_pro_s": [0.0, 0.0, 0.0],
+      "fluidwinkelgeschwindigkeit_rad_pro_s": [0.0, 0.0, 0.0],
+      "_linear": "Translation: kg/s; Rotation: N*m*s/rad. Kraft bzw. Moment = -c*v_rel.",
+      "linear_widerstand_kg_pro_s": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+      "_quadratisch": "Translation: kg/m; Rotation: N*m*s^2/rad^2. Kraft bzw. Moment = -c*abs(v_rel)*v_rel.",
+      "quadratischer_widerstand_kg_pro_m": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+      "_added_mass": "Diagonale Added Mass: kg fuer Translation und kg*m^2 fuer Roll/Pitch/Yaw. Ohne bestaetigte Koeffizienten auf null belassen.",
+      "added_mass_kg_und_kg_m2": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     }
   }
 }

@@ -277,7 +277,7 @@ def _y_intervalle_saeule_v(u_p, u_t, x0, z0):
 
 def kraftfunktion_berechne(koerper, lage, v=None, omega=None, rho_w=1000.0,
                            g=G_NORM, aufloesung=0.05, pfad="voxel",
-                           voxelmodell=None):
+                           voxelmodell=None, unionmodell=None):
     """Kernrechnung der Kraftfunktion (Plan §3). Der Koerper wird als
     Argument uebergeben; die GEBUNDENE Signatur (F19) liefert
     baue_kraftfunktion().
@@ -298,8 +298,9 @@ def kraftfunktion_berechne(koerper, lage, v=None, omega=None, rho_w=1000.0,
                 koerper.blatt_meshes, aufloesung)
         V, K = voxelmodell.auswerten(z, phi)
     elif pfad in ("exakt", "voxel", "exakt_union"):
-        blatt_welt = [(_in_welt(P, T), np.asarray(F, dtype=np.int64))
-                      for P, F in koerper.blatt_meshes]
+        if pfad != "exakt_union" or unionmodell is None:
+            blatt_welt = [(_in_welt(P, T), np.asarray(F, dtype=np.int64))
+                          for P, F in koerper.blatt_meshes]
     else:
         raise AuftriebFehler(
             "unbekannter Pfad %r ('voxel', 'voxel_koerperfest', 'exakt' "
@@ -319,8 +320,12 @@ def kraftfunktion_berechne(koerper, lage, v=None, omega=None, rho_w=1000.0,
     elif pfad == "voxel":
         V, K = _voxel_koerper(blatt_welt, aufloesung)
     elif pfad == "exakt_union":
-        from .volumen_union import volumen_schwerpunkt_union
-        V, K = volumen_schwerpunkt_union(blatt_welt, ebene_z=0.0)
+        if unionmodell is None:
+            from .volumen_union import volumen_schwerpunkt_union
+            V, K = volumen_schwerpunkt_union(blatt_welt, ebene_z=0.0)
+        else:
+            V, K = unionmodell.auswerten(
+                transform=T[:3, :], ebene_z=0.0)
 
     F_A = np.array([0.0, 0.0, rho_w * g * V])
     r_S_welt = _in_welt(np.asarray(koerper.r_S, dtype=float).reshape(1, 3),
@@ -360,16 +365,52 @@ def baue_kraftfunktion(koerper, rho_w=1000.0, g=G_NORM, aufloesung=0.05,
     Schnittstelle (F9) und werden in Phase A ignoriert (Daempfung §6)."""
 
     voxelmodell = None
+    unionmodell = None
     if pfad == "voxel_koerperfest":
         from .voxelmodell import KoerperfestesVoxelmodell
         voxelmodell = KoerperfestesVoxelmodell(
             als_bindung(koerper).blatt_meshes, aufloesung)
+    elif pfad == "exakt_union":
+        from .volumen_union import VorbereitetesUnionModell
+        unionmodell = VorbereitetesUnionModell(
+            als_bindung(koerper).blatt_meshes)
 
     def funktion(lage, v=None, omega=None):
         return kraftfunktion_berechne(koerper, lage, v=v, omega=omega,
                                       rho_w=rho_w, g=g,
                                       aufloesung=aufloesung, pfad=pfad,
-                                      voxelmodell=voxelmodell)
+                                      voxelmodell=voxelmodell,
+                                      unionmodell=unionmodell)
+
+    return funktion
+
+
+def baue_kraftfunktion_6dof(koerper, rho_w=1000.0, g=G_NORM):
+    """Bindet eine starre exakte Hydrostatik fuer beliebige 3D-Posen."""
+    from .dynamik_6dof import quaternion_matrix
+    from .volumen_union import VorbereitetesUnionModell
+
+    koerper = als_bindung(koerper)
+    unionmodell = VorbereitetesUnionModell(koerper.blatt_meshes)
+    rho_w, g = float(rho_w), float(g)
+    if (not np.isfinite((rho_w, g)).all() or rho_w <= 0.0 or g <= 0.0):
+        raise ValueError("Wasserdichte und g muessen endlich positiv sein")
+
+    def funktion(lage, v=None, omega=None):
+        if not isinstance(lage, (tuple, list)) or len(lage) != 2:
+            raise AuftriebFehler(
+                "6-DOF-Lage muss aus Position und Quaternion bestehen")
+        position = np.asarray(lage[0], dtype=np.float64)
+        if position.shape != (3,) or not np.isfinite(position).all():
+            raise AuftriebFehler("6-DOF-Position muss drei endliche Werte haben")
+        rotation = quaternion_matrix(lage[1])
+        transform = np.column_stack((rotation, position))
+        volumen, schwerpunkt = unionmodell.auswerten(
+            transform=transform, ebene_z=0.0)
+        kraft = np.array((0.0, 0.0, rho_w * g * volumen))
+        r_s_welt = rotation @ np.asarray(koerper.r_S, dtype=float) + position
+        moment = np.cross(schwerpunkt - r_s_welt, kraft)
+        return Auftriebsergebnis(volumen, schwerpunkt, kraft, moment)
 
     return funktion
 
