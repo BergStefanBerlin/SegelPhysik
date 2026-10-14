@@ -9,8 +9,10 @@ absichern und erweitern. Die bestehende Darstellung und Bedienung bleibt
 unverändert.
 
 **GPU-Leitlinie:** Wenn eine geeignete GPU und ein kompatibles Rechenbackend
-verfügbar sind, werden dafür geeignete Physikberechnungen automatisch auf der
-GPU ausgeführt. CPU-Ausführung bleibt immer als korrekter Fallback verfügbar.
+verfügbar sind, werden die im Code dafür vorgesehenen Physikberechnungen auf
+der GPU ausgeführt. Welche Aufgaben CPU oder GPU nutzen, wird bei der
+Implementierung anhand der erwarteten Arbeitslast entschieden. CPU-Ausführung
+bleibt immer als korrekter Fallback verfügbar.
 
 ## 1. Verbindliche Leitplanken
 
@@ -42,16 +44,19 @@ GPU ausgeführt. CPU-Ausführung bleibt immer als korrekter Fallback verfügbar.
   Trägheit und verdrängtes Volumen müssen dieselbe korrigierte Geometrie
   zugrunde legen und Überschneidungen nicht doppelt zählen.
 - Bei erkannter Überschneidung wird der Lauf angehalten und die betroffenen
-  Bauteile werden benannt. Der Nutzer wählt, welches Bauteil unverändert
-  Vorrang hat. Das andere Bauteil wird durch eine Boolesche Differenz im
-  Quelldatei-Modell so beschnitten, dass seine Geometrie außerhalb des
-  Vorrangbauteils liegt.
-- Die Korrektur wird in den ursprünglichen Modellkoordinaten der betroffenen
-  OBJ-Datei gespeichert. Vor dem Ersetzen muss die bisherige Datei gesichert
-  werden. Die Änderung wird nur übernommen, wenn das gespeicherte Netz
-  erneut geladen, validiert und auf Überschneidungsfreiheit geprüft werden
-  kann. Andernfalls wird die Quelldatei wiederhergestellt und der Fehler
-  verständlich gemeldet.
+  Bauteile werden benannt. Der Nutzer wählt, welcher Körper unangetastet
+  bleibt. Der jeweils andere Körper wird durch eine Boolesche Differenz am
+  Rohmodell so beschnitten, dass seine Geometrie außerhalb des
+  Vorrangkörpers liegt. Das gilt für OBJ-Modelle ebenso wie für prozedural
+  erzeugte Körper.
+- Die Korrektur wird dauerhaft in der ursprünglichen Modellquelle gespeichert:
+  in der OBJ-Datei oder in der prozeduralen Definition bzw. deren
+  Quelldaten. Sie muss beim nächsten Laden erhalten bleiben und darf nicht
+  nur auf ein vorübergehend erzeugtes Laufzeit-Mesh angewendet werden. Vor
+  der Änderung wird die Modellquelle gesichert. Die Änderung wird nur
+  übernommen, wenn das gespeicherte Rohmodell erneut geladen, validiert und
+  auf Überlappungsfreiheit geprüft werden kann. Andernfalls wird die
+  Modellquelle wiederhergestellt und der Fehler verständlich gemeldet.
 - Nach erfolgreicher Korrektur werden Körper, Masse, Schwerpunkt, Trägheit,
   Voxelrepräsentation und Darstellung neu geladen bzw. aufgebaut. Die
   Wiederholung der Prüfung muss den Konflikt als behoben bestätigen.
@@ -95,10 +100,11 @@ GPU ausgeführt. CPU-Ausführung bleibt immer als korrekter Fallback verfügbar.
 
 ## 5. Hardwarebeschleunigung
 
-- Beim Start wird die verfügbare Rechenhardware und Backend-Kompatibilität
-  geprüft. Ist eine unterstützte GPU vorhanden, verwendet die Physik sie
-  ohne zusätzliche Nutzerbedienung für geeignete parallele Aufgaben,
-  insbesondere Voxelisierung, Ebenen-Clip und Volumen-/Schwerpunktreduktionen.
+- Beim Start wird nur festgestellt, ob eine GPU vorhanden ist. Es gibt keine
+  Laufzeitprüfung der Backend-Kompatibilität, keine Laufzeit-Benchmarks und
+  keine leistungsabhängige Auswahl pro Aufgabe. Die Zuordnung der Aufgaben
+  zu CPU oder GPU ist im Code festgelegt; ist eine GPU vorhanden, wird ein
+  dafür vorgesehener GPU-Pfad ohne zusätzliche Nutzerbedienung verwendet.
 - Die tatsächliche Wahl des Rechenpfads (GPU mit Gerätename oder CPU-Fallback)
   wird im vorhandenen Protokoll nachvollziehbar ausgegeben; dafür wird kein
   neues GUI-Element eingeführt.
@@ -106,22 +112,28 @@ GPU ausgeführt. CPU-Ausführung bleibt immer als korrekter Fallback verfügbar.
   automatisch als GPU-Rechenbackend. Rendering und Physikberechnung bleiben
   getrennte Pfade.
 - GPU-Ausführung muss mindestens für Voxelberechnung und Kraftauswertung
-  vorgesehen werden. Weitere Solver- und Integrationsarbeit wird nur dann auf
-  die GPU verlagert, wenn Messungen einen Vorteil zeigen und die Ergebnisse
-  innerhalb derselben Genauigkeitstoleranzen liegen.
-- Unterstützte Geräte werden nach nachgewiesener Laufzeit- und
-  Backend-Kompatibilität ausgewählt, nicht allein nach Hersteller oder
-  Gerätebezeichnung. Integrierte GPUs sind eingeschlossen, sofern Backend,
-  Treiber und verfügbarer Speicher ausreichen.
+  anhand ihrer erwarteten Arbeitslast bewertet und bei voraussichtlichem
+  Vorteil gegenüber der CPU im Code dafür vorgesehen werden. Weitere Solver-
+  und Integrationsarbeit wird nach derselben Vorabentscheidung zugeordnet.
+  Diese Zuordnung wird vor der Freigabe durch Entwicklungsbenchmarks
+  überprüft, nicht durch Laufzeitmessungen geändert.
+- GPU-Backend-Kompatibilität wird während Entwicklung und Abnahme für die
+  unterstützten Geräte nachgewiesen, nicht zur Laufzeit. Die Laufzeit prüft
+  nur, ob eine GPU vorhanden ist; der vorgesehene GPU-Pfad wird ausprobiert
+  und fällt bei einem Initialisierungs- oder Ausführungsfehler auf die CPU
+  zurück. Unterstützte integrierte GPUs sind eingeschlossen, sofern Backend,
+  Treiber und verfügbarer Speicher für den vorgesehenen Pfad ausreichen.
 - Für eine AMD Radeon 760M unter Windows muss beim Technologieentscheid
   geprüft werden, welche GPU-Rechen-Backends mit der eingesetzten Python-,
   Treiber- und Bibliotheksversion tatsächlich funktionieren. Diese
   Spezifikation schreibt kein bestimmtes Framework vor und setzt weder
   CUDA-Verfügbarkeit noch dedizierten Grafikspeicher voraus.
-- Ist keine kompatible GPU verfügbar, schlägt die GPU-Initialisierung fehl
-  oder ist eine Aufgabe auf dem Gerät ungeeignet, wird dieselbe Berechnung
-  automatisch auf der CPU ausgeführt. Ein Fallback darf Ergebnisse und
-  Status nicht als GPU-Ausführung ausgeben.
+- Ist keine GPU vorhanden oder kann ein vorgesehener GPU-Pfad bei seiner
+  Initialisierung oder Ausführung nicht verwendet werden, wird die betroffene
+  Berechnung automatisch auf der CPU ausgeführt. Backendfehler werden erst
+  beim tatsächlichen Initialisieren oder Ausführen des GPU-Pfads erkannt,
+  nachvollziehbar protokolliert und nicht als erfolgreiche GPU-Ausführung
+  ausgegeben.
 - GPU und CPU verwenden dasselbe fachliche Modell und dieselben
   SI-Konventionen. Parallelreduktions- und Rundungsunterschiede sind zulässig,
   sofern Referenztests, Konvergenz und konfigurierte Fehlergrenzen eingehalten
@@ -130,21 +142,27 @@ GPU ausgeführt. CPU-Ausführung bleibt immer als korrekter Fallback verfügbar.
   lange Initialisierung oder Berechnung unbemerkt in der GUI blockieren.
   Initialisierungs- und Berechnungsfehler werden nachvollziehbar protokolliert;
   bei fehlender GPU-Unterstützung bleibt die CPU funktionsfähig.
-- Datentransfers zwischen CPU und GPU sind bei Leistungsbewertungen
-  einzubeziehen. GPU wird nur für Aufgaben eingesetzt, bei denen die
-  Gesamtlaufzeit einschließlich Transfer nicht schlechter ist als der
-  CPU-Pfad. Ergibt ein Benchmark für eine konkrete Aufgabe keinen Vorteil,
-  darf diese Aufgabe auf der CPU bleiben; für parallel geeignete und
-  nachweislich schnellere Aufgaben wird die kompatible GPU verwendet.
+- Entwicklungsbenchmarks berücksichtigen Datentransfers und vergleichen
+  repräsentative Arbeitslasten, einschließlich Vorberechnung und wiederholter
+  Auswertung. Die Ergebnisse dienen dazu, die feste Aufgabenverteilung im
+  Code festzulegen oder für eine spätere Version anzupassen. Es gibt keinen
+  Laufzeitwechsel zur CPU, nur weil eine GPU-Ausführung im Einzelfall langsam
+  ist; der CPU-Fallback greift bei fehlender Verfügbarkeit oder einem Fehler
+  des GPU-Pfads.
 
 ## 6. Simulation – statisch
 
 - Die erste Ausbaustufe erhält den aktuellen Bewegungsumfang aus Tiefgang z
   und Krängung phi und macht den robusten Solver gegen die stufige
   Voxel-Kraftfunktion zuverlässig.
-- Der Standardlauf berechnet eine stabile Gleichgewichtslage. Neutrale,
-  instabile, stagnierende und nicht konvergierte Ergebnisse werden
-  unterschieden und im vorhandenen Solver-Status korrekt gemeldet.
+- Der Standardlauf versucht innerhalb eines begrenzten Suchbudgets eine
+  geeignete stabile Gleichgewichtslage zu finden. Neutrale, instabile,
+  stagnierende und nicht konvergierte Ergebnisse werden unterschieden und
+  im vorhandenen Solver-Status korrekt gemeldet. Bei ausbleibendem Erfolg
+  weist der Solver Abbruchstatus und Restfehler aus, statt eine erfolgreiche
+  Lösung vorzutäuschen. Eine gefundene stabile Lage darf zurückgegeben
+  werden; der Solver garantiert weder, alle stabilen Gleichgewichte zu
+  finden, noch eine global günstigste Lage zu bestimmen.
 - Zur Laufzeitbegrenzung wird keine systematische Multi-Start-Suche über
   viele Orientierungen gefordert. Der Solver darf lokale Starts,
   begrenzte Fallbacks und Wiederanlaufstrategien verwenden; Abbruch und
@@ -226,8 +244,9 @@ GPU ausgeführt. CPU-Ausführung bleibt immer als korrekter Fallback verfügbar.
   getrennte Teilbereiche, Drehmomentvorzeichen, Voxelkonvergenz und Abgleich
   mit dem exakten Referenzpfad.
 - Überschneidungstests prüfen Auswahl des Vorrangteils, korrekte Boolesche
-  Differenz, unveränderte Vorranggeometrie, gültige gespeicherte OBJ-Datei,
-  erfolgreichen Neuaufbau sowie Rollback bei fehlerhafter Korrektur.
+  Differenz, unveränderte Vorranggeometrie, dauerhafte Speicherung in der
+  ursprünglichen OBJ- oder prozeduralen Modellquelle, konfliktfreies erneutes
+  Laden sowie Rollback bei fehlerhafter Korrektur.
 - Statiktests prüfen Restkraft, Restmoment, Stabilität, Neutralität,
   Stagnation, Fehlerfälle und begrenzte Laufzeit am Produktivmodell.
 - Dynamiktests prüfen festen Zeitschritt, Determinismus, Energieverhalten
@@ -240,17 +259,49 @@ GPU ausgeführt. CPU-Ausführung bleibt immer als korrekter Fallback verfügbar.
   Steuerverbindungen. Keine Änderung der allgemeinen Darstellung oder
   Steuerung darf ohne neue Nutzerentscheidung freigegeben werden.
 - Performance wird auf repräsentativen Produktivkörpern gemessen und mit
-  dokumentierter Rasterauflösung und Hardware ausgewiesen. Als Ziel gilt
-  unter einer Sekunde für eine statische Standardabfrage; Abweichungen müssen
-  nachvollziehbar ausgewiesen werden.
+  dokumentierter Rasterauflösung und Hardware ausgewiesen. Maßgeblich ist,
+  dass sich die Anwendung für den Nutzer flüssig und jederzeit bedienbar
+  anfühlt; eine feste Laufzeitgrenze für einzelne Kraftauswertungen oder
+  Solverläufe ist kein Selbstzweck. Die GUI-Ereignisschleife darf durch
+  Rechenarbeit nicht blockiert werden. Als überprüfbare Richtwerte bleiben
+  Eingabereaktionen innerhalb von 100 ms und mindestens 30 Bilder pro
+  Sekunde unter repräsentativer Last. Warte- oder Abbruchzustände werden in
+  vorhandenen Statusflächen nachvollziehbar angezeigt; zusätzliche
+  allgemeine Bedienelemente sind ausgeschlossen.
+- Die Anforderungen an eine flüssige Bedienung gelten für CPU- und
+  GPU-Ausführung. Messungen weisen Reaktionszeit, Bildrate und
+  Berechnungsdauer getrennt aus.
 - Bei Vorhandensein kompatibler GPU-Hardware werden dieselben
-  Referenzkörper auf GPU und CPU geprüft. Abweichungen müssen innerhalb der
-  festgelegten physikalischen Toleranzen liegen; GPU-Ausführung darf nicht
-  lediglich anhand eines erfolgreichen Imports als funktionsfähig gelten.
+  Referenzkörper auf GPU und CPU geprüft. Die Implementierungen stimmen
+  innerhalb der Toleranz überein, wenn die absoluten Abweichungen des
+  verdrängten Volumens `|ΔV_disp|` höchstens
+  `schranke_volumen_m3` und – sofern definiert – des
+  Auftriebsschwerpunkts höchstens `schranke_punkt_m` betragen. Der
+  Schwerpunktvergleich gilt nur, wenn das verdrängte Volumen auf beiden
+  Pfaden größer als die Volumenschranke ist. Daraus folgt für die
+  Auftriebskraft:
+  `|ΔF_A| <= rho_w * g * schranke_volumen_m3` und
+  für das Auftriebsmoment gilt bei Volumen oberhalb dieser Schranke auf beiden
+  Pfaden:
+  `|ΔM_A| <= rho_w * g * (L_max * schranke_volumen_m3 + V_max * schranke_punkt_m)`,
+  wobei `L_max` der größere Abstand eines berechneten Auftriebsschwerpunkts
+  vom Massenschwerpunkt und `V_max` das größere berechnete verdrängte Volumen
+  der beiden Pfade ist. Liegt das Volumen mindestens eines Pfads höchstens
+  bei der Volumenschranke, wird der Schwerpunktvergleich ausgelassen und
+  stattdessen bei bereits erfüllter Volumenschranke
+  `|ΔM_A| <= 3 * rho_w * g * L_body * schranke_volumen_m3` geprüft;
+  `L_body` ist der größte Abstand eines Punkts der verdrängenden Geometrie
+  vom Massenschwerpunkt. Die GPU/CPU-Übereinstimmung gilt nur, wenn alle
+  jeweils anwendbaren Volumen-, Schwerpunkt-, Kraft- und Momentschranken
+  eingehalten sind. Referenz- und Konvergenztests verwenden dieselben
+  Schranken, sofern sie dieselben Größen vergleichen. GPU-Ausführung darf
+  nicht lediglich anhand eines erfolgreichen Imports als funktionsfähig
+  gelten.
 - Benchmarkberichte unterscheiden Hardwareerkennung, Backend-Initialisierung,
   einmalige Vorberechnung, Datentransfer und wiederholte Kraftauswertung.
   Mindestens der konfigurierte Quader und ein repräsentativer komplexer
-  Modellkörper werden gemessen.
+  Modellkörper werden während Entwicklung und Abnahme gemessen. Diese
+  Benchmarks verändern nicht die Aufgabenverteilung während der Laufzeit.
 - Hardwareprofil für die erste Zielvalidierung: Windows x64, AMD Ryzen 5
   8600G mit integrierter Radeon 760M und 32 GB RAM. Die gemeldeten 512 MB
   Grafik-Speicher werden als Geräte-/Treiberangabe behandelt; verfügbarer
@@ -284,11 +335,14 @@ GPU ausgeführt. CPU-Ausführung bleibt immer als korrekter Fallback verfügbar.
   10 inneren Iterationen ergäben bei der gemessenen Auswertungszeit bereits
   ungefähr **369 s** reine Kraftauswertungszeit. Die genaue Zahl hängt stark
   von Raster, Mesh und Solverpfad ab.
-- Implementierung von Booleschen Meshoperationen, 6-DOF und Widerstandsmodulen
-  ist mit dieser Spezifikation noch nicht beauftragt.
-- Ein GPU-Rechenpfad und ein automatischer GPU-/CPU-Vergleich sind im
-  geprüften Stand nicht nachgewiesen; die GUI-3D-Darstellung allein belegt
-  keine GPU-Beschleunigung der Physik.
+- Boolesche Geometrieoperationen zur Überlappungskorrektur sind gemäß
+  Abschnitt 2 Bestandteil dieser Spezifikation und dürfen das Rohmodell erst
+  nach ausdrücklicher Auswahl des unangetasteten Vorrangkörpers verändern.
+  6-DOF und zusätzliche Widerstandsmodule bleiben spätere Ausbaustufen.
+- Ein GPU-Rechenpfad und Entwicklungsbenchmarks zum CPU/GPU-Vergleich sind
+  im geprüften Stand nicht nachgewiesen; die GUI-3D-Darstellung allein belegt
+  keine GPU-Beschleunigung der Physik. Eine leistungsabhängige Auswahl zur
+  Laufzeit ist nicht vorgesehen.
 
 ## 11. Bewusst gestufter Umfang
 
@@ -298,14 +352,18 @@ GPU ausgeführt. CPU-Ausführung bleibt immer als korrekter Fallback verfügbar.
    CPU/GPU-Referenz- und Benchmarkpfad herstellen; fehlende GPU-Unterstützung
    darf den CPU-Betrieb nicht verhindern.
 3. Meshvalidierung und die gewählte, rückrollbare Überlappungskorrektur in
-   den OBJ-Quellen umsetzen.
+   den ursprünglichen OBJ- oder prozeduralen Modellquellen umsetzen.
 4. Körperfestes vorberechnetes Voxelmodell und Wasserlinienkennwerte ergänzen;
    Genauigkeit und Laufzeit auf CPU und verfügbarer GPU vergleichen.
 5. Kraftmodule und anschließend 6-DOF-Dynamik schrittweise ergänzen.
 6. Nach jeder Stufe vollständige Regression ausführen und alle bestehenden
    Darstellungs- und Steuerungstests unverändert bestehen lassen.
 
-Die Umsetzungsreihenfolge begründet keine Freigabe, Quellmodelle automatisch
-zu verändern oder Physik-Code bereits jetzt umzubauen. Solche Änderungen
-erfolgen erst nach gesonderter Beauftragung und mit den Sicherungs- und
-Rollback-Anforderungen dieser Spezifikation.
+Die Umsetzungsreihenfolge erlaubt keine Änderung von Quellmodellen ohne die
+in Abschnitt 2 beschriebene Erkennung, Benennung und ausdrückliche Auswahl
+durch den Nutzer. Nach dieser Auswahl ist die abgesicherte, dauerhaft
+gespeicherte Korrektur des OBJ- oder prozeduralen Rohmodells gemäß Abschnitt 2
+Teil des Umfangs.
+
+Weitere Änderungen an Quellmodellen oder Physik-Code außerhalb dieser
+Spezifikation bedürfen einer gesonderten Beauftragung.
