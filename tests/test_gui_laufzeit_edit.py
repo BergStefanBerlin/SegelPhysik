@@ -1,6 +1,7 @@
 import os
 from types import SimpleNamespace
 
+import numpy as np
 import pytest
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
@@ -95,6 +96,8 @@ def test_gui_materialaenderung_baut_laufzeitkoerper_neu(monkeypatch, tmp_path):
     bruecke = Bruecke()
     monkeypatch.setattr(
         "segelphysik.core.fabriken.baue_summenkoerper", fake_bauen)
+    monkeypatch.setattr(
+        fenster, "_geometrie_konflikte_bereinigen", lambda *_args: True)
     fenster._statische_simulation_ausfuehren = lambda: None
     fenster.bruecke_setzen(bruecke)
 
@@ -106,6 +109,107 @@ def test_gui_materialaenderung_baut_laufzeitkoerper_neu(monkeypatch, tmp_path):
     assert all(eintrag[1] == "yacht1" for eintrag in gebaut)
     assert bruecke.koerper[-1][0] == "yacht1"
     assert bruecke.koerper[-1][2] == (1.0, 2.0, 3.0)
+    fenster.close()
+
+
+@pytest.mark.parametrize(("vorrang", "erfolgreich"), [
+    ("a", True),
+    (None, False),
+])
+def test_geometriekonflikt_wird_vor_dem_lauf_prioritaetsbasiert_behandelt(
+        monkeypatch, tmp_path, vorrang, erfolgreich):
+    from segelphysik.core import boot_bau, fabriken
+    from segelphysik.core import geometrie_konflikte as gk
+    from segelphysik.core import koerper_formen
+
+    _qt_app()
+    modellordner = tmp_path / "modelle"
+    quellordner = modellordner / "testboot"
+    quellordner.mkdir(parents=True)
+    monkeypatch.setattr(boot_bau, "MODELL_ORDNER", str(modellordner))
+
+    form_a = koerper_formen.bau_quader(2.0, 2.0, 2.0)
+    form_b = (
+        form_a[0] + np.array((0.5, 0.0, 0.0)), form_a[1])
+    originale = {}
+    for name, form in (("a", form_a), ("b", form_b)):
+        quelle = quellordner / (name + ".obj")
+        quelle.write_bytes(gk._obj_schreiben(
+            gk._welt_zu_obj(form[0], boot_bau.SKALA), form[1]))
+        originale[name] = quelle.read_bytes()
+
+    def specs_aus_quellen(_eintraege, _konfig, skala, ordner,
+                          aktive_namen=None):
+        specs = []
+        for name in ("a", "b"):
+            if aktive_namen is not None and name not in aktive_namen:
+                continue
+            pfad = os.path.join(ordner, name + ".obj")
+            punkte, dreiecke = boot_bau.lade_obj(pfad)
+            specs.append({
+                "form": (gk._obj_zu_welt(punkte, skala), dreiecke),
+                "_name": name,
+                "_konflikt_name": name,
+                "_quellpfad": pfad,
+                "dichte": 1000.0,
+            })
+        return specs
+
+    monkeypatch.setattr(fabriken, "_specs_aus_konfig", specs_aus_quellen)
+    fenster = HauptFenster()
+    fenster._vorrang_bei_konflikt_waehlen = lambda _konflikt: vorrang
+    knoten = SimpleNamespace(
+        name="testboot", eintrag={"teile": [{"name": "a"}, {"name": "b"}]})
+    aktiv = [SimpleNamespace(name="a"), SimpleNamespace(name="b")]
+
+    assert fenster._geometrie_konflikte_bereinigen(
+        SimpleNamespace(), knoten, aktiv) is erfolgreich
+    if erfolgreich:
+        assert (quellordner / "a.obj").read_bytes() == originale["a"]
+        assert not (quellordner / "a.obj.bak").exists()
+        assert (quellordner / "b.obj").read_bytes() != originale["b"]
+        assert (quellordner / "b.obj.bak").read_bytes() == originale["b"]
+    else:
+        for name in ("a", "b"):
+            assert (quellordner / (name + ".obj")).read_bytes() == originale[name]
+            assert not (quellordner / (name + ".obj.bak")).exists()
+    fenster.close()
+
+
+def test_abgebrochene_geometriekorrektur_stoppt_physiklauf(
+        monkeypatch, tmp_path):
+    from segelphysik.core import fabriken
+
+    _qt_app()
+    welt = welt_aus_konfig(_konfig_kopie(tmp_path))
+    sichtbarkeit_setzen(welt, "yacht1")
+    fenster = HauptFenster()
+    fenster.baum_setzen(welt)
+    fenster._geometrie_konflikte_bereinigen = lambda *_args: False
+
+    class Bruecke:
+        def __init__(self):
+            self.sichtbarkeit = []
+
+        def sichtbar_setzen(self, name, sichtbar):
+            self.sichtbarkeit.append((name, sichtbar))
+
+    bruecke = Bruecke()
+    fenster._bruecke = bruecke
+    fenster._laufzeit_koerper["yacht1"] = object()
+    simulation = []
+    fenster._statische_simulation_ausfuehren = (
+        lambda: simulation.append("gestartet"))
+    monkeypatch.setattr(
+        fabriken, "baue_summenkoerper",
+        lambda *_args, **_kwargs: pytest.fail("Körper darf nicht gebaut werden"))
+
+    fenster._laufzeit_objekte_aktualisieren("start")
+
+    assert ("yacht1", False) in bruecke.sichtbarkeit
+    assert all(not sichtbar for _name, sichtbar in bruecke.sichtbarkeit)
+    assert "yacht1" not in fenster._laufzeit_koerper
+    assert simulation == []
     fenster.close()
 
 

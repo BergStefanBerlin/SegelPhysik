@@ -57,6 +57,10 @@ def baue_form(konfig, eintrag):
     else:
         raise ValueError("unbekannte Form %r (Loader erlaubt nur "
                          "cone/box/pyramid)" % (typ,))
+    from .geometrie_konflikte import override_aus_eintrag
+    form_override = override_aus_eintrag(eintrag)
+    if form_override is not None:
+        form = form_override
     if "material" in eintrag:
         rho = konfig.dichte_von(eintrag["material"])
         farbe, farbe_uw = konfig.farben_von(eintrag["material"])
@@ -113,7 +117,7 @@ def _werte(konfig, typ=None):
 
 
 def _specs_aus_konfig(eintraege, konfig, skala, ordner,
-                      aktive_namen=None):
+                      aktive_namen=None, _pfad=()):
     """Neues Schema (Spec P3/P4): 'material' = Name ODER Dichte-Zahl,
     optional 'wanddicke_m' -> Schale mit fm = rho*t;
     optional 'farbe'/'farbe_unter_wasser' -> Farb-Kanal je Blatt (P4)."""
@@ -123,14 +127,20 @@ def _specs_aus_konfig(eintraege, konfig, skala, ordner,
         if "teile" in eintrag:
             kinder = _specs_aus_konfig(
                 eintrag["teile"], konfig, skala, ordner,
-                aktive_namen=aktive_namen)
+                aktive_namen=aktive_namen, _pfad=_pfad + (name,))
             if kinder:
                 specs.append({"teile": kinder})
             continue
         if aktive_namen is not None and name not in aktive_namen:
             continue
         p, f = boot_bau.baue_teil(name, skala=skala, ordner=ordner)
-        spec = {"form": (p, f), "_name": name}
+        spec = {
+            "form": (p, f),
+            "_name": name,
+            "_konflikt_name": "/".join(_pfad + (name,)),
+            "_quellpfad": os.path.abspath(
+                os.path.join(ordner, name + ".obj")),
+        }
         if "material" in eintrag:
             rho = konfig.dichte_von(eintrag["material"])
             farbe, farbe_uw = konfig.farben_von(eintrag["material"])

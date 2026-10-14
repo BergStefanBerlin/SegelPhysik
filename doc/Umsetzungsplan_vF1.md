@@ -237,7 +237,9 @@ und wird über `requirements-gpu.txt` installiert.
    allgemeine GUI bleibt unverändert.
 3. Die Boolesche Differenz `Konfliktkörper minus Vorrangkörper` zunächst auf
    einer temporären Kopie berechnen. Nullvolumen, offene oder ungültige
-   Resultate und fehlgeschlagene Operationen zurückweisen.
+   Resultate und fehlgeschlagene Operationen zurückweisen. Für stabile
+   Schnitte auch an koplanaren Flächen Manifold3D 3.5.4 mit `Mesh64`
+   verwenden; die VTK-Boolean-Filter sind dafür nicht zuverlässig genug.
 4. Die dauerhafte Speicherung für beide Quellarten konkret umsetzen:
    - OBJ: korrigierte Geometrie in der ursprünglichen OBJ-Quelle speichern
      und Koordinatentransformation/Skalierung verlustfrei berücksichtigen.
@@ -250,7 +252,9 @@ und wird über `requirements-gpu.txt` installiert.
      nachvollziehbare Herkunft erhalten. Datenformat und Lade-/Speicherpfad
      werden mit einem Prototyp vor der eigentlichen Konfliktkorrektur
      festgelegt und rückwärtskompatibel gehalten.
-5. Vor jeder Änderung eine bytegetreue Sicherung erstellen. Erst eine
+5. Vor jeder Änderung eine bytegetreue Sicherung erstellen (`.bak`, bei
+   Folgekorrigierungen `.bak.1`, `.bak.2` usw.; vorhandene Sicherungen nie
+   überschreiben). Erst eine
    transaktionale Speicherung übernehmen, die nach erneutem Laden dieselbe
    Geometrie ergibt und die Konfliktprüfung besteht. Bei jedem Fehler
    Ausgangsdatei wiederherstellen und verständlichen Fehler melden.
@@ -264,7 +268,8 @@ und wird über `requirements-gpu.txt` installiert.
 - Produktionskandidaten: `core/boot_bau.py`, `core/fabriken.py`,
   `core/koerper.py`, GUI-Lade-/Baumfluss in `gui/app.py`,
   `gui/baum.py`, `gui/hauptfenster.py`; neue Geometrieoperationen in einem
-  klar abgegrenzten Physikkernmodul.
+  klar abgegrenzten Physikkernmodul. Die geprüfte Runtime-Abhängigkeit
+  `manifold3d==3.5.4` wird in `requirements.txt` fixiert.
 - Tests ergänzen: `tests/test_baum_regeln.py`,
   `tests/test_gui_baum_json.py` und gezielte neue Tests unter
   `tests/test_geometrie_konflikte.py`.

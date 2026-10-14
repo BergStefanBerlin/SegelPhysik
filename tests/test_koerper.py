@@ -418,15 +418,10 @@ def test_tc_d4_segeln_sind_flaechenkoerper(konfig):
 def test_tc_d5_schalenboot_kennzahlen(konfig):
     """Kennzahlen des Schalenboots (gemessen, Hohlprofil-Modell)."""
     boot, r_modell = fabriken.baue_boot(konfig)
-    # Fock v15 (Schritt 4.2, 12.10.): untere Ecken um +0.38 m angehoben.
-    # Alte Referenz 459.4368 (Fock v14); neue Masse analytisch bestaetigt:
-    # Delta-m = 2 * 0.5 kg/m^2 * (3.631485 - 3.337870) m^2 = 0.29362 kg.
-    assert abs(boot.masse - 459.1432) < 0.01      # Gesamtmasse (gemessen)
+    # Der Bulb ist um seine Kielüberschneidung bereinigt.
+    assert abs(boot.masse - 450.37946) < 0.01      # Gesamtmasse (gemessen)
     assert r_modell[2] < 0.0                       # CM unter der Wasserlinie
-    # CM-Tiefe: Referenz bleibt gueltig - hergeleitet (nicht geraten):
-    # Fock-CM steigt von z=1.815 auf z=2.068 m, Delta(m*z) = +0.313 kg*m
-    # -> neue Tiefe -0.494242 m; Verschiebung 0.00033 m << Toleranz 0.001.
-    assert abs(r_modell[2] - (-0.494574)) < 0.001  # CM-Tiefe (gemessen)
+    assert abs(r_modell[2] - (-0.486117)) < 0.001  # CM-Tiefe (gemessen)
     d = np.diag(boot.traegheitstensor)
     # diag(I): Fock-Aenderung verschiebt die Hauptmomente (grob +1.5/+1.3/-0.3
     # kg*m^2) - jenseits der alten ±0.05-Referenzen (243.990/427.215/220.610,

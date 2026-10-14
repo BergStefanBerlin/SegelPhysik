@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import os
 import time
 
 import numpy as np
@@ -10,7 +11,7 @@ from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
     QButtonGroup, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QPushButton,
     QDockWidget, QTextEdit, QLabel, QCheckBox, QTreeWidget, QTreeWidgetItem,
-    QComboBox,
+    QComboBox, QMessageBox,
 )
 
 from .baum_widget import BaumWidget
@@ -315,6 +316,102 @@ class HauptFenster(QMainWindow):
             self._ssao_check.setChecked(not aktiviert)
             self._ssao_check.blockSignals(False)
 
+    def _vorrang_bei_konflikt_waehlen(self, konflikt):
+        dialog = QMessageBox(self)
+        dialog.setIcon(QMessageBox.Icon.Warning)
+        dialog.setWindowTitle("Bauteilüberschneidung")
+        dialog.setText(
+            "Überschneidung zwischen %s und %s (%.9g m³)."
+            % (konflikt.name_a, konflikt.name_b, konflikt.volumen))
+        dialog.setInformativeText(
+            "Welches Bauteil soll unverändert bleiben? Das andere wird "
+            "dauerhaft beschnitten. Vor dem Schreiben wird eine bytegetreue "
+            "Sicherung mit der Endung .bak angelegt.")
+        unveraendert_a = dialog.addButton(
+            "%s unverändert lassen" % konflikt.name_a,
+            QMessageBox.ButtonRole.AcceptRole)
+        unveraendert_b = dialog.addButton(
+            "%s unverändert lassen" % konflikt.name_b,
+            QMessageBox.ButtonRole.AcceptRole)
+        abbrechen = dialog.addButton(QMessageBox.StandardButton.Cancel)
+        dialog.exec()
+        gewaehlt = dialog.clickedButton()
+        if gewaehlt is abbrechen:
+            return None
+        if gewaehlt is unveraendert_a:
+            return konflikt.name_a
+        if gewaehlt is unveraendert_b:
+            return konflikt.name_b
+        return None
+
+    def _geometrie_konflikte_bereinigen(
+            self, konfiguration, knoten, aktive):
+        eintrag = knoten.eintrag
+        if not isinstance(eintrag, dict) or "teile" not in eintrag:
+            return True
+
+        from ..core import boot_bau, fabriken, geometrie_konflikte as gk
+
+        aktive_namen = {blatt.name for blatt in aktive}
+        ordner = os.path.join(boot_bau.MODELL_ORDNER, knoten.name)
+
+        def lade_specs():
+            return fabriken._specs_aus_konfig(
+                eintrag["teile"], konfiguration, boot_bau.SKALA, ordner,
+                aktive_namen=aktive_namen)
+
+        def blaetter(specs):
+            for spec in specs:
+                if "teile" in spec:
+                    yield from blaetter(spec["teile"])
+                else:
+                    yield spec
+
+        specs = lade_specs()
+        anzahl = sum(1 for spec in blaetter(specs)
+                     if "flaechenmasse" not in spec)
+        max_korrekturen = anzahl * (anzahl - 1) // 2
+        korrekturen = 0
+        while True:
+            teile = [
+                {
+                    "name": spec["_konflikt_name"],
+                    "form": spec["form"],
+                    "volumetrisch": "flaechenmasse" not in spec,
+                }
+                for spec in blaetter(specs)
+            ]
+            konflikte = gk.finde_konflikte(teile)
+            if not konflikte:
+                return True
+            if korrekturen >= max_korrekturen:
+                raise gk.GeometrieKonfliktFehler(
+                    "Konfliktkorrektur hat die maximale Anzahl an "
+                    "Bauteilpaaren überschritten")
+
+            konflikt = konflikte[0]
+            vorrang = self._vorrang_bei_konflikt_waehlen(konflikt)
+            if vorrang is None:
+                self.protokoll_schreiben(
+                    "Geometriekorrektur abgebrochen; Physiklauf angehalten.")
+                return False
+
+            nachrang_name = (konflikt.name_b
+                             if vorrang == konflikt.name_a
+                             else konflikt.name_a)
+            by_name = {spec["_konflikt_name"]: spec
+                       for spec in blaetter(specs)}
+            nachrang = by_name[nachrang_name]
+            vorrang_spec = by_name[vorrang]
+            gk.korrigiere_obj_quelle(
+                nachrang["_quellpfad"], nachrang["form"],
+                vorrang_spec["form"], skala=boot_bau.SKALA)
+            self.protokoll_schreiben(
+                "Geometrie korrigiert: %s beschnitten, %s bleibt unverändert."
+                % (nachrang_name, vorrang))
+            specs = lade_specs()
+            korrekturen += 1
+
     def _laufzeit_objekte_aktualisieren(self, grund="auswahl"):
         bruecke = getattr(self, "_bruecke", None)
         welt = self.baum._welt
@@ -325,6 +422,7 @@ class HauptFenster(QMainWindow):
         from ..core.fabriken import baue_summenkoerper
         from .baum import aktive_blaetter, summenkoerper
 
+        laufzeit_bereit = True
         for knoten in summenkoerper(welt):
             if not knoten.sichtbar or knoten.eintrag is None:
                 bruecke.sichtbar_setzen(knoten.name, False)
@@ -336,6 +434,12 @@ class HauptFenster(QMainWindow):
                 self._laufzeit_koerper.pop(knoten.name, None)
                 continue
             try:
+                if not self._geometrie_konflikte_bereinigen(
+                        konfiguration, knoten, aktive):
+                    bruecke.sichtbar_setzen(knoten.name, False)
+                    self._laufzeit_koerper.pop(knoten.name, None)
+                    laufzeit_bereit = False
+                    continue
                 koerper, modell_schwerpunkt = baue_summenkoerper(
                     konfiguration, knoten.name, aktive_blaetter=aktive)
                 position = (tuple(modell_schwerpunkt)
@@ -344,10 +448,16 @@ class HauptFenster(QMainWindow):
                     knoten.name, koerper, position=position)
                 self._laufzeit_koerper[knoten.name] = koerper
             except (ImportError, OSError, ValueError) as fehler:
+                bruecke.sichtbar_setzen(knoten.name, False)
                 self._laufzeit_koerper.pop(knoten.name, None)
+                laufzeit_bereit = False
                 nachricht = ("Laufzeitkoerper %s konnte nicht aktualisiert "
                              "werden: %s" % (knoten.name, fehler))
                 self.protokoll_schreiben(nachricht)
+        if not laufzeit_bereit:
+            self._zeit_pausieren()
+            self._echtzeit_name = None
+            return
         if grund in ("start", "auswahl") and self._btn_statisch.isChecked():
             self._statische_simulation_ausfuehren()
         elif self._btn_echtzeit.isChecked():
