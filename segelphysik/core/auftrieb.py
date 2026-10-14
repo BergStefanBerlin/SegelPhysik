@@ -284,8 +284,8 @@ def kraftfunktion_berechne(koerper, lage, v=None, omega=None, rho_w=1000.0,
 
     koerper : Objekt mit .blatt_meshes [(punkte, gesichter), ...] im
               Koerper-Frame (r_S im Ursprung, P1) und .r_S
-    pfad    : "voxel" (Standard, D10) oder "exakt" (nur disjunkte
-              Testgeometrien als Referenz, D10)
+    pfad    : "voxel" (Standard), "voxel_koerperfest", "exakt" (Blattsumme)
+              oder "exakt_union" (Boolesche Union als Referenz)
     """
     koerper = als_bindung(koerper)
     z, phi, theta = lage_pruefen(lage)
@@ -297,13 +297,13 @@ def kraftfunktion_berechne(koerper, lage, v=None, omega=None, rho_w=1000.0,
             voxelmodell = KoerperfestesVoxelmodell(
                 koerper.blatt_meshes, aufloesung)
         V, K = voxelmodell.auswerten(z, phi)
-    elif pfad in ("exakt", "voxel"):
+    elif pfad in ("exakt", "voxel", "exakt_union"):
         blatt_welt = [(_in_welt(P, T), np.asarray(F, dtype=np.int64))
                       for P, F in koerper.blatt_meshes]
     else:
         raise AuftriebFehler(
-            "pfad muss 'voxel', 'voxel_koerperfest' oder 'exakt' sein: %r"
-            % pfad)
+            "unbekannter Pfad %r ('voxel', 'voxel_koerperfest', 'exakt' "
+            "oder 'exakt_union' erwartet)" % pfad)
 
     if pfad == "exakt":
         V = 0.0
@@ -318,6 +318,9 @@ def kraftfunktion_berechne(koerper, lage, v=None, omega=None, rho_w=1000.0,
         K = K_sum / V if V > 1e-15 else np.zeros(3)
     elif pfad == "voxel":
         V, K = _voxel_koerper(blatt_welt, aufloesung)
+    elif pfad == "exakt_union":
+        from .volumen_union import volumen_schwerpunkt_union
+        V, K = volumen_schwerpunkt_union(blatt_welt, ebene_z=0.0)
 
     F_A = np.array([0.0, 0.0, rho_w * g * V])
     r_S_welt = _in_welt(np.asarray(koerper.r_S, dtype=float).reshape(1, 3),

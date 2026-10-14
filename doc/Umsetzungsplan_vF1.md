@@ -347,19 +347,36 @@ Damit bleibt `voxel_koerperfest` ein Opt-in-Referenzpfad und wird weder
 Standard noch Genauigkeitsreferenz. Die beiden Voxelpfade verwenden bei
 geneigter Lage unterschiedlich orientierte Raster. Der exakte Pfad summiert
 Einzelblattvolumina statt eine Boolesche Vereinigung zu berechnen und ist
-daher für die zusammengesetzte Yacht keine gültige Union-Referenz. Ein
-belastbarer Genauigkeitsnachweis für das Gesamtmodell erfordert eine
-union-konsistente Referenz. Die Messung ist ein einzelner CPU-Lauf und kein
-GPU- oder GUI-Performance-Abnahmelauf.
+daher für die zusammengesetzte Yacht keine gültige Union-Referenz.
+
+Als union-konsistente CPU-Referenz wurde der explizite Pfad `exakt_union`
+ergänzt. Er vereinigt die pose-transformierten Volumenmeshes mit Manifold3D,
+schneidet die Union an der Welt-Wasserlinie und integriert Volumen sowie
+Schwerpunkt aus dem geschlossenen Ergebnis. Der vorhandene Pfad `exakt`
+bleibt für bisherige Tests unverändert.
+
+Mit derselben Yacht und denselben neun Posen bei `0,05 m` Rasterweite dauerte
+die exakte Union insgesamt 0,22 s; die Vorbereitung des körperfesten Rasters
+war 3,40 s, seine neun Auswertungen 0,0029 s. Die maximalen Abweichungen zur
+Union-Referenz waren `0,00730 m³` und `0,00908 m` (beide Schranken verletzt).
+Bei halbierter Rasterweite `0,025 m` betrugen die Vorbereitungszeit 12,97 s,
+die neun Auswertungen 0,0176 s und die maximalen Abweichungen
+`0,00247 m³` sowie `0,00328 m`. Die Schwerpunktgrenze wurde eingehalten, die
+Volumengrenze (`0,0005 m³`) weiterhin nicht. Damit ist die körperfeste
+Voxelgenauigkeit am Yachtmodell noch nicht abgenommen; die langsamere
+Vorbereitung und fehlende Volumengenauigkeit rechtfertigen keine Umstellung
+des Standards. Diese Einzelmessungen prüfen weder GPU- noch GUI-Performance.
 
 ### Betroffene Bereiche und Tests
 
 - Produktionskandidaten: `core/auftrieb.py`, `wasser_schnitt.py`,
   Geometrie-/Körperdaten aus Phase 1 sowie `core/hydrostatik.py` für
-  Wasserlinienkennwerte; `core/voxelmodell.py` für das körperfeste Raster.
+  Wasserlinienkennwerte; `core/voxelmodell.py` für das körperfeste Raster und
+  `core/volumen_union.py` für die exakte Union-Referenz.
 - Bestehende Tests erweitern: `tests/test_auftrieb.py`,
   `tests/test_wasser_schnitt.py`, `tests/test_wasserlinie_geometrie.py`;
-  analytische Hydrostatikfälle in `tests/test_hydrostatik.py`.
+  analytische Hydrostatikfälle in `tests/test_hydrostatik.py` sowie
+  Vereinigungs-/Referenzfälle in `tests/test_volumen_union.py`.
 
 ### Prüfungen und Abnahme
 
