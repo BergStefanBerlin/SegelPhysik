@@ -31,11 +31,14 @@ Testkoerpern mit 0.5*h-Raster-Offset ist das Ergebnis exakt.
 """
 from __future__ import annotations
 
+import logging
+
 import numpy as np
 
 from .. import wasser_schnitt as ws
 
 G_NORM = 9.80665  # D4: Norm-Schwere; im Betrieb aus physik.json (D8)
+_LOGGER = logging.getLogger(__name__)
 
 
 class AuftriebFehler(ValueError):
@@ -324,8 +327,10 @@ def kraftfunktion_berechne(koerper, lage, v=None, omega=None, rho_w=1000.0,
             from .volumen_union import volumen_schwerpunkt_union
             V, K = volumen_schwerpunkt_union(blatt_welt, ebene_z=0.0)
         else:
-            V, K = unionmodell.auswerten(
-                transform=T[:3, :], ebene_z=0.0)
+            V, K = unionmodell.auswerten_ebene(
+                -T[2, :3], float(T[2, 3]))
+            if V > 0.0:
+                K = _in_welt(K.reshape(1, 3), T)[0]
 
     F_A = np.array([0.0, 0.0, rho_w * g * V])
     r_S_welt = _in_welt(np.asarray(koerper.r_S, dtype=float).reshape(1, 3),
@@ -385,18 +390,71 @@ def baue_kraftfunktion(koerper, rho_w=1000.0, g=G_NORM, aufloesung=0.05,
     return funktion
 
 
-def baue_kraftfunktion_6dof(koerper, rho_w=1000.0, g=G_NORM):
-    """Bindet eine starre exakte Hydrostatik fuer beliebige 3D-Posen."""
+def baue_kraftfunktion_6dof(koerper, rho_w=1000.0, g=G_NORM,
+                            pfad="exakt_union", aufloesung=0.05):
+    """Bindet Hydrostatik an eine beliebige 6-DOF-Pose.
+
+    `exakt_union` bleibt der Referenzstandard. `voxel_koerperfest` ist ein
+    schneller Näherungspfad und muss vor Produktion separat freigegeben werden.
+    """
     from .dynamik_6dof import quaternion_matrix
-    from .volumen_union import VorbereitetesUnionModell
+    from .volumen_union import (
+        VorbereitetesUnionModell, VolumenUnionFehler)
 
     koerper = als_bindung(koerper)
-    unionmodell = VorbereitetesUnionModell(koerper.blatt_meshes)
+    if pfad == "exakt_union":
+        unionmodell = VorbereitetesUnionModell(koerper.blatt_meshes)
+        voxelmodell = None
+        punkte = np.concatenate(
+            [np.asarray(p, dtype=np.float64) for p, _ in koerper.blatt_meshes],
+            axis=0)
+        grenzen_min = punkte.min(axis=0)
+        grenzen_max = punkte.max(axis=0)
+        grenzen_ecken = np.array([
+            (x, y, z)
+            for x in (grenzen_min[0], grenzen_max[0])
+            for y in (grenzen_min[1], grenzen_max[1])
+            for z in (grenzen_min[2], grenzen_max[2])
+        ], dtype=np.float64)
+        union_volumen, union_schwerpunkt = unionmodell.gesamtwerte()
+    elif pfad in ("voxel_koerperfest", "voxel_opencl"):
+        from .voxelmodell import KoerperfestesVoxelmodell
+        unionmodell = None
+        voxelmodell = KoerperfestesVoxelmodell(
+            koerper.blatt_meshes, aufloesung)
+        if len(voxelmodell.zentren_lokal):
+            grenzen_min = voxelmodell.zentren_lokal.min(axis=0)
+            grenzen_max = voxelmodell.zentren_lokal.max(axis=0)
+        else:
+            grenzen_min = grenzen_max = np.zeros(3, dtype=np.float64)
+        grenzen_ecken = None
+        union_volumen = 0.0
+        union_schwerpunkt = np.zeros(3, dtype=np.float64)
+        gpu_backend = None
+        if pfad == "voxel_opencl":
+            from .physik_backend import (
+                BackendFehler, OpenCLVoxelHydrostatik,
+            )
+            try:
+                gpu_backend = OpenCLVoxelHydrostatik.oeffnen(
+                    voxelmodell.zentren_lokal, aufloesung ** 3)
+            except BackendFehler as fehler:
+                _LOGGER.warning(
+                    "OpenCL-Hydrostatik nicht verfügbar; verwende "
+                    "körperfesten CPU-Pfad: %s", fehler)
+            else:
+                _LOGGER.info(
+                    "OpenCL-Hydrostatik auf %s vorbereitet", gpu_backend.name)
+    else:
+        raise AuftriebFehler(
+            "unbekannter 6-DOF-Pfad %r ('exakt_union' oder "
+            "'voxel_koerperfest' oder 'voxel_opencl' erwartet)" % pfad)
     rho_w, g = float(rho_w), float(g)
     if (not np.isfinite((rho_w, g)).all() or rho_w <= 0.0 or g <= 0.0):
         raise ValueError("Wasserdichte und g muessen endlich positiv sein")
 
     def funktion(lage, v=None, omega=None):
+        nonlocal gpu_backend
         if not isinstance(lage, (tuple, list)) or len(lage) != 2:
             raise AuftriebFehler(
                 "6-DOF-Lage muss aus Position und Quaternion bestehen")
@@ -404,9 +462,51 @@ def baue_kraftfunktion_6dof(koerper, rho_w=1000.0, g=G_NORM):
         if position.shape != (3,) or not np.isfinite(position).all():
             raise AuftriebFehler("6-DOF-Position muss drei endliche Werte haben")
         rotation = quaternion_matrix(lage[1])
-        transform = np.column_stack((rotation, position))
-        volumen, schwerpunkt = unionmodell.auswerten(
-            transform=transform, ebene_z=0.0)
+        if pfad == "voxel_koerperfest":
+            volumen, schwerpunkt = voxelmodell.auswerten_6dof(
+                position, lage[1])
+        elif pfad == "voxel_opencl":
+            if gpu_backend is None:
+                volumen, schwerpunkt = voxelmodell.auswerten_6dof(
+                    position, lage[1])
+            else:
+                try:
+                    volumen, schwerpunkt = gpu_backend.auswerten_6dof(
+                        rotation, position, grenzen_min, grenzen_max)
+                except BackendFehler as fehler:
+                    _LOGGER.warning(
+                        "OpenCL-Hydrostatik fehlgeschlagen; dieselbe Pose "
+                        "läuft auf CPU weiter: %s", fehler)
+                    gpu_backend = None
+                    volumen, schwerpunkt = voxelmodell.auswerten_6dof(
+                        position, lage[1])
+        else:
+            normale_welt = rotation[2, :]
+            projiziert = grenzen_ecken @ normale_welt
+            untere_z = float(projiziert.min())
+            obere_z = float(projiziert.max())
+            untere_z += position[2]
+            obere_z += position[2]
+            skala = max(
+                1.0, float(np.linalg.norm(grenzen_min)),
+                float(np.linalg.norm(grenzen_max)),
+                float(np.linalg.norm(position)))
+            delta = 64.0 * np.finfo(np.float64).eps * skala
+            if untere_z > delta:
+                volumen, schwerpunkt = 0.0, np.zeros(3, dtype=np.float64)
+            elif obere_z < -delta:
+                volumen = union_volumen
+                schwerpunkt = rotation @ union_schwerpunkt + position
+            else:
+                try:
+                    volumen, schwerpunkt = unionmodell.auswerten_ebene(
+                        -normale_welt, float(position[2]))
+                except VolumenUnionFehler as fehler:
+                    raise AuftriebFehler(
+                        "Körperframe-Unionauswertung fehlgeschlagen: %s"
+                        % fehler) from fehler
+                if volumen > 0.0:
+                    schwerpunkt = rotation @ schwerpunkt + position
         kraft = np.array((0.0, 0.0, rho_w * g * volumen))
         r_s_welt = rotation @ np.asarray(koerper.r_S, dtype=float) + position
         moment = np.cross(schwerpunkt - r_s_welt, kraft)

@@ -10,14 +10,15 @@ _dt = None
 _g = None
 
 
-def initialisieren(koerper, rho_w, physik):
+def initialisieren(koerper, rho_w, physik, hydrostatik_pfad="exakt_union"):
     """Bereitet das unveränderliche Kraftmodell einmal pro Worker vor."""
     global _kraftfunktion, _masse, _traegheit, _dt, _g
     from .auftrieb import baue_kraftfunktion_6dof
     from .kraftmodell import KraftmodellMitHydroCache, baue_kraftmodell
 
     hydrostatik = baue_kraftfunktion_6dof(
-        koerper, rho_w=rho_w, g=physik.g_m_pro_s2)
+        koerper, rho_w=rho_w, g=physik.g_m_pro_s2,
+        pfad=hydrostatik_pfad)
     _kraftfunktion = KraftmodellMitHydroCache(
         baue_kraftmodell(hydrostatik, physik), intervall=1)
     _masse = float(koerper.masse)

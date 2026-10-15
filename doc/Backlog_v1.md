@@ -149,7 +149,8 @@ Solver integrieren
 ### B-08 – Echtzeit-Rückstand unter Last messen
 
 - **Priorität:** Mittel
-- **Status:** Exakte Echtzeit-Hydrostatik verifiziert; Durchsatzoptimierung offen
+- **Status:** Zeitbilanz, automatische Pause und Nachholmodus implementiert;
+  Zielhardware-Abnahme und Durchsatzoptimierung offen
 - **Befund:** Die Echtzeitphysik wird jetzt außerhalb der GUI-Ereignisschleife
   in Batches mit höchstens vier festen SI-Schritten berechnet. Der zuvor
   getestete Hydrostatik-Cache mit vier-Schritt-Intervall verursachte in einer
@@ -164,13 +165,22 @@ Solver integrieren
   `50,78 ms`) für `0,016 s` Simulationszeit. Der Rückstand wuchs im
   zehnsekündigen Test auf etwa `7,47 s`; keine
   aufgelaufene Simulationszeit wird stillschweigend verworfen.
-- **Später prüfen:** Den Physikdurchsatz separat weiter optimieren oder eine
-  ausdrücklich festgelegte Regel für Überlast und Simulationszeit vereinbaren.
-  Eine Zeitbegrenzung bzw. Verwerfung darf nicht stillschweigend eingeführt
-  werden.
-- **Abnahme:** Noch offen: Rechenleistung verbessert oder eine ausdrücklich
-  festgelegte Regel für Überlast und Simulationszeit vereinbart. GUI-
-  Reaktionsfähigkeit unter der gemessenen Last ist bereits nachgewiesen.
+- **Änderung vom 15.10.2026:** Angeforderte und übernommene Simulationszeit
+  werden getrennt geführt; in-flight-Schritte werden beim Pausieren genau
+  einmal zurückgebucht. Ein Rückstand ab `1,0 s` löst nach fünf ununterbrochenen
+  Sekunden eine automatische Pause aus. Fortsetzen arbeitet zunächst mit
+  priorisierten Batches den erhaltenen Rückstand ab und protokolliert
+  Ein-Sekunden-Nachholraten sowie die Gesamtrate. Regressionen decken
+  Rückbuchung, Nachholmodus, die exakte `1,0 s`/`5 s`-Schwelle sowie
+  verspätete und bereits übernommene Workerresultate bei einem Körperwechsel
+  ab; weder Rückstand noch berechnete Zeit werden doppelt gebucht.
+- **Später prüfen:** Die geforderte Zielhardware-Langzeitmessung muss die
+  Nachholrate von mindestens `1,25 s/s`, den Rückstand und das Verhalten bei
+  Körper-/Moduswechsel über zehn Minuten nachweisen. Physikdurchsatz separat
+  optimieren; Zeitbegrenzung oder Verwerfung darf nicht stillschweigend
+  eingeführt werden.
+- **Abnahme:** Die gezielten Zustandsregressionen bestehen. Der zehnminütige
+  Zielhardwarelauf und die zugehörigen Durchsatz-/Trendgates sind noch offen.
 
 ### B-09 – Wasserlinienschnitt und Actor-Neuaufbau pro Frame
 
@@ -192,6 +202,109 @@ Solver integrieren
   überein, Deckelvolumen bleibt erhalten und der integrierte Yachtlauf erreicht
   mindestens `30 FPS`. Die Physik selbst läuft weiterhin langsamer als
   Wandzeit; siehe B-08.
+
+### B-10 – vF1.2-6-DOF-OpenCL-Hydrostatik
+
+- **Datum:** 15.10.2026
+- **Priorität:** Hoch
+- **Status:** Optionaler OpenCL-Voxelreduktionskernel implementiert und
+  numerisch gegen die körperfeste CPU-Referenz geprüft; Produktionsfreigabe
+  nicht bestanden/nicht beantragt
+- **Befund (aktualisiert am 15.10.2026):** Das GPU-Backend hält die
+  körperfesten Voxelzentren resident, reduziert nasse Anzahl und
+  Schwerpunktbeiträge je Workgroup und fällt bei
+  Initialisierungs-/Kernelproblemen oder grenznahen Voxeln auf dieselbe
+  Pose der CPU-Referenz zurück. Die vorhandene Zielhardware meldet OpenCL-GPU
+  `gfx1103`; Regressionen für neutrale, Roll- und Nickpose stimmen mit dem
+  CPU-Raster überein. Der gepaarte Zehn-Paar-Mikrobenchmark (je zehn
+  vollständige 6-DOF-Schritte pro Backend und Paar, fünf Quaternionposen,
+  alternierte Reihenfolge) ergab auf dem Yachtmodell mit `0,05 m` Raster
+  `4,57 ms` CPU-P95 gegenüber `0,95 ms` GPU-P95 und einen Median der
+  paarweisen P95-Verbesserung von `79,3 %` (Bootstrap-95-%-KI:
+  `77,3–82,8 %`). Die GPU war damit in dieser isolierten Voxel-Arbeitslast
+  schneller; das ist kein Ende-zu-Ende-/Renderlastnachweis. Die CPU-
+  Rastervorbereitung dauerte `3,45 s`, GPU-Kernel-/Bufferinitialisierung
+  `0,69 s`. Ein zusätzlicher Regressionstest erzwingt nun eine Pose mit
+  Voxeln numerisch auf der Wasserfläche und bestätigt den CPU-Fallback.
+- **Genauigkeit:** Beide Voxelvarianten stimmten im Schwerpunkt auf
+  `8e-17 m` überein, verfehlten aber gegenüber `exakt_union` das 1-%-Gate
+  deutlich: maximal `5,99 %` normierter Volumen- und Kraftfehler. Der
+  schnelle GPU-Pfad bleibt daher gesperrt; eine
+  Leistungsverbesserung heilt keinen fachlichen Fehler.
+- **Restarbeit:** Der Benchmark kann nun per `--backend` denselben festen
+  Hydrostatikpfad im Echtzeit-GUI-Lauf verwenden. Gepaarte, sichtbare
+  CPU/GPU-Messreihen auf dem Zielsystem einschließlich Renderlast sowie
+  sämtliche statischen und dynamischen Genauigkeitsvergleiche fehlen weiter.
+  Die Prozessinitialisierung übernimmt dieselbe feste Zuordnung; der
+  Produktionspfad bleibt `exakt_union`, bis alle Gates bestehen. GPU und
+  CPU-Voxelpfad approximieren beide und verfehlen derzeit das Genauigkeitsgate.
+- **Abnahme:** Alle numerischen, statischen Solver-, dynamischen Verlaufs-,
+  Genauigkeits- und vollständigen p95-Konfidenzintervall-Gates aus Phase 6
+  müssen bestehen, bevor eine Produktionszuordnung geändert wird.
+
+### B-11 – vF1.2-Live-Abnahme und Präsentationszeitpunkt
+
+- **Datum:** 15.10.2026
+- **Priorität:** Hoch
+- **Status:** Benchmark um Pflicht-Layer, sekündliche Rückstandszeitreihe,
+  Rückstandstrend und explizite Kennzeichnung nicht messbarer Präsentation
+  erweitert; gültige Live-Abnahme offen
+- **Befund:** Ein aktueller kurzer Offscreen-Smoke-Test mit festem
+  `voxel_opencl`-Pfad (1,2 s nach 0,2 s Warm-up) aktivierte alle vier
+  Pflicht-Layer und erfasste 64 Physik-Batches. Median/P95 der Batches waren
+  `3,71/5,19 ms`; die gemessenen Renderaufrufe lagen bei `30,70/s`, der
+  Rückstand am Messende bei `0,185 s`. Präsentierte FPS sowie
+  Eingabe-bis-sichtbar-Latenz waren `null`. Der Lauf
+  ist wegen Offscreen-Betrieb, kurzer Dauer und fehlendem Präsentierungszeitpunkt
+  ausdrücklich keine Abnahme. `QWidget`-/QtInteractor-Renderaufrufe belegen
+  weder tatsächlich präsentierte FPS noch Eingabe-bis-sichtbar-Latenz;
+  beide Abnahmewerte werden daher `null` ausgewiesen. Der Benchmark ist
+  standardmäßig auf 30 s Warm-up plus zehn Minuten Messzeit gesetzt.
+- **Erweiterung vom 15.10.2026:** Der Livebenchmark meldet zusätzlich
+  angeforderte/berechnete Simulationszeit, Durchsatz über gesamte Wandzeit,
+  Rückstand-p95/Maximum, automatische Überlastpause und eine 300-s-
+  Rückstandsregression. Auch bei einem sichtbaren Qt-Fenster liefert die
+  bestehende QtInteractor-Schnittstelle keinen belastbaren Präsentations-
+  zeitpunkt; präsentierte FPS und Eingabe-bis-sichtbar-Latenz bleiben deshalb
+  `null` und blockieren das formale GUI-Freigabegate. `--backend` erlaubt
+  gezielte Läufe mit `exakt_union`, `voxel_koerperfest` oder
+  `voxel_opencl`; Standard bleibt `exakt_union`.
+- **Restarbeit:** Eine belastbare Zeitmarke des tatsächlich präsentierten
+  Frames mit sichtbarer Eingabereaktion über Renderer-/Qt-Schnittstelle
+  bereitstellen oder eine validierte externe Messmethode verwenden. Danach
+  Benchmark mit sichtbarer GUI auf Zielhardware vollständig ausführen.
+- **Abnahme:** Präsentierte FPS, Eingabelatenz, Pflicht-Layer, sekündliche
+  Rückstandszeitreihe und Fünf-Minuten-Trend valide erfassen; alle
+  Phase-0-/Phase-9-Gates bestehen.
+
+### B-12 – Solver-Auswertungen und adaptive Kennfelder
+
+- **Datum:** 15.10.2026
+- **Priorität:** Mittel
+- **Status:** Identische Residuumspunkte innerhalb eines Solverlaufs werden
+  begrenzt memoisiert; Kennfeldphase nicht begonnen
+- **Befund:** Der robuste Solver wertet an identischen Positionen wiederholt
+  dieselbe reine Kraftfunktion aus. Ein lokaler, auf 512 Resultate begrenzter
+  Cache bleibt auf einen einzigen Solve-Aufruf beschränkt und liefert
+  Auswertungs-/Trefferzahlen zur Diagnose. Im wiederholten Yacht-
+  `exakt_union`-Solverbenchmark (3 Läufe, `dt` und Geometrie unverändert)
+  lag die Laufzeit bei `136,9–144,3 ms` (Median `138,4 ms`); pro Lauf wurden
+  15 eindeutige Kraftauswertungen ausgeführt und 8 Wiederholungen aus dem
+  Cache bedient. Die Solverpose und Restgrößen waren in allen drei Läufen
+  identisch. Das globale Voxelverfahren benötigte weiterhin rund `47,6 s`
+  je Solverlauf und verfehlte das Momentengenauigkeitsgate; es bleibt
+  ungeeignet.
+- **Restarbeit:** Kein belastbarer Vorher-nachher-Ende-zu-Ende-Vergleich
+  wurde mit demselben Code-/Messmanifest erhoben. Profiling der
+  Eingangsableitungen und ein mathematisch begründeter Warmstart/Jacobi-
+  Startwert sind offen. Adaptive Kennfelder sind nach dem dokumentierten
+  genauen CPU/GPU-Pfad nicht eingeführt: Voxelgenauigkeit verfehlt derzeit
+  bereits das Gate, daher fehlen gültige Referenzdaten und eine sichere
+  Interpolations-/Fallbackfreigabe.
+- **Abnahme:** Der lokale Cache besteht Solverregressionen; eine
+  messbare Beschleunigung ist noch nicht als Freigabeerfolg ausgewiesen.
+  Kennfeld-/Warmstartarbeit erst fortsetzen, wenn exakte Pfade das Profiling
+  als relevanten Engpass belegen und die Genauigkeitsgates erfüllbar sind.
 
 ## Messkontext und Grenzen
 

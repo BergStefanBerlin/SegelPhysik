@@ -87,6 +87,7 @@ class KoerperfestesVoxelmodell:
 
         xs, ys, zs = (zentren(lo[i], hi[i]) for i in range(3))
         spalten = []
+        saeulen = []
         for x in xs:
             for z in zs:
                 innen = np.zeros(len(ys), dtype=bool)
@@ -95,15 +96,21 @@ class KoerperfestesVoxelmodell:
                             punkte, dreiecke, x, z):
                         innen |= (ys > unten) & (ys < oben)
                 if innen.any():
-                    spalten.append(np.column_stack((
+                    saeule_array = np.column_stack((
                         np.full(np.count_nonzero(innen), x),
                         ys[innen],
-                        np.full(np.count_nonzero(innen), z))))
+                        np.full(np.count_nonzero(innen), z)))
+                    saeule_array.setflags(write=False)
+                    spalten.append(saeule_array)
+                    saeulen.append((float(x), float(z), ys[innen].copy()))
         zentren_lokal = (
             np.vstack(spalten) if spalten
             else np.empty((0, 3), dtype=np.float64))
         zentren_lokal.setflags(write=False)
         self.zentren_lokal = zentren_lokal
+        self._saeulen = tuple(
+            (x, z, y, np.concatenate(([0.0], np.cumsum(y, dtype=np.float64))))
+            for x, z, y in saeulen)
 
     def auswerten(self, z, phi):
         """Gibt (Volumen, Schwerpunkt_world) unter der Wasserfläche z_world=0."""
@@ -113,22 +120,75 @@ class KoerperfestesVoxelmodell:
             raise VoxelmodellFehler("Pose muss endliche Zahlen enthalten") from fehler
         if not np.isfinite(z) or not np.isfinite(phi):
             raise VoxelmodellFehler("Pose muss endliche Zahlen enthalten")
-        if len(self.zentren_lokal) == 0:
-            return 0.0, np.zeros(3)
         c, s = np.cos(phi), np.sin(phi)
-        punkte = self.zentren_lokal
-        z_welt = z + s * punkte[:, 1] + c * punkte[:, 2]
-        nass = z_welt <= 0.0
-        anzahl = int(np.count_nonzero(nass))
-        if not anzahl:
-            return 0.0, np.zeros(3)
-        tauchzentrum_lokal = punkte[nass].mean(axis=0)
-        tauchzentrum_welt = tauchzentrum_lokal @ np.array(
-            [[1.0, 0.0, 0.0],
-             [0.0, c, -s],
-             [0.0, s, c]]).T
-        tauchzentrum_welt[2] += z
-        volumen = anzahl * self.aufloesung ** 3
-        if not np.isfinite(volumen) or not np.isfinite(tauchzentrum_welt).all():
+        rotation = np.array([
+            [1.0, 0.0, 0.0],
+            [0.0, c, -s],
+            [0.0, s, c],
+        ])
+        return self._auswerten_wasserhalbebene(
+            rotation, np.array((0.0, 0.0, z), dtype=np.float64))
+
+    def auswerten_6dof(self, position, quaternion):
+        """Wertet die starre Pose mit einer Ebene im Körperframe aus."""
+        try:
+            position = np.asarray(position, dtype=np.float64)
+        except (TypeError, ValueError, OverflowError) as fehler:
+            raise VoxelmodellFehler(
+                "Position muss drei endliche Werte enthalten") from fehler
+        if position.shape != (3,) or not np.isfinite(position).all():
+            raise VoxelmodellFehler(
+                "Position muss drei endliche Werte enthalten")
+        try:
+            from .dynamik_6dof import quaternion_matrix
+            rotation = quaternion_matrix(quaternion)
+        except (TypeError, ValueError, OverflowError) as fehler:
+            raise VoxelmodellFehler(
+                "Quaternion muss eine gültige endliche Orientierung sein"
+            ) from fehler
+        return self._auswerten_wasserhalbebene(rotation, position)
+
+    def _auswerten_wasserhalbebene(self, rotation, position):
+        if not len(self.zentren_lokal):
+            return 0.0, np.zeros(3, dtype=np.float64)
+
+        normale = rotation[2, :]
+        versatz = float(position[2])
+        nasse_anzahl = 0
+        summe_lokal = np.zeros(3, dtype=np.float64)
+        gradient = float(normale[1])
+        gradient_toleranz = 32.0 * np.finfo(np.float64).eps
+
+        for x, z, ys, praefix_y in self._saeulen:
+            basis = normale[0] * x + normale[2] * z + versatz
+            if abs(gradient) <= gradient_toleranz:
+                if basis <= 0.0:
+                    anzahl = len(ys)
+                    nasse_anzahl += anzahl
+                    summe_lokal += (x * anzahl, praefix_y[-1], z * anzahl)
+                continue
+
+            grenze = -basis / gradient
+            if gradient > 0.0:
+                ende = int(np.searchsorted(ys, grenze, side="right"))
+                if ende:
+                    nasse_anzahl += ende
+                    summe_lokal += (x * ende, praefix_y[ende], z * ende)
+            else:
+                anfang = int(np.searchsorted(ys, grenze, side="left"))
+                if anfang < len(ys):
+                    anzahl = len(ys) - anfang
+                    nasse_anzahl += anzahl
+                    summe_lokal += (
+                        x * anzahl, praefix_y[-1] - praefix_y[anfang],
+                        z * anzahl)
+
+        if nasse_anzahl == 0:
+            return 0.0, np.zeros(3, dtype=np.float64)
+        schwerpunkt_lokal = summe_lokal / nasse_anzahl
+        schwerpunkt_welt = rotation @ schwerpunkt_lokal + position
+        volumen = nasse_anzahl * self.aufloesung ** 3
+        if (not np.isfinite(volumen)
+                or not np.isfinite(schwerpunkt_welt).all()):
             raise VoxelmodellFehler("Rasterauswertung ergab nicht-endliche Werte")
-        return float(volumen), tauchzentrum_welt
+        return float(volumen), schwerpunkt_welt

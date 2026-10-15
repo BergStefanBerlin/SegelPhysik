@@ -79,6 +79,35 @@ def test_geneigte_wasserhalbebene_wird_im_koerperfesten_raster_ausgewertet(
     assert not raster.zentren_lokal.flags.writeable
 
 
+@pytest.mark.parametrize("quaternion", [
+    (np.cos(0.3), np.sin(0.3), 0.0, 0.0),
+    (np.cos(0.2), 0.0, np.sin(0.2), 0.0),
+    (np.cos(0.4), 0.0, 0.0, np.sin(0.4)),
+    (0.8, 0.2, -0.3, 0.45),
+])
+def test_6dof_praefixpfad_stimmt_mit_voxelreferenz_ueberein(
+        quader, quaternion):
+    from segelphysik.core.dynamik_6dof import quaternion_matrix
+
+    raster = vm.KoerperfestesVoxelmodell([quader], aufloesung=0.25)
+    position = np.array((0.2, -0.1, -0.3))
+    rotation = quaternion_matrix(quaternion)
+    z_welt = raster.zentren_lokal @ rotation[2, :] + position[2]
+    nass = z_welt <= 0.0
+    if nass.any():
+        erwartetes_volumen = np.count_nonzero(nass) * 0.25 ** 3
+        erwartet_lokal = raster.zentren_lokal[nass].mean(axis=0)
+        erwarteter_schwerpunkt = rotation @ erwartet_lokal + position
+    else:
+        erwartetes_volumen = 0.0
+        erwarteter_schwerpunkt = np.zeros(3)
+
+    volumen, schwerpunkt = raster.auswerten_6dof(position, quaternion)
+
+    assert volumen == pytest.approx(erwartetes_volumen)
+    assert schwerpunkt == pytest.approx(erwarteter_schwerpunkt)
+
+
 def test_gebundene_kraftfunktion_bereitet_raster_nur_einmal_vor(
         quader, monkeypatch):
     original = vm.KoerperfestesVoxelmodell

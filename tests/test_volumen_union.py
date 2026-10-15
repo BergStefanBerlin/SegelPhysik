@@ -117,3 +117,31 @@ def test_vorbereitete_union_lehnt_ungueltige_pose_ab(quader):
 
     with pytest.raises(VolumenUnionFehler, match="3x4"):
         vorbereitet.auswerten(transform=np.eye(4))
+
+
+@pytest.mark.parametrize("quaternion", [
+    (np.cos(0.3), np.sin(0.3), 0.0, 0.0),
+    (np.cos(0.2), 0.0, np.sin(0.2), 0.0),
+    (np.cos(0.4), 0.0, 0.0, np.sin(0.4)),
+    (0.8, 0.2, -0.3, 0.45),
+])
+def test_union_koerperframeebene_stimmt_mit_weltframeschnitt_ueberein(
+        quader, quaternion):
+    from segelphysik.core.dynamik_6dof import quaternion_matrix
+
+    meshes = [
+        (quader[0] + np.array((-0.4, 0.1, -0.3)), quader[1]),
+        (quader[0] + np.array((0.5, 0.0, -0.4)), quader[1]),
+    ]
+    position = np.array((0.1, -0.2, -0.1))
+    rotation = quaternion_matrix(quaternion)
+    union = VorbereitetesUnionModell(meshes)
+    lokal_v, lokal_k = union.auswerten_ebene(-rotation[2, :], position[2])
+    welt_meshes = [
+        (punkte @ rotation.T + position, dreiecke)
+        for punkte, dreiecke in meshes
+    ]
+    welt_v, welt_k = volumen_schwerpunkt_union(welt_meshes, ebene_z=0.0)
+
+    assert lokal_v == pytest.approx(welt_v, abs=1e-12)
+    assert rotation @ lokal_k + position == pytest.approx(welt_k, abs=1e-12)

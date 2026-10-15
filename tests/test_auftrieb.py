@@ -68,6 +68,22 @@ def test_n1_quader_halb_getaucht():
     assert abs(erg.V_tauch - 4.0) < VOX_TOL, erg.V_tauch
     assert abs(erg.K.z - (-0.5)) < 1e-6, erg.K.z
 
+
+def test_vorbereitete_union_schneidet_im_koerperframe():
+    v, f = zentriere(quader_mesh(2.0, 4.0, 2.0))
+    koerper = DummyKoerper([(v, f)])
+    vorbereitet = au.baue_kraftfunktion(koerper, pfad="exakt_union")
+    for lage in ((0.3, 0.2, 0.0), (-0.4, -0.3, 0.0)):
+        ergebnis = vorbereitet(lage)
+        referenz = au.kraftfunktion_berechne(
+            koerper, lage, pfad="exakt_union")
+        assert ergebnis.V_tauch == pytest.approx(referenz.V_tauch, abs=1e-12)
+        assert ergebnis.K.as_array() == pytest.approx(
+            referenz.K.as_array(), abs=1e-12)
+        assert ergebnis.M.as_array() == pytest.approx(
+            referenz.M.as_array(), abs=1e-10)
+
+
 def test_n2_quader_vollstaendig_getaucht():
     v, f = zentriere(quader_mesh(2, 2, 2))
     v = v - np.array([0.0, 0.0, 2.0])

@@ -171,6 +171,134 @@ def test_6dof_hydrostatik_hat_denselben_referenzwert_in_nullpose():
     assert result.M.as_array() == pytest.approx(np.zeros(3))
 
 
+@pytest.mark.parametrize(("position", "quaternion"), [
+    ((0.2, -0.1, 0.0), (np.cos(0.2), np.sin(0.2), 0.0, 0.0)),
+    ((-0.1, 0.3, -0.2), (np.cos(0.15), 0.0, np.sin(0.15), 0.0)),
+    ((0.1, 0.2, -2.0), (0.8, 0.2, -0.3, 0.45)),
+    ((0.1, 0.2, 3.0), (0.8, 0.2, -0.3, 0.45)),
+])
+def test_6dof_koerperframe_union_stimmt_mit_weltframe_referenz_ueberein(
+        position, quaternion):
+    from segelphysik.core.auftrieb import kraftfunktion_berechne
+
+    box = build_box(2.0, 2.0, 2.0)
+    koerper = SimpleNamespace(
+        blatt_meshes=[box], r_S=np.zeros(3), teile=[])
+    kraft = baue_kraftfunktion_6dof(koerper, rho_w=1000.0, g=9.81)
+    rotation = quaternion_matrix(quaternion)
+    welt_mesh = (box[0] @ rotation.T + np.asarray(position), box[1])
+    referenz = kraftfunktion_berechne(
+        SimpleNamespace(blatt_meshes=[welt_mesh], r_S=np.asarray(position),
+                        teile=[]),
+        (0.0, 0.0, 0.0), rho_w=1000.0, g=9.81, pfad="exakt_union")
+
+    result = kraft((position, quaternion))
+
+    assert result.V_tauch == pytest.approx(referenz.V_tauch, abs=1e-12)
+    assert result.K.as_array() == pytest.approx(
+        referenz.K.as_array(), abs=1e-12)
+    assert result.F_A.as_array() == pytest.approx(
+        referenz.F_A.as_array(), abs=1e-8)
+    assert result.M.as_array() == pytest.approx(
+        referenz.M.as_array(), abs=1e-10)
+
+
+def test_6dof_koerperfestes_raster_ist_opt_in_und_wertet_pose_aus():
+    box = build_box(2.0, 2.0, 2.0)
+    koerper = SimpleNamespace(
+        blatt_meshes=[box], r_S=np.zeros(3), teile=[])
+    kraft = baue_kraftfunktion_6dof(
+        koerper, rho_w=1000.0, g=9.81,
+        pfad="voxel_koerperfest", aufloesung=0.5)
+
+    result = kraft((np.array((0.0, 0.0, 0.0)), (1.0, 0.0, 0.0, 0.0)))
+
+    assert result.V_tauch == pytest.approx(4.0)
+    assert result.K.as_array() == pytest.approx((0.0, 0.0, -0.5))
+
+
+def test_6dof_broadphase_bezieht_alle_teilmeshes_ein():
+    box = build_box(2.0, 2.0, 2.0)
+    trocken = (box[0] + np.array((0.0, 0.0, 4.0)), box[1])
+    nass = (box[0] + np.array((0.0, 0.0, -4.0)), box[1])
+    koerper = SimpleNamespace(
+        blatt_meshes=[trocken, nass], r_S=np.zeros(3), teile=[])
+    kraft = baue_kraftfunktion_6dof(koerper, rho_w=1000.0, g=9.81)
+
+    result = kraft((np.zeros(3), (1.0, 0.0, 0.0, 0.0)))
+
+    assert result.V_tauch == pytest.approx(8.0)
+    assert result.F_A.as_array() == pytest.approx((0.0, 0.0, 78480.0))
+
+
+def test_opencl_voxel_hydrostatik_stimmt_mit_cpu_ueberein(caplog):
+    from segelphysik.core.physik_backend import (
+        BackendNichtVerfuegbar, OpenCLBackend,
+    )
+
+    try:
+        geraete = OpenCLBackend.gpu_namen_ermitteln()
+    except BackendNichtVerfuegbar as fehler:
+        pytest.skip(str(fehler))
+    if not geraete:
+        pytest.skip("Kein OpenCL-GPU-Gerät verfügbar")
+
+    box = build_box(2.0, 2.0, 2.0)
+    koerper = SimpleNamespace(
+        blatt_meshes=[box], r_S=np.zeros(3), teile=[])
+    gpu = baue_kraftfunktion_6dof(
+        koerper, rho_w=1000.0, g=9.81,
+        pfad="voxel_opencl", aufloesung=0.25)
+    cpu = baue_kraftfunktion_6dof(
+        koerper, rho_w=1000.0, g=9.81,
+        pfad="voxel_koerperfest", aufloesung=0.25)
+    poses = (
+        ((0.0, 0.0, 0.0), (1.0, 0.0, 0.0, 0.0)),
+        ((0.0, 0.0, -0.1), (np.cos(0.1), np.sin(0.1), 0.0, 0.0)),
+        ((0.0, 0.0, 0.0), (np.cos(0.1), 0.0, np.sin(0.1), 0.0)),
+        ((0.0, 0.0, 0.125), (1.0, 0.0, 0.0, 0.0)),
+    )
+    for pose in poses:
+        gpu_result = gpu(pose)
+        cpu_result = cpu(pose)
+        assert gpu_result.V_tauch == pytest.approx(
+            cpu_result.V_tauch, abs=1e-12)
+        assert gpu_result.K.as_array() == pytest.approx(
+            cpu_result.K.as_array(), abs=1e-12)
+        assert gpu_result.M.as_array() == pytest.approx(
+            cpu_result.M.as_array(), abs=1e-10)
+    assert "numerisch auf der Wasserfläche" in caplog.text
+
+
+def test_opencl_ausfuehrungsfehler_wiederholt_pose_auf_cpu(
+        monkeypatch, caplog):
+    from segelphysik.core.physik_backend import (
+        BackendFehler, OpenCLVoxelHydrostatik,
+    )
+
+    class FehlerBackend:
+        name = "Test-GPU"
+
+        def auswerten_6dof(self, *_args):
+            raise BackendFehler("Kernelfehler")
+
+    monkeypatch.setattr(
+        OpenCLVoxelHydrostatik, "oeffnen",
+        classmethod(lambda cls, *_args: FehlerBackend()))
+    box = build_box(2.0, 2.0, 2.0)
+    koerper = SimpleNamespace(
+        blatt_meshes=[box], r_S=np.zeros(3), teile=[])
+    gpu = baue_kraftfunktion_6dof(
+        koerper, pfad="voxel_opencl", aufloesung=0.5)
+    cpu = baue_kraftfunktion_6dof(
+        koerper, pfad="voxel_koerperfest", aufloesung=0.5)
+    pose = (np.zeros(3), (1.0, 0.0, 0.0, 0.0))
+
+    assert gpu(pose).V_tauch == pytest.approx(cpu(pose).V_tauch)
+    assert "dieselbe Pose läuft auf CPU weiter" in caplog.text
+    assert gpu(pose).V_tauch == pytest.approx(cpu(pose).V_tauch)
+
+
 @pytest.mark.parametrize("kwargs", [
     {"masse": 0.0},
     {"dt": 0.0},

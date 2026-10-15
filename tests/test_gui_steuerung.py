@@ -1,4 +1,6 @@
 import os
+import time
+from types import SimpleNamespace
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
@@ -104,5 +106,147 @@ def test_layer_und_darstellungssteuerung_sind_angebunden():
     assert bruecke.darstellung == [
         ("kamera", "bug"), ("hintergrund", "weiss"), ("ssao", True)]
     assert bruecke.renders == 4
+    fenster.close()
+    app.processEvents()
+
+
+def test_pause_bucht_inflight_schritte_genau_einmal_zurueck():
+    app = QApplication.instance() or QApplication([])
+    fenster = HauptFenster()
+    fenster._echtzeit_generation = 3
+    fenster._echtzeit_name = "alt"
+    fenster._echtzeit_physik = SimpleNamespace(dt_s=0.004)
+    fenster._echtzeit_angefordert_s = 0.5
+    fenster._echtzeit_berechnet_s = 0.2
+    fenster._echtzeit_akkumulator = 0.1
+    fenster._echtzeit_schritte_laufend = 50
+    fenster._echtzeit_aufgabe_laeuft = True
+    fenster._echtzeit_aufgabe_sequenz_laufend = 7
+
+    fenster._zeit_pausieren()
+
+    assert abs(fenster._echtzeit_akkumulator - 0.3) < 1e-12
+    assert fenster._echtzeit_schritte_laufend == 0
+    assert abs(fenster._echtzeit_rueckstand_s() - 0.3) < 1e-12
+    fenster._echtzeit_name = "neu"
+    fenster._echtzeit_generation += 1
+    fenster._echtzeit_aufgabe_abgeschlossen(
+        3, 7, "alt", object(), object(), None, 0.01)
+    assert abs(fenster._echtzeit_akkumulator - 0.3) < 1e-12
+    assert abs(fenster._echtzeit_rueckstand_s() - 0.3) < 1e-12
+    fenster.close()
+    app.processEvents()
+
+
+def test_fortsetzen_waehlt_nachholmodus_fuer_erhaltenen_rueckstand():
+    app = QApplication.instance() or QApplication([])
+    fenster = HauptFenster()
+    fenster._echtzeit_kraftfunktion = object()
+    fenster._echtzeit_angefordert_s = 0.5
+    fenster._echtzeit_akkumulator = 0.5
+    fenster._btn_echtzeit.setChecked(True)
+
+    fenster._zeit_fortsetzen()
+
+    assert fenster._echtzeit_modus == "nachholen"
+    assert fenster._echtzeit_timer.isActive()
+    fenster._zeit_pausieren()
+    fenster.close()
+    app.processEvents()
+
+
+def test_ueberlast_wird_nach_fuenf_sekunden_automatisch_pausiert(
+        monkeypatch):
+    app = QApplication.instance() or QApplication([])
+    fenster = HauptFenster()
+    jetzt = 105.0
+    fenster._echtzeit_zustand = object()
+    fenster._echtzeit_physik = SimpleNamespace(dt_s=0.01)
+    fenster._echtzeit_angefordert_s = 1.0
+    fenster._echtzeit_akkumulator = 1.0
+    fenster._echtzeit_modus = "ueberlast_beobachtung"
+    fenster._echtzeit_ueberlast_seit = 100.0
+    fenster._echtzeit_letzte_wandzeit = jetzt
+    fenster._echtzeit_timer.start()
+    monkeypatch.setattr(time, "perf_counter", lambda: jetzt)
+
+    fenster._echtzeit_takt()
+
+    assert fenster._echtzeit_modus == "automatisch_pausiert"
+    assert not fenster._echtzeit_timer.isActive()
+    assert fenster._echtzeit_rueckstand_s() == 1.0
+    fenster.close()
+    app.processEvents()
+
+
+def test_alter_auftragsabschluss_wird_an_sequenzverworfen():
+    app = QApplication.instance() or QApplication([])
+    fenster = HauptFenster()
+    fenster._echtzeit_aufgabe_laeuft = True
+    fenster._echtzeit_aufgabe_sequenz_laufend = 8
+    fenster._echtzeit_schritte_laufend = 4
+
+    fenster._echtzeit_aufgabe_abgeschlossen(
+        1, 7, "yacht1", object(), object(), None, 0.01)
+
+    assert fenster._echtzeit_aufgabe_laeuft
+    assert fenster._echtzeit_aufgabe_sequenz_laufend == 8
+    assert fenster._echtzeit_schritte_laufend == 4
+    fenster.close()
+    app.processEvents()
+
+
+def test_vor_koerperwechsel_uebernommener_schritt_wird_nicht_doppelt_gebucht():
+    app = QApplication.instance() or QApplication([])
+    fenster = HauptFenster()
+    fenster._echtzeit_generation = 2
+    fenster._echtzeit_name = "alt"
+    fenster._echtzeit_zustand = object()
+    fenster._echtzeit_physik = SimpleNamespace(dt_s=0.1)
+    fenster._echtzeit_angefordert_s = 0.2
+    fenster._echtzeit_aufgabe_sequenz_laufend = 9
+    fenster._echtzeit_schritte_laufend = 2
+    fenster._btn_echtzeit.setChecked(True)
+    alter_zustand = object()
+
+    fenster._echtzeit_aufgabe_abgeschlossen(
+        2, 9, "alt", alter_zustand, object(), None, 0.1)
+
+    assert fenster._echtzeit_berechnet_s == 0.2
+    assert fenster._echtzeit_zustand is alter_zustand
+    neuer_zustand = object()
+    fenster._echtzeit_generation += 1
+    fenster._echtzeit_name = "neu"
+    fenster._echtzeit_zustand = neuer_zustand
+    fenster._echtzeit_aufgabe_abgeschlossen(
+        2, 9, "alt", alter_zustand, object(), None, 0.1)
+
+    assert fenster._echtzeit_berechnet_s == 0.2
+    assert fenster._echtzeit_zustand is neuer_zustand
+    fenster.close()
+    app.processEvents()
+
+
+def test_unterschreiten_der_ueberlastschwelle_setzt_frist_zurueck(
+        monkeypatch):
+    app = QApplication.instance() or QApplication([])
+    fenster = HauptFenster()
+    fenster._echtzeit_zustand = object()
+    fenster._echtzeit_physik = SimpleNamespace(dt_s=0.01)
+    fenster._echtzeit_angefordert_s = 0.989
+    fenster._echtzeit_akkumulator = 0.989
+    fenster._echtzeit_modus = "ueberlast_beobachtung"
+    fenster._echtzeit_ueberlast_seit = 94.0
+    fenster._echtzeit_letzte_wandzeit = 99.99
+    fenster._echtzeit_aufgabe_laeuft = True
+    fenster._echtzeit_timer.start()
+    monkeypatch.setattr(time, "perf_counter", lambda: 100.0)
+
+    fenster._echtzeit_takt()
+
+    assert fenster._echtzeit_modus == "normal"
+    assert fenster._echtzeit_ueberlast_seit is None
+    assert fenster._echtzeit_timer.isActive()
+    fenster._zeit_pausieren()
     fenster.close()
     app.processEvents()

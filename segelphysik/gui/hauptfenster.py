@@ -22,17 +22,21 @@ from ..core.overlays import (LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN,
 
 _aktives_fenster = None
 _ECHTZEIT_MAX_SCHRITTE_PRO_AUFGABE = 4
+_ECHTZEIT_HYDROSTATIK_PFAD = "exakt_union"
 
 
 class _EchtzeitAufgabeSignale(QObject):
-    abgeschlossen = Signal(int, object, object, object, float)
+    abgeschlossen = Signal(int, int, str, object, object, object, float)
 
 
 class _EchtzeitAufgabe(QRunnable):
-    def __init__(self, generation, zustand, kraftfunktion, koerper, physik,
-                 dt, anzahl_schritte, signale, prozess_executor=None):
+    def __init__(self, generation, sequenz, koerper_name, zustand,
+                 kraftfunktion, koerper, physik, dt, anzahl_schritte,
+                 signale, prozess_executor=None):
         super().__init__()
         self.generation = generation
+        self.sequenz = sequenz
+        self.koerper_name = koerper_name
         self.zustand = zustand
         self.kraftfunktion = kraftfunktion
         self.koerper = koerper
@@ -61,11 +65,13 @@ class _EchtzeitAufgabe(QRunnable):
                     pickle.PickleError, RuntimeError, TypeError,
                     ValueError) as fehler:
                 self.signale.abgeschlossen.emit(
-                    self.generation, None, None, fehler,
+                    self.generation, self.sequenz, self.koerper_name,
+                    None, None, fehler,
                     time.perf_counter() - startzeit)
                 return
             self.signale.abgeschlossen.emit(
-                self.generation, zustand, ergebnis, fehler, dauer)
+                self.generation, self.sequenz, self.koerper_name,
+                zustand, ergebnis, fehler, dauer)
             return
 
         from ..core.dynamik_6dof import schritt
@@ -80,11 +86,13 @@ class _EchtzeitAufgabe(QRunnable):
                     self.physik.g_m_pro_s2)
         except (ArithmeticError, KeyError, ValueError) as fehler:
             self.signale.abgeschlossen.emit(
-                self.generation, None, None, fehler,
+                self.generation, self.sequenz, self.koerper_name,
+                None, None, fehler,
                 time.perf_counter() - startzeit)
             return
         self.signale.abgeschlossen.emit(
-            self.generation, self.zustand, ergebnis, None,
+            self.generation, self.sequenz, self.koerper_name,
+            self.zustand, ergebnis, None,
             time.perf_counter() - startzeit)
 
 
@@ -145,6 +153,15 @@ class HauptFenster(QMainWindow):
         self._echtzeit_render_timer.timeout.connect(
             self._echtzeit_render_takt)
         self._echtzeit_akkumulator = 0.0
+        self._echtzeit_angefordert_s = 0.0
+        self._echtzeit_berechnet_s = 0.0
+        self._echtzeit_modus = "pausiert"
+        self._echtzeit_ueberlast_seit = None
+        self._echtzeit_nachholen_start = None
+        self._echtzeit_nachholen_berechnet_start = 0.0
+        self._echtzeit_nachholen_fenster_start = None
+        self._echtzeit_nachholen_fenster_berechnet = 0.0
+        self._echtzeit_nachholen_raten = []
         self._echtzeit_letzte_wandzeit = None
         self._echtzeit_zustand = None
         self._echtzeit_kraftfunktion = None
@@ -154,8 +171,11 @@ class HauptFenster(QMainWindow):
         self._echtzeit_generation = 0
         self._echtzeit_aufgabe_laeuft = False
         self._echtzeit_schritte_laufend = 0
+        self._echtzeit_auftragssequenz = 0
+        self._echtzeit_aufgabe_sequenz_laufend = None
         self._echtzeit_prozess_executor = None
         self._echtzeit_prozess_koerper = None
+        self._echtzeit_prozess_pfad = None
         self._echtzeit_aktiver_prozess_executor = None
         self._echtzeit_anzeige_start = None
         self._echtzeit_anzeige_ziel = None
@@ -290,7 +310,12 @@ class HauptFenster(QMainWindow):
                 ("z*", "-"), ("phi*", "-"), ("GM", "-"),
                 ("Restkraft", "-"), ("Restmoment", "-"),
                 ("Iterationen", "-"), ("Bildrate", "-"),
-                ("Physik-Rückstand", "-"), ("Lösungstyp", "-")):
+                ("Physik angefordert", "-"), ("Physik berechnet", "-"),
+                ("Physik-Rückstand", "-"),
+                ("Nachholrate letztes Fenster", "-"),
+                ("Nachholrate gesamt", "-"),
+                ("Nachholrate ≥1,25", "-"),
+                ("Nachholfenster s/s", "-"), ("Lösungstyp", "-")):
             self._solver_werte[schluessel] = QTreeWidgetItem(
                 status, [schluessel, wert])
         status.setRootIsDecorated(False)
@@ -717,14 +742,12 @@ class HauptFenster(QMainWindow):
         })
 
     def _echtzeit_starten(self, zustand=None, auto_start=True):
-        if self._echtzeit_timer.isActive():
-            self._echtzeit_timer.stop()
-        if self._echtzeit_render_timer.isActive():
-            self._echtzeit_render_timer.stop()
+        if (self._echtzeit_timer.isActive()
+                or self._echtzeit_render_timer.isActive()
+                or self._echtzeit_schritte_laufend):
+            self._zeit_pausieren()
         self._echtzeit_generation += 1
         self._echtzeit_letzte_wandzeit = None
-        self._echtzeit_akkumulator = 0.0
-        self._echtzeit_schritte_laufend = 0
         welt = self.baum._welt
         konfiguration = getattr(welt, "konfiguration", None)
         bruecke = getattr(self, "_bruecke", None)
@@ -752,13 +775,15 @@ class HauptFenster(QMainWindow):
             physik = lade_physik(konfiguration.ordner)
             kraftfunktion = baue_kraftfunktion_6dof(
                 koerper, rho_w=konfiguration.wasser_dichte(),
-                g=physik.g_m_pro_s2)
+                g=physik.g_m_pro_s2,
+                pfad=_ECHTZEIT_HYDROSTATIK_PFAD)
             kraftfunktion = KraftmodellMitHydroCache(
                 baue_kraftmodell(kraftfunktion, physik), intervall=1)
             basisposition = bruecke.physik_basis_position_ermitteln(
                 hauptkoerper.name)
             prozess_executor = self._echtzeit_prozess_pool_aktualisieren(
-                koerper, konfiguration.wasser_dichte(), physik)
+                koerper, konfiguration.wasser_dichte(), physik,
+                _ECHTZEIT_HYDROSTATIK_PFAD)
         except (ImportError, OSError, RuntimeError, ValueError) as fehler:
             self._zeit_pausieren()
             self._solver_status_aktualisieren(
@@ -806,13 +831,15 @@ class HauptFenster(QMainWindow):
         if auto_start:
             self._zeit_fortsetzen()
 
-    def _echtzeit_prozess_pool_aktualisieren(self, koerper, rho_w, physik):
+    def _echtzeit_prozess_pool_aktualisieren(
+            self, koerper, rho_w, physik, hydrostatik_pfad):
         if (not hasattr(koerper, "teile")
                 or QApplication.platformName().casefold()
                 in ("offscreen", "minimal")):
             return None
         if (self._echtzeit_prozess_executor is not None
-                and self._echtzeit_prozess_koerper is koerper):
+                and self._echtzeit_prozess_koerper is koerper
+                and self._echtzeit_prozess_pfad == hydrostatik_pfad):
             return self._echtzeit_prozess_executor
         from concurrent.futures import ProcessPoolExecutor
         from multiprocessing import get_context
@@ -824,13 +851,22 @@ class HauptFenster(QMainWindow):
         executor = ProcessPoolExecutor(
             max_workers=1, mp_context=get_context("spawn"),
             initializer=initialisieren,
-            initargs=(koerper, rho_w, physik))
+            initargs=(koerper, rho_w, physik, hydrostatik_pfad))
         self._echtzeit_prozess_executor = executor
         self._echtzeit_prozess_koerper = koerper
+        self._echtzeit_prozess_pfad = hydrostatik_pfad
         return executor
 
-    def _zeit_pausieren(self):
+    def _zeit_pausieren(self, automatisch=False):
         war_laufend = self._echtzeit_timer.isActive()
+        jetzt = time.perf_counter()
+        if (self._echtzeit_letzte_wandzeit is not None
+                and self._echtzeit_modus in (
+                    "normal", "ueberlast_beobachtung")):
+            vergangen = max(
+                0.0, jetzt - self._echtzeit_letzte_wandzeit)
+            self._echtzeit_akkumulator += vergangen
+            self._echtzeit_angefordert_s += vergangen
         self._echtzeit_generation += 1
         if war_laufend:
             self._echtzeit_timer.stop()
@@ -841,6 +877,9 @@ class HauptFenster(QMainWindow):
                 self._echtzeit_schritte_laufend * self._echtzeit_physik.dt_s)
             self._echtzeit_schritte_laufend = 0
         self._echtzeit_letzte_wandzeit = None
+        self._echtzeit_modus = (
+            "automatisch_pausiert" if automatisch else "pausiert")
+        self._echtzeit_ueberlast_seit = None
         if self._echtzeit_zustand is not None:
             self._echtzeit_anzeige_start = self._echtzeit_zustand
             self._echtzeit_anzeige_ziel = self._echtzeit_zustand
@@ -849,7 +888,7 @@ class HauptFenster(QMainWindow):
         if war_laufend:
             self._solver_status_aktualisieren({
                 "Lösungstyp": "Pausiert",
-                "Physik-Rückstand": self._rueckstand_text(),
+                **self._echtzeit_zeitbilanz_status(),
             })
             self._echtzeit_pose_anzeigen(self._echtzeit_zustand, render=True)
 
@@ -862,19 +901,38 @@ class HauptFenster(QMainWindow):
         self._echtzeit_letzte_wandzeit = jetzt
         self._echtzeit_fps_start = jetzt
         self._echtzeit_fps_zaehler = 0
+        if self._echtzeit_rueckstand_s() > 0.1:
+            self._echtzeit_modus = "nachholen"
+            self._echtzeit_nachholen_start = jetzt
+            self._echtzeit_nachholen_berechnet_start = (
+                self._echtzeit_berechnet_s)
+            self._echtzeit_nachholen_fenster_start = jetzt
+            self._echtzeit_nachholen_fenster_berechnet = (
+                self._echtzeit_berechnet_s)
+            self._echtzeit_nachholen_raten = []
+        else:
+            self._echtzeit_modus = "normal"
+            self._echtzeit_nachholen_start = None
         self._echtzeit_timer.start()
         self._echtzeit_render_timer.start()
         self._solver_status_aktualisieren({
             "Lösungstyp": "Echtzeit",
-            "Physik-Rückstand": self._rueckstand_text(),
+            **self._echtzeit_zeitbilanz_status(),
         })
 
     def _rueckstand_text(self):
-        dt = getattr(self._echtzeit_physik, "dt_s", 0.0)
-        rueckstand = self._echtzeit_akkumulator
-        if dt > 0.0:
-            rueckstand += self._echtzeit_schritte_laufend * dt
-        return "%.3f s" % rueckstand
+        return "%.3f s" % self._echtzeit_rueckstand_s()
+
+    def _echtzeit_zeitbilanz_status(self):
+        return {
+            "Physik angefordert": "%.3f s" % self._echtzeit_angefordert_s,
+            "Physik berechnet": "%.3f s" % self._echtzeit_berechnet_s,
+            "Physik-Rückstand": self._rueckstand_text(),
+        }
+
+    def _echtzeit_rueckstand_s(self):
+        return max(
+            0.0, self._echtzeit_angefordert_s - self._echtzeit_berechnet_s)
 
     def _echtzeit_pose_anzeigen(self, pose, render=False):
         if pose is None:
@@ -927,7 +985,7 @@ class HauptFenster(QMainWindow):
             self._echtzeit_fps_start = jetzt
             self._solver_status_aktualisieren({
                 "Bildrate": "%.1f FPS" % self._echtzeit_angeforderte_fps,
-                "Physik-Rückstand": self._rueckstand_text(),
+                **self._echtzeit_zeitbilanz_status(),
             })
 
     def _echtzeit_takt(self):
@@ -937,9 +995,73 @@ class HauptFenster(QMainWindow):
             self._zeit_pausieren()
             return
         jetzt = time.perf_counter()
-        self._echtzeit_akkumulator += max(
-            0.0, jetzt - self._echtzeit_letzte_wandzeit)
+        vergangen = max(0.0, jetzt - self._echtzeit_letzte_wandzeit)
+        if self._echtzeit_modus != "nachholen":
+            self._echtzeit_akkumulator += vergangen
+            self._echtzeit_angefordert_s += vergangen
         self._echtzeit_letzte_wandzeit = jetzt
+        rueckstand = self._echtzeit_rueckstand_s()
+        if self._echtzeit_modus == "nachholen":
+            if rueckstand <= 0.1:
+                gesamt_dauer = max(
+                    jetzt - (self._echtzeit_nachholen_start or jetzt),
+                    1e-12)
+                gesamt_rate = (
+                    self._echtzeit_berechnet_s
+                    - self._echtzeit_nachholen_berechnet_start
+                ) / gesamt_dauer
+                gesamt_gate = "bestanden" if gesamt_rate >= 1.25 else "nicht erreicht"
+                if gesamt_rate < 1.25:
+                    self.protokoll_schreiben(
+                        "Nachholrate %.3f s/s unterschreitet das Ziel "
+                        "von 1,25 s/s." % gesamt_rate)
+                self._solver_status_aktualisieren({
+                    "Nachholrate gesamt": "%.3f s/s" % gesamt_rate,
+                    "Nachholrate ≥1,25": gesamt_gate,
+                    "Nachholfenster s/s": ", ".join(
+                        "%.3f" % rate
+                        for rate in self._echtzeit_nachholen_raten),
+                    **self._echtzeit_zeitbilanz_status(),
+                })
+                self._echtzeit_modus = "normal"
+                self._echtzeit_nachholen_start = None
+            elif (self._echtzeit_nachholen_fenster_start is not None
+                  and jetzt - self._echtzeit_nachholen_fenster_start >= 1.0):
+                fenster_dauer = (
+                    jetzt - self._echtzeit_nachholen_fenster_start)
+                rate = (
+                    self._echtzeit_berechnet_s
+                    - self._echtzeit_nachholen_fenster_berechnet
+                ) / fenster_dauer
+                self._echtzeit_nachholen_raten.append(rate)
+                if rate < 1.25:
+                    self.protokoll_schreiben(
+                        "Nachholrate im Messfenster %.3f s/s "
+                        "unterschreitet 1,25 s/s." % rate)
+                self._echtzeit_nachholen_fenster_start = jetzt
+                self._echtzeit_nachholen_fenster_berechnet = (
+                    self._echtzeit_berechnet_s)
+                self._solver_status_aktualisieren({
+                    "Nachholrate letztes Fenster": "%.3f s/s" % rate,
+                    **self._echtzeit_zeitbilanz_status(),
+                })
+        elif rueckstand >= 1.0:
+            if self._echtzeit_ueberlast_seit is None:
+                self._echtzeit_ueberlast_seit = jetzt
+            self._echtzeit_modus = "ueberlast_beobachtung"
+            if jetzt - self._echtzeit_ueberlast_seit >= 5.0:
+                self.protokoll_schreiben(
+                    "Echtzeit automatisch pausiert: Rückstand %.3f s "
+                    "bestand mindestens 5 s." % rueckstand)
+                self._zeit_pausieren(automatisch=True)
+                self._solver_status_aktualisieren({
+                    "Lösungstyp": "Automatisch pausiert (Überlast)",
+                    **self._echtzeit_zeitbilanz_status(),
+                })
+                return
+        else:
+            self._echtzeit_ueberlast_seit = None
+            self._echtzeit_modus = "normal"
         dt = self._echtzeit_physik.dt_s
         if not math.isfinite(dt) or dt <= 0.0:
             self._zeit_pausieren()
@@ -953,7 +1075,8 @@ class HauptFenster(QMainWindow):
             return
         anzahl_schritte = min(
             int((self._echtzeit_akkumulator + 1e-12) / dt),
-            _ECHTZEIT_MAX_SCHRITTE_PRO_AUFGABE)
+            (64 if self._echtzeit_modus == "nachholen"
+             else _ECHTZEIT_MAX_SCHRITTE_PRO_AUFGABE))
         if anzahl_schritte == 0:
             return
         self._echtzeit_akkumulator -= anzahl_schritte * dt
@@ -963,21 +1086,30 @@ class HauptFenster(QMainWindow):
             self._solver_status_aktualisieren(
                 {"Lösungstyp": "Fehler: Laufzeitkörper fehlt"})
             return
+        self._echtzeit_auftragssequenz += 1
+        sequenz = self._echtzeit_auftragssequenz
         aufgabe = _EchtzeitAufgabe(
-            self._echtzeit_generation, self._echtzeit_zustand,
+            self._echtzeit_generation, sequenz, self._echtzeit_name,
+            self._echtzeit_zustand,
             self._echtzeit_kraftfunktion, koerper, self._echtzeit_physik,
             dt, anzahl_schritte, self._echtzeit_signale,
             prozess_executor=self._echtzeit_aktiver_prozess_executor)
         self._echtzeit_aufgabe_laeuft = True
+        self._echtzeit_aufgabe_sequenz_laufend = sequenz
         self._echtzeit_schritte_laufend = anzahl_schritte
         QThreadPool.globalInstance().start(aufgabe)
 
     def _echtzeit_aufgabe_abgeschlossen(
-            self, generation, zustand, kraefteresultat, fehler, dauer_s):
+            self, generation, sequenz, koerper_name, zustand,
+            kraefteresultat, fehler, dauer_s):
+        if sequenz != self._echtzeit_aufgabe_sequenz_laufend:
+            return
         self._echtzeit_aufgabe_laeuft = False
+        self._echtzeit_aufgabe_sequenz_laufend = None
         anzahl_schritte = self._echtzeit_schritte_laufend
         self._echtzeit_schritte_laufend = 0
         if (generation != self._echtzeit_generation
+                or koerper_name != self._echtzeit_name
                 or not self._btn_echtzeit.isChecked()):
             return
         if fehler is not None:
@@ -991,6 +1123,12 @@ class HauptFenster(QMainWindow):
                 "Echtzeit-Simulation (%s): %s"
                 % (self._echtzeit_name, fehler))
             return
+        self._echtzeit_berechnet_s += (
+            anzahl_schritte * self._echtzeit_physik.dt_s)
+        if (self._echtzeit_modus == "ueberlast_beobachtung"
+                and self._echtzeit_rueckstand_s() < 1.0):
+            self._echtzeit_ueberlast_seit = None
+            self._echtzeit_modus = "normal"
         vorherige_anzeige = (
             self._echtzeit_anzeige_ziel or self._echtzeit_zustand)
         self._echtzeit_zustand = zustand
@@ -1074,6 +1212,17 @@ class HauptFenster(QMainWindow):
         self.protokoll.append(text)
 
     def closeEvent(self, ereignis):
+        if (self._echtzeit_timer.isActive()
+                or self._echtzeit_render_timer.isActive()
+                or self._echtzeit_schritte_laufend):
+            self._zeit_pausieren()
+        rueckstand = self._echtzeit_rueckstand_s()
+        if rueckstand > 0.0:
+            self.protokoll_schreiben(
+                "Anwendung geschlossen; %.6f s Simulationsrückstand bleiben "
+                "unberechnet (angefordert %.6f s, berechnet %.6f s)."
+                % (rueckstand, self._echtzeit_angefordert_s,
+                   self._echtzeit_berechnet_s))
         executor = self._echtzeit_prozess_executor
         if executor is not None:
             executor.shutdown(wait=False, cancel_futures=True)

@@ -56,7 +56,8 @@ def _volumen_schwerpunkt_aus_soliden(solide, ebene_z=None):
     return _volumen_schwerpunkt_aus_union(union, ebene_z)
 
 
-def _volumen_schwerpunkt_aus_union(union, ebene_z=None):
+def _volumen_schwerpunkt_aus_union(union, ebene_z=None,
+                                   ebene_normale=None, ebene_offset=None):
     import manifold3d as m3d
 
     if union.is_empty() or union.volume() <= 1e-15:
@@ -70,7 +71,23 @@ def _volumen_schwerpunkt_aus_union(union, ebene_z=None):
         if not np.isfinite(ebene_z):
             raise VolumenUnionFehler(
                 "Schnittebene muss eine endliche Zahl sein")
-        union = union.trim_by_plane((0.0, 0.0, -1.0), -ebene_z)
+        ebene_normale = (0.0, 0.0, -1.0)
+        ebene_offset = -ebene_z
+    if ebene_normale is not None:
+        normale = np.asarray(ebene_normale, dtype=np.float64)
+        try:
+            ebene_offset = float(ebene_offset)
+        except (TypeError, ValueError, OverflowError) as fehler:
+            raise VolumenUnionFehler(
+                "Ebenenoffset muss eine endliche Zahl sein") from fehler
+        laenge = float(np.linalg.norm(normale))
+        if (normale.shape != (3,) or not np.isfinite(normale).all()
+                or not np.isfinite(ebene_offset) or laenge <= 0.0):
+            raise VolumenUnionFehler(
+                "Ebene benötigt eine endliche, nicht-null Normale und Offset")
+        normale = normale / laenge
+        ebene_offset /= laenge
+        union = union.trim_by_plane(normale.tolist(), ebene_offset)
         if union.status() != m3d.Error.NoError:
             raise VolumenUnionFehler(
                 "Ebene hat ein ungültiges Union-Ergebnis erzeugt: %s"
@@ -124,6 +141,7 @@ class VorbereitetesUnionModell:
                 "Boolesche Volumen-Union lieferte ungültigen Status: %s"
                 % union.status())
         self._union = union
+        self._gesamt = _volumen_schwerpunkt_aus_union(union)
 
     def auswerten(self, transform=None, ebene_z=None):
         if self._union is None:
@@ -141,6 +159,20 @@ class VorbereitetesUnionModell:
                     "Union-Pose konnte nicht angewendet werden: %s"
                     % fehler) from fehler
         return _volumen_schwerpunkt_aus_union(union, ebene_z)
+
+    def auswerten_ebene(self, normale, offset):
+        """Schneidet im vorbereiteten Frame; Manifold behält normale·x >= offset."""
+        if self._union is None:
+            return 0.0, np.zeros(3, dtype=np.float64)
+        return _volumen_schwerpunkt_aus_union(
+            self._union, ebene_normale=normale, ebene_offset=offset)
+
+    def gesamtwerte(self):
+        """Liefert unveränderte Union-Gesamtwerte (Volumen, Schwerpunkt)."""
+        if self._union is None:
+            return 0.0, np.zeros(3, dtype=np.float64)
+        volumen, schwerpunkt = self._gesamt
+        return volumen, schwerpunkt.copy()
 
 
 def volumen_schwerpunkt_union(blatt_meshes, ebene_z=None):

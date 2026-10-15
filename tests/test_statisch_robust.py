@@ -109,6 +109,21 @@ def test_t3_robust_glatte_funktion_gleiches_ergebnis():
     assert abs(a["z"] - b["z"]) < 1e-6 and abs(a["phi"] - b["phi"]) < 1e-6
 
 
+def test_solver_verwendet_kraftwerte_identischer_pose_nur_einmal():
+    posen = []
+
+    def zaehler(lage):
+        posen.append((float(lage[0]), float(lage[1])))
+        return _glatt_kf(lage)
+
+    ergebnis = loese_robust(zaehler, _M, 9.81, start=(0.0, 0.0))
+
+    assert abs(ergebnis["z"] - (-0.25)) < 1e-6
+    assert len(posen) == len(set(posen))
+    assert ergebnis["kraftauswertungen"] == len(posen)
+    assert ergebnis["wiederverwendete_kraftwerte"] > 0
+
+
 def test_t4_neutral_wird_erkannt():
     erg = loese_robust(_neutral_kf, _M, 9.81, start=(0.0, 0.0))
     assert erg["neutral"] is True

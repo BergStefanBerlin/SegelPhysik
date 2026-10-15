@@ -37,6 +37,7 @@ bleibt UNVERAENDERT (Block-P-Tests unberuehrt).
 from __future__ import annotations
 
 import math
+from functools import lru_cache
 
 import numpy as np
 
@@ -198,13 +199,24 @@ def loese_robust(funktion, m, g=G_NORM, start=(0.0, 0.0), tol=1e-8,
     leiter = tuple(float(x) for x in stoerleiter)
     aktuelle = (float(start[0]), float(start[1]))
     restarts = 0
+    @lru_cache(maxsize=512)
+    def ausgewertet(lage):
+        return funktion(lage)
+
+    def cache_kennzahlen():
+        info = ausgewertet.cache_info()
+        return {
+            "kraftauswertungen": info.misses,
+            "wiederverwendete_kraftwerte": info.hits,
+        }
+
     while True:
-        ergebnis = _newton_versuch(funktion, aktuelle, m, g, tol,
+        ergebnis = _newton_versuch(ausgewertet, aktuelle, m, g, tol,
                                    max_iter, stagnation_anteil)
         lage, r, it, stag, abbruch = ergebnis
         diagnose = _diagnose(lage, r, it, restarts, stag)
         if abbruch == "konvergiert" or (abbruch == "stagnation" and stag):
-            dM = _dmdphi(funktion, lage[0], lage[1], m, g)
+            dM = _dmdphi(ausgewertet, lage[0], lage[1], m, g)
             neutral = bool(abs(dM) <= 1e-9 * max(m * g, 1.0)
                            and abs(float(r[1])) <= 1e-6 * max(m * g, 1.0))
             basis = {**diagnose, "neutral": neutral,
@@ -212,14 +224,17 @@ def loese_robust(funktion, m, g=G_NORM, start=(0.0, 0.0), tol=1e-8,
                      # (restaurierendes Moment). GM-Schaetzung kann an der
                      # Voxel-Treppe leer bleiben - dann traegt dieses Flag.
                      "stabil": bool(dM < 0.0)}
+            basis.update(cache_kennzahlen())
             if neutral:
                 basis["gm"] = None
                 return basis
             if dM < 0.0:
                 h_gm = None
                 for h in (1e-4, 1e-3, 0.02):
-                    Mp = _residuum(funktion, lage[0], h, m, g)[1]
-                    Mm = _residuum(funktion, lage[0], -h, m, g)[1]
+                    Mp = _residuum(
+                        ausgewertet, lage[0], h, m, g)[1]
+                    Mm = _residuum(
+                        ausgewertet, lage[0], -h, m, g)[1]
                     if abs(Mp - Mm) > 0.0:
                         h_gm = -(Mp - Mm) / (2.0 * h) / (m * g)
                         break
@@ -228,13 +243,14 @@ def loese_robust(funktion, m, g=G_NORM, start=(0.0, 0.0), tol=1e-8,
             if restarts >= len(leiter):
                 raise SolverFehler(
                     "Stoerleiter erschoepft (%d Stufen), lage=%r"
-                    % (len(leiter), lage),
-                    status="instabile_lage", diagnose=basis)
+                    % (len(leiter), lage), status="instabile_lage",
+                    diagnose=basis)
             aktuelle = (lage[0], lage[1] + math.radians(leiter[restarts]))
             restarts += 1
         else:
             if restarts >= len(leiter):
                 diagnose["restarts"] = restarts
+                diagnose.update(cache_kennzahlen())
                 raise SolverFehler(
                     "Keine Konvergenz, Stoerleiter erschoepft (%d Stufen)"
                     % len(leiter), status=abbruch, diagnose=diagnose)
