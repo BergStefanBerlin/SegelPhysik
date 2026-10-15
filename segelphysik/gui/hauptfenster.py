@@ -212,6 +212,7 @@ class HauptFenster(QMainWindow):
         self._statisch_signale.abgeschlossen.connect(
             self._statische_aufgabe_abgeschlossen)
         self._statische_ergebnisse = {}
+        self._statische_arbeitsdaten = {}
         for meldung in self._einstellungen.meldungen:
             self.protokoll_schreiben("Einstellungen: %s" % meldung)
 
@@ -223,7 +224,18 @@ class HauptFenster(QMainWindow):
                 self._einstellungen, bereich, self, **spezifikation)
             if spezifikation:
                 dialog.geaendert.connect(self._stil_anwenden)
+            elif bereich == "statisch":
+                dialog.geaendert.connect(self._solver_einstellung_geaendert)
             self._einstellungen_dialoge[bereich] = dialog
+        dialog.neu_laden()
+        dialog.show()
+        dialog.raise_()
+        dialog.activateWindow()
+
+    def _solver_einstellung_geaendert(self):
+        """Geaenderte Solver-Parameter gelten sofort: statisch neu rechnen."""
+        if self._btn_statisch.isChecked():
+            self._statische_simulation_ausfuehren()
         dialog.neu_laden()
         dialog.show()
         dialog.raise_()
@@ -825,15 +837,23 @@ class HauptFenster(QMainWindow):
         else:
             self._statisch_generation += 1
             self._statusoverlay(None)
+            self._wasserpunkte_fuer_modus(False)
             bruecke = getattr(self, "_bruecke", None)
             if bruecke is not None:
                 for name in self._laufzeit_koerper:
                     bruecke.statische_pose_loeschen(name)
             self._echtzeit_starten()
 
+    def _wasserpunkte_fuer_modus(self, statisch):
+        bruecke = getattr(self, "_bruecke", None)
+        setzen = getattr(bruecke, "wasserpunkte_sichtbar_setzen", None)
+        if setzen is not None:
+            setzen(not statisch)
+
     def _statische_simulation_ausfuehren(self):
         self._statisch_generation += 1
         generation = self._statisch_generation
+        self._wasserpunkte_fuer_modus(True)
         welt = self.baum._welt
         konfiguration = getattr(welt, "konfiguration", None)
         if konfiguration is None:
@@ -875,6 +895,7 @@ class HauptFenster(QMainWindow):
 
             bruecke.statische_pose_loeschen(name)
             self._statische_ergebnisse.pop(name, None)
+            self._statische_arbeitsdaten.pop(name, None)
             status = "Fehler: %s" % fehler
             werte = {
                 "z*": "-", "phi*": "-", "GM": "-",
@@ -933,6 +954,7 @@ class HauptFenster(QMainWindow):
             self._statusoverlay(statusanzeige.KOERPER_FEHLT)
             return
         self._statische_ergebnisse[name] = ergebnis
+        self._statische_arbeitsdaten[name] = (kraftfunktion, physik)
         self._statusoverlay(statusanzeige.status_aus_ergebnis(
             ergebnis, statusanzeige.ist_rotationssymmetrisch(
                 getattr(koerper, "traegheitstensor", None))))
@@ -1427,6 +1449,9 @@ class HauptFenster(QMainWindow):
         return kraft, (w["x"], w["y"], w["z"])
 
     def _fremdkraft_geaendert(self, *_):
+        if self._btn_statisch.isChecked():
+            self._statisches_kraftbild_aktualisieren()
+            return
         if self._echtzeit_kraftfunktion is None:
             return
         try:
@@ -1443,6 +1468,23 @@ class HauptFenster(QMainWindow):
         bruecke = getattr(self, "_bruecke", None)
         if bruecke is not None and self._echtzeit_zustand is not None:
             self._echtzeit_pose_anzeigen(self._echtzeit_zustand, render=True)
+
+    def _statisches_kraftbild_aktualisieren(self):
+        """Zeichnet das Kraftbild der statischen Lage mit der aktuellen
+        Fremdkraft neu (ohne den Solver erneut zu starten)."""
+        bruecke = getattr(self, "_bruecke", None)
+        if bruecke is None:
+            return
+        for name, ergebnis in self._statische_ergebnisse.items():
+            daten = self._statische_arbeitsdaten.get(name)
+            koerper = self._laufzeit_koerper.get(name)
+            if daten is None or koerper is None:
+                continue
+            self._kraftbild_daten_setzen(
+                bruecke, name, koerper, daten[0], daten[1],
+                ergebnis["z"], ergebnis["phi"])
+        if hasattr(bruecke, "kraefte_neu_zeichnen"):
+            bruecke.kraefte_neu_zeichnen()
 
     def _aktuelles_kraftbild_aktualisieren(self):
         if (self._echtzeit_name is None or self._echtzeit_zustand is None

@@ -159,6 +159,8 @@ class GrafikBruecke:
     _folge_letzt = None
     _wasserpunkte = None
     _wasserpunkte_meshes = {}
+    _wasserpunkte_an = True
+    _wasserpunkte_actor = None
     _ozean_actor = None
     _dunst_actor = None
     _dunst_wand_actor = None
@@ -180,6 +182,8 @@ class GrafikBruecke:
         self._folge_letzt = None
         self._wasserpunkte = None
         self._wasserpunkte_meshes = {}
+        self._wasserpunkte_actor = None
+        self._wasserpunkte_an = True
 
     def wasser_bewegung_setzen(self, aktiv=True):
         """Koerper bleibt zentriert (Kamera folgt), ein weltfestes
@@ -193,6 +197,7 @@ class GrafikBruecke:
         from .core.wasserpunkte import WasserPunktFeld
         self._wasserpunkte = WasserPunktFeld()
         self._wasserpunkte_meshes = {}
+        self._wasserpunkte_actor = None
         self._ozean_setzen()
         self._folge_letzt = None
         self.render()
@@ -291,6 +296,8 @@ class GrafikBruecke:
 
     def _wasserpunkte_zeichnen(self, xy):
         import pyvista as pv
+        if not self._wasserpunkte_an:
+            return
         punkte, spuren, alpha = self._wasserpunkte.aktualisieren(xy)
         n, s, _ = spuren.shape
         if n == 0:
@@ -313,13 +320,24 @@ class GrafikBruecke:
                 ("wasser_spuren", spur, dict(line_width=2)),):
             alt = self._wasserpunkte_meshes.get(name)
             if alt is None:
-                self._plotter.add_mesh(mesh, scalars="rgba", rgba=True,
-                                       name=name, lighting=False,
-                                       reset_camera=False, pickable=False,
-                                       **kw)
+                self._wasserpunkte_actor = self._plotter.add_mesh(
+                    mesh, scalars="rgba", rgba=True,
+                    name=name, lighting=False,
+                    reset_camera=False, pickable=False, **kw)
                 self._wasserpunkte_meshes[name] = mesh
             else:
                 alt.copy_from(mesh)
+
+    def wasserpunkte_sichtbar_setzen(self, sichtbar):
+        """Bewegungspunkte und Spuren nur in der Echtzeit; statisch bleibt
+        nur die Wasserflaeche."""
+        self._wasserpunkte_an = bool(sichtbar)
+        actor = self._wasserpunkte_actor
+        if actor is not None:
+            actor.SetVisibility(self._wasserpunkte_an)
+        if self._plotter is not None:
+            self.render()
+        return True
 
     def fenster_bauen(self):
         try:
@@ -634,6 +652,12 @@ class GrafikBruecke:
         self._kraefte_daten[name] = {"erg": erg, "masse": float(masse),
                                      "g": float(g), "skala": float(skala),
                                      "fremd": fremd}
+
+    def kraefte_neu_zeichnen(self):
+        """Zeichnet Kraefte, Momente und Schwerpunkte aus den gespeicherten
+        Daten neu (z. B. nach geaenderter Fremdkraft)."""
+        self._layer_aktualisieren()
+        return self.render()
 
     def kraefte_daten_entfernen(self, name):
         self._kraefte_daten.pop(name, None)
