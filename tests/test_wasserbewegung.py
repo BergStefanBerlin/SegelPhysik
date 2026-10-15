@@ -64,9 +64,6 @@ def test_bruecke_kamera_folgt_dem_koerper():
     assert bruecke._ozean_actor is not None
     assert np.allclose(bruecke._ozean_actor.GetPosition()[:2], [4.0, 6.0])
     assert np.allclose(bruecke._volumen_actor.GetPosition()[:2], [4.0, 6.0])
-    assert bruecke.wasser_bewegung_setzen(False)
-    assert bruecke._ozean_actor is None and bruecke._volumen_actor is None
-    assert "wasser_spuren" not in bruecke._plotter.actors
     bruecke._plotter.close()
 
 

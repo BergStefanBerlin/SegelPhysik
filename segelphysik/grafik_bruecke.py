@@ -181,32 +181,20 @@ class GrafikBruecke:
         self._wasserpunkte = None
         self._wasserpunkte_meshes = {}
 
-    def wasser_bewegung_setzen(self, aktiv):
+    def wasser_bewegung_setzen(self, aktiv=True):
         """Koerper bleibt zentriert (Kamera folgt), ein weltfestes
-        Punktfeld mit Schattenspuren zeigt die Bewegung im Wasser."""
-        aktiv = bool(aktiv)
+        Punktfeld mit Schattenspuren zeigt die Bewegung im Wasser.
+        Der einzige Darstellungsmodus; mehrfaches Aufrufen ist harmlos."""
         if self._plotter is None:
             return False
-        if aktiv == self._folge_aktiv:
+        if self._folge_aktiv:
             return True
-        self._folge_aktiv = aktiv
-        if aktiv:
-            from .core.wasserpunkte import WasserPunktFeld
-            self._wasserpunkte = WasserPunktFeld()
-            self._wasserpunkte_meshes = {}
-            self._ozean_setzen(True)
-            self._folge_letzt = None
-        else:
-            self._ozean_setzen(False)
-            self._wasserpunkte = None
-            self._folge_letzt = None
-            for n in ("wasser_spuren",):
-                try:
-                    self._plotter.remove_actor(n)
-                except Exception:
-                    pass
-            self._wasserpunkte_meshes = {}
-            self._flaeche_verschieben(0.0, 0.0)
+        self._folge_aktiv = True
+        from .core.wasserpunkte import WasserPunktFeld
+        self._wasserpunkte = WasserPunktFeld()
+        self._wasserpunkte_meshes = {}
+        self._ozean_setzen()
+        self._folge_letzt = None
         self.render()
         return True
 
@@ -231,24 +219,9 @@ class GrafikBruecke:
         for akt in actors:
             akt.SetVisibility(bool(sichtbar))
 
-    def _ozean_setzen(self, aktiv):
+    def _ozean_setzen(self):
         """Unendlich wirkende Wasserflaeche: grosse texturierte Ebene,
         die dem Koerper folgt; die Textur enthaelt die weltfesten Punkte."""
-        if not aktiv:
-            for a in (self._ozean_actor, self._dunst_actor,
-                      self._dunst_wand_actor, self._volumen_actor):
-                if a is not None:
-                    try:
-                        self._plotter.remove_actor(a)
-                    except Exception:
-                        pass
-            self._ozean_actor = None
-            self._volumen_actor = None
-            self._dunst_actor = None
-            self._dunst_wand_actor = None
-            self._becken_sichtbar_folge(True)
-            self._koerper_opazitaet_setzen(0.95)
-            return
         import pyvista as pv
         from .core.wasserpunkte import dunst_gitter
         mesh = pv.Plane(center=(0.0, 0.0, -0.05), direction=(0, 0, 1),

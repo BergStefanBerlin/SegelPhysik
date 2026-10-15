@@ -102,7 +102,8 @@ def test_layer_und_darstellungssteuerung_sind_angebunden():
     fenster._layer_checks["Achsen"].click()
     fenster._layer_checks["Kräfte"].click()
     fenster._layer_checks["Momente"].click()
-    fenster._kamera_auswahl.setCurrentIndex(1)
+    fenster._kamera_auswahl.setCurrentIndex(
+        fenster._kamera_auswahl.findData("bug"))
     fenster._hintergrund_auswahl.setCurrentIndex(1)
     fenster._ssao_check.click()
 
@@ -110,7 +111,7 @@ def test_layer_und_darstellungssteuerung_sind_angebunden():
         (LAYER_SCHWERPUNKT, True), (LAYER_HAUPTACHSEN, False),
         (LAYER_KRAEFTE, False), (LAYER_MOMENTE, True)]
     assert bruecke.darstellung == [
-        ("kamera", "bug"), ("hintergrund", "weiss"), ("ssao", True)]
+        ("kamera", "bug"), ("hintergrund", "weiss"), ("ssao", False)]
     assert bruecke.renders == 4
     fenster.close()
     app.processEvents()

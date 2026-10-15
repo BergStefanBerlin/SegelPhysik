@@ -18,15 +18,28 @@ import numpy as np
 # ---------------------------------------------------------------- K5 ----
 def kamera_presets(lx=10.0, ly=10.0, d=3.0):
     """Kamera-Presets (Position, Blickpunkt, Up) - rein rechnerisch,
-    ohne pyvista testbar. x = Bug, y = Backbord, z = hoch (A1)."""
+    ohne pyvista testbar. x = Bug, y = Backbord, z = hoch (A1).
+    Seitenansichten blicken waagerecht auf Hoehe der Wasserlinie, die
+    Wasserflaeche erscheint dort als Linie. Zusaetzlich die 8 Eckansichten
+    "<oben|unten>_<backbord|steuerbord>_<bug|heck>"."""
     r = max(lx, ly)
-    return {
-        "bug":          ((2.4 * r, 0.0, 0.4 * d), (0.0, 0.0, 0.0), (0.0, 0.0, 1.0)),
-        "heck":         ((-2.4 * r, 0.0, 0.4 * d), (0.0, 0.0, 0.0), (0.0, 0.0, 1.0)),
-        "drei_viertel": ((1.7 * r, -1.7 * r, 1.5 * d), (0.0, 0.0, -0.2 * d),
-                         (0.0, 0.0, 1.0)),
-        "draufsicht":   ((0.0, 0.0, 3.2 * d), (0.0, 0.0, 0.0), (0.0, 1.0, 0.0)),
+    ursprung = (0.0, 0.0, 0.0)
+    hoch = (0.0, 0.0, 1.0)
+    presets = {
+        "bug":        ((2.4 * r, 0.0, 0.0), ursprung, hoch),
+        "heck":       ((-2.4 * r, 0.0, 0.0), ursprung, hoch),
+        "backbord":   ((0.0, 2.4 * r, 0.0), ursprung, hoch),
+        "steuerbord": ((0.0, -2.4 * r, 0.0), ursprung, hoch),
+        "oben":       ((0.0, 0.0, 3.2 * d), ursprung, (0.0, 1.0, 0.0)),
+        "unten":      ((0.0, 0.0, -3.2 * d), ursprung, (0.0, 1.0, 0.0)),
     }
+    for hoehe, sz in (("oben", 1.0), ("unten", -1.0)):
+        for seite, sy in (("backbord", 1.0), ("steuerbord", -1.0)):
+            for laengs, sx in (("bug", 1.0), ("heck", -1.0)):
+                presets["%s_%s_%s" % (hoehe, seite, laengs)] = (
+                    (sx * 1.7 * r, sy * 1.7 * r, sz * 1.5 * d), ursprung,
+                    hoch)
+    return presets
 
 
 class GrafikOptimierung:

@@ -415,10 +415,20 @@ class HauptFenster(QMainWindow):
         darstellung_layout = QVBoxLayout(darstellung)
         self._kamera_auswahl = QComboBox()
         for label, wert in (
-                ("Drei Viertel", "drei_viertel"),
+                ("Oben Backbord Bug", "oben_backbord_bug"),
+                ("Oben Backbord Heck", "oben_backbord_heck"),
+                ("Oben Steuerbord Bug", "oben_steuerbord_bug"),
+                ("Oben Steuerbord Heck", "oben_steuerbord_heck"),
+                ("Unten Backbord Bug", "unten_backbord_bug"),
+                ("Unten Backbord Heck", "unten_backbord_heck"),
+                ("Unten Steuerbord Bug", "unten_steuerbord_bug"),
+                ("Unten Steuerbord Heck", "unten_steuerbord_heck"),
+                ("Backbord (Seite)", "backbord"),
+                ("Steuerbord (Seite)", "steuerbord"),
                 ("Bug", "bug"),
                 ("Heck", "heck"),
-                ("Draufsicht", "draufsicht")):
+                ("Oben", "oben"),
+                ("Unten", "unten")):
             self._kamera_auswahl.addItem(label, wert)
         self._kamera_auswahl.currentIndexChanged.connect(
             self._kamera_preset_geaendert)
@@ -447,12 +457,8 @@ class HauptFenster(QMainWindow):
         self._wasseroptik_check.toggled.connect(
             self._wasseroptik_geaendert)
         darstellung_layout.addWidget(self._wasseroptik_check)
-        self._wasserbew_check = QCheckBox("Körper zentriert, Wasser bewegt sich")
-        self._wasserbew_check.setChecked(True)
-        self._wasserbew_check.toggled.connect(self._wasserbewegung_geaendert)
-        darstellung_layout.addWidget(self._wasserbew_check)
         self._ssao_check = QCheckBox("SSAO")
-        self._ssao_check.setChecked(False)
+        self._ssao_check.setChecked(True)
         self._ssao_check.toggled.connect(self._ssao_geaendert)
         darstellung_layout.addWidget(self._ssao_check)
         darstellung_layout.addStretch(1)
@@ -542,7 +548,7 @@ class HauptFenster(QMainWindow):
         self._beleuchtung_geaendert(self._licht_check.isChecked())
         self._wasser_sichtbarkeit_geaendert(self._wasser_check.isChecked())
         self._wasseroptik_geaendert(self._wasseroptik_check.isChecked())
-        self._wasserbewegung_geaendert(self._wasserbew_check.isChecked())
+        self._wasserbewegung_aktivieren()
         if self._ssao_check.isChecked():
             self._ssao_geaendert(True)
 
@@ -597,12 +603,11 @@ class HauptFenster(QMainWindow):
                 "Wasseroptik",
                 lambda: bruecke.wasseroptik_setzen(aktiviert))
 
-    def _wasserbewegung_geaendert(self, aktiviert):
+    def _wasserbewegung_aktivieren(self):
         bruecke = getattr(self, "_bruecke", None)
         if bruecke is not None:
             self._darstellung_aktion(
-                "Wasserbewegung",
-                lambda: bruecke.wasser_bewegung_setzen(aktiviert))
+                "Wasserbewegung", lambda: bruecke.wasser_bewegung_setzen())
 
     def _ssao_geaendert(self, aktiviert):
         bruecke = getattr(self, "_bruecke", None)

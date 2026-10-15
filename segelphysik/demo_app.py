@@ -412,7 +412,7 @@ def main():
     for taste in ("minus", "down", "kp_subtract"):
         plotter.add_key_event(taste, lambda: panel.aendere_wiedergabe(0.5))
     for taste, preset in (("F1", "bug"), ("F2", "heck"),
-                          ("F3", "drei_viertel"), ("F4", "draufsicht")):
+                          ("F3", "oben_backbord_bug"), ("F4", "oben")):
         plotter.add_key_event(taste, lambda n=preset: opt.kamera(n))
 
     plotter.show(interactive_update=True, auto_close=False)

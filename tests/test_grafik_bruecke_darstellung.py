@@ -55,9 +55,9 @@ def _bruecke():
 def test_kamera_presets_hintergrund_und_beleuchtung():
     bruecke = _bruecke()
 
-    assert bruecke.kamera_preset_setzen("draufsicht")
+    assert bruecke.kamera_preset_setzen("oben")
     assert bruecke._plotter.camera_position == kamera_presets(
-        10.0, 8.0, 3.0)["draufsicht"]
+        10.0, 8.0, 3.0)["oben"]
     assert bruecke.hintergrund_setzen("verlauf")
     assert bruecke.hintergrund_setzen("dunkel")
     assert bruecke.beleuchtung_setzen(True)
