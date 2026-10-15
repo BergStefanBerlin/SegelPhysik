@@ -623,6 +623,7 @@ class GrafikBruecke:
     def render(self):
         if self._plotter is None:
             return False
+        self._vordergrund_kamera_abgleichen()
         self._plotter.render()
         return True
 
@@ -722,6 +723,14 @@ class GrafikBruecke:
             self._plotter.renderer.GetActiveCamera())
         return self._vg_renderer
 
+    def _vordergrund_kamera_abgleichen(self):
+        """Pyvista kann die Kamera austauschen: Vordergrund folgt ihr."""
+        if getattr(self, "_vg_renderer", None) is not None \
+                and self._plotter is not None:
+            kamera = self._plotter.renderer.GetActiveCamera()
+            if self._vg_renderer.GetActiveCamera() is not kamera:
+                self._vg_renderer.SetActiveCamera(kamera)
+
     def _actor_weg(self, name):
         actor = self._vg_actors.pop(name, None)
         if actor is not None:
@@ -747,8 +756,11 @@ class GrafikBruecke:
             renderer.AddActor(actor)
             self._vg_actors[name] = actor
             return actor
-        except Exception:
+        except Exception as fehler:
             self._vg_unmoeglich = True
+            import sys
+            print("[SegelPhysik] Vordergrundebene nicht moeglich: %r" % fehler,
+                  file=sys.stderr, flush=True)
             return None
 
     def _mesh_setzen(self, store, name, mesh, vordergrund=False, **kwargs):

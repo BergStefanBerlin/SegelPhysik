@@ -237,7 +237,7 @@ def test_fremdkraft_pfeil_startet_am_weltangriffspunkt(monkeypatch):
 
     mesh = gezeichnet["kraefte_boot_fremd"]
     # Angriffspunkt: cm + R @ (1,0,0) = (1, 3, 0.5)
-    # Pfeil zeigt in +y und beginnt bei y=3: alle Punkte y >= 3, Spitze bei 3 + 0.5
+    # Pfeil zeigt in +y und beginnt bei y=3; bei Kraftskala 0,05 greift die Mindestlaenge
     assert mesh.bounds[2] >= 3.0 - 0.1
-    assert mesh.bounds[3] == pytest.approx(3.5, abs=1e-6)
+    assert mesh.bounds[3] == pytest.approx(3.0364, abs=1e-3)
     assert mesh.bounds[0] <= 1.0 + 0.2 and mesh.bounds[1] >= 1.0 - 0.2

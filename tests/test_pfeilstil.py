@@ -107,7 +107,7 @@ def test_alle_layerkombinationen_zeichnen_ohne_fehler(maske):
         hydro = Auftriebsergebnis(1.0, (0.3, 0.0, 0.0), (0.0, 0.0, 1000.0),
                                   (0.0, 0.0, 0.0))
         erg = KraftErgebnis(hydro, Vektor((0.0, 50.0, 1000.0)),
-                            Vektor((0.0, 0.0, 0.0)), (0.0,) * 6)
+                            Vektor((0.0, 30.0, 0.0)), (0.0,) * 6)
         b._koerper["boot"] = {"aktiv": True, "position": np.zeros(3),
                               "overlay_skala": (1.0, 0.05)}
         b.kraefte_daten_setzen("boot", erg, 100.0, 9.81, 0.01,
@@ -122,4 +122,4 @@ def test_alle_layerkombinationen_zeichnen_ohne_fehler(maske):
     assert ("kraefte_boot_fremd" in gezeichnet) == bool(maske & 2)
     assert ("kraefte_boot_fg" in gezeichnet) == bool(maske & 1)
     assert ("kraefte_boot_auftriebsp" in gezeichnet) == bool(maske & 8)
-    assert ("kraefte_boot_moment_y" in gezeichnet) == bool(maske & 4)
+    assert ("kraefte_boot_mges_y" in gezeichnet) == bool(maske & 4)

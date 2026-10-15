@@ -25,21 +25,21 @@ PFEILE = (
     ("f_a", "Auftriebskraft F_A (Gegenkraft)", "gewicht_auftrieb", "kraft",
      None, True, True),
     ("m_x", "Moment M_x (Rollen)", "gewicht_auftrieb", "moment", None,
-     True, False),
+     False, False),
     ("m_y", "Moment M_y (Nicken)", "gewicht_auftrieb", "moment", None,
-     True, False),
+     False, False),
     ("m_z", "Moment M_z (Gieren)", "gewicht_auftrieb", "moment", None,
-     True, False),
+     False, False),
     ("fremd", "Fremdkraft F_fremd", "fremdkraft", "kraft", None, True, False),
-    ("fremd_mx", "Fremdmoment M_x", "fremdkraft", "moment", None, True, False),
-    ("fremd_my", "Fremdmoment M_y", "fremdkraft", "moment", None, True, False),
-    ("fremd_mz", "Fremdmoment M_z", "fremdkraft", "moment", None, True, False),
+    ("fremd_mx", "Fremdmoment M_x", "fremdkraft", "moment", None, False, False),
+    ("fremd_my", "Fremdmoment M_y", "fremdkraft", "moment", None, False, False),
+    ("fremd_mz", "Fremdmoment M_z", "fremdkraft", "moment", None, False, False),
     ("rest", "Resultierende Kraft", None, "kraft", "#dddddd", True, False),
     ("zusatz", "Widerstand / Added Mass", None, "kraft", "#e08214", True,
      False),
-    ("mges_x", "Gesamtmoment M_x", None, "moment", "#762a83", False, False),
-    ("mges_y", "Gesamtmoment M_y", None, "moment", "#1b7837", False, False),
-    ("mges_z", "Gesamtmoment M_z", None, "moment", "#e08214", False, False),
+    ("mges_x", "Gesamtmoment M_x", None, "moment", "#762a83", True, False),
+    ("mges_y", "Gesamtmoment M_y", None, "moment", "#1b7837", True, False),
+    ("mges_z", "Gesamtmoment M_z", None, "moment", "#e08214", True, False),
     ("hebelarm", "Hebelarm K-S", None, "linie", "#000000", True, False),
 )
 
@@ -92,7 +92,7 @@ def vorlage_bereiche(eintrag, seit="1.1"):
                 "float", 5.0, "Pfeilkopf-Laenge (Faktor auf die Dicke)",
                 "x", 1.0, 20.0, 2),
             "fuellfaktor": e(
-                "float", 0.75, "Kraftskala: Laenge des Gewichtspfeils "
+                "float", 0.05, "Kraftskala: Laenge des Gewichtspfeils "
                 "relativ zur Koerperausdehnung", "", 0.05, 5.0, 2),
             "momentenradius": e(
                 "float", 0.45, "Radius der Momentenboegen relativ zur "

@@ -19,7 +19,7 @@
     "dicke": 0.5,
     "kopf_durchmesser": 2.5,
     "kopf_laenge": 5.0,
-    "fuellfaktor": 0.75,
+    "fuellfaktor": 0.05,
     "momentenradius": 0.45,
     "mindestlaenge": 2.0,
     "strich_laenge": 3.0,
@@ -51,7 +51,7 @@
     "dicke": 0.0,
     "kopf": 1.0,
     "gestrichelt": false,
-    "skala": 1.0,
+    "skala": 0.1,
     "deckkraft": 1.0,
     "vordergrund": true
   },
@@ -61,37 +61,37 @@
     "dicke": 0.0,
     "kopf": 1.0,
     "gestrichelt": true,
-    "skala": 1.0,
+    "skala": 0.1,
     "deckkraft": 1.0,
     "vordergrund": true
   },
   "pfeil_m_x": {
-    "sichtbar": true,
+    "sichtbar": false,
     "farbe": "",
     "dicke": 0.0,
     "kopf": 1.0,
     "gestrichelt": false,
-    "skala": 1.0,
+    "skala": 0.1,
     "deckkraft": 1.0,
     "vordergrund": true
   },
   "pfeil_m_y": {
-    "sichtbar": true,
+    "sichtbar": false,
     "farbe": "",
     "dicke": 0.0,
     "kopf": 1.0,
     "gestrichelt": false,
-    "skala": 1.0,
+    "skala": 0.1,
     "deckkraft": 1.0,
     "vordergrund": true
   },
   "pfeil_m_z": {
-    "sichtbar": true,
+    "sichtbar": false,
     "farbe": "",
     "dicke": 0.0,
     "kopf": 1.0,
     "gestrichelt": false,
-    "skala": 1.0,
+    "skala": 0.1,
     "deckkraft": 1.0,
     "vordergrund": true
   },
@@ -101,12 +101,12 @@
     "dicke": 0.0,
     "kopf": 1.0,
     "gestrichelt": false,
-    "skala": 1.0,
+    "skala": 0.1,
     "deckkraft": 1.0,
     "vordergrund": true
   },
   "pfeil_fremd_mx": {
-    "sichtbar": true,
+    "sichtbar": false,
     "farbe": "",
     "dicke": 0.0,
     "kopf": 1.0,
@@ -116,7 +116,7 @@
     "vordergrund": true
   },
   "pfeil_fremd_my": {
-    "sichtbar": true,
+    "sichtbar": false,
     "farbe": "",
     "dicke": 0.0,
     "kopf": 1.0,
@@ -126,7 +126,7 @@
     "vordergrund": true
   },
   "pfeil_fremd_mz": {
-    "sichtbar": true,
+    "sichtbar": false,
     "farbe": "",
     "dicke": 0.0,
     "kopf": 1.0,
@@ -156,7 +156,7 @@
     "vordergrund": true
   },
   "pfeil_mges_x": {
-    "sichtbar": false,
+    "sichtbar": true,
     "farbe": "#762a83",
     "dicke": 0.0,
     "kopf": 1.0,
@@ -166,7 +166,7 @@
     "vordergrund": true
   },
   "pfeil_mges_y": {
-    "sichtbar": false,
+    "sichtbar": true,
     "farbe": "#1b7837",
     "dicke": 0.0,
     "kopf": 1.0,
@@ -176,7 +176,7 @@
     "vordergrund": true
   },
   "pfeil_mges_z": {
-    "sichtbar": false,
+    "sichtbar": true,
     "farbe": "#e08214",
     "dicke": 0.0,
     "kopf": 1.0,
