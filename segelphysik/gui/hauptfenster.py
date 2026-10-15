@@ -168,6 +168,7 @@ class HauptFenster(QMainWindow):
         self._echtzeit_kraefteresultat = None
         self._echtzeit_physik = None
         self._echtzeit_name = None
+        self._laufzeit_schwerpunkt = {}
         self._echtzeit_generation = 0
         self._echtzeit_aufgabe_laeuft = False
         self._echtzeit_schritte_laufend = 0
@@ -600,6 +601,7 @@ class HauptFenster(QMainWindow):
         from .baum import aktive_blaetter, summenkoerper
 
         laufzeit_bereit = True
+        schwerpunkt_alt = {}
         for knoten in summenkoerper(welt):
             if not knoten.sichtbar or knoten.eintrag is None:
                 bruecke.sichtbar_setzen(knoten.name, False)
@@ -621,6 +623,9 @@ class HauptFenster(QMainWindow):
                     konfiguration, knoten.name, aktive_blaetter=aktive)
                 position = (tuple(modell_schwerpunkt)
                             if modell_schwerpunkt is not None else (0.0, 0.0, 0.0))
+                schwerpunkt_alt[knoten.name] = self._laufzeit_schwerpunkt.get(
+                    knoten.name)
+                self._laufzeit_schwerpunkt[knoten.name] = position
                 bruecke.koerper_objekt_setzen(
                     knoten.name, koerper, position=position)
                 self._laufzeit_koerper[knoten.name] = koerper
@@ -641,9 +646,29 @@ class HauptFenster(QMainWindow):
             war_laufend = (self._echtzeit_timer.isActive()
                            or self._btn_vor.isChecked())
             self._echtzeit_starten(
-                zustand=(self._echtzeit_zustand
+                zustand=(self._zustand_nach_umbau(schwerpunkt_alt)
                          if grund != "start" else None),
                 auto_start=war_laufend)
+
+    def _zustand_nach_umbau(self, schwerpunkt_alt):
+        """Haelt die Modellpose beim Umbau fest: der Schwerpunkt wandert,
+        die Lage der Geometrie im Raum bleibt unveraendert."""
+        zustand = self._echtzeit_zustand
+        name = self._echtzeit_name
+        alt = schwerpunkt_alt.get(name)
+        neu = self._laufzeit_schwerpunkt.get(name)
+        if zustand is None or alt is None or neu is None:
+            return zustand
+        import numpy as np
+        from ..core.dynamik_6dof import Zustand6DOF, quaternion_matrix
+        versatz = quaternion_matrix(zustand.quaternion) @ (
+            np.asarray(neu, float) - np.asarray(alt, float))
+        position = np.asarray(zustand.position, float) + versatz
+        return Zustand6DOF(
+            position=tuple(float(w) for w in position),
+            quaternion=zustand.quaternion,
+            geschwindigkeit_koerper=zustand.geschwindigkeit_koerper,
+            winkelgeschwindigkeit_koerper=zustand.winkelgeschwindigkeit_koerper)
 
     def _modus_geaendert(self, _knopf):
         statisch = self._btn_statisch.isChecked()

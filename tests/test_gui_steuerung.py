@@ -311,3 +311,26 @@ def test_ungueltige_rechenergebnisse_zeigen_keine_pose():
     assert not werte["Lösungstyp"].startswith("Kandidat")
     fenster.close()
     app.processEvents()
+
+def test_umbau_haelt_modellpose_bei_schwerpunktwechsel():
+    from types import SimpleNamespace
+    import numpy as np
+    from segelphysik.core.dynamik_6dof import Zustand6DOF, quaternion_matrix
+    from segelphysik.gui.hauptfenster import HauptFenster
+
+    phi = 0.3
+    q = (np.cos(phi / 2), np.sin(phi / 2), 0.0, 0.0)
+    zustand = Zustand6DOF(position=(1.0, 2.0, -0.5), quaternion=q)
+    fake = SimpleNamespace(
+        _echtzeit_zustand=zustand, _echtzeit_name="yacht",
+        _laufzeit_schwerpunkt={"yacht": (0.0, 0.0, 0.2)})
+    alt = {"yacht": (0.0, 0.0, -0.4)}
+
+    neu = HauptFenster._zustand_nach_umbau(fake, alt)
+
+    r = quaternion_matrix(q)
+    punkt = np.array([0.3, 0.1, 0.0])
+    vorher = np.array(zustand.position) + r @ (punkt - np.array(alt["yacht"]))
+    nachher = np.array(neu.position) + r @ (
+        punkt - np.array(fake._laufzeit_schwerpunkt["yacht"]))
+    assert np.allclose(vorher, nachher)
