@@ -276,6 +276,9 @@ def _statischen_fehler_zustellen(fenster, status, diagnose):
         def statische_pose_loeschen(self, name):
             self.geloescht.append(name)
 
+        def statusoverlay_setzen(self, text, schwere):
+            self.overlay = (text, schwere)
+
     bruecke = Bruecke()
     fenster._bruecke = bruecke
     fenster._laufzeit_koerper["k"] = object()
@@ -298,6 +301,9 @@ def test_instabiler_kandidat_wird_als_solcher_angezeigt():
             fenster, status, {"z": 0.1, "phi": 0.2})
         assert bruecke.gesetzt == [("k", 0.1, 0.2)]
         assert werte["Lösungstyp"].startswith("Kandidat")
+        assert bruecke.overlay == (
+            "instabil" if status == "instabile_lage" else "Näherungslösung",
+            "hinweis")
         assert "k" not in fenster._statische_ergebnisse
     fenster.close()
     app.processEvents()
@@ -312,6 +318,7 @@ def test_ungueltige_rechenergebnisse_zeigen_keine_pose():
     assert bruecke.gesetzt == []
     assert bruecke.geloescht == ["k"]
     assert not werte["Lösungstyp"].startswith("Kandidat")
+    assert bruecke.overlay == ("nicht lösbar", "problem")
     fenster.close()
     app.processEvents()
 

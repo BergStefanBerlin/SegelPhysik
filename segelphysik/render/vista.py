@@ -244,6 +244,7 @@ class PyVistaRenderer:
         self._elev_key = "elev"
         self._hud_actor = None
         self._status_actor = None
+        self._overlay_actor = None
         self._circle_tpl = _unit_circle(48)
         self._square_tpl = _unit_square()
         self._frame = 0
@@ -359,8 +360,36 @@ class PyVistaRenderer:
         p.add_axes(xlabel="x (Bug)", ylabel="y (Backbord)", zlabel="z")
         self._status_actor = p.add_text(" ", position="lower_right",
                                         font_size=10, color="black")
+        self._overlay_actor = p.add_text(
+            " ", position=(24, 24), font_size=20, color="white")
+        if self._overlay_actor is not None:
+            self._overlay_actor.SetVisibility(False)
         self._plotter = p
         return p
+
+    _OVERLAY_FARBEN = {
+        "ok": (0.55, 1.0, 0.55), "hinweis": (1.0, 0.9, 0.3),
+        "problem": (1.0, 0.45, 0.45), "info": (0.85, 0.85, 0.85),
+    }
+
+    def set_statusoverlay(self, text, schwere="info"):
+        """Grosser Statustext unten links; text=None/leer blendet aus."""
+        a = getattr(self, "_overlay_actor", None)
+        if a is None:
+            return False
+        if not text:
+            a.SetVisibility(False)
+            return True
+        eigenschaften = a.GetTextProperty()
+        eigenschaften.SetColor(*self._OVERLAY_FARBEN.get(
+            schwere, self._OVERLAY_FARBEN["info"]))
+        eigenschaften.SetBold(True)
+        eigenschaften.SetBackgroundColor(0.0, 0.0, 0.0)
+        eigenschaften.SetBackgroundOpacity(0.6)
+        a.SetInput(str(text))
+        a.SetVisibility(True)
+        a.Modified()
+        return True
 
     def wasser_sichtbar_setzen(self, sichtbar):
         if self._surf_actor is None:

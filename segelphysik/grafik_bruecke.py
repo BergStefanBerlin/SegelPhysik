@@ -511,6 +511,11 @@ class GrafikBruecke:
     def hud(self, text):
         self._renderer.set_hud(text)
 
+    def statusoverlay_setzen(self, text, schwere="info"):
+        if self._renderer is None:
+            return False
+        return self._renderer.set_statusoverlay(text, schwere)
+
     def kamera_preset_setzen(self, preset):
         if self._plotter is None:
             return False

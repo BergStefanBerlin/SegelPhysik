@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
 )
 
 from .baum_widget import BaumWidget
+from ..core import statusanzeige
 from ..core.overlays import (LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN,
                              LAYER_KRAEFTE, LAYER_MOMENTE, LAYER_FREMDKRAFT)
 
@@ -133,6 +134,13 @@ class _StatischeAufgabe(QRunnable):
                 aufloesung=physik.voxel_aufloesung_m,
                 pfad="exakt_union")
             kraftfunktion = baue_kraftmodell(kraftfunktion, physik)
+            problem = statusanzeige.schwimmpruefung(
+                kraftfunktion, self.koerper, self.koerper.masse,
+                physik.g_m_pro_s2)
+            if problem is not None:
+                raise SolverFehler(
+                    "Körper kann nicht tragen (%s)" % problem,
+                    status=problem, diagnose={})
             ergebnis = loese_robust(
                 kraftfunktion, self.koerper.masse,
                 g=physik.g_m_pro_s2, **self.parameter)
@@ -796,6 +804,16 @@ class HauptFenster(QMainWindow):
             geschwindigkeit_koerper=zustand.geschwindigkeit_koerper,
             winkelgeschwindigkeit_koerper=zustand.winkelgeschwindigkeit_koerper)
 
+    def _statusoverlay(self, anzeige):
+        bruecke = getattr(self, "_bruecke", None)
+        if bruecke is None:
+            return
+        setzen = getattr(bruecke, "statusoverlay_setzen", None)
+        if setzen is None:
+            return
+        text, schwere = anzeige if anzeige else (None, "info")
+        setzen(text, schwere)
+
     def _modus_geaendert(self, _knopf):
         statisch = self._btn_statisch.isChecked()
         self._steuerzeile_umschalten(statisch)
@@ -806,6 +824,7 @@ class HauptFenster(QMainWindow):
             self._statische_simulation_ausfuehren()
         else:
             self._statisch_generation += 1
+            self._statusoverlay(None)
             bruecke = getattr(self, "_bruecke", None)
             if bruecke is not None:
                 for name in self._laufzeit_koerper:
@@ -825,14 +844,17 @@ class HauptFenster(QMainWindow):
         if hauptkoerper is None:
             self._solver_status_aktualisieren(
                 {"Lösungstyp": "Kein Hauptkörper ausgewählt"})
+            self._statusoverlay(statusanzeige.KEIN_HAUPTKOERPER)
             return
         koerper = self._laufzeit_koerper.get(hauptkoerper.name)
         bruecke = getattr(self, "_bruecke", None)
         if koerper is None or bruecke is None:
+            self._statusoverlay(statusanzeige.KOERPER_FEHLT)
             return
 
         self._solver_status_aktualisieren(
             {"Lösungstyp": "Statische Berechnung läuft"})
+        self._statusoverlay(statusanzeige.BERECHNUNG_LAEUFT)
         aufgabe = _StatischeAufgabe(
             generation, hauptkoerper.name, koerper,
             konfiguration.ordner, konfiguration.wasser_dichte(),
@@ -859,6 +881,7 @@ class HauptFenster(QMainWindow):
                 "Restkraft": "-", "Restmoment": "-",
                 "Lösungstyp": status,
             }
+            kandidat_gezeigt = False
             if isinstance(fehler, SolverFehler):
                 diagnose = fehler.diagnose
                 statusnamen = {
@@ -867,6 +890,8 @@ class HauptFenster(QMainWindow):
                     "budget_erschoepft": "Budget erschöpft",
                     "ungueltige_rechenergebnisse":
                         "Ungültige Rechenergebnisse",
+                    "sinkt": "Sinken",
+                    "schwebt": "Schweben",
                 }
                 werte["Lösungstyp"] = "%s: %s" % (
                     statusnamen.get(fehler.status, fehler.status), fehler)
@@ -886,10 +911,13 @@ class HauptFenster(QMainWindow):
                     and math.isfinite(diagnose["phi"]))
                 if kandidat and bruecke.statische_pose_setzen(
                         name, diagnose["z"], diagnose["phi"]):
+                    kandidat_gezeigt = True
                     werte["Lösungstyp"] = (
                         "Kandidat (nicht konvergiert/instabil) – %s"
                         % werte["Lösungstyp"])
             self._solver_status_aktualisieren(werte)
+            self._statusoverlay(
+                statusanzeige.status_aus_fehler(fehler, kandidat_gezeigt))
             self.protokoll_schreiben(
                 "Statischer Solver (%s): %s" % (name, fehler))
             return
@@ -902,8 +930,12 @@ class HauptFenster(QMainWindow):
                 name, ergebnis["z"], ergebnis["phi"]):
             self._solver_status_aktualisieren(
                 {"Lösungstyp": "Körper in 3D-Ansicht fehlt"})
+            self._statusoverlay(statusanzeige.KOERPER_FEHLT)
             return
         self._statische_ergebnisse[name] = ergebnis
+        self._statusoverlay(statusanzeige.status_aus_ergebnis(
+            ergebnis, statusanzeige.ist_rotationssymmetrisch(
+                getattr(koerper, "traegheitstensor", None))))
         gm = ergebnis["gm"]
         self._solver_status_aktualisieren({
             "z*": "%.4f m" % ergebnis["z"],
