@@ -25,6 +25,7 @@ außer bei den genannten Abbruchfällen. Antworte kurz und auf Deutsch.
 1. **Jede Änderung wird committet.** Arbeitsbaum nie unbemerkt dirty lassen.
 2. Commit-Nachricht kurz im Stil des Repos, am Ende immer:
    `Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>`
+   Inhalt der Einträge siehe Abschnitt „Aussagekräftige Einträge“.
 3. Vor jedem Commit die Tests ausführen (`.\.venv\Scripts\python.exe -m pytest -q`,
    `QT_QPA_PLATFORM=offscreen`). Schlagen sie fehl: nicht committen, melden.
 4. Nie `--force`, nie `--no-verify`, nie Verlauf umschreiben, nie Änderungen verwerfen.
@@ -55,6 +56,32 @@ Offene Änderungen committen, pushen, Tag `X.(Y+1)` setzen und pushen. Danach fr
 4. GitHub-Release anlegen: `gh release create <Tag> --title <Tag> --notes-file ...`.
    Ist `gh` nicht installiert: Notizen ausgeben und den Link
    `https://github.com/BergStefanBerlin/SegelPhysik/releases/new?tag=<Tag>` nennen.
+
+## Aussagekräftige Einträge
+
+Vor jedem Commit und Tag `git status --short` und `git diff --cached --stat`
+lesen und daraus den Eintrag ableiten. Nie Platzhalter wie „Update“, „Änderungen“
+oder nur den Namen einer Datei verwenden.
+
+**Commit**
+- Betreff (max. 72 Zeichen, Deutsch): `<Bereich>: <was wurde erreicht>`,
+  z. B. `Hydrostatik: exakter Ebenenschnitt, 25-39x schneller`.
+  Bereiche: `Hydrostatik`, `Solver`, `GUI`, `Echtzeit`, `Test`, `Doku`,
+  `Werkzeug`, `Release`.
+- Bei mehreren Dateien oder Gründen: Leerzeile, dann 1–4 Stichpunkte mit
+  *Was* und *Warum* sowie bei Messungen den Zahlenwert (vorher → nachher).
+- Mehrere unabhängige Themen im Arbeitsbaum: getrennte Commits, nicht ein
+  Sammelcommit.
+- Keine Versionsnummer im Betreff (Commits tragen keine).
+
+**Tag** (`git tag -a`, Nachricht wird in `git tag -n` angezeigt)
+- Erste Zeile: `<Tag>: <Hauptergebnis seit dem letzten Tag>`.
+- Darunter 2–5 Stichpunkte aus `git log <letzter Tag>..HEAD --format="- %s"`,
+  ohne Duplikate. Ein Tag ohne neue Commits wird nicht gesetzt.
+
+**Release-Notizen**
+- Nach Bereichen gruppieren (Neu, Verbessert, Behoben, Doku), nicht als
+  reine Commit-Liste. Messwerte und bekannte Einschränkungen nennen.
 
 ## Abbruch (dann melden, nichts erzwingen)
 
