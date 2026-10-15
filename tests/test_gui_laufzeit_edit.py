@@ -551,6 +551,13 @@ def test_solverfehler_zeigt_abbruchgrund_und_letzte_residuen(
     fenster._laufzeit_koerper["yacht1"] = SimpleNamespace(masse=10.0)
 
     class Bruecke:
+        def __init__(self):
+            self.poses = []
+
+        def statische_pose_setzen(self, name, z, phi):
+            self.poses.append((name, z, phi))
+            return True
+
         def statische_pose_loeschen(self, _name):
             pass
 
@@ -579,7 +586,8 @@ def test_solverfehler_zeigt_abbruchgrund_und_letzte_residuen(
         time.sleep(0.005)
 
     assert fenster._solver_werte["Lösungstyp"].text(1).startswith(
-        "Instabile Lage:")
+        "Kandidat (nicht konvergiert/instabil) – Instabile Lage:")
+    assert fenster._bruecke.poses == [("yacht1", -0.2, 0.1)]
     assert fenster._solver_werte["Restkraft"].text(1) == "2.5 N"
     assert fenster._solver_werte["Restmoment"].text(1) == "4 N·m"
     assert fenster._solver_werte["z*"].text(1) == "-0.2000 m"
