@@ -370,11 +370,11 @@ class HauptFenster(QMainWindow):
         v = QVBoxLayout(layer)
         self._layer_checks = {}
         layer_einstellungen = (
-            ("Schwerpunkt", LAYER_SCHWERPUNKT, False),
-            ("Achsen", LAYER_HAUPTACHSEN, True),
+            ("Schwerpunkt", LAYER_SCHWERPUNKT, True),
+            ("Achsen", LAYER_HAUPTACHSEN, False),
             ("Kräfte", LAYER_KRAEFTE, True),
-            ("Fremdkraft", LAYER_FREMDKRAFT, True),
-            ("Momente", LAYER_MOMENTE, False),
+            ("Fremdkraft", LAYER_FREMDKRAFT, False),
+            ("Momente", LAYER_MOMENTE, True),
         )
         for name, layer_name, aktiviert in layer_einstellungen:
             cb = QCheckBox(name)

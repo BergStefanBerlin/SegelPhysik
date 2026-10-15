@@ -108,8 +108,8 @@ def test_layer_und_darstellungssteuerung_sind_angebunden():
     fenster._ssao_check.click()
 
     assert bruecke.layer == [
-        (LAYER_SCHWERPUNKT, True), (LAYER_HAUPTACHSEN, False),
-        (LAYER_KRAEFTE, False), (LAYER_MOMENTE, True)]
+        (LAYER_SCHWERPUNKT, False), (LAYER_HAUPTACHSEN, True),
+        (LAYER_KRAEFTE, False), (LAYER_MOMENTE, False)]
     assert bruecke.darstellung == [
         ("kamera", "bug"), ("hintergrund", "weiss"), ("ssao", False)]
     assert bruecke.renders == 4
