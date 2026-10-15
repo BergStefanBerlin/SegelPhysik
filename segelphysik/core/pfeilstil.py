@@ -91,12 +91,12 @@ def vorlage_bereiche(eintrag, seit="1.1"):
             "kopf_laenge": e(
                 "float", 5.0, "Pfeilkopf-Laenge (Faktor auf die Dicke)",
                 "x", 1.0, 20.0, 2),
-            "fuellfaktor": e(
-                "float", 0.05, "Kraftskala: Laenge des Gewichtspfeils "
-                "relativ zur Koerperausdehnung", "", 0.05, 5.0, 2),
-            "momentenradius": e(
-                "float", 0.45, "Radius der Momentenboegen relativ zur "
-                "Gewichtspfeil-Laenge", "", 0.05, 3.0, 2),
+            "kraftskala": e(
+                "float", 0.05, "Kraftskala: Pfeillaenge je Newton",
+                "cm/N", 0.0001, 100.0, 4),
+            "momentskala": e(
+                "float", 0.05, "Momentskala: Bogenradius je Newtonmeter",
+                "cm/Nm", 0.0001, 100.0, 4),
             "mindestlaenge": e(
                 "float", 2.0, "Mindestlaenge sichtbarer Kraftpfeile "
                 "(Prozent der Koerperausdehnung)", "%", 0.0, 20.0, 2),
@@ -190,8 +190,8 @@ class Stil:
             "durchmesser": a["dicke"] * p,
             "kopf_durchmesser": float(a["kopf_durchmesser"]),
             "kopf_laenge": float(a["kopf_laenge"]),
-            "fuellfaktor": float(a["fuellfaktor"]),
-            "momentenradius": float(a["momentenradius"]),
+            "kraftskala": float(a["kraftskala"]) / 100.0,
+            "momentskala": float(a["momentskala"]) / 100.0,
             "mindestlaenge": a["mindestlaenge"] * p,
             "strich": a["strich_laenge"] * p,
             "luecke": a["strich_luecke"] * p,
@@ -224,8 +224,8 @@ class Stil:
             "vordergrund": bool(w["vordergrund"]) and a["vordergrund"],
             "mindestlaenge": a["mindestlaenge"],
             "strich": a["strich"], "luecke": a["luecke"],
-            "fuellfaktor": a["fuellfaktor"],
-            "momentenradius": a["momentenradius"],
+            "kraftskala": a["kraftskala"],
+            "momentskala": a["momentskala"],
         }
 
     def schwerpunkte(self, ausdehnung):

@@ -882,11 +882,10 @@ class GrafikBruecke:
         erg = daten["erg"]
         ausdehnung = self._ausdehnung(k)
         allg = self._stil.allgemein(ausdehnung)
-        skala = daten["skala"] * allg["fuellfaktor"] / kb.FUELLFAKTOR
+        skala = allg["kraftskala"]
         cm = np.asarray(k["position"], float)
         r_s = cm   # P1: r_S liegt im Ursprung des Koerperframes -> Weltposition = cm
         store = k.setdefault("kraefte_actors", {})
-        fg_laenge = skala * daten["masse"] * daten["g"]
         gezeichnet = set()
 
         def kraft(pfeil_id, start, vektor, schwelle=1e-9):
@@ -910,7 +909,9 @@ class GrafikBruecke:
                 if not st["sichtbar"]:
                     continue
                 n = self._pfeil_name(name, pfeil_id)
-                radius = allg["momentenradius"] * fg_laenge * st["skala"]
+                radius = (allg["momentskala"] * abs(float(vektor[achse]))
+                          * st["skala"])
+                radius = max(radius, st["mindestlaenge"])
                 if radius > 0.0 and self._momentbogen_zeichnen(
                         store, n, st, float(vektor[achse]), r_s, radius,
                         achse):

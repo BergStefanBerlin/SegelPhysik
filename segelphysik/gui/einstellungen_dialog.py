@@ -165,6 +165,10 @@ class EinstellungenDialog(QDialog):
         feld.setToolTip(e["beschreibung"])
         return feld
 
+    def neu_laden(self):
+        """Zeigt immer die aktuell gespeicherten Werte."""
+        self._anzeigen()
+
     def _anzeigen(self):
         for b, k, feld in self._feld_liste:
             wert = self._ein.get(b, k)

@@ -216,6 +216,7 @@ class HauptFenster(QMainWindow):
             if spezifikation:
                 dialog.geaendert.connect(self._stil_anwenden)
             self._einstellungen_dialoge[bereich] = dialog
+        dialog.neu_laden()
         dialog.show()
         dialog.raise_()
         dialog.activateWindow()
