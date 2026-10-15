@@ -625,9 +625,7 @@ class HauptFenster(QMainWindow):
             war_laufend = self._echtzeit_timer.isActive()
             self._echtzeit_starten(
                 zustand=(self._echtzeit_zustand
-                         if grund == "eigenschaft"
-                         and self._echtzeit_name in self._laufzeit_koerper
-                         else None),
+                         if grund != "start" else None),
                 auto_start=war_laufend)
 
     def _modus_geaendert(self, _knopf):
@@ -813,6 +811,12 @@ class HauptFenster(QMainWindow):
                             0.0, 0.0))
         elif not isinstance(zustand, Zustand6DOF):
             raise TypeError("Echtzeit-Zustand muss ein Zustand6DOF sein")
+        elif self._echtzeit_name != hauptkoerper.name:
+            # Anderer Körper: Lage (z, Orientierung) übernehmen, Bewegung nicht
+            zustand = Zustand6DOF(
+                position=(basisposition[0], basisposition[1],
+                          zustand.position[2]),
+                quaternion=zustand.quaternion)
         self._echtzeit_name = hauptkoerper.name
         self._echtzeit_zustand = zustand
         self._echtzeit_anzeige_start = zustand
