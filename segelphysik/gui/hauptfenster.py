@@ -712,6 +712,17 @@ class HauptFenster(QMainWindow):
                     werte["z*"] = "%.4f m" % diagnose["z"]
                 if "phi" in diagnose:
                     werte["phi*"] = "%.2f°" % math.degrees(diagnose["phi"])
+                kandidat = (
+                    fehler.status in (
+                        "instabile_lage", "stagnation", "budget_erschoepft")
+                    and "z" in diagnose and "phi" in diagnose
+                    and math.isfinite(diagnose["z"])
+                    and math.isfinite(diagnose["phi"]))
+                if kandidat and bruecke.statische_pose_setzen(
+                        name, diagnose["z"], diagnose["phi"]):
+                    werte["Lösungstyp"] = (
+                        "Kandidat (nicht konvergiert/instabil) – %s"
+                        % werte["Lösungstyp"])
             self._solver_status_aktualisieren(werte)
             self.protokoll_schreiben(
                 "Statischer Solver (%s): %s" % (name, fehler))

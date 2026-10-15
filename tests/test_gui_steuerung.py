@@ -250,3 +250,58 @@ def test_unterschreiten_der_ueberlastschwelle_setzt_frist_zurueck(
     fenster._zeit_pausieren()
     fenster.close()
     app.processEvents()
+
+
+def _statischen_fehler_zustellen(fenster, status, diagnose):
+    from segelphysik.core.statisch import SolverFehler
+
+    class Bruecke:
+        def __init__(self):
+            self.gesetzt = []
+            self.geloescht = []
+
+        def statische_pose_setzen(self, name, z, phi):
+            self.gesetzt.append((name, z, phi))
+            return True
+
+        def statische_pose_loeschen(self, name):
+            self.geloescht.append(name)
+
+    bruecke = Bruecke()
+    fenster._bruecke = bruecke
+    fenster._laufzeit_koerper["k"] = object()
+    fenster._statisch_generation = 3
+    fenster._btn_statisch.setChecked(True)
+    fenster._statische_ergebnisse["k"] = {"z": 0.0}
+    werte = {}
+    fenster._solver_status_aktualisieren = werte.update
+    fenster._statische_aufgabe_abgeschlossen(
+        3, "k", None, None,
+        SolverFehler("x", status=status, diagnose=diagnose))
+    return bruecke, werte
+
+
+def test_instabiler_kandidat_wird_als_solcher_angezeigt():
+    app = QApplication.instance() or QApplication([])
+    fenster = HauptFenster()
+    for status in ("instabile_lage", "stagnation", "budget_erschoepft"):
+        bruecke, werte = _statischen_fehler_zustellen(
+            fenster, status, {"z": 0.1, "phi": 0.2})
+        assert bruecke.gesetzt == [("k", 0.1, 0.2)]
+        assert werte["Lösungstyp"].startswith("Kandidat")
+        assert "k" not in fenster._statische_ergebnisse
+    fenster.close()
+    app.processEvents()
+
+
+def test_ungueltige_rechenergebnisse_zeigen_keine_pose():
+    app = QApplication.instance() or QApplication([])
+    fenster = HauptFenster()
+    bruecke, werte = _statischen_fehler_zustellen(
+        fenster, "ungueltige_rechenergebnisse",
+        {"z": float("nan"), "phi": 0.2})
+    assert bruecke.gesetzt == []
+    assert bruecke.geloescht == ["k"]
+    assert not werte["Lösungstyp"].startswith("Kandidat")
+    fenster.close()
+    app.processEvents()

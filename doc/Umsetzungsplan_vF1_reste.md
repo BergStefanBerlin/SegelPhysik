@@ -259,3 +259,16 @@ Pfad, Rasterweite und Messbedingungen. Die Auswertung der Toleranzfrage
    Stabilitäts- und Gleichgewichtsaussagen bleiben dabei Pflicht.
 4. **R-10:** Gibt es belegte Koeffizienten, oder bleibt das Paket
    zurückgestellt?
+
+## 7. Umsetzungsstand (15.10.2026)
+
+| Paket | Stand |
+|---|---|
+| R-5 | erledigt: `exakt_union` 0,43x → 1,0x (Commit 0.1.16) |
+| R-3 | erledigt: Präsentierte FPS und Eingabelatenz messbar |
+| R-4a | bestanden bis auf Nachholrate (nicht gemessen), siehe `Abnahme_R-4a.md` |
+| R-1 | erledigt: Kandidatenpose bei `instabile_lage`, `stagnation`, `budget_erschoepft` |
+| R-9 | Windows-Start mit sichtbarem Fenster durch R-4a-Lauf belegt (keine Fehler) |
+| R-2, R-7, R-6, R-4b, R-8 | wartet auf Entscheidung Abschnitt 6, Punkt 3 (Produktionspfad erreicht Flüssigkeit bereits exakt) |
+| R-10 | wartet auf belegte Koeffizienten (Punkt 4) |
+| R-11 | offen |
