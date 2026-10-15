@@ -102,6 +102,29 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union"):
 
     bridge.render = render_messen
     bridge.physik_pose_6dof_setzen = pose_messen
+
+    # Präsentationszeitpunkt: VTK-EndEvent liegt nach SwapBuffers; mit
+    # WaitForCompletion (glFinish) ist der Frame vom Treiber abgeschlossen.
+    plotter = bridge._plotter
+    render_fenster = plotter.render_window
+    praesentiert = []
+    reaktionen = []
+    stimulus = {"zeit": None, "kamera": None}
+
+    def kamera_zustand():
+        return tuple(np.round(plotter.camera.position, 6))
+
+    def frame_beendet(_obj, _ereignis):
+        if hasattr(render_fenster, "WaitForCompletion"):
+            render_fenster.WaitForCompletion()
+        jetzt = time.perf_counter()
+        praesentiert.append(jetzt)
+        if (stimulus["zeit"] is not None
+                and kamera_zustand() != stimulus["kamera"]):
+            reaktionen.append(jetzt - stimulus["zeit"])
+            stimulus["zeit"] = None
+
+    render_fenster.AddObserver("EndEvent", frame_beendet)
     _warte(app, round(warmup_s * 1000))
 
     verspaetungen = []
@@ -146,8 +169,37 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union"):
     rueckstand_timer.timeout.connect(rueckstand_aufnehmen)
     rueckstand_timer.start()
     ereignis_thread.start()
+    praesentiert_start = len(praesentiert)
+
+    from PySide6.QtCore import QPoint
+    from PySide6.QtTest import QTest
+    ziel = plotter.interactor if hasattr(plotter.interactor, "mapFromGlobal") \
+        else plotter
+    mitte = QPoint(ziel.width() // 2, ziel.height() // 2)
+    stimuli_gesendet = [0]
+
+    def eingabe_senden():
+        # Mausziehen dreht die Kamera; Reaktion = erster Frame mit Änderung.
+        if stimulus["zeit"] is not None:
+            return
+        stimulus["kamera"] = kamera_zustand()
+        stimulus["zeit"] = time.perf_counter()
+        stimuli_gesendet[0] += 1
+        QTest.mousePress(ziel, Qt.MouseButton.LeftButton, pos=mitte)
+        QTest.mouseMove(ziel, mitte + QPoint(12, 6))
+        QTest.mouseRelease(
+            ziel, Qt.MouseButton.LeftButton, pos=mitte + QPoint(12, 6))
+
+    eingabe_timer = QTimer(fenster)
+    eingabe_timer.setInterval(1000)
+    eingabe_timer.timeout.connect(eingabe_senden)
+    eingabe_timer.start()
     _warte(app, round(duration_s * 1000))
+    eingabe_timer.stop()
     laufzeit = time.perf_counter() - laufzeit_start
+    frames = praesentiert[praesentiert_start:]
+    frame_abstaende = [b - a for a, b in zip(frames, frames[1:])]
+    praesentiert_fps = len(frames) / laufzeit if laufzeit > 0 else None
     rueckstand_timer.stop()
     rueckstand_aufnehmen()
     stop_probe.set()
@@ -178,13 +230,31 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union"):
         "exakte_hydrostatik_jeder_schritt": backend == "exakt_union",
         "prozess_worker": fenster._echtzeit_prozess_executor is not None,
         "renderaufrufe_pro_s": round(renderaufrufe_pro_s, 2),
-        "tatsaechlich_praesentierte_fps": None,
-        "eingabe_bis_praesentierter_frame_ms": None,
-        "praesentierungszeitpunkt_verfuegbar": False,
-        "eingabelatenz_abnahme_gueltig": False,
+        "qpa_plattform": app.platformName(),
+        "tatsaechlich_praesentierte_fps": (
+            round(praesentiert_fps, 2) if praesentiert_fps else None),
+        "frameabstand_p95_ms": (
+            round(1000 * _perzentil(frame_abstaende, 0.95), 3)
+            if frame_abstaende else None),
+        "frameabstand_max_ms": (
+            round(1000 * max(frame_abstaende), 3)
+            if frame_abstaende else None),
+        "eingaben_gesendet": stimuli_gesendet[0],
+        "eingaben_mit_reaktion": len(reaktionen),
+        "eingabe_bis_praesentierter_frame_ms": (
+            round(1000 * _perzentil(reaktionen, 0.95), 3)
+            if reaktionen else None),
+        "eingabe_bis_praesentierter_frame_median_ms": (
+            round(1000 * statistics.median(reaktionen), 3)
+            if reaktionen else None),
+        "praesentierungszeitpunkt_verfuegbar": bool(frames),
+        # Nur auf einer echten Plattform (nicht offscreen) gültig.
+        "eingabelatenz_abnahme_gueltig": bool(
+            reaktionen and app.platformName() != "offscreen"),
         "eingabelatenz_messhinweis": (
-            "QtInteractor stellt keinen belastbaren Präsentierungszeitpunkt "
-            "für den Frame mit sichtbarer Eingabereaktion bereit."),
+            "Präsentierung = VTK-EndEvent nach SwapBuffers plus "
+            "WaitForCompletion; Latenz = simulierte Mausdrehung bis erster "
+            "Frame mit geänderter Kameraposition. Offscreen ungültig."),
         "erfolgreiche_renderaufrufe": len(renderzeiten),
         "pose_median_ms": round(
             1000 * statistics.median(posezeiten), 3) if posezeiten else None,
