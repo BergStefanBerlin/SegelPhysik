@@ -44,6 +44,11 @@ OVERLAY_FARBEN_ACHSEN = ("gold", "cyan", "magenta")
 BASIN_LX, BASIN_LY, WASSER_TIEFE, DX = 10.0, 10.0, 3.0, 0.25
 OZEAN_GROESSE = 2800.0   # Quadrat liegt komplett im Dunstring
 DUNST_RADIUS = 2000.0
+WASSER_FARBE = (44 / 255, 106 / 255, 153 / 255)
+OZEAN_OPAZITAET = 0.88
+VOLUMEN_HALB = 400.0    # Halbkante des Unterwasser-Volumens
+VOLUMEN_TIEFE = 60.0
+VOLUMEN_OPAZITAET = 0.18
 
 
 def glanz_kw(glanz):
@@ -149,8 +154,8 @@ class GrafikBruecke:
     _ozean_actor = None
     _dunst_actor = None
     _dunst_wand_actor = None
+    _volumen_actor = None
     _ozean_mesh = None
-    _ozean_kachel = 24.0
 
     def __init__(self):
         self.app = StellvertreterApp()
@@ -200,14 +205,10 @@ class GrafikBruecke:
         if self._ozean_actor is None:
             return
         self._ozean_actor.SetPosition(float(x), float(y), 0.0)
-        for a in (self._dunst_actor, self._dunst_wand_actor):
+        for a in (self._dunst_actor, self._dunst_wand_actor,
+                  self._volumen_actor):
             if a is not None:
                 a.SetPosition(float(x), float(y), 0.0)
-        kachel = self._ozean_kachel
-        lokal = np.asarray(self._ozean_mesh.points)[:, :2]
-        t = (lokal + np.array([x, y])) / kachel
-        self._ozean_mesh.active_texture_coordinates = t.astype(np.float32)
-        self._ozean_mesh.Modified()
 
     def _becken_sichtbar_folge(self, sichtbar):
         """Beckenbox/Simulationsflaeche aus bzw. an (Folgemodus)."""
@@ -223,38 +224,34 @@ class GrafikBruecke:
         die dem Koerper folgt; die Textur enthaelt die weltfesten Punkte."""
         if not aktiv:
             for a in (self._ozean_actor, self._dunst_actor,
-                      self._dunst_wand_actor):
+                      self._dunst_wand_actor, self._volumen_actor):
                 if a is not None:
                     try:
                         self._plotter.remove_actor(a)
                     except Exception:
                         pass
             self._ozean_actor = None
+            self._volumen_actor = None
             self._dunst_actor = None
             self._dunst_wand_actor = None
             self._becken_sichtbar_folge(True)
             self._koerper_opazitaet_setzen(0.95)
             return
         import pyvista as pv
-        from .core.wasserpunkte import (textur_bild, KACHEL_METER,
-                                        dunst_gitter)
-        self._ozean_kachel = KACHEL_METER
+        from .core.wasserpunkte import dunst_gitter
         mesh = pv.Plane(center=(0.0, 0.0, -0.05), direction=(0, 0, 1),
                         i_size=OZEAN_GROESSE, j_size=OZEAN_GROESSE,
                         i_resolution=1, j_resolution=1)
-        # pyvista legt Zeile 0 oben (v=1) ab; textur_bild zaehlt von v=0
-        textur = pv.Texture(np.ascontiguousarray(
-            np.flipud(textur_bild())))
-        textur.repeat = True
-        textur.interpolate = True
-        try:
-            textur.mipmap = True
-        except Exception:
-            pass
         self._ozean_mesh = mesh
         self._ozean_actor = self._plotter.add_mesh(
-            mesh, texture=textur, opacity=1.0, lighting=False,
-            reset_camera=False, pickable=False)
+            mesh, color=WASSER_FARBE, opacity=OZEAN_OPAZITAET,
+            lighting=False, reset_camera=False, pickable=False)
+        volumen = pv.Box(bounds=(-VOLUMEN_HALB, VOLUMEN_HALB,
+                                 -VOLUMEN_HALB, VOLUMEN_HALB,
+                                 -VOLUMEN_TIEFE, -0.06))
+        self._volumen_actor = self._plotter.add_mesh(
+            volumen, color=WASSER_FARBE, opacity=VOLUMEN_OPAZITAET,
+            lighting=False, reset_camera=False, pickable=False)
         punkte, flaechen, rgba = dunst_gitter(r_aussen=DUNST_RADIUS)
         # Ring und Wand getrennt: Transparente Actors werden nach Abstand
         # ihres Mittelpunkts sortiert; der Ring muss nach der Wasserebene
@@ -587,7 +584,8 @@ class GrafikBruecke:
         gesetzt = self._renderer.wasser_sichtbar_setzen(sichtbar)
         if self._ozean_actor is not None:
             self._ozean_actor.SetVisibility(bool(sichtbar))
-            for a in (self._dunst_actor, self._dunst_wand_actor):
+            for a in (self._dunst_actor, self._dunst_wand_actor,
+                      self._volumen_actor):
                 if a is not None:
                     a.SetVisibility(bool(sichtbar))
             self._becken_sichtbar_folge(False)

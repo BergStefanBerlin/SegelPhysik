@@ -68,31 +68,6 @@ def dunst_gitter(r_innen=30.0, r_aussen=2000.0, hoehe=600.0, ringe=28,
     return punkte, np.array(flaechen, dtype=np.int64), np.vstack(rgba)
 
 
-def textur_bild(pixel=1024, grund=(44, 106, 153), punkt=(235, 245, 252),
-                radius_px=1.8):
-    """Kachelbares RGB-Bild: Wasserfarbe mit weichen Punkten."""
-    bild = np.empty((pixel, pixel, 3), dtype=np.float64)
-    bild[:] = grund
-    zelle = pixel / KACHEL_ZELLEN
-    yy, xx = np.mgrid[0:pixel, 0:pixel]
-    for gx in range(KACHEL_ZELLEN):
-        for gy in range(KACHEL_ZELLEN):
-            px, py = punktlage(gx, gy, 1.0)
-            cx = (px % KACHEL_ZELLEN) * zelle
-            cy = (py % KACHEL_ZELLEN) * zelle
-            x0 = int(cx) - 6; y0 = int(cy) - 6
-            for ox in (-pixel, 0, pixel):
-                for oy in (-pixel, 0, pixel):
-                    xs = slice(max(0, x0 + ox), min(pixel, x0 + ox + 13))
-                    ys = slice(max(0, y0 + oy), min(pixel, y0 + oy + 13))
-                    if xs.start >= xs.stop or ys.start >= ys.stop:
-                        continue
-                    d = np.hypot(xx[ys, xs] - (cx + ox), yy[ys, xs] - (cy + oy))
-                    w = np.clip(radius_px + 0.5 - d, 0.0, 1.0)[..., None]
-                    bild[ys, xs] = bild[ys, xs] * (1 - w) + np.array(punkt) * w
-    return bild.astype(np.uint8)
-
-
 class WasserPunktFeld:
     def __init__(self, radius=12.0, abstand=ABSTAND, historie=12,
                  spur_punkte=6, hoehe=None, z0=-0.02):

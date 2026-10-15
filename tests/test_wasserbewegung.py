@@ -63,32 +63,20 @@ def test_bruecke_kamera_folgt_dem_koerper():
     assert "wasser_spuren" in bruecke._plotter.actors
     assert bruecke._ozean_actor is not None
     assert np.allclose(bruecke._ozean_actor.GetPosition()[:2], [4.0, 6.0])
-    tc = np.asarray(bruecke._ozean_mesh.active_texture_coordinates)
-    erwartet = (np.asarray(bruecke._ozean_mesh.points)[:, :2]
-                + [4.0, 6.0]) / bruecke._ozean_kachel
-    assert np.allclose(tc, erwartet, atol=1e-3)
+    assert np.allclose(bruecke._volumen_actor.GetPosition()[:2], [4.0, 6.0])
     assert bruecke.wasser_bewegung_setzen(False)
-    assert bruecke._ozean_actor is None
+    assert bruecke._ozean_actor is None and bruecke._volumen_actor is None
     assert "wasser_spuren" not in bruecke._plotter.actors
     bruecke._plotter.close()
 
 
-def test_textur_ist_kachelbar_und_punkte_passen_zu_spuren():
-    from segelphysik.core.wasserpunkte import (textur_bild, punktlage,
-                                               KACHEL_ZELLEN)
-    bild = textur_bild(pixel=256)
-    assert bild.shape == (256, 256, 3)
-    # Punkt einer Zelle liegt an der Texturstelle seiner Weltposition
-    zelle = 256 / KACHEL_ZELLEN
+def test_punktlage_ist_periodisch():
+    from segelphysik.core.wasserpunkte import punktlage, KACHEL_ZELLEN
     px, py = punktlage(3, 5, 1.0)
-    x = int((px % KACHEL_ZELLEN) * zelle)
-    y = int((py % KACHEL_ZELLEN) * zelle)
-    grund = bild[0, 0].astype(int)
-    assert bild[y, x].sum() > grund.sum() + 100
-    # periodisch: Zelle + Kachel hat dieselbe Lage (modulo Kachel)
     qx, qy = punktlage(3 + KACHEL_ZELLEN, 5, 1.0)
     assert np.isclose(qx - px, KACHEL_ZELLEN)
     assert np.isclose(qy, py)
+
 
 def test_dunst_gitter_blendet_zum_horizont_ein_und_nach_oben_aus():
     from segelphysik.core.wasserpunkte import dunst_gitter
