@@ -89,3 +89,12 @@ def test_textur_ist_kachelbar_und_punkte_passen_zu_spuren():
     qx, qy = punktlage(3 + KACHEL_ZELLEN, 5, 1.0)
     assert np.isclose(qx - px, KACHEL_ZELLEN)
     assert np.isclose(qy, py)
+
+def test_dunst_gitter_blendet_zum_horizont_ein_und_nach_oben_aus():
+    from segelphysik.core.wasserpunkte import dunst_gitter
+    punkte, flaechen, rgba = dunst_gitter(ringe=10, hoehenstufen=4, segmente=16)
+    assert punkte.shape == (14 * 16, 3) and rgba.shape == (14 * 16, 4)
+    assert flaechen.shape == (13 * 16, 5) and (flaechen[:, 0] == 4).all()
+    alpha = rgba[:, 3].reshape(14, 16)[:, 0]
+    assert alpha[0] == 0 and alpha[9] > 200 and alpha[-1] == 0
+    assert (np.diff(alpha[:10]) >= 0).all()

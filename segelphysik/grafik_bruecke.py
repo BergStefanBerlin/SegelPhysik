@@ -42,7 +42,8 @@ FARBE_OBEN = "#b2182b"
 OVERLAY_FARBEN_ACHSEN = ("gold", "cyan", "magenta")
 
 BASIN_LX, BASIN_LY, WASSER_TIEFE, DX = 10.0, 10.0, 3.0, 0.25
-OZEAN_GROESSE = 4000.0
+OZEAN_GROESSE = 2800.0   # Quadrat liegt komplett im Dunstring
+DUNST_RADIUS = 2000.0
 
 
 def glanz_kw(glanz):
@@ -146,6 +147,8 @@ class GrafikBruecke:
     _wasserpunkte = None
     _wasserpunkte_meshes = {}
     _ozean_actor = None
+    _dunst_actor = None
+    _dunst_wand_actor = None
     _ozean_mesh = None
     _ozean_kachel = 24.0
 
@@ -197,6 +200,9 @@ class GrafikBruecke:
         if self._ozean_actor is None:
             return
         self._ozean_actor.SetPosition(float(x), float(y), 0.0)
+        for a in (self._dunst_actor, self._dunst_wand_actor):
+            if a is not None:
+                a.SetPosition(float(x), float(y), 0.0)
         kachel = self._ozean_kachel
         lokal = np.asarray(self._ozean_mesh.points)[:, :2]
         t = (lokal + np.array([x, y])) / kachel
@@ -216,19 +222,24 @@ class GrafikBruecke:
         """Unendlich wirkende Wasserflaeche: grosse texturierte Ebene,
         die dem Koerper folgt; die Textur enthaelt die weltfesten Punkte."""
         if not aktiv:
-            if self._ozean_actor is not None:
-                try:
-                    self._plotter.remove_actor(self._ozean_actor)
-                except Exception:
-                    pass
+            for a in (self._ozean_actor, self._dunst_actor,
+                      self._dunst_wand_actor):
+                if a is not None:
+                    try:
+                        self._plotter.remove_actor(a)
+                    except Exception:
+                        pass
             self._ozean_actor = None
-            self._ozean_mesh = None
+            self._dunst_actor = None
+            self._dunst_wand_actor = None
             self._becken_sichtbar_folge(True)
+            self._koerper_opazitaet_setzen(0.95)
             return
         import pyvista as pv
-        from .core.wasserpunkte import textur_bild, KACHEL_METER
+        from .core.wasserpunkte import (textur_bild, KACHEL_METER,
+                                        dunst_gitter)
         self._ozean_kachel = KACHEL_METER
-        mesh = pv.Plane(center=(0.0, 0.0, 0.0), direction=(0, 0, 1),
+        mesh = pv.Plane(center=(0.0, 0.0, -0.05), direction=(0, 0, 1),
                         i_size=OZEAN_GROESSE, j_size=OZEAN_GROESSE,
                         i_resolution=1, j_resolution=1)
         # pyvista legt Zeile 0 oben (v=1) ab; textur_bild zaehlt von v=0
@@ -242,10 +253,38 @@ class GrafikBruecke:
             pass
         self._ozean_mesh = mesh
         self._ozean_actor = self._plotter.add_mesh(
-            mesh, texture=textur, opacity=0.88, lighting=False,
+            mesh, texture=textur, opacity=1.0, lighting=False,
             reset_camera=False, pickable=False)
+        punkte, flaechen, rgba = dunst_gitter(r_aussen=DUNST_RADIUS)
+        # Ring und Wand getrennt: Transparente Actors werden nach Abstand
+        # ihres Mittelpunkts sortiert; der Ring muss nach der Wasserebene
+        # gezeichnet werden, sonst ueberdeckt diese den Dunst.
+        n_ring = (28 - 1) * 96
+        for name, fl in (("ring", flaechen[:n_ring]),
+                         ("wand", flaechen[n_ring:])):
+            dunst = pv.PolyData(punkte, faces=fl.ravel())
+            dunst["rgba"] = rgba
+            actor = self._plotter.add_mesh(
+                dunst, scalars="rgba", rgba=True, lighting=False,
+                reset_camera=False, pickable=False)
+            if name == "ring":
+                self._dunst_actor = actor
+            else:
+                self._dunst_wand_actor = actor
         self._becken_sichtbar_folge(False)
+        self._koerper_opazitaet_setzen(1.0)
         self._flaeche_verschieben(0.0, 0.0)
+
+    def _koerper_opazitaet(self):
+        return 1.0 if self._folge_aktiv else 0.95
+
+    def _koerper_opazitaet_setzen(self, wert):
+        """Koerper undurchsichtig, damit Wasserpunkte und Spuren nie
+        durch sie hindurch sichtbar sind."""
+        for k in self._koerper.values():
+            for n, a in k.get("actors", {}).items():
+                if n.startswith("koerper_"):
+                    a.GetProperty().SetOpacity(float(wert))
 
     def _wasser_bewegung_nachfuehren(self, position):
         if not self._folge_aktiv or self._plotter is None:
@@ -408,7 +447,7 @@ class GrafikBruecke:
         n_unten, n_oben, n_kontur = self._actor_namen(name)
         refs = k.setdefault("actors", {})
 
-        kw_basis = {"opacity": 0.95, "show_edges": False,
+        kw_basis = {"opacity": self._koerper_opazitaet(), "show_edges": False,
                     "smooth_shading": True}
         if glanz is not None:
             kw_basis.update(glanz_kw(glanz))
@@ -548,6 +587,9 @@ class GrafikBruecke:
         gesetzt = self._renderer.wasser_sichtbar_setzen(sichtbar)
         if self._ozean_actor is not None:
             self._ozean_actor.SetVisibility(bool(sichtbar))
+            for a in (self._dunst_actor, self._dunst_wand_actor):
+                if a is not None:
+                    a.SetVisibility(bool(sichtbar))
             self._becken_sichtbar_folge(False)
         if gesetzt:
             self.render()
@@ -969,7 +1011,8 @@ class GrafikBruecke:
             u_p, u_t, o_p, o_t, kontur = ws.schneide_am_wasser(
                 np.asarray(g["pd"].points, float), g["dreiecke"],
                 mit_deckel=True)
-            kw_g = {"opacity": 0.95, "show_edges": False, "smooth_shading": True}
+            kw_g = {"opacity": self._koerper_opazitaet(), "show_edges": False,
+                    "smooth_shading": True}
             if g.get("glanz") is not None:
                 kw_g.update(glanz_kw(g["glanz"]))
             _mesh_actor_setzen(

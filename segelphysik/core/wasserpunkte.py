@@ -32,8 +32,44 @@ def punktlage(gx, gy, abstand=ABSTAND):
             (gy + 0.8 * (hy - 0.5)) * abstand)
 
 
+DUNST_FARBE = (200, 220, 238)
+
+
+def dunst_gitter(r_innen=30.0, r_aussen=2000.0, hoehe=600.0, ringe=28,
+                 hoehenstufen=8, segmente=96, z_basis=-0.05, farbe=DUNST_FARBE):
+    """Dunstverlauf: Ring auf dem Wasser (transparent -> Dunstfarbe zum
+    Horizont) plus Wand am Horizont, die nach oben in den Himmel ausblendet.
+    Liefert (punkte (N,3), flaechen (M,4), rgba (N,4) uint8)."""
+    zeilen = []   # (radius, z, alpha)
+    radien = np.geomspace(r_innen, r_aussen, ringe)
+    for r in radien:
+        t = np.log(r / r_innen) / np.log(r_aussen / r_innen)
+        zeilen.append((r, z_basis + 0.0005 * r, 0.97 * t ** 0.8))
+    z_ende = z_basis + 0.0005 * r_aussen
+    for h in np.linspace(0.0, 1.0, hoehenstufen + 1)[1:]:
+        zeilen.append((r_aussen, z_ende + h * hoehe, 0.97 * (1.0 - h) ** 1.5))
+    w = np.linspace(0.0, 2.0 * np.pi, segmente, endpoint=False)
+    pts = []
+    rgba = []
+    for r, z, a in zeilen:
+        pts.append(np.column_stack([r * np.cos(w), r * np.sin(w),
+                                    np.full(segmente, z)]))
+        c = np.empty((segmente, 4), dtype=np.uint8)
+        c[:, :3] = farbe
+        c[:, 3] = int(round(255 * a))
+        rgba.append(c)
+    punkte = np.vstack(pts)
+    flaechen = []
+    for i in range(len(zeilen) - 1):
+        for j in range(segmente):
+            j2 = (j + 1) % segmente
+            flaechen.append([4, i * segmente + j, i * segmente + j2,
+                             (i + 1) * segmente + j2, (i + 1) * segmente + j])
+    return punkte, np.array(flaechen, dtype=np.int64), np.vstack(rgba)
+
+
 def textur_bild(pixel=1024, grund=(44, 106, 153), punkt=(235, 245, 252),
-                radius_px=3.0):
+                radius_px=1.8):
     """Kachelbares RGB-Bild: Wasserfarbe mit weichen Punkten."""
     bild = np.empty((pixel, pixel, 3), dtype=np.float64)
     bild[:] = grund
@@ -59,7 +95,7 @@ def textur_bild(pixel=1024, grund=(44, 106, 153), punkt=(235, 245, 252),
 
 class WasserPunktFeld:
     def __init__(self, radius=12.0, abstand=ABSTAND, historie=12,
-                 spur_punkte=6, hoehe=None, z0=0.02):
+                 spur_punkte=6, hoehe=None, z0=-0.02):
         self.radius = float(radius)
         self.abstand = float(abstand)
         self.historie = max(2, int(historie))
