@@ -165,3 +165,42 @@ def test_zusatz_pfeile_zeigen_querkraefte_und_resultierende():
         F_gesamt=Vektor((0.0, 0.0, 981.0)), F_A=Vektor((0.0, 0.0, 981.0)))
     assert kb.zusatz_pfeile(gleichgewicht, (0, 0, 0), 100.0, 9.81, 0.01) == (
         None, None)
+
+def test_fremdkraft_wirkt_als_kraft_und_moment_um_den_schwerpunkt():
+    import numpy as np
+    from segelphysik.core.auftrieb import Auftriebsergebnis
+    from segelphysik.core.kraftmodell import Kraftmodell
+
+    def hydro(lage, v=None, omega=None):
+        return Auftriebsergebnis(1.0, (0.0, 0.0, 0.0), (0.0, 0.0, 1000.0),
+                                 (0.0, 0.0, 0.0))
+
+    modell = Kraftmodell(hydro)
+    lage = ((0.0, 0.0, 0.0), (1.0, 0.0, 0.0, 0.0))
+    ohne = modell(lage)
+    modell.fremdkraft_setzen(((0.0, 100.0, 0.0), (0.0, 0.0, 2.0)))
+    mit = modell(lage)
+
+    assert np.allclose(ohne.F_gesamt.as_array(), (0.0, 0.0, 1000.0))
+    assert np.allclose(mit.F_gesamt.as_array(), (0.0, 100.0, 1000.0))
+    # r=(0,0,2) x F=(0,100,0) = (-200, 0, 0)
+    assert np.allclose(mit.M_gesamt.as_array(), (-200.0, 0.0, 0.0))
+    modell.fremdkraft_setzen(None)
+    assert np.allclose(modell(lage).F_gesamt.as_array(), (0.0, 0.0, 1000.0))
+
+
+def test_fremdkraft_angriffspunkt_dreht_mit_dem_koerper():
+    import numpy as np
+    from segelphysik.core.auftrieb import Auftriebsergebnis
+    from segelphysik.core.kraftmodell import Kraftmodell
+
+    def hydro(lage, v=None, omega=None):
+        return Auftriebsergebnis(1.0, (0.0, 0.0, 0.0), (0.0, 0.0, 0.0),
+                                 (0.0, 0.0, 0.0))
+
+    modell = Kraftmodell(hydro)
+    modell.fremdkraft_setzen(((0.0, 0.0, 10.0), (1.0, 0.0, 0.0)))
+    w = np.sqrt(0.5)
+    # 90 Grad um z: Angriffspunkt (1,0,0) -> (0,1,0); (0,1,0) x (0,0,10) = (10,0,0)
+    erg = modell(((0.0, 0.0, 0.0), (w, 0.0, 0.0, w)))
+    assert np.allclose(erg.M_gesamt.as_array(), (10.0, 0.0, 0.0), atol=1e-9)

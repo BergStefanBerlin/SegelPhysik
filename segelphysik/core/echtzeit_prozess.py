@@ -27,7 +27,7 @@ def initialisieren(koerper, rho_w, physik, hydrostatik_pfad="exakt_union"):
     _g = float(physik.g_m_pro_s2)
 
 
-def schritte_berechnen(zustand, anzahl_schritte):
+def schritte_berechnen(zustand, anzahl_schritte, fremdkraft=None):
     """Berechnet einen Batch und gibt nur pickelbare Ergebnisdaten zurück."""
     from .dynamik_6dof import schritt
 
@@ -35,6 +35,7 @@ def schritte_berechnen(zustand, anzahl_schritte):
     ergebnis = None
     _kraftfunktion.aktualisieren()
     try:
+        _kraftfunktion.fremdkraft_setzen(fremdkraft)
         for _ in range(anzahl_schritte):
             zustand, ergebnis = schritt(
                 zustand, _kraftfunktion, _masse, _traegheit, _dt, _g)

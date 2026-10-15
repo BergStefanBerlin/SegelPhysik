@@ -107,12 +107,23 @@ class Kraftmodell:
             fluidwinkelgeschwindigkeit, "Fluid-Winkelgeschwindigkeit")
         self.added_mass_diagonal = _vektor(
             added_mass_diagonal, "Added Mass", nichtnegativ=True)
+        self.fremdkraft = None
 
     def __call__(self, lage, v=None, omega=None):
         hydro = self.hydrostatik(lage, v=v, omega=omega)
-        return self.mit_hydrostatik(hydro, v=v, omega=omega)
+        return self.mit_hydrostatik(hydro, v=v, omega=omega, lage=lage)
 
-    def mit_hydrostatik(self, hydro, v=None, omega=None):
+    def fremdkraft_setzen(self, fremdkraft):
+        """Setzt eine Welt-Kraft (N) an einem koerperfesten Punkt relativ zum
+        Schwerpunkt (m) als ((fx, fy, fz), (rx, ry, rz)); None schaltet ab."""
+        if fremdkraft is None:
+            self.fremdkraft = None
+            return
+        kraft, punkt = fremdkraft
+        self.fremdkraft = (_flussvektor(kraft, "Fremdkraft"),
+                           _flussvektor(punkt, "Fremdkraft-Angriffspunkt"))
+
+    def mit_hydrostatik(self, hydro, v=None, omega=None, lage=None):
         """Wendet Kraftmodule auf ein bereits ausgewertetes Hydrostatikergebnis an."""
         geschwindigkeit = _flussvektor(
             (0.0, 0.0, 0.0) if v is None else v, "Koerpergeschwindigkeit")
@@ -127,6 +138,14 @@ class Kraftmodell:
             -self.quadratischer_widerstand * np.abs(relativ) * relativ)
         kraft = hydro.F_A.as_array() + widerstand[:3]
         moment = hydro.M.as_array() + widerstand[3:]
+        if self.fremdkraft is not None and lage is not None:
+            kraft_f, punkt = self.fremdkraft
+            q = np.asarray(lage[1], dtype=np.float64)
+            if q.shape == (4,):
+                from .dynamik_6dof import quaternion_matrix
+                arm = quaternion_matrix(q) @ punkt
+                kraft = kraft + kraft_f
+                moment = moment + np.cross(arm, kraft_f)
         return KraftErgebnis(
             hydro, Vektor(kraft), Vektor(moment),
             tuple(float(wert) for wert in self.added_mass_diagonal))
@@ -144,6 +163,9 @@ class KraftmodellMitHydroCache:
         self.intervall = intervall
         self.aktualisieren()
 
+    def fremdkraft_setzen(self, fremdkraft):
+        self.kraftmodell.fremdkraft_setzen(fremdkraft)
+
     def aktualisieren(self):
         self._hydrostatik = None
         self._schritte_bis_aktualisierung = 0
@@ -152,7 +174,7 @@ class KraftmodellMitHydroCache:
         if self._schritte_bis_aktualisierung <= 0:
             self._hydrostatik = self.kraftmodell.hydrostatik(lage)
         ergebnis = self.kraftmodell.mit_hydrostatik(
-            self._hydrostatik, v=v, omega=omega)
+            self._hydrostatik, v=v, omega=omega, lage=lage)
         self._schritte_bis_aktualisierung = (
             self.intervall - 1 if self._schritte_bis_aktualisierung <= 0
             else self._schritte_bis_aktualisierung - 1)

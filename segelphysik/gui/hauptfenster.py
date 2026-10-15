@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
     QApplication, QButtonGroup, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
     QPushButton,
     QDockWidget, QTextEdit, QLabel, QCheckBox, QTreeWidget, QTreeWidgetItem,
-    QComboBox, QMessageBox,
+    QComboBox, QMessageBox, QDoubleSpinBox, QGridLayout,
 )
 
 from .baum_widget import BaumWidget
@@ -32,8 +32,9 @@ class _EchtzeitAufgabeSignale(QObject):
 class _EchtzeitAufgabe(QRunnable):
     def __init__(self, generation, sequenz, koerper_name, zustand,
                  kraftfunktion, koerper, physik, dt, anzahl_schritte,
-                 signale, prozess_executor=None):
+                 signale, prozess_executor=None, fremdkraft=None):
         super().__init__()
+        self.fremdkraft = fremdkraft
         self.generation = generation
         self.sequenz = sequenz
         self.koerper_name = koerper_name
@@ -60,7 +61,7 @@ class _EchtzeitAufgabe(QRunnable):
                 zustand, ergebnis, fehler, dauer = (
                     self.prozess_executor.submit(
                         schritte_berechnen, self.zustand,
-                        self.anzahl_schritte).result())
+                        self.anzahl_schritte, self.fremdkraft).result())
             except (BrokenProcessPool, CancelledError, EOFError, OSError,
                     pickle.PickleError, RuntimeError, TypeError,
                     ValueError) as fehler:
@@ -79,6 +80,8 @@ class _EchtzeitAufgabe(QRunnable):
         startzeit = time.perf_counter()
         ergebnis = None
         try:
+            if hasattr(self.kraftfunktion, "fremdkraft_setzen"):
+                self.kraftfunktion.fremdkraft_setzen(self.fremdkraft)
             for _ in range(self.anzahl_schritte):
                 self.zustand, ergebnis = schritt(
                     self.zustand, self.kraftfunktion, self.koerper.masse,
@@ -391,6 +394,35 @@ class HauptFenster(QMainWindow):
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea,
                            dock_darstellung)
         self.splitDockWidget(dock_layer, dock_darstellung,
+                             Qt.Orientation.Vertical)
+
+        fremd = QWidget()
+        fremd_layout = QGridLayout(fremd)
+        self._fremd_check = QCheckBox("Fremdkraft aktiv")
+        self._fremd_check.toggled.connect(self._fremdkraft_geaendert)
+        fremd_layout.addWidget(self._fremd_check, 0, 0, 1, 2)
+        self._fremd_felder = {}
+        for zeile, (schluessel, text, bereich, schritt, einheit) in enumerate((
+                ("betrag", "Betrag", (0.0, 1e6, 100.0), 10.0, " N"),
+                ("azimut", "Richtung Azimut", (-180.0, 180.0, 90.0), 5.0, "°"),
+                ("elevation", "Richtung Höhe", (-90.0, 90.0, 0.0), 5.0, "°"),
+                ("x", "Angriff x", (-100.0, 100.0, 0.0), 0.1, " m"),
+                ("y", "Angriff y", (-100.0, 100.0, 0.0), 0.1, " m"),
+                ("z", "Angriff z", (-100.0, 100.0, 0.0), 0.1, " m")), 1):
+            feld = QDoubleSpinBox()
+            feld.setRange(bereich[0], bereich[1])
+            feld.setValue(bereich[2])
+            feld.setSingleStep(schritt)
+            feld.setDecimals(2)
+            feld.setSuffix(einheit)
+            feld.valueChanged.connect(self._fremdkraft_geaendert)
+            self._fremd_felder[schluessel] = feld
+            fremd_layout.addWidget(QLabel(text), zeile, 0)
+            fremd_layout.addWidget(feld, zeile, 1)
+        fremd_layout.setRowStretch(7, 1)
+        dock_fremd = QDockWidget("Fremdkraft", self)
+        dock_fremd.setWidget(fremd)
+        self.splitDockWidget(dock_darstellung, dock_fremd,
                              Qt.Orientation.Vertical)
 
         self.protokoll = QTextEdit()
@@ -831,6 +863,7 @@ class HauptFenster(QMainWindow):
                 pfad=_ECHTZEIT_HYDROSTATIK_PFAD)
             kraftfunktion = KraftmodellMitHydroCache(
                 baue_kraftmodell(kraftfunktion, physik), intervall=1)
+            kraftfunktion.fremdkraft_setzen(self._fremdkraft_aktuell())
             basisposition = bruecke.physik_basis_position_ermitteln(
                 hauptkoerper.name)
             prozess_executor = self._echtzeit_prozess_pool_aktualisieren(
@@ -1154,7 +1187,8 @@ class HauptFenster(QMainWindow):
             self._echtzeit_zustand,
             self._echtzeit_kraftfunktion, koerper, self._echtzeit_physik,
             dt, anzahl_schritte, self._echtzeit_signale,
-            prozess_executor=self._echtzeit_aktiver_prozess_executor)
+            prozess_executor=self._echtzeit_aktiver_prozess_executor,
+            fremdkraft=self._fremdkraft_aktuell())
         self._echtzeit_aufgabe_laeuft = True
         self._echtzeit_aufgabe_sequenz_laufend = sequenz
         self._echtzeit_schritte_laufend = anzahl_schritte
@@ -1216,6 +1250,37 @@ class HauptFenster(QMainWindow):
             if self._echtzeit_render_timer.isActive():
                 return
             self._echtzeit_pose_anzeigen(pose, render=True)
+
+    def _fremdkraft_aktuell(self):
+        """Welt-Kraft und koerperfester Angriffspunkt (rel. Schwerpunkt)
+        aus den Reglern; None wenn abgeschaltet."""
+        check = getattr(self, "_fremd_check", None)
+        if check is None or not check.isChecked():
+            return None
+        w = {k: f.value() for k, f in self._fremd_felder.items()}
+        az, el = math.radians(w["azimut"]), math.radians(w["elevation"])
+        kraft = (w["betrag"] * math.cos(el) * math.cos(az),
+                 w["betrag"] * math.cos(el) * math.sin(az),
+                 w["betrag"] * math.sin(el))
+        return kraft, (w["x"], w["y"], w["z"])
+
+    def _fremdkraft_geaendert(self, *_):
+        if self._echtzeit_kraftfunktion is None:
+            return
+        try:
+            self._echtzeit_kraftfunktion.fremdkraft_setzen(
+                self._fremdkraft_aktuell())
+        except (AttributeError, ValueError) as fehler:
+            self.protokoll_schreiben("Fremdkraft: %s" % fehler)
+            return
+        if self._echtzeit_timer.isActive():
+            return
+        # Pausiert: Kraftbild sofort mit der neuen Kraft neu zeichnen
+        self._echtzeit_kraefteresultat = None
+        self._aktuelles_kraftbild_aktualisieren()
+        bruecke = getattr(self, "_bruecke", None)
+        if bruecke is not None and self._echtzeit_zustand is not None:
+            self._echtzeit_pose_anzeigen(self._echtzeit_zustand, render=True)
 
     def _aktuelles_kraftbild_aktualisieren(self):
         if (self._echtzeit_name is None or self._echtzeit_zustand is None
