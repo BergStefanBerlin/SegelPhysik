@@ -146,6 +146,8 @@ class GrafikBruecke:
     _wasserpunkte = None
     _wasserpunkte_meshes = {}
     _ozean_actor = None
+    _ozean_mesh = None
+    _ozean_kachel = 24.0
 
     def __init__(self):
         self.app = StellvertreterApp()
@@ -178,7 +180,7 @@ class GrafikBruecke:
             self._ozean_setzen(False)
             self._wasserpunkte = None
             self._folge_letzt = None
-            for n in ("wasser_punkte", "wasser_spuren"):
+            for n in ("wasser_spuren",):
                 try:
                     self._plotter.remove_actor(n)
                 except Exception:
@@ -189,18 +191,30 @@ class GrafikBruecke:
         return True
 
     def _flaeche_verschieben(self, x, y):
+        """Hinweis: Becken und Simulationsflaeche sind im Folgemodus
+        ausgeblendet; die Ozeanebene folgt dem Koerper, die Textur wird
+        gegen die Bewegung verschoben (Punkte bleiben weltfest)."""
+        if self._ozean_actor is None:
+            return
+        self._ozean_actor.SetPosition(float(x), float(y), 0.0)
+        kachel = self._ozean_kachel
+        lokal = np.asarray(self._ozean_mesh.points)[:, :2]
+        t = (lokal + np.array([x, y])) / kachel
+        self._ozean_mesh.active_texture_coordinates = t.astype(np.float32)
+        self._ozean_mesh.Modified()
+
+    def _becken_sichtbar_folge(self, sichtbar):
+        """Beckenbox/Simulationsflaeche aus bzw. an (Folgemodus)."""
         actors = list(getattr(self._renderer, "_becken_actors", None) or [])
-        actor = getattr(self._renderer, "_surf_actor", None)
-        if actor is not None:
-            actors.append(actor)
-        for a in actors:
-            a.SetPosition(float(x), float(y), 0.0)
-        if self._ozean_actor is not None:
-            self._ozean_actor.SetPosition(float(x), float(y), 0.0)
+        a = getattr(self._renderer, "_surf_actor", None)
+        if a is not None:
+            actors.append(a)
+        for akt in actors:
+            akt.SetVisibility(bool(sichtbar))
 
     def _ozean_setzen(self, aktiv):
-        """Unendlich wirkende Wasserflaeche: sehr grosse Ebene knapp unter
-        der Simulationsflaeche, folgt dem Koerper."""
+        """Unendlich wirkende Wasserflaeche: grosse texturierte Ebene,
+        die dem Koerper folgt; die Textur enthaelt die weltfesten Punkte."""
         if not aktiv:
             if self._ozean_actor is not None:
                 try:
@@ -208,13 +222,30 @@ class GrafikBruecke:
                 except Exception:
                     pass
             self._ozean_actor = None
+            self._ozean_mesh = None
+            self._becken_sichtbar_folge(True)
             return
         import pyvista as pv
-        ebene = pv.Plane(center=(0.0, 0.0, -0.03), direction=(0, 0, 1),
-                         i_size=OZEAN_GROESSE, j_size=OZEAN_GROESSE)
+        from .core.wasserpunkte import textur_bild, KACHEL_METER
+        self._ozean_kachel = KACHEL_METER
+        mesh = pv.Plane(center=(0.0, 0.0, 0.0), direction=(0, 0, 1),
+                        i_size=OZEAN_GROESSE, j_size=OZEAN_GROESSE,
+                        i_resolution=1, j_resolution=1)
+        # pyvista legt Zeile 0 oben (v=1) ab; textur_bild zaehlt von v=0
+        textur = pv.Texture(np.ascontiguousarray(
+            np.flipud(textur_bild())))
+        textur.repeat = True
+        textur.interpolate = True
+        try:
+            textur.mipmap = True
+        except Exception:
+            pass
+        self._ozean_mesh = mesh
         self._ozean_actor = self._plotter.add_mesh(
-            ebene, color="#2c6a99", opacity=0.9, lighting=False,
+            mesh, texture=textur, opacity=0.88, lighting=False,
             reset_camera=False, pickable=False)
+        self._becken_sichtbar_folge(False)
+        self._flaeche_verschieben(0.0, 0.0)
 
     def _wasser_bewegung_nachfuehren(self, position):
         if not self._folge_aktiv or self._plotter is None:
@@ -243,8 +274,6 @@ class GrafikBruecke:
             farbe[:, 3] = np.clip(a * 255.0, 0, 255).astype(np.uint8)
             return farbe
 
-        pts = pv.PolyData(punkte)
-        pts["rgba"] = rgba(alpha[:, 0])
         linien = np.empty((n * (s - 1), 3), dtype=np.int64)
         basis = (np.arange(n)[:, None] * s + np.arange(s - 1)[None, :]).ravel()
         linien[:, 0] = 2
@@ -253,9 +282,7 @@ class GrafikBruecke:
         spur = pv.PolyData(spuren.reshape(-1, 3), lines=linien.ravel())
         spur["rgba"] = rgba(alpha.ravel())
         for name, mesh, kw in (
-                ("wasser_punkte", pts,
-                 dict(point_size=5, render_points_as_spheres=True)),
-                ("wasser_spuren", spur, dict(line_width=2))):
+                ("wasser_spuren", spur, dict(line_width=2)),):
             alt = self._wasserpunkte_meshes.get(name)
             if alt is None:
                 self._plotter.add_mesh(mesh, scalars="rgba", rgba=True,
@@ -521,6 +548,7 @@ class GrafikBruecke:
         gesetzt = self._renderer.wasser_sichtbar_setzen(sichtbar)
         if self._ozean_actor is not None:
             self._ozean_actor.SetVisibility(bool(sichtbar))
+            self._becken_sichtbar_folge(False)
         if gesetzt:
             self.render()
         return gesetzt

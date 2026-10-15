@@ -18,9 +18,48 @@ def _hash01(ix, iy, salz):
     return ((h ^ (h >> 16)) & 0xFFFF) / 65536.0
 
 
+KACHEL_ZELLEN = 16
+ABSTAND = 1.5
+KACHEL_METER = KACHEL_ZELLEN * ABSTAND
+
+
+def punktlage(gx, gy, abstand=ABSTAND):
+    """Weltposition des Punkts der Zelle (gx, gy); periodisch in der
+    Kachel, damit Textur und Spuren dieselben Punkte meinen."""
+    hx = _hash01(gx % KACHEL_ZELLEN, gy % KACHEL_ZELLEN, 1)
+    hy = _hash01(gx % KACHEL_ZELLEN, gy % KACHEL_ZELLEN, 2)
+    return ((gx + 0.8 * (hx - 0.5)) * abstand,
+            (gy + 0.8 * (hy - 0.5)) * abstand)
+
+
+def textur_bild(pixel=1024, grund=(44, 106, 153), punkt=(235, 245, 252),
+                radius_px=3.0):
+    """Kachelbares RGB-Bild: Wasserfarbe mit weichen Punkten."""
+    bild = np.empty((pixel, pixel, 3), dtype=np.float64)
+    bild[:] = grund
+    zelle = pixel / KACHEL_ZELLEN
+    yy, xx = np.mgrid[0:pixel, 0:pixel]
+    for gx in range(KACHEL_ZELLEN):
+        for gy in range(KACHEL_ZELLEN):
+            px, py = punktlage(gx, gy, 1.0)
+            cx = (px % KACHEL_ZELLEN) * zelle
+            cy = (py % KACHEL_ZELLEN) * zelle
+            x0 = int(cx) - 6; y0 = int(cy) - 6
+            for ox in (-pixel, 0, pixel):
+                for oy in (-pixel, 0, pixel):
+                    xs = slice(max(0, x0 + ox), min(pixel, x0 + ox + 13))
+                    ys = slice(max(0, y0 + oy), min(pixel, y0 + oy + 13))
+                    if xs.start >= xs.stop or ys.start >= ys.stop:
+                        continue
+                    d = np.hypot(xx[ys, xs] - (cx + ox), yy[ys, xs] - (cy + oy))
+                    w = np.clip(radius_px + 0.5 - d, 0.0, 1.0)[..., None]
+                    bild[ys, xs] = bild[ys, xs] * (1 - w) + np.array(punkt) * w
+    return bild.astype(np.uint8)
+
+
 class WasserPunktFeld:
-    def __init__(self, radius=12.0, abstand=1.5, historie=12, spur_punkte=6,
-                 hoehe=None, z0=0.02):
+    def __init__(self, radius=12.0, abstand=ABSTAND, historie=12,
+                 spur_punkte=6, hoehe=None, z0=0.02):
         self.radius = float(radius)
         self.abstand = float(abstand)
         self.historie = max(2, int(historie))
@@ -40,8 +79,7 @@ class WasserPunktFeld:
         iy = np.arange(int(np.floor((cy - r) / a)), int(np.ceil((cy + r) / a)) + 1)
         gx, gy = np.meshgrid(ix, iy, indexing="ij")
         gx = gx.ravel(); gy = gy.ravel()
-        x = (gx + 0.8 * (_hash01(gx, gy, 1) - 0.5)) * a
-        y = (gy + 0.8 * (_hash01(gx, gy, 2) - 0.5)) * a
+        x, y = punktlage(gx, gy, a)
         d = np.hypot(x - cx, y - cy)
         innen = d <= r
         x, y, d = x[innen], y[innen], d[innen]
