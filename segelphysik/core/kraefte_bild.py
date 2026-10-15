@@ -44,6 +44,83 @@ def pfeil_daten(start, vektor):
             "kopf_radius": KOPF_RADIUS_FAKTOR * laenge}
 
 
+def pfeil_fest(start, vektor, durchmesser, kopf_durchmesser, kopf_laenge,
+               mindestlaenge=0.0):
+    """Pfeil mit fester Dicke: nur die Laenge folgt dem Vektor.
+
+    Kopf und Schaft haben absolute Masse; nur wenn der Pfeil kuerzer als
+    der doppelte Kopf ist, schrumpft der Kopf proportional. Unter
+    `mindestlaenge` wird mindestens diese Laenge gezeichnet.
+    """
+    start = np.asarray(start, dtype=float)
+    vektor = np.asarray(vektor, dtype=float)
+    betrag = float(np.linalg.norm(vektor))
+    if betrag <= 0.0:
+        raise ValueError("Pfeil mit Null-Laenge unzulaessig")
+    richtung = vektor / betrag
+    laenge = max(betrag, float(mindestlaenge))
+    kopf_l = float(kopf_laenge)
+    kopf_r = 0.5 * float(kopf_durchmesser)
+    if kopf_l > 0.5 * laenge:
+        faktor = 0.5 * laenge / kopf_l
+        kopf_l *= faktor
+        kopf_r *= faktor
+    spitze = start + laenge * richtung
+    return {"start": start.copy(), "richtung": richtung, "laenge": laenge,
+            "betrag": betrag, "schaft_start": start.copy(),
+            "schaft_ende": spitze - kopf_l * richtung, "spitze": spitze,
+            "kopf_laenge": kopf_l, "kopf_radius": kopf_r,
+            "schaft_radius": 0.5 * float(durchmesser)}
+
+
+def strich_linien(punkte, strich, luecke, max_abstand=None):
+    """Zerlegt einen Linienzug in Striche.
+
+    Liefert (punkte, zellen) fuer pyvista.PolyData(punkte, lines=zellen):
+    jeder Strich ist ein eigener Linienzug; Striche beginnen bei 0 und
+    wiederholen sich mit Periode strich + luecke.
+    """
+    p = np.asarray(punkte, dtype=float)
+    strich = float(strich)
+    luecke = float(luecke)
+    if strich <= 0.0 or luecke < 0.0:
+        raise ValueError("strich > 0 und luecke >= 0 erforderlich")
+    segment = np.linalg.norm(np.diff(p, axis=0), axis=1)
+    kum = np.concatenate([[0.0], np.cumsum(segment)])
+    gesamt = float(kum[-1])
+    if gesamt <= 0.0:
+        raise ValueError("Linienzug ohne Laenge")
+    abstand = max_abstand if max_abstand else strich / 4.0
+    alle = []
+    zellen = []
+    s = 0.0
+    n = 0
+    while s < gesamt - 1e-12:
+        ende = min(s + strich, gesamt)
+        anzahl = max(2, int(math.ceil((ende - s) / abstand)) + 1)
+        t = np.linspace(s, ende, anzahl)
+        pts = np.stack([np.interp(t, kum, p[:, i]) for i in range(3)], axis=1)
+        alle.append(pts)
+        zellen.extend([anzahl] + list(range(n, n + anzahl)))
+        n += anzahl
+        s += strich + luecke
+    return np.vstack(alle), np.asarray(zellen, dtype=np.int64)
+
+
+def paar_moment_auftrieb(erg, r_s):
+    """Moment des Paars Gewicht/Auftrieb um r_S: (K - r_S) x F_A.
+    F_G greift in r_S an und traegt nichts bei."""
+    k = np.asarray(erg.K.as_array(), dtype=float)
+    return np.cross(k - np.asarray(r_s, dtype=float), erg.F_A.as_array())
+
+
+def paar_moment_kraft(angriff, kraft, r_s):
+    """Moment einer Kraft um r_S: (Angriff - r_S) x F."""
+    return np.cross(np.asarray(angriff, dtype=float)
+                    - np.asarray(r_s, dtype=float),
+                    np.asarray(kraft, dtype=float))
+
+
 def skala_waehlen(masse, g, referenz_laenge, fuellfaktor=FUELLFAKTOR):
     """D1: fixe Skala - F_G-Pfeil fuellt fuellfaktor der Referenzlaenge."""
     fg = float(masse) * float(g)

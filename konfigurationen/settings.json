@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "statisch": {
     "toleranz": 0.001,
     "max_iterationen": 60,
@@ -13,5 +13,186 @@
     "ueberlast_dauer_s": 5.0,
     "nachholen_ende_rueckstand_s": 0.1,
     "nachholrate_ziel": 1.25
+  },
+  "kraftpfeile_allgemein": {
+    "vordergrund": true,
+    "dicke": 0.5,
+    "kopf_durchmesser": 2.5,
+    "kopf_laenge": 5.0,
+    "fuellfaktor": 0.75,
+    "momentenradius": 0.45,
+    "mindestlaenge": 2.0,
+    "strich_laenge": 3.0,
+    "strich_luecke": 2.0
+  },
+  "kraftpfeile_paare": {
+    "farbe_gewicht_auftrieb": "#2166ac",
+    "farbe_fremdkraft": "#d73027"
+  },
+  "schwerpunkte": {
+    "s_radius": 1.5,
+    "s_farbe": "#ffffff",
+    "s_kontur": "#000000",
+    "k_radius": 1.5,
+    "k_farbe": "",
+    "kontur_breite": 0.3,
+    "vordergrund": true
+  },
+  "hauptachsen": {
+    "dicke": 0.8,
+    "farbe_x": "#ffd700",
+    "farbe_y": "#00ffff",
+    "farbe_z": "#ff00ff",
+    "vordergrund": false
+  },
+  "pfeil_f_g": {
+    "sichtbar": true,
+    "farbe": "",
+    "dicke": 0.0,
+    "kopf": 1.0,
+    "gestrichelt": false,
+    "skala": 1.0,
+    "deckkraft": 1.0,
+    "vordergrund": true
+  },
+  "pfeil_f_a": {
+    "sichtbar": true,
+    "farbe": "",
+    "dicke": 0.0,
+    "kopf": 1.0,
+    "gestrichelt": true,
+    "skala": 1.0,
+    "deckkraft": 1.0,
+    "vordergrund": true
+  },
+  "pfeil_m_x": {
+    "sichtbar": true,
+    "farbe": "",
+    "dicke": 0.0,
+    "kopf": 1.0,
+    "gestrichelt": false,
+    "skala": 1.0,
+    "deckkraft": 1.0,
+    "vordergrund": true
+  },
+  "pfeil_m_y": {
+    "sichtbar": true,
+    "farbe": "",
+    "dicke": 0.0,
+    "kopf": 1.0,
+    "gestrichelt": false,
+    "skala": 1.0,
+    "deckkraft": 1.0,
+    "vordergrund": true
+  },
+  "pfeil_m_z": {
+    "sichtbar": true,
+    "farbe": "",
+    "dicke": 0.0,
+    "kopf": 1.0,
+    "gestrichelt": false,
+    "skala": 1.0,
+    "deckkraft": 1.0,
+    "vordergrund": true
+  },
+  "pfeil_fremd": {
+    "sichtbar": true,
+    "farbe": "",
+    "dicke": 0.0,
+    "kopf": 1.0,
+    "gestrichelt": false,
+    "skala": 1.0,
+    "deckkraft": 1.0,
+    "vordergrund": true
+  },
+  "pfeil_fremd_mx": {
+    "sichtbar": true,
+    "farbe": "",
+    "dicke": 0.0,
+    "kopf": 1.0,
+    "gestrichelt": false,
+    "skala": 1.0,
+    "deckkraft": 1.0,
+    "vordergrund": true
+  },
+  "pfeil_fremd_my": {
+    "sichtbar": true,
+    "farbe": "",
+    "dicke": 0.0,
+    "kopf": 1.0,
+    "gestrichelt": false,
+    "skala": 1.0,
+    "deckkraft": 1.0,
+    "vordergrund": true
+  },
+  "pfeil_fremd_mz": {
+    "sichtbar": true,
+    "farbe": "",
+    "dicke": 0.0,
+    "kopf": 1.0,
+    "gestrichelt": false,
+    "skala": 1.0,
+    "deckkraft": 1.0,
+    "vordergrund": true
+  },
+  "pfeil_rest": {
+    "sichtbar": true,
+    "farbe": "#dddddd",
+    "dicke": 0.0,
+    "kopf": 1.0,
+    "gestrichelt": false,
+    "skala": 1.0,
+    "deckkraft": 1.0,
+    "vordergrund": true
+  },
+  "pfeil_zusatz": {
+    "sichtbar": true,
+    "farbe": "#e08214",
+    "dicke": 0.0,
+    "kopf": 1.0,
+    "gestrichelt": false,
+    "skala": 1.0,
+    "deckkraft": 1.0,
+    "vordergrund": true
+  },
+  "pfeil_mges_x": {
+    "sichtbar": false,
+    "farbe": "#762a83",
+    "dicke": 0.0,
+    "kopf": 1.0,
+    "gestrichelt": false,
+    "skala": 1.0,
+    "deckkraft": 1.0,
+    "vordergrund": true
+  },
+  "pfeil_mges_y": {
+    "sichtbar": false,
+    "farbe": "#1b7837",
+    "dicke": 0.0,
+    "kopf": 1.0,
+    "gestrichelt": false,
+    "skala": 1.0,
+    "deckkraft": 1.0,
+    "vordergrund": true
+  },
+  "pfeil_mges_z": {
+    "sichtbar": false,
+    "farbe": "#e08214",
+    "dicke": 0.0,
+    "kopf": 1.0,
+    "gestrichelt": false,
+    "skala": 1.0,
+    "deckkraft": 1.0,
+    "vordergrund": true
+  },
+  "pfeil_hebelarm": {
+    "sichtbar": true,
+    "farbe": "#000000",
+    "dicke": 0.0,
+    "kopf": 1.0,
+    "gestrichelt": false,
+    "skala": 1.0,
+    "deckkraft": 1.0,
+    "vordergrund": true
   }
 }

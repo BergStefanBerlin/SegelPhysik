@@ -38,3 +38,18 @@ Statisch: `toleranz`, `max_iterationen`, `stagnation_anteil`.
 Dynamisch: `zeitgenau` (Checkbox „Echtzeitgenau“; Schlüsselname bleibt aus Kompatibilitätsgründen; aus: so schnell wie möglich, aber nie schneller als die reale Zeit, Zeitlupe statt Überlast-Stopp),
 `max_schritte_pro_aufgabe`, `max_schritte_nachholen`, `ueberlast_rueckstand_s`,
 `ueberlast_dauer_s`, `nachholen_ende_rueckstand_s`, `nachholrate_ziel`.
+
+## Parameter (Version 1.1: Kraftpfeildarstellung)
+
+Menü: Einstellungen → Kraftpfeildarstellung. Registry der Paare und Pfeile:
+`segelphysik/core/pfeilstil.py` (neue Paare nur dort eintragen).
+
+- `kraftpfeile_allgemein`: Vordergrund, Grunddicke, Kopfmaße, Kraftskala
+  (`fuellfaktor`), Momentenradius, Mindestlänge, Strichmaße. Längenmaße in Prozent
+  der größten Körperausdehnung, damit sie mit dem Körper skalieren.
+- `kraftpfeile_paare`: `farbe_<paar>` (Paar 1 Gewicht/Auftrieb blau, Paar 2 Fremdkraft rot).
+- `pfeil_<id>` je Pfeil: `sichtbar`, `farbe` (leer = Paarfarbe), `dicke` (0 = Grunddicke),
+  `kopf`, `gestrichelt`, `skala`, `deckkraft`, `vordergrund`. Die Dicke ist fest,
+  nur die Länge folgt dem Betrag.
+- `schwerpunkte`: Radius und Farbe von S und K, Kontur.
+- `hauptachsen`: Dicke, Farben, Vordergrund.

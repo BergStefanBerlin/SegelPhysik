@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (
 
 from .baum_widget import BaumWidget
 from ..core.overlays import (LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN,
-                             LAYER_KRAEFTE, LAYER_MOMENTE)
+                             LAYER_KRAEFTE, LAYER_MOMENTE, LAYER_FREMDKRAFT)
 
 
 _aktives_fenster = None
@@ -207,15 +207,47 @@ class HauptFenster(QMainWindow):
         for meldung in self._einstellungen.meldungen:
             self.protokoll_schreiben("Einstellungen: %s" % meldung)
 
-    def _einstellungen_dialog(self, bereich):
+    def _einstellungen_dialog(self, bereich, **spezifikation):
         from .einstellungen_dialog import EinstellungenDialog
         dialog = self._einstellungen_dialoge.get(bereich)
         if dialog is None:
-            dialog = EinstellungenDialog(self._einstellungen, bereich, self)
+            dialog = EinstellungenDialog(
+                self._einstellungen, bereich, self, **spezifikation)
+            if spezifikation:
+                dialog.geaendert.connect(self._stil_anwenden)
             self._einstellungen_dialoge[bereich] = dialog
         dialog.show()
         dialog.raise_()
         dialog.activateWindow()
+
+    def _pfeil_dialog(self, schluessel, titel, formular, pfeile=None):
+        self._einstellungen_dialog(
+            schluessel, titel="Kraftpfeildarstellung: " + titel,
+            formular=formular, pfeile=pfeile)
+
+    def _kraftpfeil_menue_bauen(self, menue):
+        from ..core import pfeilstil as ps
+        m = menue.addMenu("Kraftpfeildarstellung")
+        m.addAction("Allgemein …", lambda: self._pfeil_dialog(
+            "kp_allgemein", "Allgemein", [(ps.BEREICH_ALLGEMEIN, None)]))
+        for pid, titel, _farbe in ps.PAARE:
+            pfeile = [(ps.pfeil_bereich(p[0]), p[1])
+                      for p in ps.paar_pfeile(pid)]
+            m.addAction(titel + " …", lambda pid=pid, titel=titel,
+                        pfeile=pfeile: self._pfeil_dialog(
+                            "kp_" + pid, titel,
+                            [(ps.BEREICH_PAARE, ["farbe_" + pid])], pfeile))
+        weitere = m.addAction("Weitere Kräftepaare (noch keine)")
+        weitere.setEnabled(False)
+        m.addAction("Weitere Pfeile …", lambda: self._pfeil_dialog(
+            "kp_weitere", "Weitere Pfeile", [],
+            [(ps.pfeil_bereich(p[0]), p[1]) for p in ps.paarlose_pfeile()]))
+        m.addAction("Schwerpunkte …", lambda: self._pfeil_dialog(
+            "kp_schwerpunkte", "Schwerpunkte",
+            [(ps.BEREICH_SCHWERPUNKTE, None)]))
+        m.addAction("Hauptachsen …", lambda: self._pfeil_dialog(
+            "kp_hauptachsen", "Hauptachsen",
+            [(ps.BEREICH_HAUPTACHSEN, None)]))
 
     def _dyn(self, schluessel):
         return self._einstellungen.get("dynamisch", schluessel)
@@ -236,6 +268,7 @@ class HauptFenster(QMainWindow):
             "Statisch …", lambda: self._einstellungen_dialog("statisch"))
         m_solver.addAction(
             "Dynamisch …", lambda: self._einstellungen_dialog("dynamisch"))
+        self._kraftpfeil_menue_bauen(m_einst)
         self._act_nur_aktives = m_einst.addAction(
             "Nur aktive Unterobjekte bedienbar")
         self._act_nur_aktives.setCheckable(True)
@@ -339,6 +372,7 @@ class HauptFenster(QMainWindow):
             ("Schwerpunkt", LAYER_SCHWERPUNKT, False),
             ("Achsen", LAYER_HAUPTACHSEN, True),
             ("Kräfte", LAYER_KRAEFTE, True),
+            ("Fremdkraft", LAYER_FREMDKRAFT, True),
             ("Momente", LAYER_MOMENTE, False),
         )
         for name, layer_name, aktiviert in layer_einstellungen:
@@ -471,17 +505,30 @@ class HauptFenster(QMainWindow):
                 ("Schwerpunkt", LAYER_SCHWERPUNKT),
                 ("Achsen", LAYER_HAUPTACHSEN),
                 ("Kräfte", LAYER_KRAEFTE),
+                ("Fremdkraft", LAYER_FREMDKRAFT),
                 ("Momente", LAYER_MOMENTE)):
             bruecke.layer_setzen(layer, self._layer_checks[name].isChecked())
+        self._stil_anwenden()
         self._darstellung_auf_bruecke_anwenden()
         self._laufzeit_objekte_aktualisieren("start")
+
+    def _stil_anwenden(self):
+        """Gibt den Pfeilstil aus den Einstellungen an die Bruecke."""
+        bruecke = getattr(self, "_bruecke", None)
+        if bruecke is None or not hasattr(bruecke, "stil_setzen"):
+            return
+        from ..core.pfeilstil import Stil
+        bruecke.stil_setzen(Stil(self._einstellungen.bereich))
+        if self._btn_echtzeit.isChecked():
+            self._aktuelles_kraftbild_aktualisieren()
+            bruecke.render()
 
     def _layer_setzen(self, layer, aktiviert):
         bruecke = getattr(self, "_bruecke", None)
         if bruecke is None:
             return
         if (aktiviert and layer in (LAYER_KRAEFTE, LAYER_MOMENTE,
-                                      LAYER_SCHWERPUNKT)
+                                      LAYER_SCHWERPUNKT, LAYER_FREMDKRAFT)
                 and self._btn_echtzeit.isChecked()):
             self._aktuelles_kraftbild_aktualisieren()
         bruecke.layer_setzen(layer, aktiviert)
@@ -944,6 +991,7 @@ class HauptFenster(QMainWindow):
         self._echtzeit_kraefteresultat = None
         if (bruecke.layer_ist_an(LAYER_KRAEFTE)
                 or bruecke.layer_ist_an(LAYER_MOMENTE)
+                or bruecke.layer_ist_an(LAYER_FREMDKRAFT)
                 or bruecke.layer_ist_an(LAYER_SCHWERPUNKT)):
             self._echtzeit_kraefteresultat = kraftfunktion(
                 (zustand.position, zustand.quaternion),
@@ -1312,6 +1360,7 @@ class HauptFenster(QMainWindow):
             pose = zustand
             if (bruecke.layer_ist_an(LAYER_KRAEFTE)
                     or bruecke.layer_ist_an(LAYER_MOMENTE)
+                    or bruecke.layer_ist_an(LAYER_FREMDKRAFT)
                 or bruecke.layer_ist_an(LAYER_SCHWERPUNKT)):
                 koerper = self._laufzeit_koerper.get(self._echtzeit_name)
             else:

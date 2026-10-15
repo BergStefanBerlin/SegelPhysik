@@ -35,7 +35,8 @@ def test_g1_layer_registry_global_und_unabhaengig():
     assert reg.umschalten(LAYER_HAUPTACHSEN) is True
     # Layer bleiben unabhaengig voneinander schaltbar.
     assert reg.zustand() == {LAYER_SCHWERPUNKT: True, LAYER_HAUPTACHSEN: True,
-                             LAYER_KRAEFTE: False, LAYER_MOMENTE: False}
+                             LAYER_KRAEFTE: False, LAYER_MOMENTE: False,
+                             'fremdkraft': False}
     reg.setzen(LAYER_SCHWERPUNKT, False)
     assert not reg.ist_an(LAYER_SCHWERPUNKT)
 

@@ -34,7 +34,8 @@ except ImportError:
     from segelphysik import wasser_schnitt as ws
 from .core.overlays import (LayerRegistry, hauptachsen,
                             LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN,
-                            LAYER_KRAEFTE, LAYER_MOMENTE)
+                            LAYER_KRAEFTE, LAYER_MOMENTE, LAYER_FREMDKRAFT)
+from .core import pfeilstil
 
 FARBE_UNTEN = "#2166ac"
 FARBE_OBEN = "#b2182b"
@@ -103,6 +104,11 @@ def _dreiecks_polydaten(pv, punkte, dreiecke):
                        np.hstack([kopf, dreiecke]).ravel())
 
 
+def kb_strich(punkte, strich, luecke):
+    from .core import kraefte_bild as kb
+    return kb.strich_linien(punkte, strich, luecke)
+
+
 def _mesh_actor_setzen(plotter, refs, name, mesh, **kwargs):
     actor = refs.get(name)
     if mesh is None:
@@ -166,6 +172,10 @@ class GrafikBruecke:
         self._koerper = {}
         self._layer = LayerRegistry()
         self._kraefte_daten = {}
+        self._stil = pfeilstil.Stil()
+        self._vg_renderer = None
+        self._vg_actors = {}
+        self._vg_unmoeglich = False
         self._folge_aktiv = False
         self._folge_letzt = None
         self._wasserpunkte = None
@@ -416,7 +426,7 @@ class GrafikBruecke:
             namen = (self._actor_namen(name) + self._overlay_namen(name)
                      + self._kraefte_namen(name))
             for actor_name in namen:
-                self._plotter.remove_actor(actor_name)
+                self._actor_weg(actor_name)
         self._koerper.pop(name)
         self._kraefte_daten.pop(name, None)
 
@@ -491,7 +501,7 @@ class GrafikBruecke:
             for n in self._actor_namen(name) + self._overlay_namen(name) \
                     + self._kraefte_namen(name):
                 try:
-                    self._plotter.remove_actor(n)
+                    self._actor_weg(n)
                 except Exception:
                     pass
             k["actors"] = {}
@@ -649,15 +659,206 @@ class GrafikBruecke:
     def kraefte_daten_entfernen(self, name):
         self._kraefte_daten.pop(name, None)
 
+    # Pfeil-id -> Namensendung des Actors (Name: kraefte_<koerper>_<endung>)
+    _ACTOR_ENDUNG = {
+        "f_g": "fg", "f_a": "fa", "hebelarm": "arm", "m_x": "moment",
+        "m_y": "moment_y", "m_z": "moment_z", "rest": "rest",
+        "zusatz": "zusatz", "fremd": "fremd", "fremd_mx": "fremdm_x",
+        "fremd_my": "fremdm_y", "fremd_mz": "fremdm_z",
+        "mges_x": "mges_x", "mges_y": "mges_y", "mges_z": "mges_z",
+    }
+
     def _kraefte_namen(self, name):
         return ["kraefte_%s_fg" % name, "kraefte_%s_fa" % name,
                 "kraefte_%s_arm" % name, "kraefte_%s_moment" % name,
                 "kraefte_%s_moment_y" % name, "kraefte_%s_moment_z" % name,
                 "kraefte_%s_rest" % name, "kraefte_%s_zusatz" % name,
-                "kraefte_%s_auftriebsp" % name, "kraefte_%s_fremd" % name]
+                "kraefte_%s_auftriebsp" % name, "kraefte_%s_fremd" % name,
+                "kraefte_%s_fremdm_x" % name, "kraefte_%s_fremdm_y" % name,
+                "kraefte_%s_fremdm_z" % name, "kraefte_%s_mges_x" % name,
+                "kraefte_%s_mges_y" % name, "kraefte_%s_mges_z" % name,
+                "kraefte_%s_auftriebsp_kontur" % name]
+
+    def _pfeil_name(self, name, pfeil_id):
+        return "kraefte_%s_%s" % (name, self._ACTOR_ENDUNG[pfeil_id])
+
+    # ---------------- Darstellung: Stil und Vordergrundebene ----------------
+
+    def stil_setzen(self, stil):
+        """Neuer Pfeilstil (core.pfeilstil.Stil): alle Pfeile, Schwerpunkte
+        und Hauptachsen werden mit den neuen Massen neu aufgebaut."""
+        self._stil = stil
+        for name in list(self._koerper):
+            self._kraefte_entfernen(name)
+            self._overlay_schwerpunkt_entfernen(name)
+            self._overlay_hauptachsen_entfernen(name)
+        self._layer_aktualisieren()
+        self.render()
+
+    def _ausdehnung(self, k):
+        """Groesste Koerperausdehnung (m) als Bezug fuer relative Masse."""
+        try:
+            punkte = np.asarray(k["koerper"].punkte, dtype=float)
+            ausdehnung = float(np.ptp(punkte, axis=0).max())
+        except Exception:
+            laenge = k.get("overlay_skala", (1.1, 0.04))[0]
+            ausdehnung = 2.0 * float(laenge) / 1.1
+        return max(ausdehnung, 0.05)
+
+    def _vordergrund_renderer(self):
+        """Zweite Renderebene (Layer 1) mit eigenem Tiefenpuffer ueber der
+        Szene und gemeinsamer Kamera: ihre Actors sind nie verdeckt."""
+        if self._vg_renderer is None:
+            from vtkmodules.vtkRenderingCore import vtkRenderer
+            fenster = self._plotter.ren_win
+            fenster.SetNumberOfLayers(2)
+            self._plotter.renderer.SetLayer(0)
+            renderer = vtkRenderer()
+            renderer.SetLayer(1)
+            renderer.InteractiveOff()
+            fenster.AddRenderer(renderer)
+            self._vg_renderer = renderer
+        self._vg_renderer.SetActiveCamera(
+            self._plotter.renderer.GetActiveCamera())
+        return self._vg_renderer
+
+    def _actor_weg(self, name):
+        actor = self._vg_actors.pop(name, None)
+        if actor is not None:
+            if self._vg_renderer is not None:
+                self._vg_renderer.RemoveActor(actor)
+            return
+        try:
+            self._plotter.remove_actor(name)
+        except Exception:
+            pass
+
+    def _actor_neu(self, name, mesh, **kwargs):
+        """Neuer Actor in der Vordergrundebene; None, wenn nicht moeglich."""
+        if self._vg_unmoeglich:
+            return None
+        try:
+            renderer = self._vordergrund_renderer()
+            actor = self._plotter.add_mesh(
+                mesh, name=name, reset_camera=False, render=False,
+                pickable=False, **kwargs)
+            self._plotter.remove_actor(
+                actor, reset_camera=False, render=False)
+            renderer.AddActor(actor)
+            self._vg_actors[name] = actor
+            return actor
+        except Exception:
+            self._vg_unmoeglich = True
+            return None
+
+    def _mesh_setzen(self, store, name, mesh, vordergrund=False, **kwargs):
+        """Wie _mesh_actor_setzen, optional in der Vordergrundebene."""
+        actor = store.get(name)
+        if actor is not None and mesh is not None:
+            if (name in self._vg_actors) != (
+                    vordergrund and not self._vg_unmoeglich):
+                self._actor_weg(name)
+                store.pop(name, None)
+                actor = None
+        if actor is None and mesh is not None and vordergrund:
+            neu = self._actor_neu(name, mesh, **kwargs)
+            if neu is not None:
+                store[name] = neu
+                return
+        _mesh_actor_setzen(self._plotter, store, name, mesh, **kwargs)
+
+    def _stil_pfeil(self, pfeil_id, k):
+        return self._stil.pfeil(pfeil_id, self._ausdehnung(k))
+
+    def _kraftpfeil_zeichnen(self, store, name, st, pfeil):
+        import pyvista as pv
+        kw = {"color": st["farbe"], "opacity": st["deckkraft"],
+              "smooth_shading": True}
+        try:
+            if st["gestrichelt"]:
+                punkte, zellen = kb_strich(
+                    [pfeil["schaft_start"], pfeil["schaft_ende"]],
+                    st["strich"], st["luecke"])
+                linie = pv.PolyData(punkte, lines=zellen)
+            else:
+                linie = pv.Line(tuple(pfeil["schaft_start"]),
+                                tuple(pfeil["schaft_ende"]))
+            schaft = linie.tube(radius=pfeil["schaft_radius"], n_sides=8,
+                                capping=True)
+            kopf = pv.Cone(
+                center=tuple(0.5 * (pfeil["schaft_ende"] + pfeil["spitze"])),
+                direction=tuple(pfeil["richtung"]),
+                height=pfeil["kopf_laenge"], radius=pfeil["kopf_radius"],
+                resolution=16)
+            self._mesh_setzen(store, name, schaft + kopf,
+                              st["vordergrund"], **kw)
+        except Exception:
+            linie = pv.line_segments_from_points(
+                [tuple(pfeil["start"]), tuple(pfeil["spitze"])])
+            self._mesh_setzen(
+                store, name, linie, st["vordergrund"], color=st["farbe"],
+                opacity=st["deckkraft"], line_width=5)
+
+    def _momentbogen_zeichnen(self, store, name, st, moment, mitte, radius,
+                              achse):
+        """Zeichnet den Bogen; False, wenn das Moment verschwindet."""
+        import pyvista as pv
+        from .core import kraefte_bild as kb
+        bogen = kb.moment_bogen_achse(moment, mitte, radius, achse)
+        if bogen is None:
+            return False
+        kopf_l = min(st["kopf_laenge"], 0.5 * radius)
+        kopf_r = 0.5 * st["kopf_durchmesser"] * kopf_l / max(
+            st["kopf_laenge"], 1e-12)
+        punkte = bogen["punkte"]
+        spitze = punkte[-1] + kopf_l * bogen["richtung"]
+        kw = {"color": st["farbe"], "opacity": st["deckkraft"],
+              "smooth_shading": True}
+        try:
+            if st["gestrichelt"]:
+                dpunkte, zellen = kb_strich(
+                    punkte, st["strich"], st["luecke"])
+                linie = pv.PolyData(dpunkte, lines=zellen)
+            else:
+                linie = pv.lines_from_points(punkte)
+            kurve = linie.tube(radius=0.5 * st["durchmesser"], n_sides=8,
+                               capping=True)
+            kopf = pv.Cone(center=tuple(0.5 * (punkte[-1] + spitze)),
+                           direction=tuple(bogen["richtung"]),
+                           height=kopf_l, radius=kopf_r, resolution=16)
+            self._mesh_setzen(store, name, kurve + kopf,
+                              st["vordergrund"], **kw)
+        except Exception:
+            seg = pv.line_segments_from_points(punkte)
+            self._mesh_setzen(store, name, seg, st["vordergrund"],
+                              color=st["farbe"], line_width=4)
+        return True
+
+    def _kugel_zeichnen(self, store, name, mitte, radius, farbe, kontur,
+                        kontur_breite, vordergrund):
+        """Schwerpunktkugel; die Kontur ist eine groessere Hohlkugel
+        (Vorderseiten ausgeblendet), die nur den Rand zeigt."""
+        import pyvista as pv
+        kugel = pv.Sphere(center=tuple(mitte), radius=radius,
+                          theta_resolution=24, phi_resolution=24)
+        self._mesh_setzen(store, name, kugel, vordergrund, color=farbe)
+        n_kontur = name + "_kontur"
+        if not kontur:
+            self._actor_weg(n_kontur)
+            store.pop(n_kontur, None)
+            return
+        huelle = pv.Sphere(center=tuple(mitte),
+                           radius=radius * (1.0 + kontur_breite),
+                           theta_resolution=24, phi_resolution=24)
+        self._mesh_setzen(store, n_kontur, huelle, vordergrund,
+                          color=kontur, lighting=False)
+        actor = store.get(n_kontur)
+        if actor is not None and hasattr(actor, "GetProperty"):
+            actor.GetProperty().SetFrontfaceCulling(True)
 
     def _kraefte_actors(self, name):
-        """Baut die Kraefte-Actors aus den gesetzten Daten (inkl. Moment-Bogen)."""
+        """Baut die Kraefte-Actors aus den gesetzten Daten (Kraeftepaare,
+        Momentenboegen, Hebelarm, Auftriebsschwerpunkt)."""
         from .core import kraefte_bild as kb
         import pyvista as pv
         daten = self._kraefte_daten.get(name)
@@ -666,112 +867,95 @@ class GrafikBruecke:
         k = self._koerper.get(name)
         if k is None or not k.get("aktiv"):
             return
+        erg = daten["erg"]
+        ausdehnung = self._ausdehnung(k)
+        allg = self._stil.allgemein(ausdehnung)
+        skala = daten["skala"] * allg["fuellfaktor"] / kb.FUELLFAKTOR
         cm = np.asarray(k["position"], float)
         r_s = cm   # P1: r_S liegt im Ursprung des Koerperframes -> Weltposition = cm
-        fg, fa = kb.kraft_pfeile(daten["erg"], r_s, daten["masse"],
-                                 daten["g"], daten["skala"])
         store = k.setdefault("kraefte_actors", {})
-        (n_fg, n_fa, n_arm, n_moment, n_moment_y, n_moment_z, n_rest,
-         n_zusatz, n_auftriebsp, n_fremd) = self._kraefte_namen(name)
+        fg_laenge = skala * daten["masse"] * daten["g"]
+        gezeichnet = set()
 
-        def _pfeil(p, farbe, n):
-            try:
-                schaft = pv.Line(tuple(p["schaft_start"]),
-                                 tuple(p["schaft_ende"])).tube(
-                    radius=max(0.3 * p["kopf_radius"], 0.004), n_sides=8)
-                kopf = pv.Cone(center=tuple(0.5 * (p["schaft_ende"]
-                                                          + p["spitze"])),
-                               direction=tuple(p["richtung"]),
-                               height=p["kopf_laenge"],
-                               radius=p["kopf_radius"])
-                _mesh_actor_setzen(
-                    self._plotter, store, n, schaft + kopf,
-                    color=farbe, smooth_shading=True)
-            except Exception:
-                linie = pv.line_segments_from_points(
-                    [tuple(p["start"]), tuple(p["spitze"])])
-                _mesh_actor_setzen(
-                    self._plotter, store, n, linie, color=farbe,
-                    line_width=5)
+        def kraft(pfeil_id, start, vektor, schwelle=1e-9):
+            """Kraftpfeil mit fester Dicke; False wenn unsichtbar."""
+            st = self._stil_pfeil(pfeil_id, k)
+            vektor = np.asarray(vektor, dtype=float) * skala * st["skala"]
+            if not st["sichtbar"] or float(np.linalg.norm(vektor)) <= schwelle:
+                return False
+            pfeil = kb.pfeil_fest(
+                start, vektor, st["durchmesser"], st["kopf_durchmesser"],
+                st["kopf_laenge"], st["mindestlaenge"])
+            n = self._pfeil_name(name, pfeil_id)
+            self._kraftpfeil_zeichnen(store, n, st, pfeil)
+            gezeichnet.add(n)
+            return True
+
+        def momente(praefix, vektor):
+            for achse, achse_name in enumerate("xyz"):
+                pfeil_id = praefix + achse_name
+                st = self._stil_pfeil(pfeil_id, k)
+                if not st["sichtbar"]:
+                    continue
+                n = self._pfeil_name(name, pfeil_id)
+                radius = allg["momentenradius"] * fg_laenge * st["skala"]
+                if radius > 0.0 and self._momentbogen_zeichnen(
+                        store, n, st, float(vektor[achse]), r_s, radius,
+                        achse):
+                    gezeichnet.add(n)
 
         if self._layer.ist_an(LAYER_KRAEFTE):
-            _pfeil(fg, kb.FARBE_FG, n_fg)
-            _pfeil(fa, kb.FARBE_FA, n_fa)
-            rest, zusatz = kb.zusatz_pfeile(
-                daten["erg"], r_s, daten["masse"], daten["g"],
-                daten["skala"])
-            for p, farbe, n in ((rest, kb.FARBE_REST, n_rest),
-                                (zusatz, kb.FARBE_ZUSATZ, n_zusatz)):
-                if p is None:
-                    self._kraefte_actors_entfernen(name, (n,))
-                else:
-                    _pfeil(p, farbe, n)
-            fremd_pfeil = None
-            if daten.get("fremd") is not None:
-                kraft_f = np.asarray(daten["fremd"][0], float)
-                if float(np.linalg.norm(kraft_f)) > 1e-9:
-                    R = k.get("statisch_R")
-                    R = np.eye(3) if R is None else np.asarray(R, float)
-                    angriff = cm + R @ np.asarray(daten["fremd"][1], float)
-                    fremd_pfeil = kb.pfeil_daten(
-                        angriff, kraft_f * daten["skala"])
-            if fremd_pfeil is None:
-                self._kraefte_actors_entfernen(name, (n_fremd,))
-            else:
-                _pfeil(fremd_pfeil, kb.FARBE_FREMD, n_fremd)
-            a, b = kb.hebelarm_segment(daten["erg"].K.as_array(), r_s)
-            try:
-                arm = pv.line_segments_from_points([tuple(a), tuple(b)])
-                _mesh_actor_setzen(
-                    self._plotter, store, n_arm, arm,
-                    color=kb.FARBE_ARM, line_width=2)
-            except Exception:
-                pass
-        else:
-            self._kraefte_actors_entfernen(
-                name, (n_fg, n_fa, n_arm, n_rest, n_zusatz, n_fremd))
-
-        if self._layer.ist_an(LAYER_SCHWERPUNKT):
-            kugel = pv.Sphere(
-                center=tuple(daten["erg"].K.as_array()),
-                radius=0.8 * k["overlay_skala"][1])
-            _mesh_actor_setzen(
-                self._plotter, store, n_auftriebsp, kugel,
-                color=kb.FARBE_FA)
-        else:
-            self._kraefte_actors_entfernen(name, (n_auftriebsp,))
-
-        moment_namen = (n_moment, n_moment_y, n_moment_z)
-        if self._layer.ist_an(LAYER_MOMENTE):
-            bogen_radius = 0.45 * daten["skala"] * daten["masse"] * daten["g"]
-            momente = daten["erg"].M.as_array()
-            for achse, n in enumerate(moment_namen):
-                bogen = kb.moment_bogen_achse(
-                    float(momente[achse]), r_s, bogen_radius, achse)
-                if bogen is None:
-                    self._kraefte_actors_entfernen(name, (n,))
-                    continue
-                farbe = kb.FARBEN_MOMENT[achse]
+            kraft("f_g", r_s, (0.0, 0.0, -daten["masse"] * daten["g"]), 0.0)
+            kraft("f_a", erg.K.as_array(), (0.0, 0.0, erg.F_A.z), 0.0)
+            f_ges = erg.F_gesamt.as_array()
+            fg = np.array([0.0, 0.0, -daten["masse"] * daten["g"]])
+            kraft("rest", r_s, f_ges + fg, 1e-6)
+            kraft("zusatz", r_s, f_ges - erg.F_A.as_array(), 1e-6)
+            st = self._stil_pfeil("hebelarm", k)
+            a, b = kb.hebelarm_segment(erg.K.as_array(), r_s)
+            if st["sichtbar"] and float(np.linalg.norm(a - b)) > 1e-9:
+                n = self._pfeil_name(name, "hebelarm")
                 try:
-                    kurve = pv.lines_from_points(bogen["punkte"]).tube(
-                        radius=max(0.3 * bogen["kopf_radius"], 0.004),
-                        n_sides=8)
-                    kopf = pv.Cone(
-                        center=tuple(0.5 * (bogen["punkte"][-1]
-                                            + bogen["spitze"])),
-                        direction=tuple(bogen["richtung"]),
-                        height=bogen["kopf_laenge"],
-                        radius=bogen["kopf_radius"])
-                    _mesh_actor_setzen(
-                        self._plotter, store, n, kurve + kopf,
-                        color=farbe, smooth_shading=True)
+                    arm = pv.Line(tuple(a), tuple(b)).tube(
+                        radius=0.5 * st["durchmesser"], n_sides=8)
+                    self._mesh_setzen(
+                        store, n, arm, st["vordergrund"], color=st["farbe"],
+                        opacity=st["deckkraft"], smooth_shading=True)
+                    gezeichnet.add(n)
                 except Exception:
-                    seg = pv.line_segments_from_points(bogen["punkte"])
-                    _mesh_actor_setzen(
-                        self._plotter, store, n, seg,
-                        color=farbe, line_width=4)
-        else:
-            self._kraefte_actors_entfernen(name, moment_namen)
+                    pass
+
+        fremd_kraft = fremd_angriff = None
+        if daten.get("fremd") is not None:
+            kraft_f = np.asarray(daten["fremd"][0], float)
+            if float(np.linalg.norm(kraft_f)) > 1e-9:
+                R = k.get("statisch_R")
+                R = np.eye(3) if R is None else np.asarray(R, float)
+                fremd_kraft = kraft_f
+                fremd_angriff = cm + R @ np.asarray(daten["fremd"][1], float)
+        fremd_an = (self._layer.ist_an(LAYER_FREMDKRAFT)
+                    and fremd_kraft is not None)
+        if fremd_an:
+            kraft("fremd", fremd_angriff, fremd_kraft)
+
+        if self._layer.ist_an(LAYER_MOMENTE):
+            momente("m_", kb.paar_moment_auftrieb(erg, r_s))
+            momente("mges_", erg.M.as_array())
+            if fremd_an:
+                momente("fremd_m", kb.paar_moment_kraft(
+                    fremd_angriff, fremd_kraft, r_s))
+
+        auftriebsp = "kraefte_%s_auftriebsp" % name
+        if self._layer.ist_an(LAYER_SCHWERPUNKT):
+            sp = self._stil.schwerpunkte(ausdehnung)
+            self._kugel_zeichnen(
+                store, auftriebsp, erg.K.as_array(), sp["k_radius"],
+                sp["k_farbe"], sp["s_kontur"], sp["kontur_breite"],
+                sp["vordergrund"])
+            gezeichnet.update((auftriebsp, auftriebsp + "_kontur"))
+        self._kraefte_actors_entfernen(
+            name, [n for n in self._kraefte_namen(name)
+                   if n not in gezeichnet])
 
     def _kraefte_actors_entfernen(self, name, namen):
         store = self._koerper.get(name, {}).get("kraefte_actors", {})
@@ -779,7 +963,7 @@ class GrafikBruecke:
             if store.pop(actor_name, None) is None:
                 continue
             try:
-                self._plotter.remove_actor(actor_name)
+                self._actor_weg(actor_name)
             except Exception:
                 pass
 
@@ -789,7 +973,7 @@ class GrafikBruecke:
             if store.pop(n, None) is None:
                 continue
             try:
-                self._plotter.remove_actor(n)
+                self._actor_weg(n)
             except Exception:
                 pass
 
@@ -930,7 +1114,8 @@ class GrafikBruecke:
 
     def _overlay_namen(self, name):
         return (["overlay_%s_schwerpunkt" % name]
-                + ["overlay_%s_achse%d" % (name, i) for i in (1, 2, 3)])
+                + ["overlay_%s_achse%d" % (name, i) for i in (1, 2, 3)]
+                + ["overlay_%s_schwerpunkt_kontur" % name])
 
     def _overlays_aktualisieren(self, name, k, R):
         koerper = k.get("koerper")
@@ -957,54 +1142,57 @@ class GrafikBruecke:
         # Phase C: Kraeftebild nur, wenn Layer an UND Daten vorliegen.
         if ((self._layer.ist_an(LAYER_KRAEFTE)
              or self._layer.ist_an(LAYER_MOMENTE)
+             or self._layer.ist_an(LAYER_FREMDKRAFT)
              or self._layer.ist_an(LAYER_SCHWERPUNKT))
                 and name in self._kraefte_daten):
             self._kraefte_actors(name)
         else:
             self._kraefte_entfernen(name)
 
-    def _overlay_schwerpunkt_setzen(self, name, cm, radius):
-        import pyvista as pv
-        kugel = pv.Sphere(center=tuple(cm), radius=radius)
+    def _overlay_schwerpunkt_setzen(self, name, cm, radius=None):
         n = self._overlay_namen(name)[0]
-        store = self._koerper[name].setdefault("overlay_actors", {})
-        _mesh_actor_setzen(
-            self._plotter, store, n, kugel, color="white")
+        k = self._koerper[name]
+        store = k.setdefault("overlay_actors", {})
+        sp = self._stil.schwerpunkte(self._ausdehnung(k))
+        self._kugel_zeichnen(
+            store, n, cm, sp["s_radius"], sp["s_farbe"], sp["s_kontur"],
+            sp["kontur_breite"], sp["vordergrund"])
 
     def _overlay_schwerpunkt_entfernen(self, name):
-        n = self._overlay_namen(name)[0]
+        namen = self._overlay_namen(name)
         store = self._koerper.get(name, {}).get("overlay_actors", {})
-        if store.pop(n, None) is None:
-            return
-        try:
-            self._plotter.remove_actor(n)
-        except Exception:
-            pass
+        for n in (namen[0], namen[4]):
+            if store.pop(n, None) is None:
+                continue
+            self._actor_weg(n)
 
     def _overlay_hauptachsen_setzen(self, name, cm, richtungen, laengen):
         import pyvista as pv
         namen = self._overlay_namen(name)
-        store = self._koerper[name].setdefault("overlay_actors", {})
-        koerper = self._koerper[name].get("koerper")
-        rr = self.roehren_radius(koerper) if koerper is not None else 0.01
+        k = self._koerper[name]
+        store = k.setdefault("overlay_actors", {})
+        ha = self._stil.hauptachsen(self._ausdehnung(k))
+        rr = 0.5 * ha["durchmesser"]
         for i in range(3):
             l = laengen[i] if hasattr(laengen, "__len__") else laengen
             start = cm - l * richtungen[i]
             ende = cm + l * richtungen[i]
-            store[namen[i + 1]] = self._roehre_oder_linie(
-                pv, start, ende, OVERLAY_FARBEN_ACHSEN[i], rr,
-                namen[i + 1], actor=store.get(namen[i + 1]))
+            try:
+                mesh = pv.Line(start, ende).tube(radius=rr, n_sides=12)
+                kw = {"color": ha["farben"][i], "smooth_shading": True}
+            except Exception:
+                mesh = pv.Line(start, ende)
+                kw = {"color": ha["farben"][i], "line_width": 4}
+            self._mesh_setzen(store, namen[i + 1], mesh, ha["vordergrund"],
+                              **kw)
 
     def _overlay_hauptachsen_entfernen(self, name):
         namen = self._overlay_namen(name)
         store = self._koerper.get(name, {}).get("overlay_actors", {})
-        for n in namen[1:]:
+        for n in namen[1:4]:
             if store.pop(n, None) is None:
                 continue
-            try:
-                self._plotter.remove_actor(n)
-            except Exception:
-                pass
+            self._actor_weg(n)
 
     def _gruppen_actors(self, name, k):
         """Faerbt die Farbgruppen je Blatt (Material-Reform, K3-Glanz)."""

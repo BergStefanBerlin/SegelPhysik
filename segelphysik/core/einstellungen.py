@@ -17,7 +17,8 @@ import json
 import os
 import shutil
 
-SCHEMA_VERSION = "1.0"
+from . import pfeilstil
+SCHEMA_VERSION = "1.1"
 DATEINAME = "settings.json"
 VORLAGE_DATEINAME = "settings_vorlage.json"
 
@@ -73,6 +74,8 @@ VORLAGE = {
             "s/s", 1.0, 10.0, 2),
     },
 }
+# Seit 1.1: Darstellung der Kraft- und Momentenpfeile
+VORLAGE.update(pfeilstil.vorlage_bereiche(_eintrag, "1.1"))
 
 
 def version_tupel(text):
@@ -115,6 +118,11 @@ def vorlage_laden(pfad=None):
 def wert_pruefen(eintrag, wert):
     """Liefert den bereinigten Wert oder wirft ValueError."""
     typ = eintrag["typ"]
+    if typ == "farbe":
+        if not isinstance(wert, str) or not (
+                wert == "" or pfeilstil.FARBE_MUSTER.match(wert)):
+            raise ValueError("Farbe im Format #rrggbb erwartet")
+        return wert
     if typ == "bool":
         if not isinstance(wert, bool):
             raise ValueError("Wahrheitswert erwartet")

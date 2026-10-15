@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "statisch": {
     "toleranz": {
       "typ": "float",
@@ -96,6 +96,1261 @@
       "min": 1.0,
       "max": 10.0,
       "dezimalen": 2
+    }
+  },
+  "kraftpfeile_allgemein": {
+    "vordergrund": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "Pfeile und Schwerpunkte immer im Vordergrund (durch den Koerper sichtbar)",
+      "seit_version": "1.1"
+    },
+    "dicke": {
+      "typ": "float",
+      "default": 0.5,
+      "einheit": "%",
+      "beschreibung": "Grunddicke des Pfeilschafts (Prozent der Koerperausdehnung)",
+      "seit_version": "1.1",
+      "min": 0.05,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "kopf_durchmesser": {
+      "typ": "float",
+      "default": 2.5,
+      "einheit": "x",
+      "beschreibung": "Pfeilkopf-Durchmesser (Faktor auf die Dicke)",
+      "seit_version": "1.1",
+      "min": 1.2,
+      "max": 10.0,
+      "dezimalen": 2
+    },
+    "kopf_laenge": {
+      "typ": "float",
+      "default": 5.0,
+      "einheit": "x",
+      "beschreibung": "Pfeilkopf-Laenge (Faktor auf die Dicke)",
+      "seit_version": "1.1",
+      "min": 1.0,
+      "max": 20.0,
+      "dezimalen": 2
+    },
+    "fuellfaktor": {
+      "typ": "float",
+      "default": 0.75,
+      "einheit": "",
+      "beschreibung": "Kraftskala: Laenge des Gewichtspfeils relativ zur Koerperausdehnung",
+      "seit_version": "1.1",
+      "min": 0.05,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "momentenradius": {
+      "typ": "float",
+      "default": 0.45,
+      "einheit": "",
+      "beschreibung": "Radius der Momentenboegen relativ zur Gewichtspfeil-Laenge",
+      "seit_version": "1.1",
+      "min": 0.05,
+      "max": 3.0,
+      "dezimalen": 2
+    },
+    "mindestlaenge": {
+      "typ": "float",
+      "default": 2.0,
+      "einheit": "%",
+      "beschreibung": "Mindestlaenge sichtbarer Kraftpfeile (Prozent der Koerperausdehnung)",
+      "seit_version": "1.1",
+      "min": 0.0,
+      "max": 20.0,
+      "dezimalen": 2
+    },
+    "strich_laenge": {
+      "typ": "float",
+      "default": 3.0,
+      "einheit": "%",
+      "beschreibung": "Strichlaenge gestrichelter Pfeile (Prozent der Koerperausdehnung)",
+      "seit_version": "1.1",
+      "min": 0.2,
+      "max": 30.0,
+      "dezimalen": 2
+    },
+    "strich_luecke": {
+      "typ": "float",
+      "default": 2.0,
+      "einheit": "%",
+      "beschreibung": "Luecke gestrichelter Pfeile (Prozent der Koerperausdehnung)",
+      "seit_version": "1.1",
+      "min": 0.2,
+      "max": 30.0,
+      "dezimalen": 2
+    }
+  },
+  "kraftpfeile_paare": {
+    "farbe_gewicht_auftrieb": {
+      "typ": "farbe",
+      "default": "#2166ac",
+      "einheit": "",
+      "beschreibung": "Farbe von Paar 1: Gewicht / Auftrieb",
+      "seit_version": "1.1"
+    },
+    "farbe_fremdkraft": {
+      "typ": "farbe",
+      "default": "#d73027",
+      "einheit": "",
+      "beschreibung": "Farbe von Paar 2: Fremdkraft",
+      "seit_version": "1.1"
+    }
+  },
+  "schwerpunkte": {
+    "s_radius": {
+      "typ": "float",
+      "default": 1.5,
+      "einheit": "%",
+      "beschreibung": "Radius Schwerpunkt S (Prozent der Koerperausdehnung)",
+      "seit_version": "1.1",
+      "min": 0.2,
+      "max": 10.0,
+      "dezimalen": 2
+    },
+    "s_farbe": {
+      "typ": "farbe",
+      "default": "#ffffff",
+      "einheit": "",
+      "beschreibung": "Farbe Schwerpunkt S",
+      "seit_version": "1.1"
+    },
+    "s_kontur": {
+      "typ": "farbe",
+      "default": "#000000",
+      "einheit": "",
+      "beschreibung": "Konturfarbe Schwerpunkt S (leer: keine Kontur)",
+      "seit_version": "1.1"
+    },
+    "k_radius": {
+      "typ": "float",
+      "default": 1.5,
+      "einheit": "%",
+      "beschreibung": "Radius Auftriebsschwerpunkt K (Prozent der Koerperausdehnung)",
+      "seit_version": "1.1",
+      "min": 0.2,
+      "max": 10.0,
+      "dezimalen": 2
+    },
+    "k_farbe": {
+      "typ": "farbe",
+      "default": "",
+      "einheit": "",
+      "beschreibung": "Farbe Auftriebsschwerpunkt K (leer: Farbe von Paar 1)",
+      "seit_version": "1.1"
+    },
+    "kontur_breite": {
+      "typ": "float",
+      "default": 0.3,
+      "einheit": "",
+      "beschreibung": "Breite der Kontur relativ zum Radius",
+      "seit_version": "1.1",
+      "min": 0.05,
+      "max": 1.0,
+      "dezimalen": 2
+    },
+    "vordergrund": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "Schwerpunkte im Vordergrund",
+      "seit_version": "1.1"
+    }
+  },
+  "hauptachsen": {
+    "dicke": {
+      "typ": "float",
+      "default": 0.8,
+      "einheit": "%",
+      "beschreibung": "Dicke der Hauptachsen (Prozent der Koerperausdehnung)",
+      "seit_version": "1.1",
+      "min": 0.05,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "farbe_x": {
+      "typ": "farbe",
+      "default": "#ffd700",
+      "einheit": "",
+      "beschreibung": "Farbe Hauptachse 1",
+      "seit_version": "1.1"
+    },
+    "farbe_y": {
+      "typ": "farbe",
+      "default": "#00ffff",
+      "einheit": "",
+      "beschreibung": "Farbe Hauptachse 2",
+      "seit_version": "1.1"
+    },
+    "farbe_z": {
+      "typ": "farbe",
+      "default": "#ff00ff",
+      "einheit": "",
+      "beschreibung": "Farbe Hauptachse 3",
+      "seit_version": "1.1"
+    },
+    "vordergrund": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "Hauptachsen im Vordergrund",
+      "seit_version": "1.1"
+    }
+  },
+  "pfeil_f_g": {
+    "sichtbar": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "Pfeil anzeigen",
+      "seit_version": "1.1"
+    },
+    "farbe": {
+      "typ": "farbe",
+      "default": "",
+      "einheit": "",
+      "beschreibung": "Farbe (leer: Paarfarbe)",
+      "seit_version": "1.1"
+    },
+    "dicke": {
+      "typ": "float",
+      "default": 0.0,
+      "einheit": "%",
+      "beschreibung": "Dicke in Prozent der Koerperausdehnung (0: Grunddicke)",
+      "seit_version": "1.1",
+      "min": 0.0,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "kopf": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Kopfgroesse (Faktor)",
+      "seit_version": "1.1",
+      "min": 0.2,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "gestrichelt": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "gestrichelt",
+      "seit_version": "1.1"
+    },
+    "skala": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Skalierung (Faktor; bei Momenten auf den Bogenradius)",
+      "seit_version": "1.1",
+      "min": 0.01,
+      "max": 100.0,
+      "dezimalen": 2
+    },
+    "deckkraft": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "",
+      "beschreibung": "Deckkraft",
+      "seit_version": "1.1",
+      "min": 0.1,
+      "max": 1.0,
+      "dezimalen": 2
+    },
+    "vordergrund": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "im Vordergrund",
+      "seit_version": "1.1"
+    }
+  },
+  "pfeil_f_a": {
+    "sichtbar": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "Pfeil anzeigen",
+      "seit_version": "1.1"
+    },
+    "farbe": {
+      "typ": "farbe",
+      "default": "",
+      "einheit": "",
+      "beschreibung": "Farbe (leer: Paarfarbe)",
+      "seit_version": "1.1"
+    },
+    "dicke": {
+      "typ": "float",
+      "default": 0.0,
+      "einheit": "%",
+      "beschreibung": "Dicke in Prozent der Koerperausdehnung (0: Grunddicke)",
+      "seit_version": "1.1",
+      "min": 0.0,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "kopf": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Kopfgroesse (Faktor)",
+      "seit_version": "1.1",
+      "min": 0.2,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "gestrichelt": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "gestrichelt",
+      "seit_version": "1.1"
+    },
+    "skala": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Skalierung (Faktor; bei Momenten auf den Bogenradius)",
+      "seit_version": "1.1",
+      "min": 0.01,
+      "max": 100.0,
+      "dezimalen": 2
+    },
+    "deckkraft": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "",
+      "beschreibung": "Deckkraft",
+      "seit_version": "1.1",
+      "min": 0.1,
+      "max": 1.0,
+      "dezimalen": 2
+    },
+    "vordergrund": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "im Vordergrund",
+      "seit_version": "1.1"
+    }
+  },
+  "pfeil_m_x": {
+    "sichtbar": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "Pfeil anzeigen",
+      "seit_version": "1.1"
+    },
+    "farbe": {
+      "typ": "farbe",
+      "default": "",
+      "einheit": "",
+      "beschreibung": "Farbe (leer: Paarfarbe)",
+      "seit_version": "1.1"
+    },
+    "dicke": {
+      "typ": "float",
+      "default": 0.0,
+      "einheit": "%",
+      "beschreibung": "Dicke in Prozent der Koerperausdehnung (0: Grunddicke)",
+      "seit_version": "1.1",
+      "min": 0.0,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "kopf": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Kopfgroesse (Faktor)",
+      "seit_version": "1.1",
+      "min": 0.2,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "gestrichelt": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "gestrichelt",
+      "seit_version": "1.1"
+    },
+    "skala": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Skalierung (Faktor; bei Momenten auf den Bogenradius)",
+      "seit_version": "1.1",
+      "min": 0.01,
+      "max": 100.0,
+      "dezimalen": 2
+    },
+    "deckkraft": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "",
+      "beschreibung": "Deckkraft",
+      "seit_version": "1.1",
+      "min": 0.1,
+      "max": 1.0,
+      "dezimalen": 2
+    },
+    "vordergrund": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "im Vordergrund",
+      "seit_version": "1.1"
+    }
+  },
+  "pfeil_m_y": {
+    "sichtbar": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "Pfeil anzeigen",
+      "seit_version": "1.1"
+    },
+    "farbe": {
+      "typ": "farbe",
+      "default": "",
+      "einheit": "",
+      "beschreibung": "Farbe (leer: Paarfarbe)",
+      "seit_version": "1.1"
+    },
+    "dicke": {
+      "typ": "float",
+      "default": 0.0,
+      "einheit": "%",
+      "beschreibung": "Dicke in Prozent der Koerperausdehnung (0: Grunddicke)",
+      "seit_version": "1.1",
+      "min": 0.0,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "kopf": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Kopfgroesse (Faktor)",
+      "seit_version": "1.1",
+      "min": 0.2,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "gestrichelt": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "gestrichelt",
+      "seit_version": "1.1"
+    },
+    "skala": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Skalierung (Faktor; bei Momenten auf den Bogenradius)",
+      "seit_version": "1.1",
+      "min": 0.01,
+      "max": 100.0,
+      "dezimalen": 2
+    },
+    "deckkraft": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "",
+      "beschreibung": "Deckkraft",
+      "seit_version": "1.1",
+      "min": 0.1,
+      "max": 1.0,
+      "dezimalen": 2
+    },
+    "vordergrund": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "im Vordergrund",
+      "seit_version": "1.1"
+    }
+  },
+  "pfeil_m_z": {
+    "sichtbar": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "Pfeil anzeigen",
+      "seit_version": "1.1"
+    },
+    "farbe": {
+      "typ": "farbe",
+      "default": "",
+      "einheit": "",
+      "beschreibung": "Farbe (leer: Paarfarbe)",
+      "seit_version": "1.1"
+    },
+    "dicke": {
+      "typ": "float",
+      "default": 0.0,
+      "einheit": "%",
+      "beschreibung": "Dicke in Prozent der Koerperausdehnung (0: Grunddicke)",
+      "seit_version": "1.1",
+      "min": 0.0,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "kopf": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Kopfgroesse (Faktor)",
+      "seit_version": "1.1",
+      "min": 0.2,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "gestrichelt": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "gestrichelt",
+      "seit_version": "1.1"
+    },
+    "skala": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Skalierung (Faktor; bei Momenten auf den Bogenradius)",
+      "seit_version": "1.1",
+      "min": 0.01,
+      "max": 100.0,
+      "dezimalen": 2
+    },
+    "deckkraft": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "",
+      "beschreibung": "Deckkraft",
+      "seit_version": "1.1",
+      "min": 0.1,
+      "max": 1.0,
+      "dezimalen": 2
+    },
+    "vordergrund": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "im Vordergrund",
+      "seit_version": "1.1"
+    }
+  },
+  "pfeil_fremd": {
+    "sichtbar": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "Pfeil anzeigen",
+      "seit_version": "1.1"
+    },
+    "farbe": {
+      "typ": "farbe",
+      "default": "",
+      "einheit": "",
+      "beschreibung": "Farbe (leer: Paarfarbe)",
+      "seit_version": "1.1"
+    },
+    "dicke": {
+      "typ": "float",
+      "default": 0.0,
+      "einheit": "%",
+      "beschreibung": "Dicke in Prozent der Koerperausdehnung (0: Grunddicke)",
+      "seit_version": "1.1",
+      "min": 0.0,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "kopf": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Kopfgroesse (Faktor)",
+      "seit_version": "1.1",
+      "min": 0.2,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "gestrichelt": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "gestrichelt",
+      "seit_version": "1.1"
+    },
+    "skala": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Skalierung (Faktor; bei Momenten auf den Bogenradius)",
+      "seit_version": "1.1",
+      "min": 0.01,
+      "max": 100.0,
+      "dezimalen": 2
+    },
+    "deckkraft": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "",
+      "beschreibung": "Deckkraft",
+      "seit_version": "1.1",
+      "min": 0.1,
+      "max": 1.0,
+      "dezimalen": 2
+    },
+    "vordergrund": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "im Vordergrund",
+      "seit_version": "1.1"
+    }
+  },
+  "pfeil_fremd_mx": {
+    "sichtbar": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "Pfeil anzeigen",
+      "seit_version": "1.1"
+    },
+    "farbe": {
+      "typ": "farbe",
+      "default": "",
+      "einheit": "",
+      "beschreibung": "Farbe (leer: Paarfarbe)",
+      "seit_version": "1.1"
+    },
+    "dicke": {
+      "typ": "float",
+      "default": 0.0,
+      "einheit": "%",
+      "beschreibung": "Dicke in Prozent der Koerperausdehnung (0: Grunddicke)",
+      "seit_version": "1.1",
+      "min": 0.0,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "kopf": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Kopfgroesse (Faktor)",
+      "seit_version": "1.1",
+      "min": 0.2,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "gestrichelt": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "gestrichelt",
+      "seit_version": "1.1"
+    },
+    "skala": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Skalierung (Faktor; bei Momenten auf den Bogenradius)",
+      "seit_version": "1.1",
+      "min": 0.01,
+      "max": 100.0,
+      "dezimalen": 2
+    },
+    "deckkraft": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "",
+      "beschreibung": "Deckkraft",
+      "seit_version": "1.1",
+      "min": 0.1,
+      "max": 1.0,
+      "dezimalen": 2
+    },
+    "vordergrund": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "im Vordergrund",
+      "seit_version": "1.1"
+    }
+  },
+  "pfeil_fremd_my": {
+    "sichtbar": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "Pfeil anzeigen",
+      "seit_version": "1.1"
+    },
+    "farbe": {
+      "typ": "farbe",
+      "default": "",
+      "einheit": "",
+      "beschreibung": "Farbe (leer: Paarfarbe)",
+      "seit_version": "1.1"
+    },
+    "dicke": {
+      "typ": "float",
+      "default": 0.0,
+      "einheit": "%",
+      "beschreibung": "Dicke in Prozent der Koerperausdehnung (0: Grunddicke)",
+      "seit_version": "1.1",
+      "min": 0.0,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "kopf": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Kopfgroesse (Faktor)",
+      "seit_version": "1.1",
+      "min": 0.2,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "gestrichelt": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "gestrichelt",
+      "seit_version": "1.1"
+    },
+    "skala": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Skalierung (Faktor; bei Momenten auf den Bogenradius)",
+      "seit_version": "1.1",
+      "min": 0.01,
+      "max": 100.0,
+      "dezimalen": 2
+    },
+    "deckkraft": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "",
+      "beschreibung": "Deckkraft",
+      "seit_version": "1.1",
+      "min": 0.1,
+      "max": 1.0,
+      "dezimalen": 2
+    },
+    "vordergrund": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "im Vordergrund",
+      "seit_version": "1.1"
+    }
+  },
+  "pfeil_fremd_mz": {
+    "sichtbar": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "Pfeil anzeigen",
+      "seit_version": "1.1"
+    },
+    "farbe": {
+      "typ": "farbe",
+      "default": "",
+      "einheit": "",
+      "beschreibung": "Farbe (leer: Paarfarbe)",
+      "seit_version": "1.1"
+    },
+    "dicke": {
+      "typ": "float",
+      "default": 0.0,
+      "einheit": "%",
+      "beschreibung": "Dicke in Prozent der Koerperausdehnung (0: Grunddicke)",
+      "seit_version": "1.1",
+      "min": 0.0,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "kopf": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Kopfgroesse (Faktor)",
+      "seit_version": "1.1",
+      "min": 0.2,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "gestrichelt": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "gestrichelt",
+      "seit_version": "1.1"
+    },
+    "skala": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Skalierung (Faktor; bei Momenten auf den Bogenradius)",
+      "seit_version": "1.1",
+      "min": 0.01,
+      "max": 100.0,
+      "dezimalen": 2
+    },
+    "deckkraft": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "",
+      "beschreibung": "Deckkraft",
+      "seit_version": "1.1",
+      "min": 0.1,
+      "max": 1.0,
+      "dezimalen": 2
+    },
+    "vordergrund": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "im Vordergrund",
+      "seit_version": "1.1"
+    }
+  },
+  "pfeil_rest": {
+    "sichtbar": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "Pfeil anzeigen",
+      "seit_version": "1.1"
+    },
+    "farbe": {
+      "typ": "farbe",
+      "default": "#dddddd",
+      "einheit": "",
+      "beschreibung": "Farbe (leer: Paarfarbe)",
+      "seit_version": "1.1"
+    },
+    "dicke": {
+      "typ": "float",
+      "default": 0.0,
+      "einheit": "%",
+      "beschreibung": "Dicke in Prozent der Koerperausdehnung (0: Grunddicke)",
+      "seit_version": "1.1",
+      "min": 0.0,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "kopf": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Kopfgroesse (Faktor)",
+      "seit_version": "1.1",
+      "min": 0.2,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "gestrichelt": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "gestrichelt",
+      "seit_version": "1.1"
+    },
+    "skala": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Skalierung (Faktor; bei Momenten auf den Bogenradius)",
+      "seit_version": "1.1",
+      "min": 0.01,
+      "max": 100.0,
+      "dezimalen": 2
+    },
+    "deckkraft": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "",
+      "beschreibung": "Deckkraft",
+      "seit_version": "1.1",
+      "min": 0.1,
+      "max": 1.0,
+      "dezimalen": 2
+    },
+    "vordergrund": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "im Vordergrund",
+      "seit_version": "1.1"
+    }
+  },
+  "pfeil_zusatz": {
+    "sichtbar": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "Pfeil anzeigen",
+      "seit_version": "1.1"
+    },
+    "farbe": {
+      "typ": "farbe",
+      "default": "#e08214",
+      "einheit": "",
+      "beschreibung": "Farbe (leer: Paarfarbe)",
+      "seit_version": "1.1"
+    },
+    "dicke": {
+      "typ": "float",
+      "default": 0.0,
+      "einheit": "%",
+      "beschreibung": "Dicke in Prozent der Koerperausdehnung (0: Grunddicke)",
+      "seit_version": "1.1",
+      "min": 0.0,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "kopf": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Kopfgroesse (Faktor)",
+      "seit_version": "1.1",
+      "min": 0.2,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "gestrichelt": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "gestrichelt",
+      "seit_version": "1.1"
+    },
+    "skala": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Skalierung (Faktor; bei Momenten auf den Bogenradius)",
+      "seit_version": "1.1",
+      "min": 0.01,
+      "max": 100.0,
+      "dezimalen": 2
+    },
+    "deckkraft": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "",
+      "beschreibung": "Deckkraft",
+      "seit_version": "1.1",
+      "min": 0.1,
+      "max": 1.0,
+      "dezimalen": 2
+    },
+    "vordergrund": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "im Vordergrund",
+      "seit_version": "1.1"
+    }
+  },
+  "pfeil_mges_x": {
+    "sichtbar": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "Pfeil anzeigen",
+      "seit_version": "1.1"
+    },
+    "farbe": {
+      "typ": "farbe",
+      "default": "#762a83",
+      "einheit": "",
+      "beschreibung": "Farbe (leer: Paarfarbe)",
+      "seit_version": "1.1"
+    },
+    "dicke": {
+      "typ": "float",
+      "default": 0.0,
+      "einheit": "%",
+      "beschreibung": "Dicke in Prozent der Koerperausdehnung (0: Grunddicke)",
+      "seit_version": "1.1",
+      "min": 0.0,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "kopf": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Kopfgroesse (Faktor)",
+      "seit_version": "1.1",
+      "min": 0.2,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "gestrichelt": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "gestrichelt",
+      "seit_version": "1.1"
+    },
+    "skala": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Skalierung (Faktor; bei Momenten auf den Bogenradius)",
+      "seit_version": "1.1",
+      "min": 0.01,
+      "max": 100.0,
+      "dezimalen": 2
+    },
+    "deckkraft": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "",
+      "beschreibung": "Deckkraft",
+      "seit_version": "1.1",
+      "min": 0.1,
+      "max": 1.0,
+      "dezimalen": 2
+    },
+    "vordergrund": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "im Vordergrund",
+      "seit_version": "1.1"
+    }
+  },
+  "pfeil_mges_y": {
+    "sichtbar": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "Pfeil anzeigen",
+      "seit_version": "1.1"
+    },
+    "farbe": {
+      "typ": "farbe",
+      "default": "#1b7837",
+      "einheit": "",
+      "beschreibung": "Farbe (leer: Paarfarbe)",
+      "seit_version": "1.1"
+    },
+    "dicke": {
+      "typ": "float",
+      "default": 0.0,
+      "einheit": "%",
+      "beschreibung": "Dicke in Prozent der Koerperausdehnung (0: Grunddicke)",
+      "seit_version": "1.1",
+      "min": 0.0,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "kopf": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Kopfgroesse (Faktor)",
+      "seit_version": "1.1",
+      "min": 0.2,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "gestrichelt": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "gestrichelt",
+      "seit_version": "1.1"
+    },
+    "skala": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Skalierung (Faktor; bei Momenten auf den Bogenradius)",
+      "seit_version": "1.1",
+      "min": 0.01,
+      "max": 100.0,
+      "dezimalen": 2
+    },
+    "deckkraft": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "",
+      "beschreibung": "Deckkraft",
+      "seit_version": "1.1",
+      "min": 0.1,
+      "max": 1.0,
+      "dezimalen": 2
+    },
+    "vordergrund": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "im Vordergrund",
+      "seit_version": "1.1"
+    }
+  },
+  "pfeil_mges_z": {
+    "sichtbar": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "Pfeil anzeigen",
+      "seit_version": "1.1"
+    },
+    "farbe": {
+      "typ": "farbe",
+      "default": "#e08214",
+      "einheit": "",
+      "beschreibung": "Farbe (leer: Paarfarbe)",
+      "seit_version": "1.1"
+    },
+    "dicke": {
+      "typ": "float",
+      "default": 0.0,
+      "einheit": "%",
+      "beschreibung": "Dicke in Prozent der Koerperausdehnung (0: Grunddicke)",
+      "seit_version": "1.1",
+      "min": 0.0,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "kopf": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Kopfgroesse (Faktor)",
+      "seit_version": "1.1",
+      "min": 0.2,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "gestrichelt": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "gestrichelt",
+      "seit_version": "1.1"
+    },
+    "skala": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Skalierung (Faktor; bei Momenten auf den Bogenradius)",
+      "seit_version": "1.1",
+      "min": 0.01,
+      "max": 100.0,
+      "dezimalen": 2
+    },
+    "deckkraft": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "",
+      "beschreibung": "Deckkraft",
+      "seit_version": "1.1",
+      "min": 0.1,
+      "max": 1.0,
+      "dezimalen": 2
+    },
+    "vordergrund": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "im Vordergrund",
+      "seit_version": "1.1"
+    }
+  },
+  "pfeil_hebelarm": {
+    "sichtbar": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "Pfeil anzeigen",
+      "seit_version": "1.1"
+    },
+    "farbe": {
+      "typ": "farbe",
+      "default": "#000000",
+      "einheit": "",
+      "beschreibung": "Farbe (leer: Paarfarbe)",
+      "seit_version": "1.1"
+    },
+    "dicke": {
+      "typ": "float",
+      "default": 0.0,
+      "einheit": "%",
+      "beschreibung": "Dicke in Prozent der Koerperausdehnung (0: Grunddicke)",
+      "seit_version": "1.1",
+      "min": 0.0,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "kopf": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Kopfgroesse (Faktor)",
+      "seit_version": "1.1",
+      "min": 0.2,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "gestrichelt": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "gestrichelt",
+      "seit_version": "1.1"
+    },
+    "skala": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Skalierung (Faktor; bei Momenten auf den Bogenradius)",
+      "seit_version": "1.1",
+      "min": 0.01,
+      "max": 100.0,
+      "dezimalen": 2
+    },
+    "deckkraft": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "",
+      "beschreibung": "Deckkraft",
+      "seit_version": "1.1",
+      "min": 0.1,
+      "max": 1.0,
+      "dezimalen": 2
+    },
+    "vordergrund": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "im Vordergrund",
+      "seit_version": "1.1"
     }
   }
 }

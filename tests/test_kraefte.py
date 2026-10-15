@@ -4,7 +4,7 @@ import numpy as np
 from segelphysik.core import kraefte_bild as kb
 from segelphysik.core.overlays import (LayerRegistry, LAYER_KRAEFTE,
                                        LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN,
-                                       LAYER_MOMENTE)
+                                       LAYER_MOMENTE, LAYER_FREMDKRAFT)
 
 
 class _V:
@@ -35,7 +35,7 @@ def _wirft(funktion, *args):
 def test_r1_registry_kraefte_layer():
     reg = LayerRegistry()
     assert set(reg.zustand()) == {LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN,
-                                  LAYER_KRAEFTE, LAYER_MOMENTE}
+                                  LAYER_KRAEFTE, LAYER_MOMENTE, LAYER_FREMDKRAFT}
     assert not reg.ist_an(LAYER_KRAEFTE)
     assert reg.umschalten(LAYER_KRAEFTE) is True
     assert reg.ist_an(LAYER_KRAEFTE)
@@ -106,7 +106,7 @@ def test_r10_bridge_kraefte_api_ohne_pyvista():
     assert b._kraefte_namen("boot")[:4] == [
         "kraefte_boot_fg", "kraefte_boot_fa",
         "kraefte_boot_arm", "kraefte_boot_moment"]
-    assert len(b._kraefte_namen("boot")) == 10
+    assert len(b._kraefte_namen("boot")) == 17
     erg = _Erg(1.0, (0, 0, 0), 981.0, (0, 0, 0))
     b.kraefte_daten_setzen("boot", erg, 100.0, 9.81, 1e-3)
     assert "boot" in b._kraefte_daten
@@ -231,6 +231,7 @@ def test_fremdkraft_pfeil_startet_am_weltangriffspunkt(monkeypatch):
     b.kraefte_daten_setzen("boot", erg, 100.0, 9.81, 0.01,
                            fremd=((0.0, 50.0, 0.0), (1.0, 0.0, 0.0)))
     b.layer_setzen(gb.LAYER_KRAEFTE, True)
+    b.layer_setzen(gb.LAYER_FREMDKRAFT, True)
 
     b._kraefte_actors("boot")
 
