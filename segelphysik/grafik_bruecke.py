@@ -48,7 +48,9 @@ WASSER_FARBE = (44 / 255, 106 / 255, 153 / 255)
 OZEAN_OPAZITAET = 0.88
 VOLUMEN_HALB = 400.0    # Halbkante des Unterwasser-Volumens
 VOLUMEN_TIEFE = 60.0
-VOLUMEN_OPAZITAET = 0.18
+GLAS_FARBE = (30, 130, 135)
+GLAS_ALPHA_OBEN = 0.10
+GLAS_ALPHA_UNTEN = 0.30
 
 
 def glanz_kw(glanz):
@@ -248,9 +250,16 @@ class GrafikBruecke:
             lighting=False, reset_camera=False, pickable=False)
         volumen = pv.Box(bounds=(-VOLUMEN_HALB, VOLUMEN_HALB,
                                  -VOLUMEN_HALB, VOLUMEN_HALB,
-                                 -VOLUMEN_TIEFE, -0.06))
+                                 -VOLUMEN_TIEFE, -0.06), level=8)
+        # Glaseffekt: gruenlich-blaue Toenung, die mit der Tiefe dichter wird
+        tiefe = np.clip(-volumen.points[:, 2] / VOLUMEN_TIEFE, 0.0, 1.0)
+        glas = np.empty((volumen.n_points, 4), dtype=np.uint8)
+        glas[:, :3] = GLAS_FARBE
+        glas[:, 3] = (255 * (GLAS_ALPHA_OBEN + (GLAS_ALPHA_UNTEN
+                      - GLAS_ALPHA_OBEN) * tiefe ** 0.5)).astype(np.uint8)
+        volumen["rgba"] = glas
         self._volumen_actor = self._plotter.add_mesh(
-            volumen, color=WASSER_FARBE, opacity=VOLUMEN_OPAZITAET,
+            volumen, scalars="rgba", rgba=True,
             lighting=False, reset_camera=False, pickable=False)
         punkte, flaechen, rgba = dunst_gitter(r_aussen=DUNST_RADIUS)
         # Ring und Wand getrennt: Transparente Actors werden nach Abstand
