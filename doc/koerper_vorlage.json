@@ -88,13 +88,21 @@
       "dichte_kg_pro_m3": 500,
       "farbe": "#d40078",
       "farbe_unter_wasser": "#99005a"
+    },
+    "_formtypen": "cone(H_m,R_m) box(dx_m,dy_m,dz_m) pyramid(a_m,H_m) sphere(R_m) cylinder(R_m,H_m,lage=stehend|liegend) plate(dx_m,dy_m,dicke_m) hexprism(umkreisradius_m,H_m,spitzenlaenge_m,lage) polyhedron(eckpunkte_m=[[x,y,z],..], optional flaechen=[[i,j,k,..],..]; ohne flaechen = konvexe Huelle)",
+    "kugel": {
+      "form": { "typ": "sphere", "R_m": 1.0 },
+      "dichte_kg_pro_m3": 700,
+      "farbe": "#1e90ff",
+      "farbe_unter_wasser": "#1565b3"
     }
   },
   "darstellung": {
     "grundkoerper": {
       "cone": "#ff6a00",
       "box": "#00b140",
-      "pyramid": "#d40078"
+      "pyramid": "#d40078",
+      "sphere": "#1e90ff"
     },
     "delta_helligkeit_unterwasser": 0.4,
     "farbe_standard": "#c9c9c9",

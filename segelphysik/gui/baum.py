@@ -57,12 +57,11 @@ def _teil_knoten(teil):
 def _form_knoten(name,eintrag):
     k=Knoten(str(name),ART_SUMMEN,ICON_KEGEL)
     f=eintrag.get("form",{})
-    if f.get("typ")=="cone":
-        k.eigenschaften.append(("Form","Kegel H=%g R=%g m"%(f.get("H_m",0),f.get("R_m",0))))
-    elif f.get("typ")=="box":
-        k.eigenschaften.append(("Form","Quader %gx%gx%g m"%(f.get("dx_m",0),f.get("dy_m",0),f.get("dz_m",0))))
-    elif f.get("typ")=="pyramid":
-        k.eigenschaften.append(("Form","Pyramide a=%g H=%g m"%(f.get("a_m",0),f.get("H_m",0))))
+    try:
+        from ..core.koerper_formen import FORMEN
+        if f.get("typ") in FORMEN:
+            k.eigenschaften.append(("Form",FORMEN[f["typ"]]["titel"](f)))
+    except (KeyError,TypeError): pass
     k.eigenschaften+=_eigenschaften(eintrag)
     return k
 

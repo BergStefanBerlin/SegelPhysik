@@ -46,17 +46,7 @@ def baue_boot(konfig, skala=boot_bau.SKALA, ordner=YACHT_ORDNER):
 def baue_form(konfig, eintrag):
     """J-1/J-3: einfache Figur aus einem 'form'-Eintrag der koerper.json."""
     f = eintrag["form"]
-    typ = f["typ"]
-    if typ == "cone":
-        form = formen_alt.bau_kegel(float(f["H_m"]), float(f["R_m"]))
-    elif typ == "box":
-        form = formen_alt.bau_quader(float(f["dx_m"]), float(f["dy_m"]),
-                                     float(f["dz_m"]))
-    elif typ == "pyramid":
-        form = formen_alt.bau_pyramide(float(f["a_m"]), float(f["H_m"]))
-    else:
-        raise ValueError("unbekannte Form %r (Loader erlaubt nur "
-                         "cone/box/pyramid)" % (typ,))
+    form = formen_alt.baue_aus_form(f)
     from .geometrie_konflikte import override_aus_eintrag
     form_override = override_aus_eintrag(eintrag)
     if form_override is not None:

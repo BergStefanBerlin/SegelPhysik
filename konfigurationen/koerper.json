@@ -88,13 +88,112 @@
       "dichte_kg_pro_m3": 500,
       "farbe": "#d40078",
       "farbe_unter_wasser": "#99005a"
+    },
+    "kugel": {
+      "form": {
+        "typ": "sphere",
+        "R_m": 1.0
+      },
+      "dichte_kg_pro_m3": 700,
+      "farbe": "#00bcd4",
+      "farbe_unter_wasser": "#00717f"
+    },
+    "rolle": {
+      "form": {
+        "typ": "cylinder",
+        "R_m": 0.5,
+        "H_m": 2.0,
+        "lage": "liegend"
+      },
+      "dichte_kg_pro_m3": 2700,
+      "farbe": "#1e90ff",
+      "farbe_unter_wasser": "#125699"
+    },
+    "platte": {
+      "form": {
+        "typ": "plate",
+        "dx_m": 2.0,
+        "dy_m": 1.0,
+        "dicke_m": 0.02
+      },
+      "dichte_kg_pro_m3": 7850,
+      "farbe": "#708090",
+      "farbe_unter_wasser": "#434d56"
+    },
+    "bleistift": {
+      "form": {
+        "typ": "hexprism",
+        "umkreisradius_m": 0.004,
+        "H_m": 0.17,
+        "spitzenlaenge_m": 0.015,
+        "_hinweis": "sechskantiger Schaft mit konischer Spitze"
+      },
+      "dichte_kg_pro_m3": 700,
+      "farbe": "#ffd21e",
+      "farbe_unter_wasser": "#997e12"
+    },
+    "unregelmaessig": {
+      "form": {
+        "typ": "polyhedron",
+        "_beschreibung": "geschlossener, unregelmaessiger Koerper (verzerrter Wuerfel)",
+        "eckpunkte_m": [
+          [
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            1.1,
+            0.05,
+            0.1
+          ],
+          [
+            0.05,
+            0.95,
+            0.15
+          ],
+          [
+            1.05,
+            1.0,
+            0.05
+          ],
+          [
+            0.1,
+            0.1,
+            0.85
+          ],
+          [
+            1.0,
+            0.15,
+            1.05
+          ],
+          [
+            0.15,
+            1.05,
+            0.9
+          ],
+          [
+            0.9,
+            0.95,
+            1.1
+          ]
+        ]
+      },
+      "dichte_kg_pro_m3": 2600,
+      "farbe": "#6b8e23",
+      "farbe_unter_wasser": "#405515"
     }
   },
   "darstellung": {
     "grundkoerper": {
       "cone": "#ff6a00",
       "box": "#00b140",
-      "pyramid": "#d40078"
+      "pyramid": "#d40078",
+      "sphere": "#00bcd4",
+      "cylinder": "#1e90ff",
+      "plate": "#708090",
+      "hexprism": "#ffd21e",
+      "polyhedron": "#6b8e23"
     },
     "delta_helligkeit_unterwasser": 0.4,
     "farbe_standard": "#c9c9c9",

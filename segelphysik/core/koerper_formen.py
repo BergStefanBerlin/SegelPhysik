@@ -12,7 +12,9 @@ Importquelle.
 from __future__ import annotations
 import numpy as np
 
-__all__ = ["build_cone", "build_box", "build_pyramid"]
+__all__ = ["build_cone", "build_box", "build_pyramid", "build_sphere",
+           "build_cylinder", "build_plate", "build_hexprism",
+           "build_polyhedron", "FORMEN", "baue_aus_form"]
 
 
 def _close(vertices, faces):
@@ -69,3 +71,236 @@ def build_pyramid(a=2.0, H=2.0):
 bau_kegel = build_cone
 bau_quader = build_box
 bau_pyramide = build_pyramid
+
+
+# --- weitere Formen -------------------------------------------------------
+
+def _volumenschwerpunkt(v, f):
+    """Schwerpunkt eines geschlossenen, aussen orientierten Dreiecksnetzes."""
+    a, b, c = v[f[:, 0]], v[f[:, 1]], v[f[:, 2]]
+    vol = np.einsum("ij,ij->i", a, np.cross(b, c)) / 6.0
+    gesamt = vol.sum()
+    if abs(gesamt) < 1e-18:
+        raise ValueError("Koerper ohne Volumen")
+    return ((a + b + c) / 4.0 * vol[:, None]).sum(axis=0) / gesamt
+
+
+def _zentriert(v, f):
+    v = np.asarray(v, dtype=np.float64)
+    return _close(v - _volumenschwerpunkt(v, np.asarray(f, np.int64)), f)
+
+
+def _liegend(v):
+    """Achse z -> x (Bug-Richtung), eigentliche Drehung (det = +1)."""
+    v = np.asarray(v, dtype=np.float64)
+    return np.stack([v[:, 2], v[:, 1], -v[:, 0]], axis=1)
+
+
+def _ring(r, z, n, versatz=0.0):
+    ang = 2.0 * np.pi * (np.arange(n) + versatz) / n
+    return np.stack([r*np.cos(ang), r*np.sin(ang), np.full(n, float(z))],
+                    axis=1)
+
+
+def build_sphere(R=1.0, nseg=48):
+    """Kugel (UV-Netz mit Polen), Mittelpunkt im Ursprung."""
+    if R <= 0 or nseg < 6:
+        raise ValueError("R>0, nseg>=6 erforderlich")
+    ringe = nseg // 2 - 1
+    teile = [[[0.0, 0.0, R]]]
+    for i in range(1, ringe + 1):
+        theta = np.pi * i / (ringe + 1)
+        teile.append(_ring(R*np.sin(theta), R*np.cos(theta), nseg))
+    teile.append([[0.0, 0.0, -R]])
+    v = np.vstack(teile)
+    sued = len(v) - 1
+    f = []
+    j = np.arange(nseg); k = (j + 1) % nseg
+    f += [[0, 1 + a, 1 + b] for a, b in zip(j, k)]
+    for r in range(ringe - 1):
+        o, u = 1 + r*nseg, 1 + (r + 1)*nseg
+        for a, b in zip(j, k):
+            f += [[o + a, u + a, u + b], [o + a, u + b, o + b]]
+    u = 1 + (ringe - 1)*nseg
+    f += [[u + b, u + a, sued] for a, b in zip(j, k)]
+    return _close(v, f)
+
+
+def build_cylinder(R=0.5, H=2.0, nseg=64, lage="stehend"):
+    """Zylinder; stehend: Achse z, liegend: Achse x. Mitte im Ursprung."""
+    if R <= 0 or H <= 0 or nseg < 3:
+        raise ValueError("R>0, H>0, nseg>=3 erforderlich")
+    v = np.vstack([_ring(R, -H/2.0, nseg), _ring(R, H/2.0, nseg),
+                   [[0.0, 0.0, -H/2.0]], [[0.0, 0.0, H/2.0]]])
+    j = np.arange(nseg); k = (j + 1) % nseg
+    f = []
+    for a, b in zip(j, k):
+        f += [[a, b, nseg + b], [a, nseg + b, nseg + a],
+              [2*nseg, b, a], [2*nseg + 1, nseg + a, nseg + b]]
+    if lage == "liegend":
+        v = _liegend(v)
+    return _close(v, f)
+
+
+def build_plate(dx=2.0, dy=1.0, dicke=0.02):
+    """Duenne Platte dx*dy*dicke (Dicke in z), zentriert."""
+    return build_box(dx, dy, dicke)
+
+
+def build_hexprism(umkreisradius=0.004, H=0.17, spitzenlaenge=0.0,
+                   lage="stehend"):
+    """Sechskantstab der Gesamtlaenge H mit optionaler konischer Spitze.
+
+    Spitze am +Ende; stehend: Achse z, liegend: Achse x. Der Ursprung liegt
+    im Volumenschwerpunkt."""
+    if umkreisradius <= 0 or H <= 0 or not 0.0 <= spitzenlaenge < H:
+        raise ValueError("umkreisradius>0, H>0, 0<=spitzenlaenge<H erforderlich")
+    schaft_oben = H - spitzenlaenge
+    unten = _ring(umkreisradius, 0.0, 6)
+    oben = _ring(umkreisradius, schaft_oben, 6)
+    j = np.arange(6); k = (j + 1) % 6
+    # 12 = Mitte unten, 13 = Mitte oben bzw. Spitzenpunkt (z = H)
+    v = np.vstack([unten, oben, [[0.0, 0.0, 0.0]], [[0.0, 0.0, H]]])
+    f = []
+    for a, b in zip(j, k):
+        f += [[a, b, 6 + b], [a, 6 + b, 6 + a], [12, b, a]]
+        f += [[13, 6 + a, 6 + b]]
+    v, f = _zentriert(v, f)
+    if lage == "liegend":
+        v = _liegend(v)
+    return v, f
+
+
+def build_polyhedron(eckpunkte, flaechen=None):
+    """Geschlossener Koerper aus Eckpunkten.
+
+    Ohne 'flaechen' (Indexlisten, Polygone werden faecherfoermig zerlegt,
+    aussen im Gegenuhrzeigersinn) ist es die KONVEXE Huelle der Punkte.
+    Ursprung im Volumenschwerpunkt."""
+    p = np.asarray(eckpunkte, dtype=np.float64)
+    if p.ndim != 2 or p.shape[1] != 3 or len(p) < 4:
+        raise ValueError("eckpunkte_m: mindestens 4 Punkte [x, y, z]")
+    if not np.isfinite(p).all():
+        raise ValueError("eckpunkte_m: nur endliche Zahlen")
+    if flaechen is not None:
+        f = []
+        for poly in flaechen:
+            poly = [int(i) for i in poly]
+            if len(poly) < 3 or min(poly) < 0 or max(poly) >= len(p):
+                raise ValueError("flaechen: ungueltiger Index")
+            f += [[poly[0], poly[i], poly[i + 1]]
+                  for i in range(1, len(poly) - 1)]
+        return _zentriert(p, f)
+    return _zentriert(*_konvexe_huelle(p))
+
+
+def _konvexe_huelle(p, tol=1e-9):
+    n = len(p)
+    if n > 64:
+        raise ValueError("eckpunkte_m: hoechstens 64 Punkte ohne 'flaechen'")
+    skala = max(float(np.ptp(p, axis=0).max()), 1e-12)
+    ebenen = {}
+    for i in range(n):
+        for j in range(i + 1, n):
+            for k in range(j + 1, n):
+                nv = np.cross(p[j] - p[i], p[k] - p[i])
+                ln = np.linalg.norm(nv)
+                if ln < tol * skala * skala:
+                    continue
+                nv /= ln
+                s = (p - p[i]) @ nv
+                if np.all(s <= tol * skala):
+                    pass
+                elif np.all(s >= -tol * skala):
+                    nv, s = -nv, -s
+                else:
+                    continue
+                auf = frozenset(np.flatnonzero(np.abs(s) <= tol * skala))
+                ebenen.setdefault(auf, nv)
+    if not ebenen:
+        raise ValueError("eckpunkte_m: Punkte liegen in einer Ebene")
+    mitte = p.mean(axis=0)
+    f = []
+    for auf, nv in ebenen.items():
+        idx = sorted(auf)
+        z = p[idx].mean(axis=0)
+        u = p[idx[0]] - z
+        u -= nv * (u @ nv)
+        u /= np.linalg.norm(u)
+        w = np.cross(nv, u)
+        winkel = np.arctan2((p[idx] - z) @ w, (p[idx] - z) @ u)
+        ordnung = [idx[i] for i in np.argsort(winkel)]
+        for i in range(1, len(ordnung) - 1):
+            f.append([ordnung[0], ordnung[i], ordnung[i + 1]])
+    f = np.asarray(f, dtype=np.int64)
+    # nach aussen orientieren (konvex: Normale zeigt von der Mitte weg)
+    a, b, c = p[f[:, 0]], p[f[:, 1]], p[f[:, 2]]
+    innen = np.einsum("ij,ij->i", np.cross(b - a, c - a), a - mitte) < 0
+    f[innen] = f[innen][:, [0, 2, 1]]
+    return p, f
+
+
+# --- Formtabelle: einzige Quelle fuer Loader, Fabrik und Baumanzeige ------
+# zahlen/optionale_zahlen: positive Zahlen (JSON-Schluessel mit Einheit),
+# texte: {Schluessel: erlaubte Werte}, listen: Pflicht-Listen,
+# optionale_listen: optionale Listen, bau(f): -> (vertices, faces),
+# titel(f): Anzeigetext fuer den Komponentenbaum.
+def _g(f, k):
+    return float(f[k])
+
+
+FORMEN = {
+    "cone": dict(
+        zahlen=("H_m", "R_m"),
+        bau=lambda f: build_cone(_g(f, "H_m"), _g(f, "R_m")),
+        titel=lambda f: "Kegel H=%g R=%g m" % (f["H_m"], f["R_m"])),
+    "box": dict(
+        zahlen=("dx_m", "dy_m", "dz_m"),
+        bau=lambda f: build_box(_g(f, "dx_m"), _g(f, "dy_m"), _g(f, "dz_m")),
+        titel=lambda f: "Quader %gx%gx%g m" % (f["dx_m"], f["dy_m"], f["dz_m"])),
+    "pyramid": dict(
+        zahlen=("a_m", "H_m"),
+        bau=lambda f: build_pyramid(_g(f, "a_m"), _g(f, "H_m")),
+        titel=lambda f: "Pyramide a=%g H=%g m" % (f["a_m"], f["H_m"])),
+    "sphere": dict(
+        zahlen=("R_m",),
+        bau=lambda f: build_sphere(_g(f, "R_m")),
+        titel=lambda f: "Kugel R=%g m" % f["R_m"]),
+    "cylinder": dict(
+        zahlen=("R_m", "H_m"),
+        texte={"lage": ("stehend", "liegend")},
+        bau=lambda f: build_cylinder(_g(f, "R_m"), _g(f, "H_m"),
+                                     lage=f.get("lage", "stehend")),
+        titel=lambda f: "Zylinder R=%g H=%g m (%s)" % (
+            f["R_m"], f["H_m"], f.get("lage", "stehend"))),
+    "plate": dict(
+        zahlen=("dx_m", "dy_m", "dicke_m"),
+        bau=lambda f: build_plate(_g(f, "dx_m"), _g(f, "dy_m"),
+                                  _g(f, "dicke_m")),
+        titel=lambda f: "Platte %gx%gx%g m" % (
+            f["dx_m"], f["dy_m"], f["dicke_m"])),
+    "hexprism": dict(
+        zahlen=("umkreisradius_m", "H_m"),
+        optionale_zahlen=("spitzenlaenge_m",),
+        texte={"lage": ("stehend", "liegend")},
+        bau=lambda f: build_hexprism(
+            _g(f, "umkreisradius_m"), _g(f, "H_m"),
+            float(f.get("spitzenlaenge_m", 0.0)),
+            lage=f.get("lage", "stehend")),
+        titel=lambda f: "Sechskantstab r=%g H=%g m" % (
+            f["umkreisradius_m"], f["H_m"])),
+    "polyhedron": dict(
+        listen=("eckpunkte_m",),
+        optionale_listen=("flaechen",),
+        bau=lambda f: build_polyhedron(f["eckpunkte_m"], f.get("flaechen")),
+        titel=lambda f: "Polyeder (%d Ecken)" % len(f["eckpunkte_m"])),
+}
+
+
+def baue_aus_form(f):
+    """Baut (vertices, faces) aus einem 'form'-Dict der koerper.json."""
+    typ = f.get("typ")
+    if typ not in FORMEN:
+        raise ValueError("unbekannte Form %r (erlaubt: %s)"
+                         % (typ, ", ".join(sorted(FORMEN))))
+    return FORMEN[typ]["bau"](f)

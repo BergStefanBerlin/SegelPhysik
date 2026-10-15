@@ -106,18 +106,41 @@ def _val_teil(e,pfad,mats):
     if "wanddicke_m" in e: _pos(e["wanddicke_m"],h+".wanddicke_m")
 
 _KOERPER_TOP=("summenkoerper","darstellung")
-_FORM={"cone":("H_m","R_m"),"box":("dx_m","dy_m","dz_m"),"pyramid":("a_m","H_m")}
+
+from .koerper_formen import FORMEN as _FORMEN
+
+def _liste_pruefen(w,h,punkte):
+    if not isinstance(w,list) or not w: raise KonfigFehler("%s: nicht leere Liste erwartet"%h)
+    for i,x in enumerate(w):
+        if not isinstance(x,list) or (punkte and len(x)!=3) or any(isinstance(z,bool) or not isinstance(z,(int,float)) for z in x):
+            raise KonfigFehler("%s[%d]: %s erwartet"%(h,i,"[x, y, z]" if punkte else "Liste von Indizes"))
 
 def _val_form(e,h,mats):
     f=e.get("form")
     if not isinstance(f,dict) or "typ" not in f:
         raise KonfigFehler("%s: 'form' mit 'typ' erwartet"%h)
     t=f["typ"]
-    if t not in _FORM:
-        raise KonfigFehler("%s.form.typ: unbekannte Form '%s' (erlaubt: %s)"%(h,t,", ".join(sorted(_FORM))))
-    fr=[s for s in f if s!="typ" and s not in _FORM[t] and not s.startswith("_")]
-    if fr: raise KonfigFehler("%s.form: unbekannte Schluessel %s (fuer '%s': %s)"%(h,fr,t,", ".join(_FORM[t])))
-    for k in _FORM[t]: _pos(f.get(k),"%s.form.%s"%(h,k))
+    if t not in _FORMEN:
+        raise KonfigFehler("%s.form.typ: unbekannte Form '%s' (erlaubt: %s)"%(h,t,", ".join(sorted(_FORMEN))))
+    d=_FORMEN[t]
+    zahl=d.get("zahlen",()); opt=d.get("optionale_zahlen",()); txt=d.get("texte",{})
+    lst=d.get("listen",()); olst=d.get("optionale_listen",())
+    erlaubt=set(zahl)|set(opt)|set(txt)|set(lst)|set(olst)
+    fr=[s for s in f if s!="typ" and s not in erlaubt and not s.startswith("_")]
+    if fr: raise KonfigFehler("%s.form: unbekannte Schluessel %s (fuer '%s': %s)"%(h,fr,t,", ".join(sorted(erlaubt))))
+    for k in zahl: _pos(f.get(k),"%s.form.%s"%(h,k))
+    for k in opt:
+        if k in f: _pos(f[k],"%s.form.%s"%(h,k))
+    for k,ok in txt.items():
+        if k in f and f[k] not in ok:
+            raise KonfigFehler("%s.form.%s: erlaubt sind %s"%(h,k,", ".join(ok)))
+    for k in lst: _liste_pruefen(f.get(k),"%s.form.%s"%(h,k),k=="eckpunkte_m")
+    for k in olst:
+        if k in f: _liste_pruefen(f[k],"%s.form.%s"%(h,k),False)
+    try:
+        _FORMEN[t]["bau"](f)
+    except (ValueError,TypeError,AssertionError) as x:
+        raise KonfigFehler("%s.form: ungueltige Geometrie: %s"%(h,x))
     v=[s for s in _VERBOTEN_BLATT if s in e]
     if v: raise KonfigFehler("%s: unzulaessiger Massenschluessel %s (P3)"%(h,v))
     hm="material" in e; hd="dichte_kg_pro_m3" in e
@@ -170,8 +193,8 @@ def _val_koerper(d,mats,pfad):
         if not isinstance(gk,dict): raise KonfigFehler("%s: darstellung.grundkoerper: Objekt erwartet"%pfad)
         for k,w in gk.items():
             if k.startswith("_"): continue
-            if k not in ("cone","box","pyramid"):
-                raise KonfigFehler("%s: darstellung.grundkoerper: unbekannter Schluessel '%s' (erlaubt: cone, box, pyramid)"%(pfad,k))
+            if k not in _FORMEN:
+                raise KonfigFehler("%s: darstellung.grundkoerper: unbekannter Schluessel '%s' (erlaubt: %s)"%(pfad,k,", ".join(sorted(_FORMEN))))
             _hex(w,"%s.grundkoerper.%s"%(pfad,k))
 
 class Konfiguration:

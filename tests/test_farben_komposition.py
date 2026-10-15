@@ -162,7 +162,7 @@ def test_tc_h7_migrationsgegenprobe_schalenboot(konfig_real):
 def test_i9_grundkoerper_farben_aus_konfig(konfig_real):
     """Die drei Demo-Grundkoerper lesen ihre Farben aus darstellung.grundkoerper."""
     gk = konfig_real.grundkoerper_farben
-    assert {s for s in gk if not s.startswith("_")} == {"cone", "box", "pyramid"}
+    assert {"cone", "box", "pyramid"} <= {s for s in gk if not s.startswith("_")}
     assert fabriken.baue_kegel(konfig_real).farbe == gk["cone"]
     assert fabriken.baue_quader(konfig_real).farbe == gk["box"]
     assert fabriken.baue_pyramide(konfig_real).farbe == gk["pyramid"]
