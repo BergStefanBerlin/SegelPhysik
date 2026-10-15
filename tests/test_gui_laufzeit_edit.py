@@ -287,7 +287,8 @@ def test_statisch_modus_ruft_solver_auf_und_zeigt_ergebnis(
         lambda *_args, **_kwargs: hydrostatik)
     monkeypatch.setattr(
         "segelphysik.core.statisch_robust.loese_robust",
-        lambda kraft, masse, g: solveraufrufe.append((kraft, masse, g)) or {
+        lambda kraft, masse, g, **_kw: solveraufrufe.append(
+            (kraft, masse, g)) or {
             "z": 0.12, "phi": math.radians(5.0), "gm": 0.42,
             "iterationen": 7, "neutral": False, "stagnation": False,
             "restkraft": 0.0, "restmoment": 0.0,

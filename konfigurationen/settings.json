@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "statisch": {
+    "toleranz": 1e-08,
+    "max_iterationen": 60,
+    "stagnation_anteil": 0.05
+  },
+  "dynamisch": {
+    "zeitgenau": true,
+    "max_schritte_pro_aufgabe": 16,
+    "max_schritte_nachholen": 64,
+    "ueberlast_rueckstand_s": 1.0,
+    "ueberlast_dauer_s": 5.0,
+    "nachholen_ende_rueckstand_s": 0.1,
+    "nachholrate_ziel": 1.25
+  }
+}

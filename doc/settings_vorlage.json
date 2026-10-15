@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0",
+  "statisch": {
+    "toleranz": {
+      "typ": "float",
+      "default": 1e-08,
+      "einheit": "",
+      "beschreibung": "Abbruchtoleranz des Newton-Verfahrens",
+      "seit_version": "1.0",
+      "min": 1e-10,
+      "max": 0.001,
+      "dezimalen": 10
+    },
+    "max_iterationen": {
+      "typ": "int",
+      "default": 60,
+      "einheit": "",
+      "beschreibung": "Maximale Newton-Iterationen je Versuch",
+      "seit_version": "1.0",
+      "min": 5,
+      "max": 500
+    },
+    "stagnation_anteil": {
+      "typ": "float",
+      "default": 0.05,
+      "einheit": "",
+      "beschreibung": "Anteil der Iterationen ohne Fortschritt bis zur Stagnationserkennung",
+      "seit_version": "1.0",
+      "min": 0.001,
+      "max": 0.5,
+      "dezimalen": 3
+    }
+  },
+  "dynamisch": {
+    "zeitgenau": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "Simulation laeuft zeitgenau (Echtzeit). Aus: so schnell wie moeglich, Simulationszeit folgt nicht mehr der Uhr",
+      "seit_version": "1.0"
+    },
+    "max_schritte_pro_aufgabe": {
+      "typ": "int",
+      "default": 16,
+      "einheit": "Schritte",
+      "beschreibung": "Maximale Physikschritte je Rechenauftrag",
+      "seit_version": "1.0",
+      "min": 1,
+      "max": 256
+    },
+    "max_schritte_nachholen": {
+      "typ": "int",
+      "default": 64,
+      "einheit": "Schritte",
+      "beschreibung": "Maximale Physikschritte je Auftrag beim Nachholen",
+      "seit_version": "1.0",
+      "min": 1,
+      "max": 1024
+    },
+    "ueberlast_rueckstand_s": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "s",
+      "beschreibung": "Rueckstand, ab dem die Ueberlast beobachtet wird",
+      "seit_version": "1.0",
+      "min": 0.1,
+      "max": 60.0,
+      "dezimalen": 2
+    },
+    "ueberlast_dauer_s": {
+      "typ": "float",
+      "default": 5.0,
+      "einheit": "s",
+      "beschreibung": "Dauer des Rueckstands bis zur automatischen Pause",
+      "seit_version": "1.0",
+      "min": 0.5,
+      "max": 600.0,
+      "dezimalen": 1
+    },
+    "nachholen_ende_rueckstand_s": {
+      "typ": "float",
+      "default": 0.1,
+      "einheit": "s",
+      "beschreibung": "Rueckstand, unter dem Nachholen endet bzw. nicht beginnt",
+      "seit_version": "1.0",
+      "min": 0.01,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "nachholrate_ziel": {
+      "typ": "float",
+      "default": 1.25,
+      "einheit": "s/s",
+      "beschreibung": "Ziel-Nachholrate (Simulationszeit je Wandzeit)",
+      "seit_version": "1.0",
+      "min": 1.0,
+      "max": 10.0,
+      "dezimalen": 2
+    }
+  }
+}

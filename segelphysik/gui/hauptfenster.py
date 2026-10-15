@@ -21,7 +21,6 @@ from ..core.overlays import (LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN,
 
 
 _aktives_fenster = None
-_ECHTZEIT_MAX_SCHRITTE_PRO_AUFGABE = 16
 _ECHTZEIT_HYDROSTATIK_PFAD = "exakt_union"
 
 
@@ -104,7 +103,8 @@ class _StatischeAufgabeSignale(QObject):
 
 
 class _StatischeAufgabe(QRunnable):
-    def __init__(self, generation, name, koerper, ordner, rho_w, signale):
+    def __init__(self, generation, name, koerper, ordner, rho_w, signale,
+                 parameter=None):
         super().__init__()
         self.generation = generation
         self.name = name
@@ -112,6 +112,11 @@ class _StatischeAufgabe(QRunnable):
         self.ordner = ordner
         self.rho_w = rho_w
         self.signale = signale
+        p = parameter or {}
+        self.parameter = {"tol": p.get("toleranz", 1e-8),
+                          "max_iter": p.get("max_iterationen", 60),
+                          "stagnation_anteil": p.get("stagnation_anteil",
+                                                     0.05)}
 
     def run(self):
         from ..core.statisch import SolverFehler
@@ -130,7 +135,7 @@ class _StatischeAufgabe(QRunnable):
             kraftfunktion = baue_kraftmodell(kraftfunktion, physik)
             ergebnis = loese_robust(
                 kraftfunktion, self.koerper.masse,
-                g=physik.g_m_pro_s2)
+                g=physik.g_m_pro_s2, **self.parameter)
         except (ImportError, OSError, ValueError, SolverFehler) as fehler:
             self.signale.abgeschlossen.emit(
                 self.generation, self.name, None, None, fehler)
@@ -144,6 +149,9 @@ class HauptFenster(QMainWindow):
         super().__init__()
         self.setWindowTitle("SegelPhysik")
         self.resize(1280, 800)
+        from ..core.einstellungen import Einstellungen
+        self._einstellungen = Einstellungen.laden()
+        self._einstellungen_dialoge = {}
         self._baue_menues()
         self._baue_steuerzeile()
         self._baue_docks()
@@ -196,6 +204,21 @@ class HauptFenster(QMainWindow):
         self._statisch_signale.abgeschlossen.connect(
             self._statische_aufgabe_abgeschlossen)
         self._statische_ergebnisse = {}
+        for meldung in self._einstellungen.meldungen:
+            self.protokoll_schreiben("Einstellungen: %s" % meldung)
+
+    def _einstellungen_dialog(self, bereich):
+        from .einstellungen_dialog import EinstellungenDialog
+        dialog = self._einstellungen_dialoge.get(bereich)
+        if dialog is None:
+            dialog = EinstellungenDialog(self._einstellungen, bereich, self)
+            self._einstellungen_dialoge[bereich] = dialog
+        dialog.show()
+        dialog.raise_()
+        dialog.activateWindow()
+
+    def _dyn(self, schluessel):
+        return self._einstellungen.get("dynamisch", schluessel)
 
     def _baue_menues(self):
         m_datei = self.menuBar().addMenu("&Datei")
@@ -208,7 +231,11 @@ class HauptFenster(QMainWindow):
                                                 self._protokoll_umschalten)
         self._act_protokoll.setCheckable(True)
         self._act_protokoll.setChecked(True)
-        m_einst.addAction("Solver-Parameter …")
+        m_solver = m_einst.addMenu("Solver-Parameter")
+        m_solver.addAction(
+            "Statisch …", lambda: self._einstellungen_dialog("statisch"))
+        m_solver.addAction(
+            "Dynamisch …", lambda: self._einstellungen_dialog("dynamisch"))
         self._act_nur_aktives = m_einst.addAction(
             "Nur aktive Unterobjekte bedienbar")
         self._act_nur_aktives.setCheckable(True)
@@ -755,9 +782,9 @@ class HauptFenster(QMainWindow):
         aufgabe = _StatischeAufgabe(
             generation, hauptkoerper.name, koerper,
             konfiguration.ordner, konfiguration.wasser_dichte(),
-            self._statisch_signale)
+            self._statisch_signale,
+            self._einstellungen.bereich("statisch"))
         QThreadPool.globalInstance().start(aufgabe)
-
     def _statische_aufgabe_abgeschlossen(
             self, generation, name, ergebnis, arbeitsdaten, fehler):
         if (generation != self._statisch_generation
@@ -1005,8 +1032,10 @@ class HauptFenster(QMainWindow):
         jetzt = time.perf_counter()
         self._echtzeit_letzte_wandzeit = jetzt
         self._echtzeit_fps_start = jetzt
+        self._echtzeit_zf_berechnet = self._echtzeit_berechnet_s
         self._echtzeit_fps_zaehler = 0
-        if self._echtzeit_rueckstand_s() > 0.1:
+        if self._echtzeit_rueckstand_s() > self._dyn(
+                "nachholen_ende_rueckstand_s"):
             self._echtzeit_modus = "nachholen"
             self._echtzeit_nachholen_start = jetzt
             self._echtzeit_nachholen_berechnet_start = (
@@ -1089,8 +1118,14 @@ class HauptFenster(QMainWindow):
                 self._echtzeit_fps_zaehler / vergangen)
             self._echtzeit_fps_zaehler = 0
             self._echtzeit_fps_start = jetzt
+            zf_start = getattr(self, "_echtzeit_zf_berechnet", None)
+            zeitfaktor = (
+                (self._echtzeit_berechnet_s - zf_start) / vergangen
+                if zf_start is not None else 0.0)
+            self._echtzeit_zf_berechnet = self._echtzeit_berechnet_s
             self._solver_status_aktualisieren({
                 "Bildrate": "%.1f FPS" % self._echtzeit_angeforderte_fps,
+                "Zeitfaktor": "%.2f ×" % zeitfaktor,
                 **self._echtzeit_zeitbilanz_status(),
             })
 
@@ -1102,13 +1137,29 @@ class HauptFenster(QMainWindow):
             return
         jetzt = time.perf_counter()
         vergangen = max(0.0, jetzt - self._echtzeit_letzte_wandzeit)
-        if self._echtzeit_modus != "nachholen":
+        schnell = not self._dyn("zeitgenau")
+        if schnell:
+            # Simulationszeit folgt nicht der Uhr: je Auftrag ein Block
+            # fester Schritte, kein Rueckstand, keine Ueberlast-Pause.
+            if self._echtzeit_modus == "nachholen":
+                self._echtzeit_nachholen_start = None
+            self._echtzeit_modus = "normal"
+            self._echtzeit_ueberlast_seit = None
+            self._echtzeit_letzte_wandzeit = jetzt
+            if self._echtzeit_aufgabe_laeuft:
+                return
+            block = (self._dyn("max_schritte_pro_aufgabe")
+                     * self._echtzeit_physik.dt_s)
+            self._echtzeit_akkumulator = block
+            self._echtzeit_angefordert_s = (
+                self._echtzeit_berechnet_s + block)
+        elif self._echtzeit_modus != "nachholen":
             self._echtzeit_akkumulator += vergangen
             self._echtzeit_angefordert_s += vergangen
         self._echtzeit_letzte_wandzeit = jetzt
         rueckstand = self._echtzeit_rueckstand_s()
         if self._echtzeit_modus == "nachholen":
-            if rueckstand <= 0.1:
+            if rueckstand <= self._dyn("nachholen_ende_rueckstand_s"):
                 gesamt_dauer = max(
                     jetzt - (self._echtzeit_nachholen_start or jetzt),
                     1e-12)
@@ -1116,14 +1167,16 @@ class HauptFenster(QMainWindow):
                     self._echtzeit_berechnet_s
                     - self._echtzeit_nachholen_berechnet_start
                 ) / gesamt_dauer
-                gesamt_gate = "bestanden" if gesamt_rate >= 1.25 else "nicht erreicht"
-                if gesamt_rate < 1.25:
+                ziel_rate = self._dyn("nachholrate_ziel")
+                gesamt_gate = ("bestanden" if gesamt_rate >= ziel_rate
+                               else "nicht erreicht")
+                if gesamt_rate < ziel_rate:
                     self.protokoll_schreiben(
                         "Nachholrate %.3f s/s unterschreitet das Ziel "
-                        "von 1,25 s/s." % gesamt_rate)
+                        "von %.2f s/s." % (gesamt_rate, ziel_rate))
                 self._solver_status_aktualisieren({
                     "Nachholrate gesamt": "%.3f s/s" % gesamt_rate,
-                    "Nachholrate ≥1,25": gesamt_gate,
+                    "Nachholrate Ziel erreicht": gesamt_gate,
                     "Nachholfenster s/s": ", ".join(
                         "%.3f" % rate
                         for rate in self._echtzeit_nachholen_raten),
@@ -1140,10 +1193,11 @@ class HauptFenster(QMainWindow):
                     - self._echtzeit_nachholen_fenster_berechnet
                 ) / fenster_dauer
                 self._echtzeit_nachholen_raten.append(rate)
-                if rate < 1.25:
+                if rate < self._dyn("nachholrate_ziel"):
                     self.protokoll_schreiben(
                         "Nachholrate im Messfenster %.3f s/s "
-                        "unterschreitet 1,25 s/s." % rate)
+                        "unterschreitet %.2f s/s."
+                        % (rate, self._dyn("nachholrate_ziel")))
                 self._echtzeit_nachholen_fenster_start = jetzt
                 self._echtzeit_nachholen_fenster_berechnet = (
                     self._echtzeit_berechnet_s)
@@ -1151,14 +1205,17 @@ class HauptFenster(QMainWindow):
                     "Nachholrate letztes Fenster": "%.3f s/s" % rate,
                     **self._echtzeit_zeitbilanz_status(),
                 })
-        elif rueckstand >= 1.0:
+        elif not schnell and rueckstand >= self._dyn(
+                "ueberlast_rueckstand_s"):
             if self._echtzeit_ueberlast_seit is None:
                 self._echtzeit_ueberlast_seit = jetzt
             self._echtzeit_modus = "ueberlast_beobachtung"
-            if jetzt - self._echtzeit_ueberlast_seit >= 5.0:
+            if jetzt - self._echtzeit_ueberlast_seit >= self._dyn(
+                    "ueberlast_dauer_s"):
                 self.protokoll_schreiben(
                     "Echtzeit automatisch pausiert: Rückstand %.3f s "
-                    "bestand mindestens 5 s." % rueckstand)
+                    "bestand mindestens %.1f s."
+                    % (rueckstand, self._dyn("ueberlast_dauer_s")))
                 self._zeit_pausieren(automatisch=True)
                 self._solver_status_aktualisieren({
                     "Lösungstyp": "Automatisch pausiert (Überlast)",
@@ -1181,8 +1238,9 @@ class HauptFenster(QMainWindow):
             return
         anzahl_schritte = min(
             int((self._echtzeit_akkumulator + 1e-12) / dt),
-            (64 if self._echtzeit_modus == "nachholen"
-             else _ECHTZEIT_MAX_SCHRITTE_PRO_AUFGABE))
+            (self._dyn("max_schritte_nachholen")
+             if self._echtzeit_modus == "nachholen"
+             else self._dyn("max_schritte_pro_aufgabe")))
         if anzahl_schritte == 0:
             return
         self._echtzeit_akkumulator -= anzahl_schritte * dt
@@ -1233,7 +1291,8 @@ class HauptFenster(QMainWindow):
         self._echtzeit_berechnet_s += (
             anzahl_schritte * self._echtzeit_physik.dt_s)
         if (self._echtzeit_modus == "ueberlast_beobachtung"
-                and self._echtzeit_rueckstand_s() < 1.0):
+                and self._echtzeit_rueckstand_s() < self._dyn(
+                    "ueberlast_rueckstand_s")):
             self._echtzeit_ueberlast_seit = None
             self._echtzeit_modus = "normal"
         vorherige_anzeige = (
