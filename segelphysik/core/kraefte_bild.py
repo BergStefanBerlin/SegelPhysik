@@ -13,6 +13,9 @@ FARBE_FG = "gray"       # Gewicht
 FARBE_FA = "#2166ac"    # Auftrieb (Wasserblau)
 FARBE_ARM = "black"
 FARBE_MOMENT = "#762a83"  # Drehmoment (violett)
+FARBEN_MOMENT = ("#762a83", "#1b7837", "#e08214")  # um x, y, z
+FARBE_REST = "#d73027"    # Resultierende Kraft
+FARBE_ZUSATZ = "#e08214"  # Widerstand/Added Mass
 
 KOPFANTEIL = 0.25
 KOPF_RADIUS_FAKTOR = 0.08
@@ -70,32 +73,59 @@ def text_zeile(erg):
 
 
 def moment_bogen(moment_x, mittelpunkt, radius):
-    """Bogenpfeil fuer das Drehmoment um die Rollachse (x, D11).
+    """Bogenpfeil fuer das Drehmoment um die Rollachse (x, D11)."""
+    bogen = moment_bogen_achse(moment_x, mittelpunkt, radius, 0)
+    if bogen is not None:
+        bogen["moment_x"] = bogen["moment"]
+    return bogen
 
-    Bogen in der y-z-Ebene durch mittelpunkt; positives M_x laeuft im
-    positiven Drehsinn um +x (+y -> +z, Rechte-Hand-Regel). Bei
-    |M_x| <= BOGEN_SCHWELLWERT_NM: None (Gleichgewicht -> kein Bogen, Z3).
+
+def moment_bogen_achse(moment, mittelpunkt, radius, achse):
+    """Bogenpfeil fuer das Drehmoment um Welt-Achse achse (0=x, 1=y, 2=z).
+
+    Der Bogen liegt in der Ebene senkrecht zur Achse; positives Moment
+    laeuft im positiven Drehsinn (Rechte-Hand-Regel, zyklisch x: y->z,
+    y: z->x, z: x->y). Bei |M| <= BOGEN_SCHWELLWERT_NM: None (Z3).
     """
-    mx = float(moment_x)
+    mx = float(moment)
     mitte = np.asarray(mittelpunkt, dtype=float)
     radius = float(radius)
     if radius <= 0.0:
         raise ValueError("radius muss positiv sein")
+    if achse not in (0, 1, 2):
+        raise ValueError("achse muss 0, 1 oder 2 sein")
     if abs(mx) <= BOGEN_SCHWELLWERT_NM:
         return None
     vorzeichen = 1.0 if mx > 0.0 else -1.0
+    u = np.zeros(3)
+    v = np.zeros(3)
+    u[(achse + 1) % 3] = 1.0
+    v[(achse + 2) % 3] = 1.0
     a0 = math.radians(BOGEN_START_GRAD)
     spanne = math.radians(BOGEN_WINKEL_GRAD)
     a = a0 + spanne * vorzeichen * np.linspace(0.0, 1.0, BOGEN_PUNKTE)
-    punkte = np.column_stack([
-        np.full(BOGEN_PUNKTE, mitte[0]),
-        mitte[1] + radius * np.cos(a),
-        mitte[2] + radius * np.sin(a)])
+    punkte = (mitte + radius * np.cos(a)[:, None] * u
+              + radius * np.sin(a)[:, None] * v)
     a_ende = float(a[-1])
-    tangente = vorzeichen * np.array([0.0, -math.sin(a_ende),
-                                      math.cos(a_ende)])
+    tangente = vorzeichen * (-math.sin(a_ende) * u + math.cos(a_ende) * v)
     richtung = tangente / np.linalg.norm(tangente)
     kopf_laenge = 0.35 * radius
     return {"punkte": punkte, "spitze": punkte[-1] + kopf_laenge * richtung,
             "richtung": richtung, "kopf_laenge": kopf_laenge,
-            "kopf_radius": 0.12 * radius, "moment_x": mx}
+            "kopf_radius": 0.12 * radius, "moment": mx, "achse": achse}
+
+
+def zusatz_pfeile(erg, r_s, masse, g, skala, schwelle_n=1e-6):
+    """(rest, zusatz): Resultierende (F_ges + F_G) und nicht-hydrostatische
+    Kraft (F_ges - F_A: Widerstand, Added Mass) ab r_S; None unter Schwelle."""
+    r_s = np.asarray(r_s, dtype=float)
+    f_ges = erg.F_gesamt.as_array()
+    f_a = erg.F_A.as_array()
+    fg = np.array([0.0, 0.0, -float(masse) * float(g)])
+    ergebnis = []
+    for vektor in (f_ges + fg, f_ges - f_a):
+        if float(np.linalg.norm(vektor)) <= schwelle_n:
+            ergebnis.append(None)
+        else:
+            ergebnis.append(pfeil_daten(r_s, vektor * skala))
+    return tuple(ergebnis)

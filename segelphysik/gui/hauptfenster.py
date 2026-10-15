@@ -417,7 +417,8 @@ class HauptFenster(QMainWindow):
         bruecke = getattr(self, "_bruecke", None)
         if bruecke is None:
             return
-        if (aktiviert and layer in (LAYER_KRAEFTE, LAYER_MOMENTE)
+        if (aktiviert and layer in (LAYER_KRAEFTE, LAYER_MOMENTE,
+                                      LAYER_SCHWERPUNKT)
                 and self._btn_echtzeit.isChecked()):
             self._aktuelles_kraftbild_aktualisieren()
         bruecke.layer_setzen(layer, aktiviert)
@@ -870,7 +871,8 @@ class HauptFenster(QMainWindow):
         self._echtzeit_aktiver_prozess_executor = prozess_executor
         self._echtzeit_kraefteresultat = None
         if (bruecke.layer_ist_an(LAYER_KRAEFTE)
-                or bruecke.layer_ist_an(LAYER_MOMENTE)):
+                or bruecke.layer_ist_an(LAYER_MOMENTE)
+                or bruecke.layer_ist_an(LAYER_SCHWERPUNKT)):
             self._echtzeit_kraefteresultat = kraftfunktion(
                 (zustand.position, zustand.quaternion),
                 v=quaternion_matrix(zustand.quaternion)
@@ -1201,7 +1203,8 @@ class HauptFenster(QMainWindow):
         if bruecke is not None:
             pose = zustand
             if (bruecke.layer_ist_an(LAYER_KRAEFTE)
-                    or bruecke.layer_ist_an(LAYER_MOMENTE)):
+                    or bruecke.layer_ist_an(LAYER_MOMENTE)
+                or bruecke.layer_ist_an(LAYER_SCHWERPUNKT)):
                 koerper = self._laufzeit_koerper.get(self._echtzeit_name)
             else:
                 koerper = None

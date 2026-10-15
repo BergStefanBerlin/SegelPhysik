@@ -447,7 +447,10 @@ class GrafikBruecke:
 
     def _kraefte_namen(self, name):
         return ["kraefte_%s_fg" % name, "kraefte_%s_fa" % name,
-                "kraefte_%s_arm" % name, "kraefte_%s_moment" % name]
+                "kraefte_%s_arm" % name, "kraefte_%s_moment" % name,
+                "kraefte_%s_moment_y" % name, "kraefte_%s_moment_z" % name,
+                "kraefte_%s_rest" % name, "kraefte_%s_zusatz" % name,
+                "kraefte_%s_auftriebsp" % name]
 
     def _kraefte_actors(self, name):
         """Baut die Kraefte-Actors aus den gesetzten Daten (inkl. Moment-Bogen)."""
@@ -464,7 +467,8 @@ class GrafikBruecke:
         fg, fa = kb.kraft_pfeile(daten["erg"], r_s, daten["masse"],
                                  daten["g"], daten["skala"])
         store = k.setdefault("kraefte_actors", {})
-        n_fg, n_fa, n_arm, n_moment = self._kraefte_namen(name)
+        (n_fg, n_fa, n_arm, n_moment, n_moment_y, n_moment_z, n_rest,
+         n_zusatz, n_auftriebsp) = self._kraefte_namen(name)
 
         def _pfeil(p, farbe, n):
             try:
@@ -489,7 +493,16 @@ class GrafikBruecke:
         if self._layer.ist_an(LAYER_KRAEFTE):
             _pfeil(fg, kb.FARBE_FG, n_fg)
             _pfeil(fa, kb.FARBE_FA, n_fa)
-            a, b = kb.hebelarm_segment(daten["erg"].K.as_array() + cm, r_s)
+            rest, zusatz = kb.zusatz_pfeile(
+                daten["erg"], r_s, daten["masse"], daten["g"],
+                daten["skala"])
+            for p, farbe, n in ((rest, kb.FARBE_REST, n_rest),
+                                (zusatz, kb.FARBE_ZUSATZ, n_zusatz)):
+                if p is None:
+                    self._kraefte_actors_entfernen(name, (n,))
+                else:
+                    _pfeil(p, farbe, n)
+            a, b = kb.hebelarm_segment(daten["erg"].K.as_array(), r_s)
             try:
                 arm = pv.line_segments_from_points([tuple(a), tuple(b)])
                 _mesh_actor_setzen(
@@ -498,13 +511,30 @@ class GrafikBruecke:
             except Exception:
                 pass
         else:
-            self._kraefte_actors_entfernen(name, (n_fg, n_fa, n_arm))
+            self._kraefte_actors_entfernen(
+                name, (n_fg, n_fa, n_arm, n_rest, n_zusatz))
 
+        if self._layer.ist_an(LAYER_SCHWERPUNKT):
+            kugel = pv.Sphere(
+                center=tuple(daten["erg"].K.as_array()),
+                radius=0.8 * k["overlay_skala"][1])
+            _mesh_actor_setzen(
+                self._plotter, store, n_auftriebsp, kugel,
+                color=kb.FARBE_FA)
+        else:
+            self._kraefte_actors_entfernen(name, (n_auftriebsp,))
+
+        moment_namen = (n_moment, n_moment_y, n_moment_z)
         if self._layer.ist_an(LAYER_MOMENTE):
-            m_x = float(daten["erg"].M.as_array()[0])
             bogen_radius = 0.45 * daten["skala"] * daten["masse"] * daten["g"]
-            bogen = kb.moment_bogen(m_x, r_s, radius=bogen_radius)
-            if bogen is not None:
+            momente = daten["erg"].M.as_array()
+            for achse, n in enumerate(moment_namen):
+                bogen = kb.moment_bogen_achse(
+                    float(momente[achse]), r_s, bogen_radius, achse)
+                if bogen is None:
+                    self._kraefte_actors_entfernen(name, (n,))
+                    continue
+                farbe = kb.FARBEN_MOMENT[achse]
                 try:
                     kurve = pv.lines_from_points(bogen["punkte"]).tube(
                         radius=max(0.3 * bogen["kopf_radius"], 0.004),
@@ -516,17 +546,15 @@ class GrafikBruecke:
                         height=bogen["kopf_laenge"],
                         radius=bogen["kopf_radius"])
                     _mesh_actor_setzen(
-                        self._plotter, store, n_moment, kurve + kopf,
-                        color=kb.FARBE_MOMENT, smooth_shading=True)
+                        self._plotter, store, n, kurve + kopf,
+                        color=farbe, smooth_shading=True)
                 except Exception:
                     seg = pv.line_segments_from_points(bogen["punkte"])
                     _mesh_actor_setzen(
-                        self._plotter, store, n_moment, seg,
-                        color=kb.FARBE_MOMENT, line_width=4)
-            else:
-                self._kraefte_actors_entfernen(name, (n_moment,))
+                        self._plotter, store, n, seg,
+                        color=farbe, line_width=4)
         else:
-            self._kraefte_actors_entfernen(name, (n_moment,))
+            self._kraefte_actors_entfernen(name, moment_namen)
 
     def _kraefte_actors_entfernen(self, name, namen):
         store = self._koerper.get(name, {}).get("kraefte_actors", {})
@@ -710,7 +738,8 @@ class GrafikBruecke:
             self._overlay_hauptachsen_entfernen(name)
         # Phase C: Kraeftebild nur, wenn Layer an UND Daten vorliegen.
         if ((self._layer.ist_an(LAYER_KRAEFTE)
-             or self._layer.ist_an(LAYER_MOMENTE))
+             or self._layer.ist_an(LAYER_MOMENTE)
+             or self._layer.ist_an(LAYER_SCHWERPUNKT))
                 and name in self._kraefte_daten):
             self._kraefte_actors(name)
         else:
