@@ -193,9 +193,12 @@ def _diagnose(lage, r, iterationen, restarts, stagnation, stabil=None):
 
 def loese_robust(funktion, m, g=G_NORM, start=(0.0, 0.0), tol=1e-8,
                  max_iter=60, stoerleiter=STOERLEITER_GRAD,
-                 stagnation_anteil=_STAG_ANTEIL):
+                 stagnation_anteil=_STAG_ANTEIL, neutral_toleranz=1e-9):
     """Vertraglich kompatibel zu statisch.loese(), zusaetzlich im Dict:
-    "stagnation": bool und "neutral": bool (Roll neutral, gm dann None)."""
+    "stagnation": bool und "neutral": bool (Roll neutral, gm dann None).
+
+    neutral_toleranz: |dM/dphi| <= neutral_toleranz * m*g gilt als neutral.
+    Fuer geometrisch erkannte Kugeln wird sie gelockert (Netzrauschen)."""
     leiter = tuple(float(x) for x in stoerleiter)
     aktuelle = (float(start[0]), float(start[1]))
     restarts = 0
@@ -217,7 +220,7 @@ def loese_robust(funktion, m, g=G_NORM, start=(0.0, 0.0), tol=1e-8,
         diagnose = _diagnose(lage, r, it, restarts, stag)
         if abbruch == "konvergiert" or (abbruch == "stagnation" and stag):
             dM = _dmdphi(ausgewertet, lage[0], lage[1], m, g)
-            neutral = bool(abs(dM) <= 1e-9 * max(m * g, 1.0)
+            neutral = bool(abs(dM) <= neutral_toleranz * max(m * g, 1.0)
                            and abs(float(r[1])) <= 1e-6 * max(m * g, 1.0))
             basis = {**diagnose, "neutral": neutral,
                      # rev E: dM<0 ist der direkte Stabilitaetsnachweis

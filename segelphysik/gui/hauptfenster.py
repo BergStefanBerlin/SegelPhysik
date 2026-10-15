@@ -16,7 +16,10 @@ from PySide6.QtWidgets import (
 )
 
 from .baum_widget import BaumWidget
-from ..core import statusanzeige
+from ..core import formerkennung, statusanzeige
+
+# Netzrauschen einer Kugel (dM/mg ~ 1e-4) gilt als neutral
+KUGEL_NEUTRAL_TOLERANZ = 1e-2
 from ..core.overlays import (LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN,
                              LAYER_KRAEFTE, LAYER_MOMENTE, LAYER_FREMDKRAFT)
 
@@ -141,9 +144,13 @@ class _StatischeAufgabe(QRunnable):
                 raise SolverFehler(
                     "Körper kann nicht tragen (%s)" % problem,
                     status=problem, diagnose={})
+            parameter = dict(self.parameter)
+            if formerkennung.klassifiziere_koerper(
+                    self.koerper) == formerkennung.KUGEL:
+                parameter["neutral_toleranz"] = KUGEL_NEUTRAL_TOLERANZ
             ergebnis = loese_robust(
                 kraftfunktion, self.koerper.masse,
-                g=physik.g_m_pro_s2, **self.parameter)
+                g=physik.g_m_pro_s2, **parameter)
         except (ImportError, OSError, ValueError, SolverFehler) as fehler:
             self.signale.abgeschlossen.emit(
                 self.generation, self.name, None, None, fehler)
@@ -786,7 +793,7 @@ class HauptFenster(QMainWindow):
             self._zeit_pausieren()
             self._echtzeit_name = None
             return
-        if grund in ("start", "auswahl") and self._btn_statisch.isChecked():
+        if self._btn_statisch.isChecked():
             self._statische_simulation_ausfuehren()
         elif self._btn_echtzeit.isChecked():
             war_laufend = (self._echtzeit_timer.isActive()
@@ -956,8 +963,7 @@ class HauptFenster(QMainWindow):
         self._statische_ergebnisse[name] = ergebnis
         self._statische_arbeitsdaten[name] = (kraftfunktion, physik)
         self._statusoverlay(statusanzeige.status_aus_ergebnis(
-            ergebnis, statusanzeige.ist_rotationssymmetrisch(
-                getattr(koerper, "traegheitstensor", None))))
+            ergebnis, form=formerkennung.klassifiziere_koerper(koerper)))
         gm = ergebnis["gm"]
         self._solver_status_aktualisieren({
             "z*": "%.4f m" % ergebnis["z"],

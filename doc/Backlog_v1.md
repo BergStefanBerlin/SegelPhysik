@@ -330,6 +330,21 @@ Solver integrieren
 - **R-10 (Kraftmodule):** zurückgestellt, da belegte Widerstands-/Added-Mass-
   Koeffizienten fehlen.
 
+### B-15 – Statischer Solver findet bei Prismen keine stabile Lage
+
+- **Datum:** 15.10.2026
+- **Priorität:** Mittel
+- **Status:** Offen
+- **Beobachtung:** Der liegende Sechskantstab (`bleistift`) endet mit
+  „Störleiter erschöpft“ (instabile Lage, dM/mg ≈ +2,4e-2 bei phi = 0).
+  Die Störleiter startet Newton neu, landet aber wieder im selben instabilen
+  Gleichgewicht. Die stabile Lage liegt bei Kantenwinkeln jenseits der
+  Störstufen.
+- **Idee:** Bei instabilem Ergebnis phi systematisch scannen (Residualmoment
+  über einen Winkelbereich), Nulldurchgänge mit dM < 0 suchen und von dort
+  neu starten. Bei erkannten Prismen/Rotationskörpern reichen wenige Stützwinkel.
+- **Ausgangspunkt:** `statisch_robust.loese_robust`, `formerkennung`.
+
 ### B-14 – Beliebige vordefinierte Körper importieren (wie die Yacht)
 
 - **Datum:** 15.10.2026

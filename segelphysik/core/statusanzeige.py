@@ -30,12 +30,22 @@ def ist_rotationssymmetrisch(traegheitstensor, toleranz=1e-3):
     return bool((werte[-1] - werte[0]) <= toleranz * werte[-1])
 
 
-def status_aus_ergebnis(ergebnis, rotationssymmetrisch=False):
-    """Status für ein konvergiertes Solver-Ergebnis."""
+def status_aus_ergebnis(ergebnis, rotationssymmetrisch=False, form=None):
+    """Status für ein konvergiertes Solver-Ergebnis.
+
+    form: Grundform aus formerkennung.klassifiziere_koerper (hat Vorrang vor
+    dem Trägheitsmerkmal rotationssymmetrisch).
+    """
     if ergebnis.get("neutral"):
-        if rotationssymmetrisch:
+        if form is None:
+            if rotationssymmetrisch:
+                return "rotationsneutral (Kugel)", "ok"
+            return "rollneutral (Zylinder)", "ok"
+        if form == "kugel":
             return "rotationsneutral (Kugel)", "ok"
-        return "rollneutral (Zylinder)", "ok"
+        name = {"zylinder": "Zylinder", "kegel": "Kegel",
+                "rotationskoerper": "Rotationskörper"}.get(form)
+        return ("rollneutral (%s)" % name if name else "rollneutral"), "ok"
     if ergebnis.get("stagnation"):
         return "stabile Näherung", "ok"
     return "stabil", "ok"
