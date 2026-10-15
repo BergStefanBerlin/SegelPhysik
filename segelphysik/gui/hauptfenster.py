@@ -239,6 +239,14 @@ class HauptFenster(QMainWindow):
         self._btn_vor.clicked.connect(self._zeit_fortsetzen)
         for b in (self._btn_halt, self._btn_vor):
             b.setMaximumWidth(36)
+            b.setCheckable(True)
+        self._zeitgruppe = QButtonGroup(self)
+        self._zeitgruppe.setExclusive(True)
+        self._zeitgruppe.addButton(self._btn_halt)
+        self._zeitgruppe.addButton(self._btn_vor)
+        self._btn_halt.setChecked(True)
+        self._btn_halt.toggled.connect(self._zeittasten_darstellen)
+        self._btn_vor.toggled.connect(self._zeittasten_darstellen)
         h.addWidget(self._btn_statisch)
         h.addWidget(self._btn_echtzeit)
         h.addSpacing(24)
@@ -270,9 +278,17 @@ class HauptFenster(QMainWindow):
     def _steuerzeile_umschalten(self, statisch_aktiv):
         for b in (self._btn_halt, self._btn_vor):
             b.setEnabled(not statisch_aktiv)
+        self._zeittasten_darstellen()
+
+    def _zeittasten_darstellen(self, *_):
+        statisch = self._btn_statisch.isChecked()
+        for b in (self._btn_halt, self._btn_vor):
             b.setStyleSheet(
                 "QPushButton { background-color: #0078d4; color: white; }"
-                if not statisch_aktiv else "")
+                if not statisch and b.isChecked() else "")
+
+    def _zeittasten_setzen(self, laeuft):
+        (self._btn_vor if laeuft else self._btn_halt).setChecked(True)
 
     def _baue_docks(self):
         self.baum = BaumWidget()
@@ -622,7 +638,8 @@ class HauptFenster(QMainWindow):
         if grund in ("start", "auswahl") and self._btn_statisch.isChecked():
             self._statische_simulation_ausfuehren()
         elif self._btn_echtzeit.isChecked():
-            war_laufend = self._echtzeit_timer.isActive()
+            war_laufend = (self._echtzeit_timer.isActive()
+                           or self._btn_vor.isChecked())
             self._echtzeit_starten(
                 zustand=(self._echtzeit_zustand
                          if grund != "start" else None),
@@ -895,6 +912,7 @@ class HauptFenster(QMainWindow):
         self._echtzeit_modus = (
             "automatisch_pausiert" if automatisch else "pausiert")
         self._echtzeit_ueberlast_seit = None
+        self._zeittasten_setzen(False)
         if self._echtzeit_zustand is not None:
             self._echtzeit_anzeige_start = self._echtzeit_zustand
             self._echtzeit_anzeige_ziel = self._echtzeit_zustand
@@ -930,6 +948,7 @@ class HauptFenster(QMainWindow):
             self._echtzeit_nachholen_start = None
         self._echtzeit_timer.start()
         self._echtzeit_render_timer.start()
+        self._zeittasten_setzen(True)
         self._solver_status_aktualisieren({
             "Lösungstyp": "Echtzeit",
             **self._echtzeit_zeitbilanz_status(),
