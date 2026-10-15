@@ -1,0 +1,67 @@
+"""Wasserbewegung: Koerper zentriert, weltfestes Punktfeld mit Spuren."""
+import numpy as np
+
+from segelphysik.core.wasserpunkte import WasserPunktFeld
+from segelphysik.grafik_bruecke import GrafikBruecke
+
+
+def test_punkte_sind_weltfest_und_liegen_im_radius():
+    feld = WasserPunktFeld(radius=10.0, abstand=1.5)
+    p1, _ = feld.punkte_welt((0.0, 0.0))
+    p2, _ = feld.punkte_welt((0.7, 0.2))
+    assert len(p1) > 100
+    assert np.all(np.hypot(p1[:, 0], p1[:, 1]) <= 10.0 + 1e-9)
+    # gleiche Gitterzelle -> identische Weltposition (kein Mitwandern)
+    gemeinsam = {tuple(np.round(p, 9)) for p in p1} \
+        & {tuple(np.round(p, 9)) for p in p2}
+    assert len(gemeinsam) > 0.5 * len(p1)
+
+
+def test_spuren_zeigen_gegen_die_fahrt_und_graun_aus():
+    feld = WasserPunktFeld(historie=10, spur_punkte=5)
+    for i in range(10):
+        punkte, spuren, alpha = feld.aktualisieren((0.5 * i, 0.0))
+    # Spurende liegt in +x (Koerper fuhr +x, Punkt zieht nach -x vorbei
+    # und die Spur bleibt hinter ihm, also bei groesserem x)
+    assert np.all(spuren[:, -1, 0] > spuren[:, 0, 0])
+    assert np.allclose(spuren[:, -1, 0] - spuren[:, 0, 0], 4.5)
+    assert np.all(np.diff(alpha, axis=1) <= 1e-12)
+    assert np.allclose(alpha[:, -1], 0.0)
+
+
+def test_spur_verschwindet_im_stand():
+    feld = WasserPunktFeld(historie=5, spur_punkte=4)
+    for i in range(3):
+        feld.aktualisieren((float(i), 0.0))
+    for _ in range(6):
+        _, spuren, _ = feld.aktualisieren((2.0, 0.0))
+    assert np.allclose(spuren[:, :, 0], spuren[:, :1, 0])
+
+
+def test_hoehenfunktion_hebt_punkte():
+    feld = WasserPunktFeld(hoehe=lambda x, y: 0.1 * np.ones_like(x), z0=0.0)
+    punkte, _ = feld.punkte_welt((0.0, 0.0))
+    assert np.allclose(punkte[:, 2], 0.1)
+
+
+def test_bruecke_kamera_folgt_dem_koerper():
+    pv = __import__("pyvista")
+    bruecke = GrafikBruecke()
+    bruecke._renderer = type("R", (), {"_surf_actor": None})()
+    bruecke._plotter = pv.Plotter(off_screen=True)
+    bruecke._koerper["b"] = {
+        "pd": pv.Sphere(), "aktiv": True, "position": np.zeros(3)}
+    bruecke._koerper["b"]["pd"]["referenz_punkte"] = \
+        bruecke._koerper["b"]["pd"].points.copy()
+    bruecke._statisch_anwenden = lambda *a, **k: None
+    assert bruecke.wasser_bewegung_setzen(True)
+    bruecke._plotter.camera_position = [(5, -5, 3), (0, 0, 0), (0, 0, 1)]
+    bruecke.physik_pose_6dof_setzen("b", np.eye(3), np.array([1.0, 2.0, 0.0]))
+    bruecke.physik_pose_6dof_setzen("b", np.eye(3), np.array([4.0, 6.0, 0.0]))
+    fokus = np.asarray(bruecke._plotter.camera.focal_point)
+    assert np.allclose(fokus[:2], [3.0, 4.0])   # nur Differenz seit 1. Pose
+    assert "wasser_punkte" in bruecke._plotter.actors
+    assert "wasser_spuren" in bruecke._plotter.actors
+    assert bruecke.wasser_bewegung_setzen(False)
+    assert "wasser_punkte" not in bruecke._plotter.actors
+    bruecke._plotter.close()

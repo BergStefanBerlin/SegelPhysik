@@ -140,6 +140,11 @@ def _farbgruppen(koerper):
 class GrafikBruecke:
     """Baut das Fenster mit dem ORIGINAL-Renderer; haelt MEHRERE Koerper."""
 
+    _folge_aktiv = False
+    _folge_letzt = None
+    _wasserpunkte = None
+    _wasserpunkte_meshes = {}
+
     def __init__(self):
         self.app = StellvertreterApp()
         self._renderer = None
@@ -147,6 +152,92 @@ class GrafikBruecke:
         self._koerper = {}
         self._layer = LayerRegistry()
         self._kraefte_daten = {}
+        self._folge_aktiv = False
+        self._folge_letzt = None
+        self._wasserpunkte = None
+        self._wasserpunkte_meshes = {}
+
+    def wasser_bewegung_setzen(self, aktiv):
+        """Koerper bleibt zentriert (Kamera folgt), ein weltfestes
+        Punktfeld mit Schattenspuren zeigt die Bewegung im Wasser."""
+        aktiv = bool(aktiv)
+        if self._plotter is None:
+            return False
+        if aktiv == self._folge_aktiv:
+            return True
+        self._folge_aktiv = aktiv
+        if aktiv:
+            from .core.wasserpunkte import WasserPunktFeld
+            self._wasserpunkte = WasserPunktFeld()
+            self._wasserpunkte_meshes = {}
+            self._folge_letzt = None
+        else:
+            self._wasserpunkte = None
+            self._folge_letzt = None
+            for n in ("wasser_punkte", "wasser_spuren"):
+                try:
+                    self._plotter.remove_actor(n)
+                except Exception:
+                    pass
+            self._wasserpunkte_meshes = {}
+            self._flaeche_verschieben(0.0, 0.0)
+        self.render()
+        return True
+
+    def _flaeche_verschieben(self, x, y):
+        actor = getattr(self._renderer, "_surf_actor", None)
+        if actor is not None:
+            actor.SetPosition(float(x), float(y), 0.0)
+
+    def _wasser_bewegung_nachfuehren(self, position):
+        if not self._folge_aktiv or self._plotter is None:
+            return
+        xy = np.asarray(position, dtype=np.float64)[:2]
+        if self._folge_letzt is not None:
+            delta = np.array([xy[0] - self._folge_letzt[0],
+                              xy[1] - self._folge_letzt[1], 0.0])
+            kamera = self._plotter.camera
+            kamera.position = tuple(np.asarray(kamera.position) + delta)
+            kamera.focal_point = tuple(np.asarray(kamera.focal_point) + delta)
+        self._folge_letzt = xy.copy()
+        self._flaeche_verschieben(xy[0], xy[1])
+        self._wasserpunkte_zeichnen(xy)
+
+    def _wasserpunkte_zeichnen(self, xy):
+        import pyvista as pv
+        punkte, spuren, alpha = self._wasserpunkte.aktualisieren(xy)
+        n, s, _ = spuren.shape
+        if n == 0:
+            return
+
+        def rgba(a):
+            farbe = np.empty((a.size, 4), dtype=np.uint8)
+            farbe[:, :3] = 255
+            farbe[:, 3] = np.clip(a * 255.0, 0, 255).astype(np.uint8)
+            return farbe
+
+        pts = pv.PolyData(punkte)
+        pts["rgba"] = rgba(alpha[:, 0])
+        linien = np.empty((n * (s - 1), 3), dtype=np.int64)
+        basis = (np.arange(n)[:, None] * s + np.arange(s - 1)[None, :]).ravel()
+        linien[:, 0] = 2
+        linien[:, 1] = basis
+        linien[:, 2] = basis + 1
+        spur = pv.PolyData(spuren.reshape(-1, 3), lines=linien.ravel())
+        spur["rgba"] = rgba(alpha.ravel())
+        for name, mesh, kw in (
+                ("wasser_punkte", pts,
+                 dict(point_size=5, render_points_as_spheres=True)),
+                ("wasser_spuren", spur, dict(line_width=2))):
+            alt = self._wasserpunkte_meshes.get(name)
+            if alt is None:
+                self._plotter.add_mesh(mesh, scalars="rgba", rgba=True,
+                                       name=name, lighting=False,
+                                       reset_camera=False, pickable=False,
+                                       **kw)
+                self._wasserpunkte_meshes[name] = mesh
+            else:
+                alt.copy_from(mesh)
 
     def fenster_bauen(self):
         try:
@@ -348,6 +439,11 @@ class GrafikBruecke:
         if preset not in presets:
             raise ValueError("Unbekanntes Kamera-Preset: %s" % preset)
         self._plotter.camera_position = presets[preset]
+        if self._folge_aktiv and self._folge_letzt is not None:
+            delta = np.array([self._folge_letzt[0], self._folge_letzt[1], 0.0])
+            kamera = self._plotter.camera
+            kamera.position = tuple(np.asarray(kamera.position) + delta)
+            kamera.focal_point = tuple(np.asarray(kamera.focal_point) + delta)
         self.render()
         return True
 
@@ -638,6 +734,7 @@ class GrafikBruecke:
         k["statisch_R"] = rotation.copy()
         k["position"] = position.copy()
         self._statisch_anwenden(name, k)
+        self._wasser_bewegung_nachfuehren(position)
         return True
 
     def stoer_pose_setzen(self, name, R, position):
