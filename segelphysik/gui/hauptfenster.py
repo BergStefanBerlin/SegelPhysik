@@ -18,8 +18,8 @@ from PySide6.QtWidgets import (
 from .baum_widget import BaumWidget
 from ..core import formerkennung, statusanzeige
 
-# Netzrauschen einer Kugel (dM/mg ~ 1e-4) gilt als neutral
-KUGEL_NEUTRAL_TOLERANZ = 1e-2
+# Netzrauschen (Facetten) bei Kugel/liegendem Rotationskoerper: dM/mg ~ 1e-4
+ROLL_NEUTRAL_TOLERANZ = 1e-2
 from ..core.overlays import (LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN,
                              LAYER_KRAEFTE, LAYER_MOMENTE, LAYER_FREMDKRAFT)
 
@@ -145,9 +145,9 @@ class _StatischeAufgabe(QRunnable):
                     "Körper kann nicht tragen (%s)" % problem,
                     status=problem, diagnose={})
             parameter = dict(self.parameter)
-            if formerkennung.klassifiziere_koerper(
-                    self.koerper) == formerkennung.KUGEL:
-                parameter["neutral_toleranz"] = KUGEL_NEUTRAL_TOLERANZ
+            form, achse = formerkennung.analysiere_koerper(self.koerper)
+            if formerkennung.rollneutral_erwartet(form, achse):
+                parameter["neutral_toleranz"] = ROLL_NEUTRAL_TOLERANZ
             ergebnis = loese_robust(
                 kraftfunktion, self.koerper.masse,
                 g=physik.g_m_pro_s2, **parameter)

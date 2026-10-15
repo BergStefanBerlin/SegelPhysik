@@ -127,19 +127,19 @@ def _profil_art(z, rho):
     return ROTATIONSKOERPER
 
 
-def klassifiziere(punkte, dreiecke):
-    """Ordnet ein geschlossenes Dreiecksnetz einer Grundform zu."""
+def analysiere(punkte, dreiecke):
+    """Grundform und Symmetrieachse (Koerperframe, None bei Kugel/beliebig)."""
     try:
         a, b, c, n, flaeche = _dreiecke_daten(punkte, dreiecke)
         res = _schwerpunkt_und_kovarianz(punkte, dreiecke)
         if res is None or flaeche.sum() <= 0:
-            return BELIEBIG
+            return BELIEBIG, None
         schwer, kov = res
         pts, idx = _oberflaechenpunkte(a, b, c, flaeche)
         pts = pts - schwer
         abstand = np.linalg.norm(pts, axis=1)
         if abstand.max() > 0 and np.ptp(abstand) <= _KUGEL_TOL * abstand.max():
-            return KUGEL
+            return KUGEL, None
         laenge = np.linalg.norm(n[idx], axis=1)
         normalen = n[idx] / np.where(laenge > 0, laenge, 1.0)[:, None]
         for achse in _achsenkandidaten(kov, n, flaeche):
@@ -150,19 +150,39 @@ def klassifiziere(punkte, dreiecke):
                 continue
             zs, rs = z[seitlich], rho[seitlich]
             if _ist_kurve(zs, rs, rs.max(), z.min(), z.max()):
-                return _profil_art(zs, rs)
-        return BELIEBIG
+                return _profil_art(zs, rs), achse
+        return BELIEBIG, None
     except (ValueError, FloatingPointError, np.linalg.LinAlgError):
-        return BELIEBIG
+        return BELIEBIG, None
 
 
-def klassifiziere_koerper(koerper):
-    """Grundform eines Koerpers; zusammengesetzte Koerper gelten als beliebig."""
+def klassifiziere(punkte, dreiecke):
+    """Ordnet ein geschlossenes Dreiecksnetz einer Grundform zu."""
+    return analysiere(punkte, dreiecke)[0]
+
+
+def analysiere_koerper(koerper):
+    """(Form, Achse) eines Koerpers; zusammengesetzte gelten als beliebig."""
     try:
         from .auftrieb import als_bindung
         blaetter = als_bindung(koerper).blatt_meshes
     except Exception:
-        return BELIEBIG
+        return BELIEBIG, None
     if len(blaetter) != 1:
-        return BELIEBIG
-    return klassifiziere(blaetter[0][0], blaetter[0][1])
+        return BELIEBIG, None
+    return analysiere(blaetter[0][0], blaetter[0][1])
+
+
+def klassifiziere_koerper(koerper):
+    """Grundform eines Koerpers; zusammengesetzte Koerper gelten als beliebig."""
+    return analysiere_koerper(koerper)[0]
+
+
+def rollneutral_erwartet(form, achse, rollachse=(1.0, 0.0, 0.0)):
+    """True, wenn die Rollung um rollachse die Lage nicht aendern kann:
+    Kugel oder Rotationskoerper mit Symmetrieachse parallel zur Rollachse."""
+    if form == KUGEL:
+        return True
+    if form not in (ZYLINDER, KEGEL, ROTATIONSKOERPER) or achse is None:
+        return False
+    return abs(float(np.dot(achse, rollachse))) > 0.999
