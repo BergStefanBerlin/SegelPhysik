@@ -62,6 +62,9 @@ def test_bruecke_kamera_folgt_dem_koerper():
     assert np.allclose(fokus[:2], [3.0, 4.0])   # nur Differenz seit 1. Pose
     assert "wasser_punkte" in bruecke._plotter.actors
     assert "wasser_spuren" in bruecke._plotter.actors
+    assert bruecke._ozean_actor is not None
+    assert np.allclose(bruecke._ozean_actor.GetPosition()[:2], [4.0, 6.0])
     assert bruecke.wasser_bewegung_setzen(False)
+    assert bruecke._ozean_actor is None
     assert "wasser_punkte" not in bruecke._plotter.actors
     bruecke._plotter.close()

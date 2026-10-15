@@ -42,6 +42,7 @@ FARBE_OBEN = "#b2182b"
 OVERLAY_FARBEN_ACHSEN = ("gold", "cyan", "magenta")
 
 BASIN_LX, BASIN_LY, WASSER_TIEFE, DX = 10.0, 10.0, 3.0, 0.25
+OZEAN_GROESSE = 4000.0
 
 
 def glanz_kw(glanz):
@@ -144,6 +145,7 @@ class GrafikBruecke:
     _folge_letzt = None
     _wasserpunkte = None
     _wasserpunkte_meshes = {}
+    _ozean_actor = None
 
     def __init__(self):
         self.app = StellvertreterApp()
@@ -170,8 +172,10 @@ class GrafikBruecke:
             from .core.wasserpunkte import WasserPunktFeld
             self._wasserpunkte = WasserPunktFeld()
             self._wasserpunkte_meshes = {}
+            self._ozean_setzen(True)
             self._folge_letzt = None
         else:
+            self._ozean_setzen(False)
             self._wasserpunkte = None
             self._folge_letzt = None
             for n in ("wasser_punkte", "wasser_spuren"):
@@ -185,9 +189,32 @@ class GrafikBruecke:
         return True
 
     def _flaeche_verschieben(self, x, y):
+        actors = list(getattr(self._renderer, "_becken_actors", None) or [])
         actor = getattr(self._renderer, "_surf_actor", None)
         if actor is not None:
-            actor.SetPosition(float(x), float(y), 0.0)
+            actors.append(actor)
+        for a in actors:
+            a.SetPosition(float(x), float(y), 0.0)
+        if self._ozean_actor is not None:
+            self._ozean_actor.SetPosition(float(x), float(y), 0.0)
+
+    def _ozean_setzen(self, aktiv):
+        """Unendlich wirkende Wasserflaeche: sehr grosse Ebene knapp unter
+        der Simulationsflaeche, folgt dem Koerper."""
+        if not aktiv:
+            if self._ozean_actor is not None:
+                try:
+                    self._plotter.remove_actor(self._ozean_actor)
+                except Exception:
+                    pass
+            self._ozean_actor = None
+            return
+        import pyvista as pv
+        ebene = pv.Plane(center=(0.0, 0.0, -0.03), direction=(0, 0, 1),
+                         i_size=OZEAN_GROESSE, j_size=OZEAN_GROESSE)
+        self._ozean_actor = self._plotter.add_mesh(
+            ebene, color="#2c6a99", opacity=0.9, lighting=False,
+            reset_camera=False, pickable=False)
 
     def _wasser_bewegung_nachfuehren(self, position):
         if not self._folge_aktiv or self._plotter is None:
@@ -492,6 +519,8 @@ class GrafikBruecke:
         if self._renderer is None:
             return False
         gesetzt = self._renderer.wasser_sichtbar_setzen(sichtbar)
+        if self._ozean_actor is not None:
+            self._ozean_actor.SetVisibility(bool(sichtbar))
         if gesetzt:
             self.render()
         return gesetzt

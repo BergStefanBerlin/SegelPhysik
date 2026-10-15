@@ -326,13 +326,17 @@ class PyVistaRenderer:
         for x in (-lx/2, lx/2):
             for y in (-ly/2, ly/2):
                 seg.append((x, y, -d)); seg.append((x, y, 0.0))
-        p.add_mesh(pv.line_segments_from_points(np.array(seg)),
-                   color="gray", line_width=2)
-        p.add_mesh(pv.Line((0.0, -ly/2, 0.05), (1.0, -ly/2, 0.05)),
-                   color="black", line_width=5)
-        p.add_mesh(pv.Plane(center=(0, 0, -d), direction=(0, 0, 1),
-                            i_size=lx, j_size=ly),
-                   color="lightsteelblue", opacity=0.25)
+        self._becken_actors = []
+        self._becken_actors.append(p.add_mesh(
+            pv.line_segments_from_points(np.array(seg)),
+            color="gray", line_width=2))
+        self._becken_actors.append(p.add_mesh(
+            pv.Line((0.0, -ly/2, 0.05), (1.0, -ly/2, 0.05)),
+            color="black", line_width=5))
+        self._becken_actors.append(p.add_mesh(
+            pv.Plane(center=(0, 0, -d), direction=(0, 0, 1),
+                     i_size=lx, j_size=ly),
+            color="lightsteelblue", opacity=0.25))
         light = dict(smooth_shading=True, specular=0.8, specular_power=60,
                      diffuse=0.9, ambient=0.15)
         if not getattr(self, "skip_surf", False):
