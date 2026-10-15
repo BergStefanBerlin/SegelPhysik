@@ -23,13 +23,13 @@
 | Rückstand p95 | ≤ 100 ms | 48,6 ms (max 210 ms) | erfüllt |
 | Rückstandszunahme (300 s) | ≤ 50 ms | +0,09 ms/s ≈ 28 ms | erfüllt |
 | Überlastpause | keine | keine | erfüllt |
-| Nachholrate | ≥ 1,25x | nicht gemessen | offen |
+| Nachholrate | ≥ 1,25x | 4,4 / 4,5 / 4,8x (3 Läufe, 3 s Rückstand, `werkzeuge/benchmark_nachholen.py`) | erfüllt |
 
 Weitere Werte: Physik-Batch median 5,1 ms, p95 7,6 ms (20879 Batches),
 Posen-Update im GUI-Thread median 14,2 ms, p95 17,1 ms, keine Fehler.
 
 ## Bewertung
 
-R-3 ist erfüllt: Der Benchmark liefert gültige FPS- und Latenzwerte. R-4a ist
-bis auf die Nachholrate bestanden. Die Nachholrate wird ein eigener Test
-(Pause, Fortsetzen, Zeit bis Rückstand < 100 ms).
+R-3 und R-4a sind erfüllt: gültige FPS-/Latenzwerte, alle Gates bestanden.
+Die Nachholrate wurde separat gemessen (künstlicher Rückstand 3 s nach
+Pause/Fortsetzen, sichtbares Fenster); Dauer bis Rückstand < 100 ms ca. 0,65 s.

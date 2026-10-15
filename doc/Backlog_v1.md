@@ -313,6 +313,23 @@ Solver integrieren
   Kennfeld-/Warmstartarbeit erst fortsetzen, wenn exakte Pfade das Profiling
   als relevanten Engpass belegen und die Genauigkeitsgates erfüllbar sind.
 
+### B-13 – Voxel-/GPU-/Cache-/Warmstart-Pfade zurückgestellt (vF2-Entscheidung)
+
+- **Datum:** 15.10.2026
+- **Priorität:** Niedrig
+- **Status:** Zurückgestellt (Entscheidung Nutzer: Technologie ist Mittel zum
+  Zweck; `exakt_union` genügt)
+- **Betroffen:** R-2 (Voxel-Genauigkeit), R-4b (GPU-Live-Abnahme), R-6
+  (Warmstart/Kennfelder), R-7 (Raster-Cache), R-8 (GPU-Freigabe), B-03, B-07,
+  B-10, B-12.
+- **Begründung:** `exakt_union` erreicht auf Zielhardware 1,0x Durchsatz,
+  69,8 FPS, Eingabereaktion p95 4,1 ms und Nachholrate 4,4–4,8x. Voxel/GPU
+  verfehlen das 1-%-Gate (Volumen/Kraft bis ca. 5,99 %).
+- **Wiederaufnahme nur, wenn:** `exakt_union` auf schwächerer Hardware die
+  Gates verfehlt oder deutlich größere Modelle den Durchsatz drücken.
+- **R-10 (Kraftmodule):** zurückgestellt, da belegte Widerstands-/Added-Mass-
+  Koeffizienten fehlen.
+
 ## Messkontext und Grenzen
 
 - Yachtmodell: geometrisches Unionvolumen ungefähr `3,16786 m³`.

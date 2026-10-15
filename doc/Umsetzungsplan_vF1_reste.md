@@ -239,6 +239,16 @@ interaktiven Pfads gegen `exakt_union` über die Pflichtposen, jeweils mit
 Pfad, Rasterweite und Messbedingungen. Die Auswertung der Toleranzfrage
 (Abschnitt 6, Punkt 3) erfolgt anschließend gemeinsam mit dem Nutzer.
 
+**Erreichte Genauigkeit (Abschlussstand 15.10.2026):**
+
+| Pfad | Volumen | Kraft | Moment | Schwerpunkt |
+|---|---|---|---|---|
+| Produktion `exakt_union` (Referenz) | 0 | 0 | 0 | 0 m |
+| Neuer exakter Ebenenschnitt vs. bisheriger Manifold-Pfad (300 Zufallsebenen, 4298 Dreiecke) | ≤ 3,8e-11 m³ absolut | – | – | ≤ 5,3e-11 m |
+| Voxel/GPU (zurückgestellt, nicht produktiv) | bis ca. 5,99 % | bis ca. 5,99 % | 0,96 % | nicht neu gemessen |
+
+Der Produktionspfad ist die Referenz selbst; die Voxelwerte stammen aus den
+früheren Messungen (Backlog B-03/B-10) und werden nicht verwendet.
 ## 5. Ausdrücklich nicht Teil dieses Plans
 
 - Änderungen an GUI-Anordnung, Beschriftungen und allgemeinen Bedienelementen.
@@ -266,9 +276,9 @@ Pfad, Rasterweite und Messbedingungen. Die Auswertung der Toleranzfrage
 |---|---|
 | R-5 | erledigt: `exakt_union` 0,43x → 1,0x (Commit 0.1.16) |
 | R-3 | erledigt: Präsentierte FPS und Eingabelatenz messbar |
-| R-4a | bestanden bis auf Nachholrate (nicht gemessen), siehe `Abnahme_R-4a.md` |
+| R-4a | **bestanden** (inkl. Nachholrate 4,4–4,8x), siehe `Abnahme_R-4a.md` |
 | R-1 | erledigt: Kandidatenpose bei `instabile_lage`, `stagnation`, `budget_erschoepft` |
-| R-9 | Windows-Start mit sichtbarem Fenster durch R-4a-Lauf belegt (keine Fehler) |
-| R-2, R-7, R-6, R-4b, R-8 | wartet auf Entscheidung Abschnitt 6, Punkt 3 (Produktionspfad erreicht Flüssigkeit bereits exakt) |
-| R-10 | wartet auf belegte Koeffizienten (Punkt 4) |
-| R-11 | offen |
+| R-9 | erledigt: Windows-Start mit sichtbarem Fenster, 10-min-Lauf ohne Fehler, 384 Tests |
+| R-2, R-7, R-6, R-4b, R-8 | **zurückgestellt** (Nutzerentscheidung 15.10.2026), Backlog B-13 |
+| R-10 | **zurückgestellt**, keine belegten Koeffizienten (B-13) |
+| R-11 | in Arbeit |
