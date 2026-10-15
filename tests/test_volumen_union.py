@@ -145,3 +145,46 @@ def test_union_koerperframeebene_stimmt_mit_weltframeschnitt_ueberein(
 
     assert lokal_v == pytest.approx(welt_v, abs=1e-12)
     assert rotation @ lokal_k + position == pytest.approx(welt_k, abs=1e-12)
+
+
+def test_vektorisierter_ebenenschnitt_stimmt_mit_manifold_ueberein(quader):
+    meshes = [
+        (quader[0] + np.array((-0.4, 0.1, -0.3)), quader[1]),
+        (quader[0] + np.array((0.5, 0.0, -0.4)), quader[1]),
+    ]
+    union = VorbereitetesUnionModell(meshes)
+    rng = np.random.default_rng(7)
+    for _ in range(100):
+        normale = rng.normal(size=3)
+        normale /= np.linalg.norm(normale)
+        offset = rng.uniform(-1.5, 1.5)
+        v1, k1 = union.auswerten_ebene(normale, offset)
+        v2, k2 = union.auswerten_ebene_manifold(normale, offset)
+        assert v1 == pytest.approx(v2, abs=1e-10)
+        if v2 > 0.0:
+            assert k1 == pytest.approx(k2, abs=1e-10)
+
+
+@pytest.mark.parametrize("offset, erwartet", [
+    (-1.0, 8.0),
+    (0.0, 4.0),
+    (1.0, 0.0),
+    (-2.0, 8.0),
+    (2.0, 0.0),
+])
+def test_ebenenschnitt_auf_flaechen_ist_konsistent(quader, offset, erwartet):
+    union = VorbereitetesUnionModell([quader])
+    # Behalten wird z >= offset; Ebenen genau auf den Quaderflächen z=±1.
+    volumen, schwerpunkt = union.auswerten_ebene((0.0, 0.0, 1.0), offset)
+
+    assert volumen == pytest.approx(erwartet, abs=1e-12)
+    if erwartet > 0.0:
+        assert np.isfinite(schwerpunkt).all()
+
+
+def test_ebenenschnitt_lehnt_ungueltige_ebene_ab(quader):
+    union = VorbereitetesUnionModell([quader])
+    with pytest.raises(VolumenUnionFehler):
+        union.auswerten_ebene((0.0, 0.0, 0.0), 0.0)
+    with pytest.raises(VolumenUnionFehler):
+        union.auswerten_ebene((0.0, 0.0, 1.0), float("nan"))
