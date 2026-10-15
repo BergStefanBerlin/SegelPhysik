@@ -51,7 +51,7 @@
     "dicke": 0.0,
     "kopf": 1.0,
     "gestrichelt": false,
-    "skala": 1.0,
+    "skala": 0.05,
     "deckkraft": 1.0,
     "vordergrund": true
   },
@@ -61,7 +61,7 @@
     "dicke": 0.0,
     "kopf": 1.0,
     "gestrichelt": true,
-    "skala": 1.0,
+    "skala": 0.05,
     "deckkraft": 1.0,
     "vordergrund": true
   },
@@ -71,7 +71,7 @@
     "dicke": 0.0,
     "kopf": 1.0,
     "gestrichelt": false,
-    "skala": 1.0,
+    "skala": 0.05,
     "deckkraft": 1.0,
     "vordergrund": true
   },
@@ -81,7 +81,7 @@
     "dicke": 0.0,
     "kopf": 1.0,
     "gestrichelt": false,
-    "skala": 1.0,
+    "skala": 0.05,
     "deckkraft": 1.0,
     "vordergrund": true
   },
@@ -91,7 +91,7 @@
     "dicke": 0.0,
     "kopf": 1.0,
     "gestrichelt": false,
-    "skala": 1.0,
+    "skala": 0.05,
     "deckkraft": 1.0,
     "vordergrund": true
   },
@@ -146,7 +146,7 @@
     "vordergrund": true
   },
   "pfeil_zusatz": {
-    "sichtbar": true,
+    "sichtbar": false,
     "farbe": "#e08214",
     "dicke": 0.0,
     "kopf": 1.0,

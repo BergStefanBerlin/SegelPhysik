@@ -392,6 +392,7 @@ class HauptFenster(QMainWindow):
                 ("z*", "-"), ("phi*", "-"), ("GM", "-"),
                 ("Restkraft", "-"), ("Restmoment", "-"),
                 ("Iterationen", "-"), ("Bildrate", "-"),
+                ("Zeitfaktor", "-"),
                 ("Physik angefordert", "-"), ("Physik berechnet", "-"),
                 ("Physik-Rückstand", "-"),
                 ("Nachholrate letztes Fenster", "-"),
@@ -1456,7 +1457,9 @@ class HauptFenster(QMainWindow):
 
     def _solver_status_aktualisieren(self, werte):
         for schluessel, wert in werte.items():
-            self._solver_werte[schluessel].setText(1, str(wert))
+            eintrag = self._solver_werte.get(schluessel)
+            if eintrag is not None:
+                eintrag.setText(1, str(wert))
 
     def protokoll_schreiben(self, text):
 

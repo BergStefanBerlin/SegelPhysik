@@ -750,3 +750,13 @@ def test_echtzeit_yacht_voxel_last_laesst_gui_reagieren(
     assert fenster._echtzeit_zustand is not None
     fenster._zeit_pausieren()
     fenster.close()
+
+
+def test_statusliste_kennt_alle_echtzeit_schluessel():
+    _qt_app()
+    fenster = HauptFenster()
+    fenster._solver_status_aktualisieren({
+        "Bildrate": "60.0 FPS", "Zeitfaktor": "1.00 ×",
+        "Physik angefordert": "1.000 s", "Unbekannt": "x"})
+    assert fenster._solver_werte["Zeitfaktor"].text(1) == "1.00 ×"
+    assert fenster._solver_werte["Bildrate"].text(1) == "60.0 FPS"
