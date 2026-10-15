@@ -1139,20 +1139,23 @@ class HauptFenster(QMainWindow):
         vergangen = max(0.0, jetzt - self._echtzeit_letzte_wandzeit)
         schnell = not self._dyn("zeitgenau")
         if schnell:
-            # Simulationszeit folgt nicht der Uhr: je Auftrag ein Block
-            # fester Schritte, kein Rueckstand, keine Ueberlast-Pause.
+            # So schnell wie moeglich, aber nie schneller als die reale
+            # Zeit: Wandzeit fuellt den Akkumulator, der auf einen Block
+            # begrenzt ist. Ueberschuss verfaellt (Zeitlupe), kein
+            # Rueckstand, keine Ueberlast-Pause, kein Nachholen.
             if self._echtzeit_modus == "nachholen":
                 self._echtzeit_nachholen_start = None
             self._echtzeit_modus = "normal"
             self._echtzeit_ueberlast_seit = None
             self._echtzeit_letzte_wandzeit = jetzt
-            if self._echtzeit_aufgabe_laeuft:
-                return
             block = (self._dyn("max_schritte_pro_aufgabe")
                      * self._echtzeit_physik.dt_s)
-            self._echtzeit_akkumulator = block
+            self._echtzeit_akkumulator = min(
+                self._echtzeit_akkumulator + vergangen, block)
+            if self._echtzeit_aufgabe_laeuft:
+                return
             self._echtzeit_angefordert_s = (
-                self._echtzeit_berechnet_s + block)
+                self._echtzeit_berechnet_s + self._echtzeit_akkumulator)
         elif self._echtzeit_modus != "nachholen":
             self._echtzeit_akkumulator += vergangen
             self._echtzeit_angefordert_s += vergangen

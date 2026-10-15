@@ -176,3 +176,25 @@ def test_takt_schnellmodus_rechnet_ohne_rueckstand_und_pause(tmp_path, monkeypat
     assert f._echtzeit_rueckstand_s() == pytest.approx(0.05)
     f._echtzeit_takt()          # Auftrag laeuft noch: kein zweiter Start
     assert len(gestartet) == 1
+
+def test_takt_schnellmodus_nie_schneller_als_reale_zeit(tmp_path, monkeypatch):
+    import time
+    from PySide6.QtWidgets import QApplication
+    from segelphysik.gui import hauptfenster as hf
+    QApplication.instance() or QApplication([])
+    gestartet = []
+    monkeypatch.setattr(hf.QThreadPool, "start",
+                        lambda self, aufgabe: gestartet.append(aufgabe))
+    f = hf.HauptFenster()
+    f._einstellungen = Einstellungen.laden(str(tmp_path / "s.json"))
+    f._einstellungen.setzen("dynamisch", "zeitgenau", False)
+    f._einstellungen.setzen("dynamisch", "max_schritte_pro_aufgabe", 50)
+    f._echtzeit_physik = type("P", (), {"dt_s": 0.01})()
+    f._echtzeit_zustand = object()
+    f._echtzeit_kraftfunktion = lambda *a: None
+    f._laufzeit_koerper["k"] = object()
+    f._echtzeit_name = "k"
+    f._echtzeit_letzte_wandzeit = time.perf_counter() - 0.05
+    f._echtzeit_takt()
+    # 50 ms reale Zeit -> hoechstens ca. 5 Schritte, nicht der volle Block
+    assert len(gestartet) == 1 and 4 <= f._echtzeit_schritte_laufend <= 8

@@ -35,6 +35,6 @@ Versionierte Einstellungen für die Solver-Parameter
 ## Parameter (Version 1.0)
 
 Statisch: `toleranz`, `max_iterationen`, `stagnation_anteil`.
-Dynamisch: `zeitgenau` (aus: so schnell wie möglich, Simulationszeit folgt nicht mehr der Uhr),
+Dynamisch: `zeitgenau` (Checkbox „Echtzeitgenau“; Schlüsselname bleibt aus Kompatibilitätsgründen; aus: so schnell wie möglich, aber nie schneller als die reale Zeit, Zeitlupe statt Überlast-Stopp),
 `max_schritte_pro_aufgabe`, `max_schritte_nachholen`, `ueberlast_rueckstand_s`,
 `ueberlast_dauer_s`, `nachholen_ende_rueckstand_s`, `nachholrate_ziel`.

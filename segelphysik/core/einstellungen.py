@@ -50,9 +50,9 @@ VORLAGE = {
     },
     "dynamisch": {
         "zeitgenau": _eintrag(
-            "bool", True, "Simulation laeuft zeitgenau (Echtzeit). "
-            "Aus: so schnell wie moeglich, Simulationszeit folgt nicht "
-            "mehr der Uhr"),
+            "bool", True, "Echtzeitgenau (Stopp bei Ueberlast). "
+            "Aus: so schnell wie moeglich, aber nie schneller als die "
+            "reale Zeit; bei Ueberlast Zeitlupe statt Stopp"),
         "max_schritte_pro_aufgabe": _eintrag(
             "int", 16, "Maximale Physikschritte je Rechenauftrag",
             "Schritte", 1, 256),

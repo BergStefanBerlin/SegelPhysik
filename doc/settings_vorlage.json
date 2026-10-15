@@ -36,7 +36,7 @@
       "typ": "bool",
       "default": true,
       "einheit": "",
-      "beschreibung": "Simulation laeuft zeitgenau (Echtzeit). Aus: so schnell wie moeglich, Simulationszeit folgt nicht mehr der Uhr",
+      "beschreibung": "Echtzeitgenau (Stopp bei Ueberlast). Aus: so schnell wie moeglich, aber nie schneller als die reale Zeit; bei Ueberlast Zeitlupe statt Stopp",
       "seit_version": "1.0"
     },
     "max_schritte_pro_aufgabe": {
