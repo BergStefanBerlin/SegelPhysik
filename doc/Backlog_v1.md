@@ -330,6 +330,21 @@ Solver integrieren
 - **R-10 (Kraftmodule):** zurückgestellt, da belegte Widerstands-/Added-Mass-
   Koeffizienten fehlen.
 
+### B-14 – Beliebige vordefinierte Körper importieren (wie die Yacht)
+
+- **Datum:** 15.10.2026
+- **Priorität:** Mittel
+- **Status:** Offen (Wunsch Nutzer)
+- **Ziel:** Beliebige vordefinierte Körper aus Dateien importieren, nicht nur
+  die parametrischen Formen der `koerper.json` (cone, box, pyramid, sphere,
+  cylinder, plate, hexprism, polyhedron). Der Ablauf soll dem der Yacht
+  entsprechen: Teile als OBJ unter `modelle/<name>/`, in der `koerper.json`
+  über `teile` mit Material oder Dichte beschrieben.
+- **Zu klären:** Ordnerstruktur und Skalierung, Mesh-Prüfung (geschlossen,
+  orientiert, Volumen > 0), Farben/Materialien, Anzeige im Komponentenbaum.
+- **Ausgangspunkt:** `fabriken.baue_summenkoerper`, `boot_bau.baue_teil`,
+  `koerper_formen.FORMEN`.
+
 ## Messkontext und Grenzen
 
 - Yachtmodell: geometrisches Unionvolumen ungefähr `3,16786 m³`.
