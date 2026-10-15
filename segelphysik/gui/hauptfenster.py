@@ -1323,7 +1323,8 @@ class HauptFenster(QMainWindow):
                 koerper.masse, physik.g_m_pro_s2,
                 referenz_laenge=max(ausdehnung, 0.05))
             bruecke.kraefte_daten_setzen(
-                name, erg, koerper.masse, physik.g_m_pro_s2, skala)
+                name, erg, koerper.masse, physik.g_m_pro_s2, skala,
+                fremd=self._fremdkraft_aktuell())
         except (ArithmeticError, AttributeError, TypeError, ValueError) as fehler:
             self.protokoll_schreiben(
                 "Kräftebild (%s) konnte nicht aktualisiert werden: %s"

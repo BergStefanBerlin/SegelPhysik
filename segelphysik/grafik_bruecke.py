@@ -436,11 +436,13 @@ class GrafikBruecke:
 
     # ---------------- Phase C: Kraeftebild (Taste 7) ----------------
 
-    def kraefte_daten_setzen(self, name, erg, masse, g, skala):
+    def kraefte_daten_setzen(self, name, erg, masse, g, skala, fremd=None):
         """Speichert die Kraefte-Daten eines Objekts (P5a-Muster: die Demo
-        setzt die Wahrheit, die Bruecke projiziert sie pro Frame)."""
+        setzt die Wahrheit, die Bruecke projiziert sie pro Frame).
+        fremd: ((fx, fy, fz) Welt, (x, y, z) koerperfest rel. Schwerpunkt)."""
         self._kraefte_daten[name] = {"erg": erg, "masse": float(masse),
-                                     "g": float(g), "skala": float(skala)}
+                                     "g": float(g), "skala": float(skala),
+                                     "fremd": fremd}
 
     def kraefte_daten_entfernen(self, name):
         self._kraefte_daten.pop(name, None)
@@ -450,7 +452,7 @@ class GrafikBruecke:
                 "kraefte_%s_arm" % name, "kraefte_%s_moment" % name,
                 "kraefte_%s_moment_y" % name, "kraefte_%s_moment_z" % name,
                 "kraefte_%s_rest" % name, "kraefte_%s_zusatz" % name,
-                "kraefte_%s_auftriebsp" % name]
+                "kraefte_%s_auftriebsp" % name, "kraefte_%s_fremd" % name]
 
     def _kraefte_actors(self, name):
         """Baut die Kraefte-Actors aus den gesetzten Daten (inkl. Moment-Bogen)."""
@@ -468,7 +470,7 @@ class GrafikBruecke:
                                  daten["g"], daten["skala"])
         store = k.setdefault("kraefte_actors", {})
         (n_fg, n_fa, n_arm, n_moment, n_moment_y, n_moment_z, n_rest,
-         n_zusatz, n_auftriebsp) = self._kraefte_namen(name)
+         n_zusatz, n_auftriebsp, n_fremd) = self._kraefte_namen(name)
 
         def _pfeil(p, farbe, n):
             try:
@@ -502,6 +504,19 @@ class GrafikBruecke:
                     self._kraefte_actors_entfernen(name, (n,))
                 else:
                     _pfeil(p, farbe, n)
+            fremd_pfeil = None
+            if daten.get("fremd") is not None:
+                kraft_f = np.asarray(daten["fremd"][0], float)
+                if float(np.linalg.norm(kraft_f)) > 1e-9:
+                    R = k.get("statisch_R")
+                    R = np.eye(3) if R is None else np.asarray(R, float)
+                    angriff = cm + R @ np.asarray(daten["fremd"][1], float)
+                    fremd_pfeil = kb.pfeil_daten(
+                        angriff, kraft_f * daten["skala"])
+            if fremd_pfeil is None:
+                self._kraefte_actors_entfernen(name, (n_fremd,))
+            else:
+                _pfeil(fremd_pfeil, kb.FARBE_FREMD, n_fremd)
             a, b = kb.hebelarm_segment(daten["erg"].K.as_array(), r_s)
             try:
                 arm = pv.line_segments_from_points([tuple(a), tuple(b)])
@@ -512,7 +527,7 @@ class GrafikBruecke:
                 pass
         else:
             self._kraefte_actors_entfernen(
-                name, (n_fg, n_fa, n_arm, n_rest, n_zusatz))
+                name, (n_fg, n_fa, n_arm, n_rest, n_zusatz, n_fremd))
 
         if self._layer.ist_an(LAYER_SCHWERPUNKT):
             kugel = pv.Sphere(

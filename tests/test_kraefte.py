@@ -106,7 +106,7 @@ def test_r10_bridge_kraefte_api_ohne_pyvista():
     assert b._kraefte_namen("boot")[:4] == [
         "kraefte_boot_fg", "kraefte_boot_fa",
         "kraefte_boot_arm", "kraefte_boot_moment"]
-    assert len(b._kraefte_namen("boot")) == 9
+    assert len(b._kraefte_namen("boot")) == 10
     erg = _Erg(1.0, (0, 0, 0), 981.0, (0, 0, 0))
     b.kraefte_daten_setzen("boot", erg, 100.0, 9.81, 1e-3)
     assert "boot" in b._kraefte_daten
@@ -204,3 +204,39 @@ def test_fremdkraft_angriffspunkt_dreht_mit_dem_koerper():
     # 90 Grad um z: Angriffspunkt (1,0,0) -> (0,1,0); (0,1,0) x (0,0,10) = (10,0,0)
     erg = modell(((0.0, 0.0, 0.0), (w, 0.0, 0.0, w)))
     assert np.allclose(erg.M_gesamt.as_array(), (10.0, 0.0, 0.0), atol=1e-9)
+
+def test_fremdkraft_pfeil_startet_am_weltangriffspunkt(monkeypatch):
+    import numpy as np
+    from types import SimpleNamespace
+    from segelphysik import grafik_bruecke as gb
+    from segelphysik.core.auftrieb import Auftriebsergebnis, Vektor
+    from segelphysik.core.kraftmodell import KraftErgebnis
+
+    import pytest
+    pytest.importorskip("pyvista")
+    gezeichnet = {}
+    monkeypatch.setattr(
+        gb, "_mesh_actor_setzen",
+        lambda plotter, store, n, mesh, **kw: gezeichnet.__setitem__(n, mesh))
+    b = gb.GrafikBruecke()
+    b._plotter = SimpleNamespace(remove_actor=lambda n: None)
+    hydro = Auftriebsergebnis(1.0, (0.0, 0.0, 0.0), (0.0, 0.0, 1000.0),
+                              (0.0, 0.0, 0.0))
+    erg = KraftErgebnis(hydro, Vektor((0.0, 50.0, 1000.0)),
+                        Vektor((0.0, 0.0, 0.0)), (0.0,) * 6)
+    R = np.array([[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
+    b._koerper["boot"] = {
+        "aktiv": True, "position": np.array([1.0, 2.0, 0.5]),
+        "statisch_R": R, "overlay_skala": (1.0, 0.05)}
+    b.kraefte_daten_setzen("boot", erg, 100.0, 9.81, 0.01,
+                           fremd=((0.0, 50.0, 0.0), (1.0, 0.0, 0.0)))
+    b.layer_setzen(gb.LAYER_KRAEFTE, True)
+
+    b._kraefte_actors("boot")
+
+    mesh = gezeichnet["kraefte_boot_fremd"]
+    # Angriffspunkt: cm + R @ (1,0,0) = (1, 3, 0.5)
+    # Pfeil zeigt in +y und beginnt bei y=3: alle Punkte y >= 3, Spitze bei 3 + 0.5
+    assert mesh.bounds[2] >= 3.0 - 0.1
+    assert mesh.bounds[3] == pytest.approx(3.5, abs=1e-6)
+    assert mesh.bounds[0] <= 1.0 + 0.2 and mesh.bounds[1] >= 1.0 - 0.2

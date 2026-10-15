@@ -16,6 +16,7 @@ FARBE_MOMENT = "#762a83"  # Drehmoment (violett)
 FARBEN_MOMENT = ("#762a83", "#1b7837", "#e08214")  # um x, y, z
 FARBE_REST = "#d73027"    # Resultierende Kraft
 FARBE_ZUSATZ = "#e08214"  # Widerstand/Added Mass
+FARBE_FREMD = "#f1c40f"   # Fremdkraft (gelb)
 
 KOPFANTEIL = 0.25
 KOPF_RADIUS_FAKTOR = 0.08
