@@ -30,7 +30,7 @@ def test_fehlende_datei_wird_mit_defaults_angelegt(tmp_path):
     pfad = str(tmp_path / "settings.json")
     e = Einstellungen.laden(pfad)
     assert os.path.exists(pfad)
-    assert e.get("dynamisch", "zeitgenau") is True
+    assert e.get("dynamisch", "zeitgenau") is False
     assert e.get("statisch", "max_iterationen") == 60
     assert json.load(open(pfad))["schema_version"] == ein.SCHEMA_VERSION
 
@@ -61,7 +61,7 @@ def test_ungueltige_und_fehlende_werte_fallen_auf_default(tmp_path):
              "dynamisch": {"zeitgenau": "ja"}}
     e = Einstellungen.laden(_datei(tmp_path, daten))
     assert e.get("statisch", "toleranz") == 1e-8
-    assert e.get("dynamisch", "zeitgenau") is True
+    assert e.get("dynamisch", "zeitgenau") is False
     assert e.get("statisch", "max_iterationen") == 60
     assert len(e.meldungen) == 2
 
@@ -94,14 +94,14 @@ def test_kaputte_datei_wird_gesichert(tmp_path):
     pfad.write_text("{kaputt", encoding="utf-8")
     e = Einstellungen.laden(str(pfad))
     assert (tmp_path / "settings.json.bak").read_text() == "{kaputt"
-    assert e.get("dynamisch", "zeitgenau") is True
+    assert e.get("dynamisch", "zeitgenau") is False
     assert json.load(open(pfad))["schema_version"] == ein.SCHEMA_VERSION
 
 
 def test_zuruecksetzen_nutzt_vorlage_defaults(tmp_path):
     e = Einstellungen.laden(_datei(tmp_path, ALTE_DATEI_1_0))
     e.zuruecksetzen("dynamisch")
-    assert e.get("dynamisch", "zeitgenau") is True
+    assert e.get("dynamisch", "zeitgenau") is False
     assert e.get("statisch", "max_iterationen") == 30   # Bereich unberuehrt
     e.zuruecksetzen()
     assert e.get("statisch", "max_iterationen") == 60
@@ -146,7 +146,7 @@ def test_dialog_aendert_und_setzt_zurueck(tmp_path):
     d._felder["max_schritte_pro_aufgabe"].setValue(5)
     assert e.get("dynamisch", "max_schritte_pro_aufgabe") == 5
     d._standard()
-    assert e.get("dynamisch", "zeitgenau") is True
+    assert e.get("dynamisch", "zeitgenau") is False
     assert d._felder["max_schritte_pro_aufgabe"].value() == 16
 
 

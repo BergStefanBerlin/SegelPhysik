@@ -165,6 +165,7 @@ def test_ueberlast_wird_nach_fuenf_sekunden_automatisch_pausiert(
         monkeypatch):
     app = QApplication.instance() or QApplication([])
     fenster = HauptFenster()
+    fenster._einstellungen.setzen("dynamisch", "zeitgenau", True)
     jetzt = 105.0
     fenster._echtzeit_zustand = object()
     fenster._echtzeit_physik = SimpleNamespace(dt_s=0.01)
@@ -237,6 +238,7 @@ def test_unterschreiten_der_ueberlastschwelle_setzt_frist_zurueck(
         monkeypatch):
     app = QApplication.instance() or QApplication([])
     fenster = HauptFenster()
+    fenster._einstellungen.setzen("dynamisch", "zeitgenau", True)
     fenster._echtzeit_zustand = object()
     fenster._echtzeit_physik = SimpleNamespace(dt_s=0.01)
     fenster._echtzeit_angefordert_s = 0.989

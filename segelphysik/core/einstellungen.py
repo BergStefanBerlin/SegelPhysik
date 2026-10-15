@@ -50,7 +50,7 @@ VORLAGE = {
     },
     "dynamisch": {
         "zeitgenau": _eintrag(
-            "bool", True, "Echtzeitgenau (Stopp bei Ueberlast). "
+            "bool", False, "Echtzeitgenau (Stopp bei Ueberlast). "
             "Aus: so schnell wie moeglich, aber nie schneller als die "
             "reale Zeit; bei Ueberlast Zeitlupe statt Stopp"),
         "max_schritte_pro_aufgabe": _eintrag(
