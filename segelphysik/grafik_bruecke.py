@@ -635,6 +635,10 @@ class GrafikBruecke:
             R = np.eye(3)
         welt = pd["referenz_punkte"] @ R.T + k["position"]
         pd.points = welt
+        if not k.get("aktiv", True):
+            # Ausgeblendete Koerper (Objektwechsel) duerfen ihre Actors
+            # nicht neu aufbauen, sonst ueberlagern sie den neuen Koerper.
+            return
         if k.get("gruppen"):
             for g in k["gruppen"]:
                 g["pd"].points = g["pd"]["referenz_punkte"] @ R.T + k["position"]

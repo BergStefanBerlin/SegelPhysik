@@ -110,3 +110,28 @@ def test_r10_bridge_kraefte_api_ohne_pyvista():
     assert "boot" in b._kraefte_daten
     b.kraefte_entfernen("boot")             # ohne Plotter: kein Absturz
     assert "boot" not in b._kraefte_daten
+
+
+def test_ausgeblendeter_koerper_baut_bei_posenupdate_keine_actors_auf():
+    """Objektwechsel im Echtzeitmodus: alte Pose darf den Altkoerper nicht
+    wieder einblenden (Ueberlagerung)."""
+    from segelphysik.grafik_bruecke import GrafikBruecke
+    b = GrafikBruecke()
+    aufrufe = []
+    b._actors_aktualisieren = lambda *a: aufrufe.append("actors")
+    b._gruppen_actors = lambda *a: aufrufe.append("gruppen")
+    b._overlays_aktualisieren = lambda *a: aufrufe.append("overlays")
+    punkte = np.zeros((3, 3))
+
+    class _Pd(dict):
+        points = punkte
+
+    pd = _Pd(referenz_punkte=punkte)
+    b._koerper["alt"] = {"pd": pd, "position": np.zeros(3), "aktiv": False}
+    assert b.physik_pose_6dof_setzen("alt", np.eye(3), np.array([1., 2., 3.]))
+    assert aufrufe == []
+    assert np.allclose(b._koerper["alt"]["position"], (1., 2., 3.))
+
+    b._koerper["alt"]["aktiv"] = True
+    b.physik_pose_6dof_setzen("alt", np.eye(3), np.array([1., 2., 3.]))
+    assert aufrufe == ["actors", "overlays"]
