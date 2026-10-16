@@ -64,6 +64,27 @@ def test_manifest_und_paket_laden_form_mesh_und_neutralrolle(tmp_path):
     assert not geladen.meshes["root"].punkte_si.flags.writeable
 
 
+def test_yachtpaket_hat_einen_mast_ohne_zusatzkomponenten():
+    paketwurzel = (
+        Path(__file__).resolve().parents[1]
+        / "segelphysik" / "modelle" / "yacht1"
+    )
+    konfig = lade_konfig(
+        Path(__file__).resolve().parents[1] / "konfigurationen")
+    manifest = lade_modellmanifest(
+        paketwurzel, konfig.materialien_blocks)
+    paket = lade_modellpaket(paketwurzel, konfig.materialien_blocks)
+
+    rigg = next(teil for teil in manifest.koerper.teile if teil.id == "rigg")
+    mast = next(teil for teil in rigg.teile if teil.id == "mast")
+    mesh = paket.meshes[mast.id]
+
+    assert mast.name == "Mast"
+    assert {teil.id for teil in rigg.teile}.isdisjoint(
+        {"mast_teil_01", "mast_teil_02"})
+    assert np.ptp(mesh.punkte_si[:, 2]) > 4.8
+
+
 def test_modellfabrik_uebernimmt_basispose_des_blattes(tmp_path):
     daten = _manifest()
     blatt = daten["koerper"]
@@ -370,7 +391,7 @@ def test_vollstaendiger_bestandskatalog_und_formpakete_laden():
             manifest.paketwurzel,
             konfiguration.materialien_blocks,
         )
-        assert len(paket.meshes) == (10 if manifest.id == "yacht1" else 1)
+        assert len(paket.meshes) == (8 if manifest.id == "yacht1" else 1)
 
 
 def test_bestandsmodelle_stimmen_mit_phase3_goldenwerten_ueberein():
@@ -411,25 +432,44 @@ def test_bestandsmodelle_stimmen_mit_phase3_goldenwerten_ueberein():
         manifest = katalog[modell_id]
         kanonisch, paket_offset = baue_modellpaket(
             konfiguration, manifest.paketwurzel)
+        paket_erwartung = erwartung
+        if modell_id == "yacht1":
+            # Phase-4-Yachtmodell ohne die beiden entfernten Mast-Patches.
+            paket_erwartung = {
+                "masse_kg": 450.36555574146473,
+                "traegheit_kg_m2": [
+                    [243.80676688701746, 0.27342149114871767,
+                     -11.323830592430454],
+                    [0.27342149114871767, 426.6872659809559,
+                     0.8032022521620851],
+                    [-11.323830592430454, 0.8032022521620851,
+                     220.24886518180577],
+                ],
+                "initialer_modellversatz_m": [
+                    0.011091184368875748,
+                    -0.0007979456807786855,
+                    -0.4862229243553529,
+                ],
+            }
         assert kanonisch.masse == pytest.approx(
-            erwartung["masse_kg"], rel=1e-12)
+            paket_erwartung["masse_kg"], rel=1e-12)
         np.testing.assert_allclose(
             kanonisch.traegheitstensor,
-            erwartung["traegheit_kg_m2"],
+            paket_erwartung["traegheit_kg_m2"],
             rtol=1e-12,
             atol=1e-20,
         )
         if offset is not None:
             np.testing.assert_allclose(
                 paket_offset,
-                erwartung["initialer_modellversatz_m"],
+                paket_erwartung["initialer_modellversatz_m"],
                 rtol=1e-12,
                 atol=1e-14,
             )
         else:
             assert paket_offset is None
         if modell_id == "yacht1":
-            assert len(kanonisch.dreiecke) == erwartung["paket_dreiecke"]
+            assert len(kanonisch.dreiecke) == 4197
             blaetter = []
 
             def sammle(knoten):
@@ -442,8 +482,7 @@ def test_bestandsmodelle_stimmen_mit_phase3_goldenwerten_ueberein():
             sammle(kanonisch)
             assert {blatt.knoten_id for blatt in blaetter} == {
                 "rumpf", "ruder", "kiel", "bulb", "mast",
-                "mast_teil_01", "mast_teil_02", "boom",
-                "grosssegel", "fock",
+                "boom", "grosssegel", "fock",
             }
             assert all(blatt.mesh is not None for blatt in blaetter)
             assert all(blatt.massendefinition is not None

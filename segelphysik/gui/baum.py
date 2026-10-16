@@ -160,10 +160,6 @@ def _welt_aus_repo_paketen(konfig):
             dicke = quelle.get("wanddicke_m", knoten.wanddicke_m)
             if dicke is not None:
                 werte.append(("Wanddicke", "%g mm" % (dicke * 1000.0)))
-            if knoten.rolle is not None:
-                werte.append(("Rolle", knoten.rolle))
-            elif knoten.rolle_default is not None:
-                werte.append(("Rolle (Standard)", knoten.rolle_default))
             if knoten.verdraengend is not None:
                 werte.append((
                     "Verdrängend", "Ja" if knoten.verdraengend else "Nein"))

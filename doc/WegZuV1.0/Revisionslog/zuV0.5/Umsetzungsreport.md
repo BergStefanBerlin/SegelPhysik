@@ -36,10 +36,17 @@ Phase 11 ist teilweise umgesetzt; Phase 12 ist auf Nutzerwunsch vertagt.
 
 | Nachweis | Ergebnis |
 |---|---|
-| Vollständige Testsuite | **562 passed, 1 skipped**; übersprungener Test benötigt Symlink-Rechte, die in der Windows-Umgebung fehlen. |
-| B-03, Paketfabrik gegenüber explizitem Legacy-Pfad, T-011 aktiv | **Bestanden**; Medianverhältnis Paket/Legacy `0,883`, Bootstrap-95-%-Intervall `[0,859; 0,913]`, 30 gepaarte Messungen. |
+| Vollständige Testsuite | **563 passed, 1 skipped**; übersprungener Test benötigt Symlink-Rechte, die in der Windows-Umgebung fehlen. |
+| B-03, Paketfabrik gegenüber explizitem Legacy-Pfad, T-011 aktiv | **Bestanden im Messstand vor der Mastkorrektur**; Medianverhältnis Paket/Legacy `0,883`, Bootstrap-95-%-Intervall `[0,859; 0,913]`, 30 gepaarte Messungen. |
 | Gelenkverhalten | Rendering und Zustand ändern sich; aggregierte Masse, Schwerpunkt, Trägheit und Auftriebsgeometrie bleiben unverändert. |
 | Migration | Dry-run legt keine Zielpakete an; bei Validierungsfehlern wird nichts veröffentlicht; vorhandene Pakete werden nicht überschrieben; Quellen bleiben unverändert. |
+
+**Modellkorrektur vom 16.10.2026:** Das Yachtpaket enthält jetzt einen
+einzelnen Mastkörper direkt unter `Rigg`; die zwei zuvor separat geführten
+Mast-Zusatz-Patches wurden aus Manifest und Paket entfernt. Dadurch beträgt
+die Paketmasse `450.365556 kg` statt des historischen Phase-3-Werts
+`450.379457 kg`. Die historische Baseline und der B-03-Messlauf wurden nicht
+rückwirkend geändert.
 
 Die vollständige Umsetzung ist noch nicht erreicht: Die größten verbleibenden
 Arbeiten sind die Phase-11-Cutover-Abnahme und, nach fachlicher Freigabe,

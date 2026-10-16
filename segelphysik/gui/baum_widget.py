@@ -95,6 +95,7 @@ class BaumWidget(QTreeWidget):
         self._in_update = False
         self._nur_aktives_bedienbar = False
         self.itemChanged.connect(self._geaendert)
+        self.itemExpanded.connect(self._ausklappen_begrenzen)
         self.customContextMenuRequested.connect(self._kontextmenue)
 
     def lade(self, welt_knoten):
@@ -178,6 +179,25 @@ class BaumWidget(QTreeWidget):
     @staticmethod
     def _hat_aktive_blaetter(knoten):
         return any(n.art == ART_BLATT and n.aktiv for n in knoten.iteriere())
+
+    def _ausklappen_begrenzen(self, item):
+        knoten = item.data(SPALTE_NAME, Qt.ItemDataRole.UserRole)
+        if isinstance(knoten, tuple) or knoten is None:
+            item.setExpanded(False)
+            return
+        if knoten.art == ART_WELT:
+            return
+        haupt = knoten
+        while haupt is not None and haupt.art != ART_SUMMEN:
+            haupt = haupt.eltern
+        if haupt is None or not haupt.sichtbar:
+            item.setExpanded(False)
+
+    def _hauptkoerperwechsel_zuklappen(self):
+        self.collapseAll()
+        welt = self.topLevelItem(0)
+        if welt is not None:
+            welt.setExpanded(True)
 
     def _kontextmenue(self, position):
         zeile = self.itemAt(position)
@@ -328,6 +348,12 @@ class BaumWidget(QTreeWidget):
         try:
             if knoten.art == ART_SUMMEN:
                 if item.checkState(SPALTE_CHECK) != Qt.Unchecked:
+                    vorher_aktiv = next(
+                        (haupt for haupt in self._welt.kinder
+                         if haupt.art == ART_SUMMEN and haupt.sichtbar),
+                        None)
+                    if vorher_aktiv is not knoten:
+                        self._hauptkoerperwechsel_zuklappen()
                     from .baum import sichtbarkeit_setzen
                     sichtbarkeit_setzen(self._welt, knoten.name)
                 else:

@@ -60,7 +60,7 @@ def test_i1_farben_aus_materialtabelle(konfig_real):
     f_stahl = konfig_real.farben_von("Stahl")[0]
     f_blei  = konfig_real.farben_von("Blei")[0]
     assert gef.get(f_gfk) == 2, "rumpf+ruder ueber GfK"
-    assert gef.get(f_alu) == 4, "Mastbaugruppe+Baum ueber Aluminium"
+    assert gef.get(f_alu) == 2, "Mast+Baum ueber Aluminium"
     assert gef.get(f_stahl) == 1, "kiel ueber Stahl"
     assert gef.get(f_blei) == 1, "bulb ueber Blei"
     # Segel: Direkt-Tripel, Farbe steht am Blatt in koerper.json
@@ -146,16 +146,15 @@ def test_tc_c6_verschachtelungstiefe_und_additivitaet(konfig_real):
         if not k.teile:
             return 1
         return 1 + max(tiefe(kind) for kind, _r2 in k.teile)
-    assert tiefe(boot) == 4, "boot->Gruppe->Mastbaugruppe->Blatt = Tiefe 4"
+    assert tiefe(boot) == 3, "boot->Gruppe->Blatt = Tiefe 3"
     blaetter = list(_blaetter(boot))
     assert abs(sum(b.masse for b in blaetter) - boot.masse) < 1e-6
 
 
 def test_tc_h7_migrationsgegenprobe_schalenboot(konfig_real):
-    """Bootswerte muessen ueber ALLE Schema-Reformen identisch bleiben."""
+    """Das Paketmodell enthält nur noch den Mastkörper ohne Zusatz-Patches."""
     boot, r_modell = fabriken.baue_boot(konfig_real)
-    # Der Bulb ist um seine Kielüberschneidung bereinigt.
-    assert abs(boot.masse - 450.37946) < 0.01
+    assert abs(boot.masse - 450.36556) < 0.001
     assert r_modell[2] < -0.4, "CM deutlich unter der Wasserlinie"
 
 

@@ -212,7 +212,7 @@ robust trianguliert oder mit konkretem Fehler abgelehnt. Der
 Legacy-Kompatibilitätspfad bleibt als explizit wählbarer Rückfall erhalten.
 Alle acht vorhandenen Yacht-OBJ-Dateien lassen sich syntaktisch laden. Die
 gezielten Mesh-/Pakettests bestehen mit **22 passed, 1 skipped**;
-die aktuelle vollständige Testsuite besteht mit **562 passed, 1 skipped**.
+die aktuelle vollständige Testsuite besteht mit **563 passed, 1 skipped**.
 Der Symlink-Test ist in der aktuellen Windows-Umgebung mangels Symlink-
 Rechten übersprungen; die Pfadprüfung wertet aufgelöste Ziele dennoch gegen
 die Paketwurzel aus.
@@ -221,11 +221,19 @@ T-011 besitzt eine Sweep-and-prune-Prüfung mit koplanarem SAT-Test für
 nicht-benachbarte Dreiecke. Tests decken echte Schnitte, koplanare
 Überlappung, gemeinsame Kanten, getrennte Komponenten sowie Kontextfehler ab.
 Die Yacht-Mastdatei bestand aus neun jeweils geschlossenen Komponenten, deren
-Beschläge sich im selben OBJ gegenseitig schnitten. Das Paket bildet sie nun
-als eine Mastbaugruppe mit genau einem Mastprofil und acht getrennten
-Beschlagkomponenten ab; die Legacy-OBJ-Quelle bleibt unverändert. Großbaum und
-Großsegel schneiden das Mastmesh nicht. Die Golden-Parität für Masse und
-Trägheit besteht nach der Aufteilung. T-011-Funktionstests bestehen. Der aktuelle End-to-End-B-03-Bericht in
+Beschläge sich im selben OBJ gegenseitig schnitten. Die ursprüngliche
+Paketmigration bildete sie als Mastbaugruppe mit einem Mastprofil und acht
+getrennten Beschlagkomponenten ab; die Legacy-OBJ-Quelle blieb unverändert.
+Großbaum und Großsegel schneiden das Mastmesh nicht. Die Golden-Parität für
+Masse und Trägheit bestand nach dieser Aufteilung. **Modellkorrektur vom
+16.10.2026:** Auf Nutzerwunsch enthält das aktive Yachtpaket nur noch das
+Mastprofil als einzelnes Blatt `Mast`; die zwei zuletzt verbliebenen
+Zusatz-Patches und ihre Paket-OBJ-Dateien sind entfernt. Dadurch liegt die
+Paketmasse nun bei `450.365556 kg` statt beim historischen Phase-3-Wert
+`450.379457 kg`; die Legacy-Referenz wurde nicht verändert. Die
+Phase-3-Goldenwerte und der B-03-Vergleich dokumentieren weiterhin den
+vorherigen Paketstand. T-011-Funktionstests bestehen. Der aktuelle
+End-to-End-B-03-Bericht in
 Phase 3/4 besteht das Leistungsgate; der frühere negative Befund ist damit
 historisch und kein aktueller Blocker.
 
@@ -271,12 +279,12 @@ Yacht sind paketbasiert ladbar. Für Großsegel und Fock liegen deduplizierte
 Paketkopien vor; die Legacy-OBJ-Quellen bleiben unverändert. Durch die
 Verdopplung der jeweiligen Manifest-Wanddicke bleiben Masse, Schwerpunkt
 und Trägheit gemäß Legacy-Golden unverändert. B-19 ist damit technisch
-abgenommen. Die Golden-Tests prüfen den vollständigen paketbasierten
-Yachtverband einschließlich der Mastbaugruppe. Die vollständige Testsuite
-bestand zuletzt mit **562 passed, 1 skipped**. Phase 3 ist funktional
-umgesetzt. Der erste B-03-Vergleich und der nachfolgende Vergleich mit
-19,063-facher Laufzeit sind historische Messungen; sie werden durch den
-aktuellen, korrigierten End-to-End-Vergleich abgelöst.
+abgenommen. Die Legacy-Goldenwerte bleiben als Phase-3-Referenz eingefroren;
+die aktuellen Paketkennwerte einschließlich der Mastprofil-Korrektur sind
+separat getestet. Phase 3 ist funktional umgesetzt. Der erste B-03-Vergleich
+und der nachfolgende Vergleich mit 19,063-facher Laufzeit sind historische
+Messungen; auch der aktuelle End-to-End-Vergleich wurde vor der
+Mastprofil-Korrektur aufgenommen.
 
 Der aktuelle gepaarte B-03-Vergleich (fünf Warm-ups je Pfad, 30 alternierende
 Paare, 20.000 Bootstrap-Resamples, T-011 aktiv) maß den Legacy-Median mit
@@ -419,7 +427,7 @@ Auswahl, Rolle, Label und Verdrängungsflag bleiben getrennt. Die Kamera folgt
 dem Körper ohne Physikzustandsänderung. Renderer-, Worker- und
 Snapshot-Generationen sind in den bestehenden Abläufen integriert. Ein
 Regressionstest deckt den Umschalt-Callback ab. Gezielte GUI-/Settings-Tests
-und die vollständige Testsuite bestehen (zuletzt **562 passed, 1 skipped**).
+und die vollständige Testsuite bestehen (zuletzt **563 passed, 1 skipped**).
 
 ### Phase 10 – Bewegliche Teile gemäß Ein-Körper-Näherung
 
@@ -463,7 +471,7 @@ aus Phase 3/4 sowie grüne Paritäts- und Performancegates.
 
 **Fortschritt:** Der explizite Settings-Schalter und die beiden Fabrikpfade
 sind vorhanden; ein GUI-Regressionstest deckt das Umschalten ab. B-03 ist
-bestanden und die vollständige Testsuite ist grün (**562 passed, 1 skipped**).
+bestanden und die vollständige Testsuite ist grün (**563 passed, 1 skipped**).
 Phase 11 ist dennoch
 **nicht abgenommen**: Das Dry-run-first-Migrationswerkzeug
 [`migriere_modellpaket.py`](../../../../werkzeuge/migriere_modellpaket.py)

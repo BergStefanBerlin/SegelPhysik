@@ -86,6 +86,7 @@ def test_start_zeigt_nur_welt_und_hauptkoerper():
 def test_ein_ausklappen_nur_mit_pfeil_nicht_durch_text_doppelklick_oder_checkbox():
     _qt_app()
     welt = welt_aus_json(_JSON)
+    sichtbarkeit_setzen(welt, "yacht1")
     widget = BaumWidget()
     widget.resize(340, 500)
     widget.lade(welt)
@@ -108,6 +109,41 @@ def test_ein_ausklappen_nur_mit_pfeil_nicht_durch_text_doppelklick_oder_checkbox
     assert _item(widget, "yacht1").isExpanded()
     _klick_pfeil(widget, _item(widget, "yacht1"))
     assert not _item(widget, "yacht1").isExpanded()
+    widget.close()
+
+
+def test_hauptkoerperwechsel_klappt_baum_zu_und_sperrt_inaktive_knoten():
+    _qt_app()
+    welt = welt_aus_json(_JSON)
+    sichtbarkeit_setzen(welt, "yacht1")
+    widget = BaumWidget()
+    widget.lade(welt)
+
+    yacht1_item = _item(widget, "yacht1")
+    kielsystem_item = _item(widget, "kielsystem")
+    yacht1_item.setExpanded(True)
+    kielsystem_item.setExpanded(True)
+    assert yacht1_item.isExpanded()
+    assert kielsystem_item.isExpanded()
+
+    _item(widget, "yacht2").setCheckState(
+        1, Qt.CheckState.Checked)
+    QTest.qWait(10)
+    QApplication.processEvents()
+
+    assert _item(widget, "Welt").isExpanded()
+    assert not _item(widget, "yacht1").isExpanded()
+    assert not _item(widget, "yacht2").isExpanded()
+    assert welt.kinder[1].sichtbar
+
+    yacht1_item = _item(widget, "yacht1")
+    yacht1_item.setExpanded(True)
+    assert not yacht1_item.isExpanded()
+    kielsystem_item = _item(widget, "kielsystem")
+    kielsystem_item.setExpanded(True)
+    assert not kielsystem_item.isExpanded()
+    _item(widget, "yacht2").setExpanded(True)
+    assert _item(widget, "yacht2").isExpanded()
     widget.close()
 
 

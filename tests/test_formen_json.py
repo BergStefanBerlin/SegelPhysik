@@ -69,8 +69,8 @@ def test_yachtfabrik_protokolliert_bereits_berechnete_blaetter(monkeypatch):
 
     baue_summenkoerper(konfig, "yacht1")
 
-    assert aufrufe == 14
-    assert sum("masse=" in zeile for zeile in konfig.protokoll) == 10
+    assert aufrufe == 11
+    assert sum("masse=" in zeile for zeile in konfig.protokoll) == 8
 
 
 def test_unbekannte_form_wird_abgelehnt(tmp_path):

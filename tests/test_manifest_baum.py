@@ -36,6 +36,8 @@ def test_repo_baum_verwendet_manifest_ids_und_haelt_rolle_separat():
     assert yacht.name == "yacht1"
     assert yacht.label == "Yacht 1"
     assert finde(welt, "rigg").rolle_default == "stehendes_gut"
+    assert ("Rolle (Standard)", "stehendes_gut") not in (
+        finde(welt, "rigg").eigenschaften)
     assert finde(welt, "bulb").rolle == "kiel"
     assert finde(welt, "bulb").verdrangend is True
 
@@ -67,7 +69,7 @@ def test_legacy_schalter_mappt_manifestteil_ids_auf_altblaetter():
     for blatt in yacht.blaetter():
         blatt.aktiv = False
     rumpf = finde(welt, "rumpf")
-    mastteil = finde(welt, "mast_teil_01")
+    mastteil = finde(welt, "mast")
     rumpf.aktiv = True
     mastteil.aktiv = True
 

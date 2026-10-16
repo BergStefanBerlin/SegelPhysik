@@ -473,11 +473,15 @@ einem Folgeeintrag und begründeter Statusänderung nachvollziehbar ablösen.
 - **Befund:** Sweep-and-prune mit coplanarem SAT-Test erkennt nicht-
   benachbarte Selbstschnitte und liefert Dreiecks-IDs. Synthetische
   Schnitt-, Kontakt-, getrennte-Komponenten- und Kontexttests bestehen.
-  Die neun getrennten, geschlossenen Mastkomponenten sind im Paket als eine
-  Mastbaugruppe (ein Mastprofil plus acht Beschlagkomponenten) modelliert;
-  die Legacy-OBJ-Quelle bleibt unverändert. Großbaum und Großsegel schneiden
-  den Mast nicht. Paket-/Golden-Tests bestehen, Masse und Trägheit bleiben
-  innerhalb der festgelegten Toleranzen. Der frühere Performancebefund
+  Bei der ursprünglichen Paketmigration wurden die neun getrennten,
+  geschlossenen Komponenten als Mastprofil plus acht Beschläge übernommen;
+  die Legacy-OBJ-Quelle blieb unverändert. Großbaum und Großsegel schneiden
+  den Mast nicht. **Modellkorrektur vom 16.10.2026:** Auf Nutzerwunsch enthält
+  das aktive Yachtpaket jetzt nur noch das Mastprofil als Blatt `Mast`;
+  `mast_teil_01` und `mast_teil_02` sowie ihre Paket-OBJ-Dateien wurden
+  entfernt. Die Paketmasse beträgt dadurch `450.365556 kg`; die Legacy-
+  Referenz bleibt `450.379457 kg`. Phase-3-Goldenwerte beschreiben weiterhin
+  den früheren Paketstand. Der frühere Performancebefund
   `19,063` wurde durch den korrigierten B-03-Lauf abgelöst: Mit aktiver
   T-011-Prüfung liegt das Medianverhältnis Paket/Legacy bei `0,883`
   (95-%-Intervall `0,859–0,913`); das Gate ist bestanden.

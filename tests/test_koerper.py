@@ -408,7 +408,7 @@ def test_tc_d1_boot_acht_teile_aus_konfiguration(konfig):
             sammle(kind)
 
     sammle(boot)
-    assert len(blaetter) == 10
+    assert len(blaetter) == 8
 
 
 def test_tc_d2_boot_rs_unter_geometrischer_mitte(konfig):
@@ -442,9 +442,16 @@ def test_tc_d3_boot_masse_unabhaengige_referenz(konfig):
     for name, rho in (("kiel", mat["Stahl"]), ("bulb", mat["Blei"])):
         p, t = boot_bau.baue_teil(name, ordner=YACHT)
         erwartung += rho * abs(vol(p, t))
-    for name in ("mast", "boom"):
+    for name in ("boom",):
         p, t = boot_bau.baue_teil(name, ordner=YACHT)
         erwartung += FM_ALU_WAND * flaeche(p, t)
+    mast_pfad = os.path.join(
+        YACHT, "paket", "mast_components", "mast_korpus.obj")
+    mast_punkte, mast_dreiecke = boot_bau.lade_obj(mast_pfad)
+    mast_punkte = np.stack(
+        [mast_punkte[:, 2], mast_punkte[:, 0], mast_punkte[:, 1]],
+        axis=1) * boot_bau.SKALA
+    erwartung += FM_ALU_WAND * flaeche(mast_punkte, mast_dreiecke)
     for name in ("grosssegel", "fock"):
         p, t = boot_bau.baue_teil(name, ordner=YACHT)
         erwartung += 0.5 * flaeche(p, t)
@@ -456,9 +463,11 @@ def test_tc_d3_boot_masse_unabhaengige_referenz(konfig):
     for name, rho in (("kiel", mat["Stahl"]), ("bulb", mat["Blei"])):
         p, t = boot_bau.baue_teil(name, ordner=YACHT)
         einzeln[name] = rho * abs(vol(p, t))
-    for name in ("mast", "boom"):
+    for name in ("boom",):
         p, t = boot_bau.baue_teil(name, ordner=YACHT)
         einzeln[name] = FM_ALU_WAND * flaeche(p, t)
+    einzeln["mast"] = FM_ALU_WAND * flaeche(
+        mast_punkte, mast_dreiecke)
     assert max(einzeln, key=einzeln.get) == "kiel"
     assert einzeln["rumpf"] > einzeln["bulb"] > einzeln["mast"]
 
@@ -482,10 +491,10 @@ def test_tc_d4_segeln_sind_flaechenkoerper(konfig):
 def test_tc_d5_schalenboot_kennzahlen(konfig):
     """Kennzahlen des Schalenboots (gemessen, Hohlprofil-Modell)."""
     boot, r_modell = fabriken.baue_boot(konfig)
-    # Der Bulb ist um seine Kielüberschneidung bereinigt.
-    assert abs(boot.masse - 450.37946) < 0.01      # Gesamtmasse (gemessen)
+    # Das Paketmodell lässt die beiden Mast-Zusatz-Patches weg.
+    assert abs(boot.masse - 450.36556) < 0.001    # Gesamtmasse (gemessen)
     assert r_modell[2] < 0.0                       # CM unter der Wasserlinie
-    assert abs(r_modell[2] - (-0.486117)) < 0.001  # CM-Tiefe (gemessen)
+    assert abs(r_modell[2] - (-0.486223)) < 0.001  # CM-Tiefe (gemessen)
     d = np.diag(boot.traegheitstensor)
     # diag(I): Fock-Aenderung verschiebt die Hauptmomente (grob +1.5/+1.3/-0.3
     # kg*m^2) - jenseits der alten ±0.05-Referenzen (243.990/427.215/220.610,
