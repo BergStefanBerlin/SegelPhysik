@@ -1,6 +1,14 @@
 """Masseneigenschaften aus Meshes (Spec V4, P1/P3) - rein numpy, exakte
 Polyeder-Integration, deterministisch. SI-Einheiten (R6)."""
+from collections import OrderedDict
+import hashlib
 import numpy as np
+from threading import Lock
+
+
+_SELBSTSCHNITT_CACHE = OrderedDict()
+_SELBSTSCHNITT_CACHE_LOCK = Lock()
+_SELBSTSCHNITT_CACHE_MAX = 128
 
 
 def validiere_mesh_eingaben(punkte, dreiecke):
@@ -44,7 +52,239 @@ def validiere_mesh_eingaben(punkte, dreiecke):
     return P, F, doppelflaeche
 
 
-def validiere_mesh(punkte, dreiecke, geschlossen_erforderlich=False):
+def _kreuzprodukt_3d(a, b):
+    return np.array((
+        a[1] * b[2] - a[2] * b[1],
+        a[2] * b[0] - a[0] * b[2],
+        a[0] * b[1] - a[1] * b[0],
+    ))
+
+
+def _koplanare_dreiecke_schneiden(a, b, normale, toleranz):
+    entferne_achse = int(np.argmax(np.abs(normale)))
+    a2 = np.delete(a, entferne_achse, axis=1)
+    b2 = np.delete(b, entferne_achse, axis=1)
+    kanten = np.vstack((
+        np.roll(a2, -1, axis=0) - a2,
+        np.roll(b2, -1, axis=0) - b2,
+    ))
+    for kante in kanten:
+        achse = np.array((-kante[1], kante[0]))
+        projektion_a = a2 @ achse
+        projektion_b = b2 @ achse
+        if (np.max(projektion_a) < np.min(projektion_b) - toleranz
+                or np.max(projektion_b)
+                < np.min(projektion_a) - toleranz):
+            return False
+    return True
+
+
+def _segment_dreieck_schneiden(start, ende, dreieck, toleranz):
+    richtung = ende - start
+    kanten1 = dreieck[1] - dreieck[0]
+    kanten2 = dreieck[2] - dreieck[0]
+    p = _kreuzprodukt_3d(richtung, kanten2)
+    determinant = float(np.dot(kanten1, p))
+    skala = max(
+        float(np.linalg.norm(richtung) * np.linalg.norm(kanten1)
+              * np.linalg.norm(kanten2)),
+        toleranz**3)
+    determinant_tol = toleranz * skala
+    if abs(determinant) <= determinant_tol:
+        return False
+    inverse = 1.0 / determinant
+    versatz = start - dreieck[0]
+    u = float(np.dot(versatz, p) * inverse)
+    q = _kreuzprodukt_3d(versatz, kanten1)
+    v = float(np.dot(richtung, q) * inverse)
+    t = float(np.dot(kanten2, q) * inverse)
+    bary_tol = toleranz / max(
+        float(np.linalg.norm(kanten1)), float(np.linalg.norm(kanten2)),
+        toleranz)
+    return (
+        -bary_tol <= u <= 1.0 + bary_tol
+        and -bary_tol <= v
+        and u + v <= 1.0 + bary_tol
+        and -bary_tol <= t <= 1.0 + bary_tol
+    )
+
+
+def _koplanare_paare_schneiden(a, b, normale_a, koplanar, toleranz):
+    schneidet = np.zeros(len(a), dtype=bool)
+    achsen_entfernen = np.argmax(np.abs(normale_a[koplanar]), axis=1)
+    for achse in range(3):
+        mask = achsen_entfernen == achse
+        if not np.any(mask):
+            continue
+        a2 = np.delete(a[koplanar][mask], achse, axis=2)
+        b2 = np.delete(b[koplanar][mask], achse, axis=2)
+        kanten = np.concatenate((
+            np.roll(a2, -1, axis=1) - a2,
+            np.roll(b2, -1, axis=1) - b2,
+        ), axis=1)
+        testachsen = np.stack((-kanten[:, :, 1], kanten[:, :, 0]), axis=2)
+        laengen = np.linalg.norm(testachsen, axis=2)
+        projektion_a = np.einsum("nvc,nkc->nvk", a2, testachsen)
+        projektion_b = np.einsum("nvc,nkc->nvk", b2, testachsen)
+        getrennt = (
+            np.max(projektion_a, axis=1)
+            < np.min(projektion_b, axis=1) - toleranz * laengen
+        ) | (
+            np.max(projektion_b, axis=1)
+            < np.min(projektion_a, axis=1) - toleranz * laengen
+        )
+        schneidet[np.flatnonzero(koplanar)[mask]] = ~np.any(
+            getrennt, axis=1)
+    return schneidet
+
+
+def _segmentpaare_dreieck_schneiden(start, ende, dreieck, toleranz):
+    richtung = ende - start
+    kanten1 = dreieck[:, 1] - dreieck[:, 0]
+    kanten2 = dreieck[:, 2] - dreieck[:, 0]
+    p = np.cross(richtung, kanten2[:, None, :])
+    determinant = np.einsum("nc,nec->ne", kanten1, p)
+    laenge_richtung = np.linalg.norm(richtung, axis=2)
+    laenge1 = np.linalg.norm(kanten1, axis=1)
+    laenge2 = np.linalg.norm(kanten2, axis=1)
+    skala = np.maximum(
+        laenge_richtung * laenge1[:, None] * laenge2[:, None],
+        toleranz**3)
+    parallel = np.abs(determinant) <= toleranz * skala
+    inverse = np.divide(
+        1.0, determinant, out=np.zeros_like(determinant), where=~parallel)
+    versatz = start - dreieck[:, 0, None, :]
+    u = np.einsum("nec,nec->ne", versatz, p) * inverse
+    q = np.cross(versatz, kanten1[:, None, :])
+    v = np.einsum("nec,nec->ne", richtung, q) * inverse
+    t = np.einsum("nc,nec->ne", kanten2, q) * inverse
+    bary_toleranz = toleranz / np.maximum(
+        np.maximum(laenge1, laenge2), toleranz)
+    trifft = (
+        ~parallel
+        & (u >= -bary_toleranz[:, None])
+        & (u <= 1.0 + bary_toleranz[:, None])
+        & (v >= -bary_toleranz[:, None])
+        & (u + v <= 1.0 + bary_toleranz[:, None])
+        & (t >= -bary_toleranz[:, None])
+        & (t <= 1.0 + bary_toleranz[:, None])
+    )
+    return np.any(trifft, axis=1)
+
+
+def _dreieckspaare_schneiden(a, b, toleranz):
+    normale_a = np.cross(a[:, 1] - a[:, 0], a[:, 2] - a[:, 0])
+    normale_b = np.cross(b[:, 1] - b[:, 0], b[:, 2] - b[:, 0])
+    laenge_a = np.linalg.norm(normale_a, axis=1)
+    laenge_b = np.linalg.norm(normale_b, axis=1)
+    abstaende_b = np.einsum("nvc,nc->nv", b - a[:, 0, None, :], normale_a)
+    abstaende_a = np.einsum("nvc,nc->nv", a - b[:, 0, None, :], normale_b)
+    getrennt = (
+        np.all(abstaende_b > toleranz * laenge_a[:, None], axis=1)
+        | np.all(abstaende_b < -toleranz * laenge_a[:, None], axis=1)
+        | np.all(abstaende_a > toleranz * laenge_b[:, None], axis=1)
+        | np.all(abstaende_a < -toleranz * laenge_b[:, None], axis=1)
+    )
+    treffer = ~getrennt
+    normierte_a = np.abs(abstaende_a) / laenge_b[:, None]
+    normierte_b = np.abs(abstaende_b) / laenge_a[:, None]
+    koplanar = (
+        treffer
+        & (np.max(normierte_a, axis=1) <= toleranz)
+        & (np.max(normierte_b, axis=1) <= toleranz)
+    )
+    koplanar_treffer = _koplanare_paare_schneiden(
+        a, b, normale_a, koplanar, toleranz)
+    treffer[koplanar] = koplanar_treffer[koplanar]
+    nicht_koplanar = treffer & ~koplanar
+    if np.any(nicht_koplanar):
+        a_nicht = a[nicht_koplanar]
+        b_nicht = b[nicht_koplanar]
+        kanten_a = np.roll(a_nicht, -1, axis=1) - a_nicht
+        kanten_b = np.roll(b_nicht, -1, axis=1) - b_nicht
+        trifft_a = _segmentpaare_dreieck_schneiden(
+            a_nicht, np.roll(a_nicht, -1, axis=1), b_nicht, toleranz)
+        trifft_b = _segmentpaare_dreieck_schneiden(
+            b_nicht, np.roll(b_nicht, -1, axis=1), a_nicht, toleranz)
+        treffer[nicht_koplanar] = trifft_a | trifft_b
+    return treffer
+
+
+def _pruefe_mesh_selbstueberschneidung(P, F):
+    fingerprint = hashlib.sha256()
+    fingerprint.update(P.shape.__repr__().encode("ascii"))
+    fingerprint.update(P.tobytes(order="C"))
+    fingerprint.update(F.shape.__repr__().encode("ascii"))
+    fingerprint.update(F.tobytes(order="C"))
+    schluessel = fingerprint.digest()
+    with _SELBSTSCHNITT_CACHE_LOCK:
+        if schluessel in _SELBSTSCHNITT_CACHE:
+            _SELBSTSCHNITT_CACHE.move_to_end(schluessel)
+            return
+
+    dreiecke_punkte = P[F]
+    minima = dreiecke_punkte.min(axis=1)
+    maxima = dreiecke_punkte.max(axis=1)
+    ausdehnung = float(np.max(np.ptp(P, axis=0)))
+    toleranz = max(
+        ausdehnung * 1e-12,
+        np.finfo(np.float64).eps
+        * max(1.0, float(np.max(np.abs(P)))) * 64.0)
+    reihenfolge = np.argsort(minima[:, 0], kind="stable")
+    aktiv = []
+    paare = []
+    for index in reihenfolge:
+        start_x = minima[index, 0]
+        aktiv = [
+            kandidat for kandidat in aktiv
+            if maxima[kandidat, 0] >= start_x - toleranz
+        ]
+        if aktiv:
+            kandidaten = np.asarray(aktiv, dtype=np.intp)
+            kandidaten = kandidaten[
+                (maxima[kandidaten, 1] >= minima[index, 1] - toleranz)
+                & (maxima[index, 1] >= minima[kandidaten, 1] - toleranz)
+                & (maxima[kandidaten, 2] >= minima[index, 2] - toleranz)
+                & (maxima[index, 2] >= minima[kandidaten, 2] - toleranz)
+            ]
+            if len(kandidaten):
+                flaechen = F[kandidaten]
+                geteilt = np.any(
+                    flaechen == F[index][0], axis=1
+                ) | np.any(flaechen == F[index][1], axis=1) | np.any(
+                    flaechen == F[index][2], axis=1)
+                kandidaten = kandidaten[~geteilt]
+        else:
+            kandidaten = ()
+        paare.extend((int(kandidat), int(index)) for kandidat in kandidaten)
+        aktiv.append(int(index))
+    if paare:
+        paare = np.asarray(paare, dtype=np.intp)
+        schneidet = _dreieckspaare_schneiden(
+            dreiecke_punkte[paare[:, 0]],
+            dreiecke_punkte[paare[:, 1]],
+            toleranz)
+        if np.any(schneidet):
+            kandidat, index = paare[np.flatnonzero(schneidet)[0]]
+            raise ValueError(
+                "Mesh ist selbstüberschneidend: Dreiecke %d und %d"
+                % (int(kandidat), int(index)))
+    with _SELBSTSCHNITT_CACHE_LOCK:
+        _SELBSTSCHNITT_CACHE[schluessel] = None
+        _SELBSTSCHNITT_CACHE.move_to_end(schluessel)
+        while len(_SELBSTSCHNITT_CACHE) > _SELBSTSCHNITT_CACHE_MAX:
+            _SELBSTSCHNITT_CACHE.popitem(last=False)
+
+
+def pruefe_mesh_selbstueberschneidung(punkte, dreiecke):
+    """Lehnt Schnitte nicht benachbarter Dreiecke mit Sweep-and-prune ab."""
+    P, F, _ = validiere_mesh_eingaben(punkte, dreiecke)
+    _pruefe_mesh_selbstueberschneidung(P, F)
+
+
+def validiere_mesh(punkte, dreiecke, geschlossen_erforderlich=False,
+                   strenge_topologie=False, normalisiere_orientierung=False,
+                   pruefe_selbstueberschneidung=False):
     """Prüft Geometrie und Topologie vor einer Masse-/Volumenberechnung.
 
     Offene Oberflächen sind für Schalen zulässig. Ein geschlossenes Volumennetz
@@ -66,6 +306,15 @@ def validiere_mesh(punkte, dreiecke, geschlossen_erforderlich=False):
         np.all(anzahl == 2)
         and not np.any(nichtmannigfaltig)
         and not np.any(widerspruechliche_kanten))
+    if strenge_topologie and np.any(nichtmannigfaltig):
+        raise ValueError(
+            "Mesh ist nicht-mannigfaltig: eine Kante wird von mehr als 2 "
+            "Flächen geteilt")
+    if strenge_topologie and np.any(widerspruechliche_kanten):
+        raise ValueError(
+            "Mesh hat widersprüchliche Orientierung an gemeinsamen Kanten")
+    if pruefe_selbstueberschneidung:
+        _pruefe_mesh_selbstueberschneidung(P, F)
     if geschlossen_erforderlich and not geschlossen:
         if np.any(nichtmannigfaltig):
             grund = "nicht-mannigfaltig: eine Kante wird von mehr als 2 Flächen geteilt"
@@ -81,6 +330,9 @@ def validiere_mesh(punkte, dreiecke, geschlossen_erforderlich=False):
         flaeche = float(0.5 * doppelflaeche.sum())
     if not np.isfinite(volumen) or not np.isfinite(flaeche):
         raise ValueError("Mesh-Volumen oder -Fläche ist nicht endlich")
+    if normalisiere_orientierung and geschlossen and volumen < 0.0:
+        F = F[:, [0, 2, 1]]
+        volumen = -volumen
     return P, F, volumen, flaeche, geschlossen, int(np.count_nonzero(anzahl != 2))
 
 
@@ -165,11 +417,13 @@ def traegheitstensor_flaechig(punkte, dreiecke, flaechenmasse=1.0):
     Referenzdreiecks integriert (u,v im Referenzdreieck, |det B| = 2A):
         int(1) = 1/2,  int(u) = 1/6,  int(u u^T) = [[1/12,1/24],[1/24,1/12]]
         M_drei = A*aa + 2A*(a g^T + g a^T) + 2A*B U B^T,  g = B*(1/6,1/6)
-    Summe -> Tensor um den Ursprung (J = tr(M)E - M), dann
-    Parallel-Achsen-Satz rueckwaerts zum Flaechen-Schwerpunkt.
+    Die Integration erfolgt direkt relativ zum Flaechen-Schwerpunkt, damit
+    kleine Schalen bei grossen absoluten Koordinaten stabil bleiben.
     Unabhaengig von der Windung (Flaechen sind ungerichtet)."""
     P = np.asarray(punkte, float); T = np.asarray(dreiecke, np.int64)
     if len(T) == 0: raise ValueError("Leeres Mesh")
+    r, flaeche_ges = schwerpunkt_flaechig(P, T)
+    P = P - r
     a, b, c = P[T[:, 0]], P[T[:, 1]], P[T[:, 2]]
     A = 0.5 * np.linalg.norm(np.cross(b - a, c - a), axis=1)
     if A.sum() < 1e-300: raise ValueError("Mesh hat keine Flaeche")
@@ -183,8 +437,4 @@ def traegheitstensor_flaechig(punkte, dreiecke, flaechenmasse=1.0):
     M = A3 * aa + (2.0 * A3) * ag + (2.0 * A3) * BUB     # int(x x^T) dA je Dreieck
     fm = float(flaechenmasse)
     M = M.sum(axis=0) * fm
-    J = np.trace(M) * np.eye(3) - M                      # um den Ursprung
-    r, flaeche_ges = schwerpunkt_flaechig(P, T)
-    m = fm * flaeche_ges
-    J = J - m * ((r @ r) * np.eye(3) - np.outer(r, r))   # Steiner rueckwaerts
-    return J
+    return np.trace(M) * np.eye(3) - M

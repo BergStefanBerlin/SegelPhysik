@@ -10,9 +10,9 @@
 import json, math, os
 KONFIG_ORDNER="konfigurationen"; MATERIAL_DATEI="materialien.json"
 KOERPER_DATEI="koerper.json"; PHYSIK_DATEI="physik.json"
-VORLAGE_MATERIAL=os.path.join("doc","materialien_vorlage.json")
-VORLAGE_KOERPER=os.path.join("doc","koerper_vorlage.json")
-VORLAGE_PHYSIK=os.path.join("doc","physik_vorlage.json")
+VORLAGE_MATERIAL=os.path.join("doc","Vorlagen","materialien_vorlage.json")
+VORLAGE_KOERPER=os.path.join("doc","Vorlagen","koerper_vorlage.json")
+VORLAGE_PHYSIK=os.path.join("doc","Backlog","physik_vorlage.json")
 _VERBOTEN_BLATT=("masse","dichte","flaechenmasse_kg_pro_m2")
 _VERBOTEN_GRUPPE=_VERBOTEN_BLATT+("material","wanddicke_m","dichte_kg_pro_m3","farbe","farbe_unter_wasser")
 GLANZ_DEFAULT=0.15
@@ -160,7 +160,7 @@ def _val_koerper(d,mats,pfad):
     fr=[s for s in d if s not in _KOERPER_TOP and not s.startswith("_")]
     if fr: raise KonfigFehler("%s: unbekannte Abschnitte %s (erlaubt: %s; Unterstrich = Doku)"%(pfad,fr,", ".join(_KOERPER_TOP)))
     if "boot" in d and "summenkoerper" not in d:
-        raise KonfigFehler("%s: Schema geaendert (J-1): der feste Schluessel 'boot' gehoert jetzt unter 'summenkoerper' (z. B. 'yacht1'); Vorlage: doc/WegZuV1.0/Vorlagen/koerper_vorlage.json"%pfad)
+        raise KonfigFehler("%s: Schema geaendert (J-1): der feste Schluessel 'boot' gehoert jetzt unter 'summenkoerper' (z. B. 'yacht1'); Vorlage: doc/Vorlagen/koerper_vorlage.json"%pfad)
     sk=d.get("summenkoerper")
     if not isinstance(sk,dict) or not sk:
         raise KonfigFehler("%s: Abschnitt 'summenkoerper' fehlt oder leer"%pfad)

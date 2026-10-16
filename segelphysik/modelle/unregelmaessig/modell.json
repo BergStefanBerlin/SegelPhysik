@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "modell": {
+    "id": "unregelmaessig",
+    "name": "Unregelmäßiger Körper"
+  },
+  "geometrie_einheiten": {
+    "obj_zu_m": 1.0,
+    "obj_achsenmatrix_zu_blatt": [
+      [1, 0, 0],
+      [0, 1, 0],
+      [0, 0, 1]
+    ]
+  },
+  "koerper": {
+    "id": "root",
+    "name": "Unregelmäßiger Körper",
+    "geometrie": {
+      "quelle": "form",
+      "parameter": {
+        "typ": "polyhedron",
+        "eckpunkte_m": [
+          [0.0, 0.0, 0.0],
+          [1.1, 0.05, 0.1],
+          [0.05, 0.95, 0.15],
+          [1.05, 1.0, 0.05],
+          [0.1, 0.1, 0.85],
+          [1.0, 0.15, 1.05],
+          [0.15, 1.05, 0.9],
+          [0.9, 0.95, 1.1]
+        ]
+      }
+    },
+    "dichte_kg_pro_m3": 2600,
+    "farbe": "#6b8e23",
+    "farbe_unter_wasser": "#405515",
+    "rolle": "allgemein",
+    "verdrängend": true
+  }
+}

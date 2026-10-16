@@ -51,7 +51,11 @@ _STAG_ANTEIL = 0.05
 
 def _residuum(funktion, z, phi, m, g):
     erg = funktion((float(z), float(phi), 0.0))
-    residuum = np.array([float(erg.F_A.as_array()[2]) - m * g,
+    vertikalkraft = (
+        erg.F_gesamt.as_array()[2]
+        if getattr(erg, "schwerkraft_beruecksichtigt", False)
+        else erg.F_A.as_array()[2] - m * g)
+    residuum = np.array([float(vertikalkraft),
                          float(erg.M.as_array()[0])])
     if not np.all(np.isfinite(residuum)):
         raise SolverFehler(

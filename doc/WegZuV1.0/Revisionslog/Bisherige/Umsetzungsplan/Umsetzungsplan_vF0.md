@@ -1,6 +1,6 @@
 # SegelPhysik – Umsetzungsplan vF0
 
-Arbeitsreihenfolge zur Spezifikation [vF1](../Spezifikationen/Spezifikation_vF1.md).
+Arbeitsreihenfolge zur Spezifikation [vF1](../Spezifikation/Spezifikation_vF1.md).
 Jede Phase erhält gezielte Tests; Änderungen werden unabhängig von diesem
 Plan nur auf ausdrückliche Anweisung committed oder gepusht.
 

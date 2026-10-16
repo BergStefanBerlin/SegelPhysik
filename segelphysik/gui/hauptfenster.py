@@ -43,7 +43,8 @@ class _EchtzeitAufgabe(QRunnable):
         self.koerper_name = koerper_name
         self.zustand = zustand
         self.kraftfunktion = kraftfunktion
-        self.koerper = koerper
+        self.koerper = koerper.snapshot()
+        self.koerper_version = self.koerper.version
         self.physik = physik
         self.dt = dt
         self.anzahl_schritte = anzahl_schritte
@@ -112,7 +113,8 @@ class _StatischeAufgabe(QRunnable):
         super().__init__()
         self.generation = generation
         self.name = name
-        self.koerper = koerper
+        self.koerper = koerper.snapshot()
+        self.koerper_version = self.koerper.version
         self.ordner = ordner
         self.rho_w = rho_w
         self.signale = signale
@@ -136,7 +138,9 @@ class _StatischeAufgabe(QRunnable):
                 g=physik.g_m_pro_s2,
                 aufloesung=physik.voxel_aufloesung_m,
                 pfad="exakt_union")
-            kraftfunktion = baue_kraftmodell(kraftfunktion, physik)
+            kraftfunktion = baue_kraftmodell(
+                kraftfunktion, physik, masse=self.koerper.masse,
+                g=physik.g_m_pro_s2)
             problem = statusanzeige.schwimmpruefung(
                 kraftfunktion, self.koerper, self.koerper.masse,
                 physik.g_m_pro_s2)
@@ -233,6 +237,9 @@ class HauptFenster(QMainWindow):
                 dialog.geaendert.connect(self._stil_anwenden)
             elif bereich == "statisch":
                 dialog.geaendert.connect(self._solver_einstellung_geaendert)
+            elif bereich == "modell":
+                dialog.geaendert.connect(
+                    self._modellpfad_einstellung_geaendert)
             self._einstellungen_dialoge[bereich] = dialog
         dialog.neu_laden()
         dialog.show()
@@ -243,10 +250,17 @@ class HauptFenster(QMainWindow):
         """Geaenderte Solver-Parameter gelten sofort: statisch neu rechnen."""
         if self._btn_statisch.isChecked():
             self._statische_simulation_ausfuehren()
-        dialog.neu_laden()
-        dialog.show()
-        dialog.raise_()
-        dialog.activateWindow()
+
+    def _modellpfad_einstellung_geaendert(self):
+        welt = getattr(getattr(self, "baum", None), "_welt", None)
+        konfiguration = getattr(welt, "konfiguration", None)
+        if konfiguration is None:
+            return
+        aktiviert = self._einstellungen.get("modell", "paketfabrik_aktiv")
+        if getattr(konfiguration, "paketfabrik_aktiv", None) == aktiviert:
+            return
+        konfiguration.paketfabrik_aktiv = aktiviert
+        self._laufzeit_objekte_aktualisieren("modellpfad")
 
     def _pfeil_dialog(self, schluessel, titel, formular, pfeile=None):
         self._einstellungen_dialog(
@@ -296,6 +310,8 @@ class HauptFenster(QMainWindow):
             "Statisch …", lambda: self._einstellungen_dialog("statisch"))
         m_solver.addAction(
             "Dynamisch …", lambda: self._einstellungen_dialog("dynamisch"))
+        m_einst.addAction(
+            "Modellfabrik …", lambda: self._einstellungen_dialog("modell"))
         self._kraftpfeil_menue_bauen(m_einst)
         self._act_nur_aktives = m_einst.addAction(
             "Nur aktive Unterobjekte bedienbar")
@@ -676,6 +692,11 @@ class HauptFenster(QMainWindow):
 
     def _geometrie_konflikte_bereinigen(
             self, konfiguration, knoten, aktive):
+        from ..core.fabriken import _ist_repo_konfig
+        if (_ist_repo_konfig(konfiguration)
+                and getattr(konfiguration, "paketfabrik_aktiv", True)):
+            return True
+
         eintrag = knoten.eintrag
         if not isinstance(eintrag, dict) or "teile" not in eintrag:
             return True
@@ -900,16 +921,13 @@ class HauptFenster(QMainWindow):
         if fehler is not None:
             from ..core.statisch import SolverFehler
 
-            bruecke.statische_pose_loeschen(name)
-            self._statische_ergebnisse.pop(name, None)
-            self._statische_arbeitsdaten.pop(name, None)
             status = "Fehler: %s" % fehler
             werte = {
                 "z*": "-", "phi*": "-", "GM": "-",
                 "Restkraft": "-", "Restmoment": "-",
                 "Lösungstyp": status,
             }
-            kandidat_gezeigt = False
+            kandidat_abgelehnt = False
             if isinstance(fehler, SolverFehler):
                 diagnose = fehler.diagnose
                 statusnamen = {
@@ -937,15 +955,15 @@ class HauptFenster(QMainWindow):
                     and "z" in diagnose and "phi" in diagnose
                     and math.isfinite(diagnose["z"])
                     and math.isfinite(diagnose["phi"]))
-                if kandidat and bruecke.statische_pose_setzen(
-                        name, diagnose["z"], diagnose["phi"]):
-                    kandidat_gezeigt = True
+                if kandidat:
+                    kandidat_abgelehnt = True
                     werte["Lösungstyp"] = (
-                        "Kandidat (nicht konvergiert/instabil) – %s"
+                        "Kandidat nicht übernommen – %s"
                         % werte["Lösungstyp"])
             self._solver_status_aktualisieren(werte)
             self._statusoverlay(
-                statusanzeige.status_aus_fehler(fehler, kandidat_gezeigt))
+                statusanzeige.status_aus_fehler(
+                    fehler, kandidat_abgelehnt=kandidat_abgelehnt))
             self.protokoll_schreiben(
                 "Statischer Solver (%s): %s" % (name, fehler))
             return
@@ -1003,6 +1021,7 @@ class HauptFenster(QMainWindow):
                 {"Lösungstyp": "Kein Laufzeitkörper verfügbar"})
             return
 
+        koerper_snapshot = koerper.snapshot()
         from ..core.auftrieb import baue_kraftfunktion_6dof
         from ..core.dynamik_6dof import Zustand6DOF, quaternion_matrix
         from ..core.konfig_lader import lade_physik
@@ -1011,16 +1030,19 @@ class HauptFenster(QMainWindow):
         try:
             physik = lade_physik(konfiguration.ordner)
             kraftfunktion = baue_kraftfunktion_6dof(
-                koerper, rho_w=konfiguration.wasser_dichte(),
+                koerper_snapshot, rho_w=konfiguration.wasser_dichte(),
                 g=physik.g_m_pro_s2,
                 pfad=_ECHTZEIT_HYDROSTATIK_PFAD)
             kraftfunktion = KraftmodellMitHydroCache(
-                baue_kraftmodell(kraftfunktion, physik), intervall=1)
+                baue_kraftmodell(
+                    kraftfunktion, physik, masse=koerper_snapshot.masse,
+                    g=physik.g_m_pro_s2),
+                intervall=1)
             kraftfunktion.fremdkraft_setzen(self._fremdkraft_aktuell())
             basisposition = bruecke.physik_basis_position_ermitteln(
                 hauptkoerper.name)
             prozess_executor = self._echtzeit_prozess_pool_aktualisieren(
-                koerper, konfiguration.wasser_dichte(), physik,
+                koerper_snapshot, konfiguration.wasser_dichte(), physik,
                 _ECHTZEIT_HYDROSTATIK_PFAD)
         except (ImportError, OSError, RuntimeError, ValueError) as fehler:
             self._zeit_pausieren()
@@ -1047,6 +1069,17 @@ class HauptFenster(QMainWindow):
                           zustand.position[2]),
                 quaternion=zustand.quaternion)
         self._echtzeit_name = hauptkoerper.name
+        try:
+            koerper.zustand = zustand
+        except ValueError as fehler:
+            self._zeit_pausieren()
+            self._solver_status_aktualisieren(
+                {"Lösungstyp": "Fehler: ungültiger Körperzustand"})
+            self.protokoll_schreiben(
+                "Echtzeit-Simulation (%s): %s"
+                % (hauptkoerper.name, fehler))
+            return
+        zustand = koerper.zustand
         self._echtzeit_zustand = zustand
         self._echtzeit_anzeige_start = zustand
         self._echtzeit_anzeige_ziel = zustand
@@ -1054,6 +1087,7 @@ class HauptFenster(QMainWindow):
         self._echtzeit_anzeige_dauer = 0.0
         self._echtzeit_physik = physik
         self._echtzeit_kraftfunktion = kraftfunktion
+        self._echtzeit_koerper_version = koerper_snapshot.version
         self._echtzeit_aktiver_prozess_executor = prozess_executor
         self._echtzeit_kraefteresultat = None
         if (bruecke.layer_ist_an(LAYER_KRAEFTE)
@@ -1368,11 +1402,17 @@ class HauptFenster(QMainWindow):
             self._solver_status_aktualisieren(
                 {"Lösungstyp": "Fehler: Laufzeitkörper fehlt"})
             return
+        zustand = koerper.zustand
+        if zustand is None:
+            self._zeit_pausieren()
+            self._solver_status_aktualisieren(
+                {"Lösungstyp": "Fehler: Körperzustand fehlt"})
+            return
         self._echtzeit_auftragssequenz += 1
         sequenz = self._echtzeit_auftragssequenz
         aufgabe = _EchtzeitAufgabe(
             self._echtzeit_generation, sequenz, self._echtzeit_name,
-            self._echtzeit_zustand,
+            zustand,
             self._echtzeit_kraftfunktion, koerper, self._echtzeit_physik,
             dt, anzahl_schritte, self._echtzeit_signale,
             prozess_executor=self._echtzeit_aktiver_prozess_executor,
@@ -1408,6 +1448,23 @@ class HauptFenster(QMainWindow):
             return
         self._echtzeit_berechnet_s += (
             anzahl_schritte * self._echtzeit_physik.dt_s)
+        koerper = self._laufzeit_koerper.get(koerper_name)
+        if koerper is None:
+            self._zeit_pausieren()
+            self._solver_status_aktualisieren(
+                {"Lösungstyp": "Fehler: Laufzeitkörper fehlt"})
+            return
+        try:
+            koerper.zustand = zustand
+        except ValueError as state_error:
+            self._zeit_pausieren()
+            self._solver_status_aktualisieren(
+                {"Lösungstyp": "Fehler: ungültiger Körperzustand"})
+            self.protokoll_schreiben(
+                "Echtzeit-Simulation (%s): %s"
+                % (koerper_name, state_error))
+            return
+        zustand = koerper.zustand
         if (self._echtzeit_modus == "ueberlast_beobachtung"
                 and self._echtzeit_rueckstand_s() < self._dyn(
                     "ueberlast_rueckstand_s")):
@@ -1415,7 +1472,7 @@ class HauptFenster(QMainWindow):
             self._echtzeit_modus = "normal"
         vorherige_anzeige = (
             self._echtzeit_anzeige_ziel or self._echtzeit_zustand)
-        self._echtzeit_zustand = zustand
+        self._echtzeit_zustand = koerper.zustand
         self._echtzeit_kraefteresultat = kraefteresultat
         self._echtzeit_anzeige_start = vorherige_anzeige
         self._echtzeit_anzeige_ziel = zustand
@@ -1573,6 +1630,10 @@ class HauptFenster(QMainWindow):
         self._dock_protokoll.setVisible(self._act_protokoll.isChecked())
 
     def baum_setzen(self, welt_knoten):
+        konfiguration = getattr(welt_knoten, "konfiguration", None)
+        if konfiguration is not None:
+            konfiguration.paketfabrik_aktiv = self._einstellungen.get(
+                "modell", "paketfabrik_aktiv")
         self.baum.lade(welt_knoten)
 
     def _nur_aktives_bedienbar_setzen(self, aktiv):

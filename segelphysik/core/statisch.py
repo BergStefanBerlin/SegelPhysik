@@ -34,7 +34,10 @@ STOERLEITER_GRAD = (5.0, 15.0, 30.0, 44.0)
 def _residuum(funktion, lage, m, g):
     """Residuen nach F23: [Restkraft_z, Rollachsenmoment]."""
     erg = funktion(lage, 0.0, 0.0)
-    F_rest_z = erg.F_A.as_array()[2] - m * g
+    F_rest_z = (
+        erg.F_gesamt.as_array()[2]
+        if getattr(erg, "schwerkraft_beruecksichtigt", False)
+        else erg.F_A.as_array()[2] - m * g)
     M_roll = erg.M.as_array()[0]
     return np.array([F_rest_z, M_roll]), erg
 

@@ -21,11 +21,12 @@ from segelphysik.core import koerper_formen as formen
 from segelphysik.core import massen as ma
 from segelphysik.core.koerper import Koerper, KoerperFehler, helle_auf
 from segelphysik.core.konfig_lader import KonfigFehler, lade_konfig
+from segelphysik.core.dynamik_6dof import Zustand6DOF, quaternion_matrix
 
 KONFIG_ORDNER = os.path.join(ROOT, "konfigurationen")
-MAT_VORLAGE = os.path.join(ROOT, "doc", "WegZuV1.0", "Vorlagen",
+MAT_VORLAGE = os.path.join(ROOT, "doc", "Vorlagen",
                            "materialien_vorlage.json")
-KOR_VORLAGE = os.path.join(ROOT, "doc", "WegZuV1.0", "Vorlagen",
+KOR_VORLAGE = os.path.join(ROOT, "doc", "Vorlagen",
                            "koerper_vorlage.json")
 YACHT = fabriken.YACHT_ORDNER
 
@@ -164,6 +165,67 @@ def test_tc_b1_quader_exakt():
     assert abs(k.masse - 8000.0) < 1e-9
     assert np.max(np.abs(k.punkte.mean(axis=0))) < 1e-9      # r_S = Mitte (AK-P1a)
     assert abs(ma.mesh_volumen(k.punkte, k.dreiecke) - 8.0) < 1e-12
+
+
+def test_laufzeitkoerper_haelt_validierten_zustand_und_update_ist_atomar():
+    punkte, dreiecke = formen.bau_quader(1.0, 1.0, 1.0)
+    koerper = Koerper(form=(punkte, dreiecke), dichte=1000.0)
+    vorher = koerper.zustand
+    position = [1.0, 2.0, 3.0]
+    neu = Zustand6DOF(position=position)
+
+    koerper.zustand = neu
+    assert koerper.zustand.position == (1.0, 2.0, 3.0)
+    position[0] = 9.0
+    assert koerper.zustand.position == (1.0, 2.0, 3.0)
+    with pytest.raises(KoerperFehler, match="Körperzustand"):
+        koerper.zustand = Zustand6DOF(position=(float("nan"), 0.0, 0.0))
+    assert koerper.zustand.position == (1.0, 2.0, 3.0)
+    assert vorher is not None
+
+
+def test_legacy_posezugriff_bleibt_mit_koerperzustand_synchron():
+    punkte, dreiecke = formen.bau_quader(1.0, 1.0, 1.0)
+    koerper = Koerper(form=(punkte, dreiecke), dichte=1000.0)
+    q = (math.sqrt(0.5), 0.0, 0.0, math.sqrt(0.5))
+    rotation = quaternion_matrix(q)
+
+    koerper.setze_pose((1.0, -2.0, 3.0), rotation)
+
+    assert koerper.zustand.position == (1.0, -2.0, 3.0)
+    np.testing.assert_allclose(koerper.orientierung, rotation, atol=1e-12)
+    np.testing.assert_allclose(quaternion_matrix(koerper.zustand.quaternion),
+                               rotation, atol=1e-12)
+
+    koerper.zustand = Zustand6DOF(
+        position=(-4.0, 5.0, 6.0),
+        quaternion=(0.0, 1.0, 0.0, 0.0),
+    )
+    np.testing.assert_allclose(koerper.position, (-4.0, 5.0, 6.0))
+    np.testing.assert_allclose(
+        koerper.orientierung,
+        quaternion_matrix((0.0, 1.0, 0.0, 0.0)),
+        atol=1e-12,
+    )
+
+
+def test_koerpersnapshot_bleibt_unveraendert_und_arrays_sind_readonly():
+    punkte, dreiecke = formen.bau_quader(1.0, 1.0, 1.0)
+    koerper = Koerper(form=(punkte, dreiecke), dichte=1000.0)
+    snapshot = koerper.snapshot()
+    punkte_snapshot = snapshot.blatt_meshes[0][0].copy()
+    version = snapshot.version
+
+    koerper.punkte[0, 0] += 10.0
+    koerper.zustand = Zustand6DOF(position=(1.0, 2.0, 3.0))
+
+    assert snapshot.version == version
+    assert snapshot.zustand.position == (0.0, 0.0, 0.0)
+    np.testing.assert_array_equal(snapshot.blatt_meshes[0][0], punkte_snapshot)
+    with pytest.raises(ValueError):
+        snapshot.blatt_meshes[0][0][0, 0] = 99.0
+    with pytest.raises(ValueError):
+        snapshot.traegheitstensor[0, 0] = 99.0
 
 
 def test_tc_b2_kegel_masse_und_com_shift():
@@ -346,7 +408,7 @@ def test_tc_d1_boot_acht_teile_aus_konfiguration(konfig):
             sammle(kind)
 
     sammle(boot)
-    assert len(blaetter) == 8
+    assert len(blaetter) == 10
 
 
 def test_tc_d2_boot_rs_unter_geometrischer_mitte(konfig):

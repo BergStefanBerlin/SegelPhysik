@@ -263,7 +263,7 @@ def test_n15_physik_fehlt_kein_fallback():
         pass
 
 def test_n16_vorlage_selbst_gueltig():
-    with open(os.path.join("doc", "WegZuV1.0", "Backlog",
+    with open(os.path.join("doc", "Backlog",
                            "physik_vorlage.json"), encoding="utf-8") as f:
         d = json.load(f)
     w = kl._val_physik(d, "vorlage")

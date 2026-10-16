@@ -23,47 +23,48 @@ SKALA = 0.25   # Modell ~16.9 lang -> ~4.2 m im 10-m-Becken
 
 
 def lade_obj(pfad):
-    """Liest eine OBJ-Datei (nur v/f-Zeilen; Polygone werden gefaechert)."""
+    """Kompatibilitätsadapter für die bisher unterstützten Yacht-OBJ-Dateien."""
     punkte, gesichter = [], []
-    with open(pfad) as f:
-        for zeile in f:
-            t = zeile.split()
-            if not t:
+    with open(pfad) as datei:
+        for zeile in datei:
+            tokens = zeile.split()
+            if not tokens:
                 continue
-            if t[0] == "v":
-                punkte.append([float(x) for x in t[1:4]])
-            elif t[0] == "f":
-                idx = [int(tok.split("/")[0]) - 1 for tok in t[1:]]
-                for k in range(1, len(idx) - 1):
-                    gesichter.append([idx[0], idx[k], idx[k + 1]])
+            if tokens[0] == "v":
+                punkte.append([float(x) for x in tokens[1:4]])
+            elif tokens[0] == "f":
+                index = [int(token.split("/")[0]) - 1 for token in tokens[1:]]
+                for position in range(1, len(index) - 1):
+                    gesichter.append(
+                        [index[0], index[position], index[position + 1]])
     try:
-        punkte, gesichter, _flaechen = validiere_mesh_eingaben(
+        punkte, gesichter, _ = validiere_mesh_eingaben(
             np.asarray(punkte, dtype=np.float64),
             np.asarray(gesichter, dtype=np.int64))
     except ValueError as fehler:
-        raise ValueError("Ungültiges OBJ-Mesh in %s: %s" % (pfad, fehler)) from fehler
+        raise ValueError(
+            "Ungültiges OBJ-Mesh in %s: %s" % (pfad, fehler)) from fehler
     return punkte, gesichter
 
 
 def baue_boot(skala=SKALA, teile=TEILE, ordner=MODELL_ORDNER):
     """Fuegt alle Teile zu EINEM Mesh zusammen (Welt-Koordinatensystem).
 
-    Rueckgabe: (punkte, dreiecke) - Wasserlinie liegt bei z = 0.
+    rueckgabe: (punkte, dreiecke) - Wasserlinie liegt bei z = 0.
     """
     alle_p, alle_f, versatz = [], [], 0
     for teil in teile:
-        p, f = lade_obj(os.path.join(ordner, teil + ".obj"))
+        p, f = baue_teil(teil, skala=skala, ordner=ordner)
         if len(p) == 0:
             continue
-        # Y-up -> Z-up, Bug nach +x:  (x,y,z)_unity -> (z, x, y)
-        p_welt = np.stack([p[:, 2], p[:, 0], p[:, 1]], axis=1) * skala
-        alle_p.append(p_welt)
+        alle_p.append(p)
         alle_f.append(f + versatz)
-        versatz += len(p_welt)
+        versatz += len(p)
     return np.vstack(alle_p), np.vstack(alle_f)
 
 
 def baue_teil(teil, skala=SKALA, ordner=MODELL_ORDNER):
     """Einzelnes Teil im Welt-Koordinatensystem (fuer getrennte Analyse)."""
-    p, f = lade_obj(os.path.join(ordner, teil + ".obj"))
-    return np.stack([p[:, 2], p[:, 0], p[:, 1]], axis=1) * skala, f
+    punkte, dreiecke = lade_obj(os.path.join(ordner, teil + ".obj"))
+    return np.stack(
+        [punkte[:, 2], punkte[:, 0], punkte[:, 1]], axis=1) * skala, dreiecke

@@ -215,6 +215,28 @@ def test_w1_schalentensor_wuerfel_analytisch():
     np.testing.assert_allclose(J - np.diag(np.diag(J)), 0.0, atol=1e-12)
 
 
+def test_schalentensor_bleibt_bei_grossen_absolutkoordinaten_stabil():
+    from segelphysik.core.massen import (
+        traegheitstensor_flaechig,
+        validiere_traegheitstensor,
+    )
+    punkte = np.array([
+        [0.0, 0.0, 0.0],
+        [0.01, 0.0, 0.0],
+        [0.01, 0.008, 0.002],
+        [0.0, 0.008, 0.002],
+    ])
+    dreiecke = np.array([[0, 1, 2], [0, 2, 3]])
+    versatz = np.array([0.2862, 0.016625, 5.13055])
+
+    referenz = traegheitstensor_flaechig(punkte, dreiecke, 5.4)
+    verschoben = traegheitstensor_flaechig(
+        punkte + versatz, dreiecke, 5.4)
+
+    np.testing.assert_allclose(verschoben, referenz, rtol=1e-12, atol=1e-20)
+    validiere_traegheitstensor(verschoben)
+
+
 def test_w2_glanz_kw_lineare_steigung():
     from segelphysik.grafik_bruecke import glanz_kw
     a, b = glanz_kw(0.2), glanz_kw(0.7)

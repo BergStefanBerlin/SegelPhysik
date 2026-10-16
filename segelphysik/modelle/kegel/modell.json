@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "modell": {
+    "id": "kegel",
+    "name": "Kegel"
+  },
+  "geometrie_einheiten": {
+    "obj_zu_m": 1.0,
+    "obj_achsenmatrix_zu_blatt": [
+      [1, 0, 0],
+      [0, 1, 0],
+      [0, 0, 1]
+    ]
+  },
+  "koerper": {
+    "id": "root",
+    "name": "Kegel",
+    "geometrie": {
+      "quelle": "form",
+      "parameter": {
+        "typ": "cone",
+        "H_m": 2.0,
+        "R_m": 1.0
+      }
+    },
+    "dichte_kg_pro_m3": 500,
+    "farbe": "#ff6a00",
+    "farbe_unter_wasser": "#b34700",
+    "rolle": "allgemein",
+    "verdrängend": true
+  }
+}

@@ -1,0 +1,175 @@
+{
+  "metadata": {
+    "captured_at": "2026-10-16",
+    "reference_commit": "c515a2a4b6d9b007fffe5a00a97b43e4f63e16c0",
+    "worktree_dirty": true,
+    "python": "3.14.8",
+    "platform": "Windows 11 x64",
+    "reference": "Legacy-Fabriken vor dem Modellpaket-Cutover",
+    "config_sha256": "756935244f7da4ac47a872f87cf3628756ebbb2feffb1f676c4e8693e28cfc3f",
+    "legacy_yacht_b03_median_s": 0.03617714999563759
+  },
+  "modelle": {
+    "yacht1": {
+      "altquelle": "konfigurationen/koerper.json#/summenkoerper/yacht1",
+      "manifest": "segelphysik/modelle/yacht1/modell.json",
+      "status": "manifest_und_mesh_validiert",
+      "paket_dreiecke": 4217,
+      "bereinigung": "In den Paketkopien gegenläufige Duplikatflächen von Großsegel und Fock entfernt; Wanddicke verdoppelt, sodass Masse, Schwerpunkt und Trägheit dem Legacy-Golden entsprechen. Die Legacy-OBJ-Quellen bleiben unverändert.",
+      "masse_kg": 450.37945702805325,
+      "initialer_modellversatz_m": [
+        0.011101076032085374,
+        -0.0007979787046210467,
+        -0.48611732760241255
+      ],
+      "traegheit_kg_m2": [
+        [
+          243.96946983114765,
+          0.273426262951139,
+          -11.339071408997004
+        ],
+        [
+          0.273426262951139,
+          426.8513972849214,
+          0.8032531113736916
+        ],
+        [
+          -11.339071408997004,
+          0.8032531113736916,
+          220.25029394187163
+        ]
+      ],
+      "verdraengend": true,
+      "punkte": 2145,
+      "dreiecke": 4222
+    },
+    "kegel": {
+      "altquelle": "konfigurationen/koerper.json#/summenkoerper/kegel",
+      "manifest": "segelphysik/modelle/kegel/modell.json",
+      "status": "manifest_und_mesh_validiert",
+      "masse_kg": 1045.5161635153117,
+      "traegheit_kg_m2": [
+        [313.40312674979606, 5.319366908757005e-15, 2.1684043449710145e-16],
+        [5.319366908757005e-15, 313.40312674979606, 3.59141969635821e-16],
+        [2.1684043449710145e-16, 3.59141969635821e-16, 313.15140444499787]
+      ],
+      "volumen_m3": 2.0910323270306237,
+      "flaeche_m2": 10.156851584779773,
+      "verdraengend": true,
+      "punkte": 66,
+      "dreiecke": 128
+    },
+    "quader": {
+      "altquelle": "konfigurationen/koerper.json#/summenkoerper/quader",
+      "manifest": "segelphysik/modelle/quader/modell.json",
+      "status": "manifest_und_mesh_validiert",
+      "masse_kg": 7600.0,
+      "traegheit_kg_m2": [
+        [5066.666666666666, 0.0, 0.0],
+        [0.0, 5066.666666666666, 0.0],
+        [0.0, 0.0, 5066.666666666666]
+      ],
+      "volumen_m3": 8.0,
+      "flaeche_m2": 24.0,
+      "verdraengend": true,
+      "punkte": 8,
+      "dreiecke": 12
+    },
+    "pyramide": {
+      "altquelle": "konfigurationen/koerper.json#/summenkoerper/pyramide",
+      "manifest": "segelphysik/modelle/pyramide/modell.json",
+      "status": "manifest_und_mesh_validiert",
+      "masse_kg": 1333.3333333333333,
+      "traegheit_kg_m2": [
+        [466.6666666666667, 0.0, 0.0],
+        [0.0, 466.6666666666667, 0.0],
+        [0.0, 0.0, 533.3333333333334]
+      ],
+      "volumen_m3": 2.6666666666666665,
+      "flaeche_m2": 12.94427190999916,
+      "verdraengend": true,
+      "punkte": 5,
+      "dreiecke": 6
+    },
+    "kugel": {
+      "altquelle": "konfigurationen/koerper.json#/summenkoerper/kugel",
+      "manifest": "segelphysik/modelle/kugel/modell.json",
+      "status": "manifest_und_mesh_validiert",
+      "masse_kg": 2911.2800054387017,
+      "traegheit_kg_m2": [
+        [1159.5342624805207, -2.884913485520362e-14, 3.154113526349783e-14],
+        [-2.884913485520362e-14, 1159.5342624805205, -5.236251800807678e-15],
+        [3.154113526349783e-14, -5.236251800807678e-15, 1157.8821388775777]
+      ],
+      "volumen_m3": 4.158971436341003,
+      "flaeche_m2": 12.521562527763592,
+      "verdraengend": true,
+      "punkte": 1106,
+      "dreiecke": 2208
+    },
+    "rolle": {
+      "altquelle": "konfigurationen/koerper.json#/summenkoerper/rolle",
+      "manifest": "segelphysik/modelle/rolle/modell.json",
+      "status": "manifest_und_mesh_validiert",
+      "masse_kg": 4234.3404622370135,
+      "traegheit_kg_m2": [
+        [528.4429950009337, -5.671732614814791e-16, -2.0491421059976034e-15],
+        [-5.671732614814791e-16, 1675.6683182461397, 1.2468663796762203e-14],
+        [-2.0491421059976034e-15, 1.2468663796762203e-14, 1675.66831824614]
+      ],
+      "volumen_m3": 1.5682742452729679,
+      "flaeche_m2": 7.8489365591824765,
+      "verdraengend": true,
+      "punkte": 130,
+      "dreiecke": 256
+    },
+    "platte": {
+      "altquelle": "konfigurationen/koerper.json#/summenkoerper/platte",
+      "manifest": "segelphysik/modelle/platte/modell.json",
+      "status": "manifest_und_mesh_validiert",
+      "masse_kg": 314.0,
+      "traegheit_kg_m2": [
+        [26.177133333333344, 0.0, 0.0],
+        [0.0, 104.67713333333336, 0.0],
+        [0.0, 0.0, 130.83333333333334]
+      ],
+      "volumen_m3": 0.04,
+      "flaeche_m2": 4.119999999999999,
+      "verdraengend": true,
+      "punkte": 8,
+      "dreiecke": 12
+    },
+    "bleistift": {
+      "altquelle": "konfigurationen/koerper.json#/summenkoerper/bleistift",
+      "manifest": "segelphysik/modelle/bleistift/modell.json",
+      "status": "manifest_und_mesh_validiert",
+      "masse_kg": 0.004655752570745142,
+      "traegheit_kg_m2": [
+        [9.976931173033924e-06, -1.2369338993865465e-24, 4.5236439748993686e-24],
+        [-1.2369338993865465e-24, 9.976931173033924e-06, -7.9163769560739e-24],
+        [4.5236439748993686e-24, -7.9163769560739e-24, 3.06503710907393e-08]
+      ],
+      "volumen_m3": 6.651075101064489e-06,
+      "flaeche_m2": 0.003946306871201741,
+      "verdraengend": true,
+      "punkte": 14,
+      "dreiecke": 24
+    },
+    "unregelmaessig": {
+      "altquelle": "konfigurationen/koerper.json#/summenkoerper/unregelmaessig",
+      "manifest": "segelphysik/modelle/unregelmaessig/modell.json",
+      "status": "manifest_und_mesh_validiert",
+      "masse_kg": 2086.120833333334,
+      "traegheit_kg_m2": [
+        [297.4050866943061, -3.7912423455229423, -10.870337780654687],
+        [-3.7912423455229423, 303.6378778492543, -16.91375913835102],
+        [-10.870337780654687, -16.91375913835102, 303.7998594342197]
+      ],
+      "volumen_m3": 0.8023541666666668,
+      "flaeche_m2": 5.09722581212204,
+      "verdraengend": true,
+      "punkte": 8,
+      "dreiecke": 12
+    }
+  }
+}

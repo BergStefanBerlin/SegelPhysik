@@ -1,7 +1,7 @@
 # SegelPhysik – Umsetzungsplan vF1
 
 Dieser Plan beschreibt die Umsetzung und Prüfung der
-[Spezifikation v1.1](../Spezifikationen/Spezifikation_vF1.1.md). Er ist nach technischen
+[Spezifikation v1.1](../Spezifikation/Spezifikation_vF1.1.md). Er ist nach technischen
 Abhängigkeiten geordnet und ersetzt keine Anforderungen der Spezifikation.
 Die vorhandene GUI-Darstellung und Bedienung bleibt 1:1 erhalten; einzig der
 für erkannte Bauteilüberschneidungen erforderliche Auswahldialog ist neu

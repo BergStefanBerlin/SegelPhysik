@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "modell": {
+    "id": "kugel",
+    "name": "Kugel"
+  },
+  "geometrie_einheiten": {
+    "obj_zu_m": 1.0,
+    "obj_achsenmatrix_zu_blatt": [
+      [1, 0, 0],
+      [0, 1, 0],
+      [0, 0, 1]
+    ]
+  },
+  "koerper": {
+    "id": "root",
+    "name": "Kugel",
+    "geometrie": {
+      "quelle": "form",
+      "parameter": {
+        "typ": "sphere",
+        "R_m": 1.0
+      }
+    },
+    "dichte_kg_pro_m3": 700,
+    "farbe": "#00bcd4",
+    "farbe_unter_wasser": "#00717f",
+    "rolle": "allgemein",
+    "verdrängend": true
+  }
+}

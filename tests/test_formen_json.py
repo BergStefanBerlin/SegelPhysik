@@ -6,6 +6,7 @@ import pytest
 from segelphysik.core import koerper_formen as kf
 from segelphysik.core.fabriken import baue_summenkoerper
 from segelphysik.core.konfig_lader import lade_konfig
+from segelphysik.core.koerper import Koerper
 
 
 def _volumen(v, f):
@@ -52,6 +53,24 @@ def test_echte_koerper_json_laedt_und_baut():
     for name in formkoerper:
         koerper, _ = baue_summenkoerper(konfig, name)
         assert koerper.masse > 0
+
+
+def test_yachtfabrik_protokolliert_bereits_berechnete_blaetter(monkeypatch):
+    konfig = lade_konfig("konfigurationen")
+    aufrufe = 0
+    initialisierung = Koerper.__init__
+
+    def gezaehlte_initialisierung(self, *args, **kwargs):
+        nonlocal aufrufe
+        aufrufe += 1
+        initialisierung(self, *args, **kwargs)
+
+    monkeypatch.setattr(Koerper, "__init__", gezaehlte_initialisierung)
+
+    baue_summenkoerper(konfig, "yacht1")
+
+    assert aufrufe == 14
+    assert sum("masse=" in zeile for zeile in konfig.protokoll) == 10
 
 
 def test_unbekannte_form_wird_abgelehnt(tmp_path):

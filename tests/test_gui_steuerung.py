@@ -117,6 +117,24 @@ def test_layer_und_darstellungssteuerung_sind_angebunden():
     app.processEvents()
 
 
+def test_modellfabrik_einstellung_wechselt_laufzeitpfad():
+    app = QApplication.instance() or QApplication([])
+    fenster = HauptFenster()
+    konfiguration = SimpleNamespace(paketfabrik_aktiv=True)
+    fenster.baum = SimpleNamespace(
+        _welt=SimpleNamespace(konfiguration=konfiguration))
+    fenster._einstellungen.get = lambda bereich, schluessel: False
+    aktualisierungen = []
+    fenster._laufzeit_objekte_aktualisieren = aktualisierungen.append
+
+    fenster._modellpfad_einstellung_geaendert()
+
+    assert konfiguration.paketfabrik_aktiv is False
+    assert aktualisierungen == ["modellpfad"]
+    fenster.close()
+    app.processEvents()
+
+
 def test_pause_bucht_inflight_schritte_genau_einmal_zurueck():
     app = QApplication.instance() or QApplication([])
     fenster = HauptFenster()
@@ -210,6 +228,7 @@ def test_vor_koerperwechsel_uebernommener_schritt_wird_nicht_doppelt_gebucht():
     fenster._echtzeit_generation = 2
     fenster._echtzeit_name = "alt"
     fenster._echtzeit_zustand = object()
+    fenster._laufzeit_koerper["alt"] = SimpleNamespace(zustand=None)
     fenster._echtzeit_physik = SimpleNamespace(dt_s=0.1)
     fenster._echtzeit_angefordert_s = 0.2
     fenster._echtzeit_aufgabe_sequenz_laufend = 9
@@ -222,6 +241,7 @@ def test_vor_koerperwechsel_uebernommener_schritt_wird_nicht_doppelt_gebucht():
 
     assert fenster._echtzeit_berechnet_s == 0.2
     assert fenster._echtzeit_zustand is alter_zustand
+    assert fenster._laufzeit_koerper["alt"].zustand is alter_zustand
     neuer_zustand = object()
     fenster._echtzeit_generation += 1
     fenster._echtzeit_name = "neu"
@@ -268,13 +288,17 @@ def _statischen_fehler_zustellen(fenster, status, diagnose):
         def __init__(self):
             self.gesetzt = []
             self.geloescht = []
+            self.pose = ("k", 0.0, 0.0)
 
         def statische_pose_setzen(self, name, z, phi):
             self.gesetzt.append((name, z, phi))
+            self.pose = (name, z, phi)
             return True
 
         def statische_pose_loeschen(self, name):
             self.geloescht.append(name)
+            if self.pose[0] == name:
+                self.pose = None
 
         def statusoverlay_setzen(self, text, schwere):
             self.overlay = (text, schwere)
@@ -285,6 +309,7 @@ def _statischen_fehler_zustellen(fenster, status, diagnose):
     fenster._statisch_generation = 3
     fenster._btn_statisch.setChecked(True)
     fenster._statische_ergebnisse["k"] = {"z": 0.0}
+    fenster._statische_arbeitsdaten["k"] = ("alte Kraftfunktion", "alte Physik")
     werte = {}
     fenster._solver_status_aktualisieren = werte.update
     fenster._statische_aufgabe_abgeschlossen(
@@ -296,15 +321,26 @@ def _statischen_fehler_zustellen(fenster, status, diagnose):
 def test_instabiler_kandidat_wird_als_solcher_angezeigt():
     app = QApplication.instance() or QApplication([])
     fenster = HauptFenster()
-    for status in ("instabile_lage", "stagnation", "budget_erschoepft"):
+    statusnamen = {
+        "instabile_lage": "Instabile Lage",
+        "stagnation": "Stagnation",
+        "budget_erschoepft": "Budget erschöpft",
+    }
+    for status, statusname in statusnamen.items():
         bruecke, werte = _statischen_fehler_zustellen(
             fenster, status, {"z": 0.1, "phi": 0.2})
-        assert bruecke.gesetzt == [("k", 0.1, 0.2)]
-        assert werte["Lösungstyp"].startswith("Kandidat")
+        assert bruecke.gesetzt == []
+        assert bruecke.geloescht == []
+        assert bruecke.pose == ("k", 0.0, 0.0)
+        assert werte["Lösungstyp"].startswith(
+            "Kandidat nicht übernommen – " + statusname)
+        assert fenster._statische_ergebnisse["k"] == {"z": 0.0}
+        assert fenster._statische_arbeitsdaten["k"] == (
+            "alte Kraftfunktion", "alte Physik")
         assert bruecke.overlay == (
-            "instabil" if status == "instabile_lage" else "Näherungslösung",
+            ("instabil" if status == "instabile_lage"
+             else "Kandidat nicht übernommen"),
             "hinweis")
-        assert "k" not in fenster._statische_ergebnisse
     fenster.close()
     app.processEvents()
 
@@ -316,7 +352,11 @@ def test_ungueltige_rechenergebnisse_zeigen_keine_pose():
         fenster, "ungueltige_rechenergebnisse",
         {"z": float("nan"), "phi": 0.2})
     assert bruecke.gesetzt == []
-    assert bruecke.geloescht == ["k"]
+    assert bruecke.geloescht == []
+    assert bruecke.pose == ("k", 0.0, 0.0)
+    assert fenster._statische_ergebnisse["k"] == {"z": 0.0}
+    assert fenster._statische_arbeitsdaten["k"] == (
+        "alte Kraftfunktion", "alte Physik")
     assert not werte["Lösungstyp"].startswith("Kandidat")
     assert bruecke.overlay == ("nicht lösbar", "problem")
     fenster.close()

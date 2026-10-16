@@ -60,7 +60,7 @@ def test_i1_farben_aus_materialtabelle(konfig_real):
     f_stahl = konfig_real.farben_von("Stahl")[0]
     f_blei  = konfig_real.farben_von("Blei")[0]
     assert gef.get(f_gfk) == 2, "rumpf+ruder ueber GfK"
-    assert gef.get(f_alu) == 2, "mast+boom ueber Aluminium"
+    assert gef.get(f_alu) == 4, "Mastbaugruppe+Baum ueber Aluminium"
     assert gef.get(f_stahl) == 1, "kiel ueber Stahl"
     assert gef.get(f_blei) == 1, "bulb ueber Blei"
     # Segel: Direkt-Tripel, Farbe steht am Blatt in koerper.json
@@ -146,7 +146,7 @@ def test_tc_c6_verschachtelungstiefe_und_additivitaet(konfig_real):
         if not k.teile:
             return 1
         return 1 + max(tiefe(kind) for kind, _r2 in k.teile)
-    assert tiefe(boot) == 3, "boot->gruppe->blatt = Tiefe 3"
+    assert tiefe(boot) == 4, "boot->Gruppe->Mastbaugruppe->Blatt = Tiefe 4"
     blaetter = list(_blaetter(boot))
     assert abs(sum(b.masse for b in blaetter) - boot.masse) < 1e-6
 

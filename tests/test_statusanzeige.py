@@ -29,6 +29,9 @@ def test_fehler_zustaende():
     assert sa.status_aus_fehler(f("instabile_lage")) == ("instabil", "hinweis")
     assert sa.status_aus_fehler(f("stagnation"), True) == (
         "Näherungslösung", "hinweis")
+    assert sa.status_aus_fehler(
+        f("stagnation"), kandidat_abgelehnt=True) == (
+            "Kandidat nicht übernommen", "hinweis")
     assert sa.status_aus_fehler(f("budget_erschoepft"), False) == (
         "nicht lösbar", "problem")
     assert sa.status_aus_fehler(f("ungueltige_rechenergebnisse"), True) == (

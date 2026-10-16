@@ -141,7 +141,7 @@ class BaumWidget(QTreeWidget):
             self.lade(self._welt)
 
     def _einfuegen(self, knoten, eltern_item):
-        item = QTreeWidgetItem([knoten.name, ""])
+        item = QTreeWidgetItem([knoten.label, ""])
         item.setData(SPALTE_NAME, Qt.UserRole, knoten)
         item.setIcon(SPALTE_NAME, _icon(knoten.icon_art))
         if knoten.art in (ART_SUMMEN, ART_GRUPPE, ART_BLATT):
@@ -269,6 +269,25 @@ class BaumWidget(QTreeWidget):
             anzeige = self._zahlwert_anzeigen(eigenschaft, float(wert))
         else:
             raise ValueError("Nicht editierbare Eigenschaft: %s" % eigenschaft)
+
+        if getattr(self._welt, "manifest_baum", False):
+            haupt = knoten
+            while haupt.eltern is not None and haupt.art != ART_SUMMEN:
+                haupt = haupt.eltern
+            feld = {
+                "Material": "material",
+                "Dichte": "dichte_kg_pro_m3",
+                "Wanddicke": "wanddicke_m",
+            }[eigenschaft]
+            alle = getattr(
+                self._welt.konfiguration, "paket_ueberschreibungen", None)
+            if alle is None:
+                alle = {}
+                self._welt.konfiguration.paket_ueberschreibungen = alle
+            alle.setdefault(haupt.name, {}).setdefault(knoten.id, {})[
+                feld] = (
+                    float(wert) / 1000.0 if eigenschaft == "Wanddicke"
+                    else wert)
 
         knoten.eigenschaften[index] = (eigenschaft, anzeige)
         self.lade(self._welt)

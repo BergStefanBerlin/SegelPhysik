@@ -9,7 +9,7 @@ from segelphysik.core.auftrieb import Vektor
 from segelphysik.core.dynamik import Bewegungszustand, schritt_mit_kraeften
 from segelphysik.core.konfig_lader import KonfigFehler, lade_physik
 from segelphysik.core.kraftmodell import (
-    KraftErgebnis, Kraftmodell, KraftmodellMitHydroCache)
+    KraftErgebnis, Kraftmodell, KraftmodellMitHydroCache, Wrench)
 
 
 def _hydro(f_a=(0.0, 0.0, 10.0), moment=(0.0, 0.0, 0.0)):
@@ -32,6 +32,45 @@ def test_nicht_konfigurierte_module_liefern_unveraenderte_hydrostatik():
     assert ergebnis.M.as_array() == pytest.approx((0.0, 0.0, 0.0))
     assert ergebnis.V_tauch == 0.5
     assert ergebnis.K.as_array() == pytest.approx((1.0, 2.0, 3.0))
+
+
+def test_wrench_bezugspunktumrechnung_erhaelt_dasselbe_moment():
+    wrench = Wrench(
+        "simulationsframe", (1.0, 0.0, 0.0),
+        (0.0, 2.0, 0.0), (0.0, 0.0, 0.0))
+
+    am_ursprung = wrench.auf_bezugspunkt((0.0, 0.0, 0.0))
+
+    assert am_ursprung.moment_Nm == pytest.approx((0.0, 0.0, 2.0))
+    assert am_ursprung.kraft_N == wrench.kraft_N
+
+
+def test_schwerkraft_ist_kraftbeitrag_und_wird_im_integrator_nicht_doppelt():
+    masse, g = 2.0, 9.81
+    modell = Kraftmodell(
+        lambda *_args, **_kwargs: _hydro((0.0, 0.0, masse * g)),
+        masse=masse, g=g)
+    ergebnis = modell((np.zeros(3), (1.0, 0.0, 0.0, 0.0)))
+
+    assert ergebnis.F_gesamt.as_array() == pytest.approx(np.zeros(3))
+    assert ergebnis.schwerkraft_beruecksichtigt
+    assert {beitrag.name for beitrag in ergebnis.beitraege} == {
+        "hydrostatik", "widerstand", "schwerkraft"}
+    assert ergebnis.gesamt_wrench.frame == "simulationsframe"
+    assert ergebnis.gesamt_wrench.kraft_N == pytest.approx((0.0, 0.0, 0.0))
+    assert sum(
+        np.asarray(beitrag.wrench.kraft_N)
+        for beitrag in ergebnis.beitraege
+    ) == pytest.approx(ergebnis.F_gesamt.as_array())
+    assert sum(
+        np.asarray(beitrag.wrench.moment_Nm)
+        for beitrag in ergebnis.beitraege
+    ) == pytest.approx(ergebnis.M_gesamt.as_array())
+
+    from segelphysik.core.dynamik_6dof import Zustand6DOF, schritt
+    ende, _ = schritt(
+        Zustand6DOF(), modell, masse, np.eye(3), 0.1, g)
+    assert ende.geschwindigkeit_koerper == pytest.approx((0.0, 0.0, 0.0))
 
 
 def test_lineare_quadratische_widerstaende_nutzen_relativgeschwindigkeit():
@@ -76,6 +115,20 @@ def test_echtzeit_hydro_cache_haelt_hydrostatik_und_aktualisiert_widerstand():
     erneuert = cache((4.0, 0.0, 0.0))
     assert len(aufrufe) == 2
     assert erneuert.F_A.z == pytest.approx(14.0)
+
+
+def test_hydro_cache_standardmaessig_exakt_je_pose():
+    aufrufe = []
+
+    def hydro(lage, **_kwargs):
+        aufrufe.append(lage)
+        return _hydro(f_a=(0.0, 0.0, 10.0 + lage[0]))
+
+    cache = KraftmodellMitHydroCache(Kraftmodell(hydro))
+    werte = [cache((float(z), 0.0, 0.0)) for z in (1.0, 2.0, 3.0)]
+
+    assert len(aufrufe) == 3
+    assert [wert.F_A.z for wert in werte] == pytest.approx((11.0, 12.0, 13.0))
 
 
 def test_echtzeit_hydro_cache_mit_intervall_eins_ist_exakt_pro_schritt():
@@ -126,7 +179,7 @@ def test_added_mass_aendert_effektive_tauchmasse_und_kraftresultat():
 
 def _physikdatei(tmp_path, kraefte=None):
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    with open(os.path.join(root, "doc", "WegZuV1.0", "Backlog",
+    with open(os.path.join(root, "doc", "Backlog",
                            "physik_vorlage.json"),
               encoding="utf-8") as datei:
         daten = json.load(datei)

@@ -44,9 +44,33 @@ def _warte(app, dauer_ms):
     app.processEvents()
 
 
-def benchmark(scene, warmup_s, duration_s, backend="exakt_union"):
+def _fenster_schliessen(app, fenster, hauptfenster_mod):
+    from PySide6.QtCore import QCoreApplication, QEvent, QThreadPool
+
+    fenster._zeit_pausieren()
+    if not QThreadPool.globalInstance().waitForDone(120_000):
+        raise RuntimeError(
+            "GUI-Benchmark kann nicht schließen: Worker läuft nach 120 s.")
+    app.processEvents()
+    fenster._statische_arbeitsdaten.clear()
+    fenster._statische_ergebnisse.clear()
+    fenster._laufzeit_koerper.clear()
+    fenster._echtzeit_kraftfunktion = None
+    fenster._echtzeit_kraefteresultat = None
+    fenster.close()
+    if hauptfenster_mod._aktives_fenster is fenster:
+        hauptfenster_mod._aktives_fenster = None
+    fenster.deleteLater()
+    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+    app.processEvents()
+
+
+def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
+              measure_parameter_change=False):
     from PySide6.QtCore import QObject, Qt, QTimer, Signal
     from PySide6.QtWidgets import QApplication
+
+    startup_start = time.perf_counter()
 
     class EreignisSignal(QObject):
         impuls = Signal(float)
@@ -67,10 +91,22 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union"):
     fenster = HauptFenster()
     fenster.baum_setzen(welt)
     _szene_einbetten(fenster)
+    bridge = fenster._bruecke
+    first_scene_presented_s = [None]
+    render_fenster = bridge._plotter.render_window
+
+    def first_scene_presented(_obj, _ereignis):
+        if first_scene_presented_s[0] is not None:
+            return
+        if hasattr(render_fenster, "WaitForCompletion"):
+            render_fenster.WaitForCompletion()
+        first_scene_presented_s[0] = time.perf_counter() - startup_start
+
+    render_fenster.AddObserver("EndEvent", first_scene_presented)
     fenster.show()
     app.processEvents()
+    gui_bedienbar_s = time.perf_counter() - startup_start
 
-    bridge = fenster._bruecke
     pflicht_layer = {
         "schwerpunkt": LAYER_SCHWERPUNKT,
         "hauptachsen": LAYER_HAUPTACHSEN,
@@ -126,6 +162,119 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union"):
 
     render_fenster.AddObserver("EndEvent", frame_beendet)
     _warte(app, round(warmup_s * 1000))
+    if measure_parameter_change:
+        from segelphysik.gui.baum import finde
+
+        def abbrechen_nach_workerende(nachricht):
+            _fenster_schliessen(app, fenster, hauptfenster_mod)
+            raise RuntimeError(nachricht)
+
+        anfang = {"fertig": False, "fehler": None}
+
+        def anfang_fertig(gemeldet, name, _ergebnis, _arbeitsdaten, fehler):
+            if (gemeldet == fenster._statisch_generation and name == scene):
+                anfang["fertig"] = True
+                anfang["fehler"] = fehler
+
+        anfang_signale = fenster._statisch_signale
+        anfang_signale.abgeschlossen.connect(anfang_fertig)
+        deadline_anfang = time.perf_counter() + 60.0
+        try:
+            while True:
+                alter_koerper = fenster._laufzeit_koerper.get(scene)
+                altes_ergebnis = fenster._statische_ergebnisse.get(scene)
+                if alter_koerper is not None and altes_ergebnis is not None:
+                    break
+                if anfang["fertig"]:
+                    abbrechen_nach_workerende(
+                        "Ausgangsberechnung fehlgeschlagen: %s"
+                        % anfang["fehler"])
+                if time.perf_counter() >= deadline_anfang:
+                    abbrechen_nach_workerende(
+                        "Ausgangskörper oder akzeptiertes Statikergebnis "
+                        "fehlt nach 60 s.")
+                app.processEvents()
+                time.sleep(0.001)
+        finally:
+            anfang_signale.abgeschlossen.disconnect(anfang_fertig)
+
+        knoten = finde(welt, "rumpf")
+        if knoten is None or "wanddicke_m" not in knoten.eintrag:
+            abbrechen_nach_workerende(
+                "Parameterbenchmark benötigt ein Rumpfblatt mit Wanddicke.")
+
+        edit_start = time.perf_counter()
+        statik = {"fertig": False, "fehler": None, "abgeschlossen_s": None}
+        erste_konsistente_praesentation = [None]
+        generation = None
+
+        def statik_fertig(gemeldet, name, ergebnis, _arbeitsdaten, fehler):
+            if gemeldet == generation and name == scene:
+                statik["fertig"] = True
+                statik["fehler"] = fehler
+                statik["abgeschlossen_s"] = time.perf_counter() - edit_start
+
+        def edit_frame(_obj, _ereignis):
+            if (not statik["fertig"] or statik["fehler"] is not None
+                    or fenster._laufzeit_koerper.get(scene) is alter_koerper
+                    or fenster._statische_ergebnisse.get(scene)
+                    is altes_ergebnis):
+                return
+            if hasattr(render_fenster, "WaitForCompletion"):
+                render_fenster.WaitForCompletion()
+            erste_konsistente_praesentation[0] = (
+                time.perf_counter() - edit_start)
+
+        fenster._statisch_signale.abgeschlossen.connect(statik_fertig)
+        render_fenster.AddObserver("EndEvent", edit_frame)
+        alte_wanddicke_mm = 1000.0 * float(knoten.eintrag["wanddicke_m"])
+        alte_masse = float(alter_koerper.masse)
+        fenster.baum._eigenschaft_setzen(
+            knoten, "Wanddicke", alte_wanddicke_mm + 1.0)
+        generation = fenster._statisch_generation
+        neuer_koerper = fenster._laufzeit_koerper.get(scene)
+        rebuild_s = time.perf_counter() - edit_start
+        if neuer_koerper is None or neuer_koerper is alter_koerper:
+            raise RuntimeError(
+                "Parameteränderung hat keinen neuen Laufzeitkörper gebaut.")
+
+        deadline = time.perf_counter() + 60.0
+        while (not statik["fertig"]
+               or (statik["fehler"] is None
+                   and erste_konsistente_praesentation[0] is None)):
+            if time.perf_counter() >= deadline:
+                fenster._statisch_signale.abgeschlossen.disconnect(statik_fertig)
+                abbrechen_nach_workerende(
+                    "Parameteränderung, Solver oder sichtbare Aktualisierung "
+                    "nicht innerhalb von 60 s abgeschlossen.")
+            app.processEvents()
+            time.sleep(0.001)
+        fenster._statisch_signale.abgeschlossen.disconnect(statik_fertig)
+        _fenster_schliessen(app, fenster, hauptfenster_mod)
+        result = {
+            "operation": "Rumpf-Wanddicke um 1 mm erhöhen",
+            "wanddicke_vorher_mm": alte_wanddicke_mm,
+            "wanddicke_nachher_mm": 1000.0 * float(
+                knoten.eintrag["wanddicke_m"]),
+            "masse_vorher_kg": alte_masse,
+            "masse_nachher_kg": float(neuer_koerper.masse),
+            "laufzeit_bis_neuer_koerper_s": round(rebuild_s, 6),
+            "laufzeit_bis_solverabschluss_s": (
+                round(statik["abgeschlossen_s"], 6)
+                if statik["abgeschlossen_s"] is not None else None),
+            "laufzeit_bis_konsistenter_praesentierter_frame_s": (
+                round(erste_konsistente_praesentation[0], 6)
+                if erste_konsistente_praesentation[0] is not None else None),
+            "solverfehler": (
+                str(statik["fehler"]) if statik["fehler"] is not None else None),
+            "fehler": (
+                None if statik["fertig"]
+                and statik["fehler"] is None
+                and erste_konsistente_praesentation[0] is not None
+                else "Parameteränderung, Solver oder sichtbare Aktualisierung "
+                     "nicht innerhalb von 60 s abgeschlossen."),
+        }
+        return {"parameter_change": result}
 
     verspaetungen = []
     ereignis_signal = EreignisSignal()
@@ -219,6 +368,10 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union"):
     status = {
         "szene": scene,
         "hydrostatik_backend": backend,
+        "startup_gui_bedienbar_s": round(gui_bedienbar_s, 3),
+        "startup_erste_3d_szene_praesentiert_s": (
+            round(first_scene_presented_s[0], 3)
+            if first_scene_presented_s[0] is not None else None),
         "python": platform.python_version(),
         "plattform": platform.platform(),
         "messdauer_s": round(laufzeit, 3),
@@ -310,9 +463,7 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union"):
         "rueckstand_trend_s_pro_s": trend_s_pro_s,
         "fehler": fehler,
     }
-    fenster._zeit_pausieren()
-    fenster.close()
-    app.processEvents()
+    _fenster_schliessen(app, fenster, hauptfenster_mod)
     return status
 
 
@@ -326,13 +477,19 @@ def main(argv=None):
             "exakt_union", "voxel_koerperfest", "voxel_opencl"),
         default="exakt_union",
         help="Fester Echtzeit-Hydrostatikpfad für einen gezielten Vergleich")
+    parser.add_argument(
+        "--measure-parameter-change", action="store_true",
+        help="Misst Material-/Masseneigenschaft bis zum konsistenten 3D-Frame")
     args = parser.parse_args(argv)
     if (not all(math.isfinite(wert) for wert in (args.warmup, args.duration))
             or args.warmup < 0.0
             or args.duration <= 0.0):
         parser.error("Warmup muss nicht-negativ und Dauer positiv sein.")
     ergebnis = benchmark(
-        args.scene, args.warmup, args.duration, backend=args.backend)
+        args.scene, args.warmup, args.duration, backend=args.backend,
+        measure_parameter_change=args.measure_parameter_change)
+    import gc
+    gc.collect()
     print(json.dumps(ergebnis, ensure_ascii=False, indent=2))
 
 

@@ -54,3 +54,10 @@ Menü: Einstellungen → Kraftpfeildarstellung. Registry der Paare und Pfeile:
   nur die Länge folgt dem Betrag.
 - `schwerpunkte`: Radius und Farbe von S und K, Kontur.
 - `hauptachsen`: Dicke, Farben, Vordergrund.
+
+## Parameter (Version 1.2: Modellfabrik)
+
+Menü: Einstellungen → Modellfabrik. `modell.paketfabrik_aktiv` wählt
+explizit den paketbasierten Laufzeitpfad. Der Standard ist aktiviert; bei
+Deaktivierung bleibt für die Repository-Modelle der Legacy-Konfigurationspfad
+als Rückfall-/Vergleichspfad verfügbar.

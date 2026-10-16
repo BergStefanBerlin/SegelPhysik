@@ -19,7 +19,7 @@ Der Umbau ersetzt die zentrale `koerper.json` durch **Bootsordner** (`boote/<nam
 | `konfigurationen/koerper.json` | Top-Level nur `summenkoerper` und `darstellung`. Jeder Eintrag entweder einfacher Körper (`"form"`) oder Verband (`"teile"`, verschachtelt). Blätter tragen genau eine Masseangabe (`material` ODER `dichte_kg_pro_m3`+`farbe`+`farbe_unter_wasser`), optional `wanddicke_m`. |
 | `konfigurationen/materialien.json` | Materialtabelle (dichte, farbe, farbe_unter_wasser, glanz) + Wassertypen. |
 | `segelphysik/modelle/<name>/*.obj` | Meshes je Verband-Teil. **Namensvertrag:** Blatt-`name` = OBJ-Dateiname. Alle Teile im gemeinsamen Ursprung, Unity-Konvention (Y hoch, Länge entlang z), Wasserlinie y_unity = 0. |
-| `doc/WegZuV1.0/Vorlagen/*_vorlage.json` | Vorlagen bei Ladefehlern (kein stiller Fallback). |
+| `doc/Vorlagen/*_vorlage.json` | Vorlagen bei Ladefehlern (kein stiller Fallback). |
 
 ### 1.2 Code
 
@@ -388,7 +388,7 @@ segelphysik/
 ### Schritt 3 – boot.json schreiben
 
 Boot-Vorlage kopieren (bei Fertigstellung unter
-`doc/WegZuV1.0/Vorlagen/boot_vorlage.json`) und ausfüllen:
+`doc/Vorlagen/boot_vorlage.json`) und ausfüllen:
 
 - `massstab`: Modellgröße ÷ Zielgröße. Beispiel: Modell 16,9 Längen, Ziel 4,2 m → `0.25`.
 - `achsen`: wie in Schritt 2 gewählt.

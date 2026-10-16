@@ -61,10 +61,19 @@ def test_summenkoerper_protokolliert_nur_die_aktiven_blaetter(monkeypatch):
 
         def __init__(self, **_kwargs):
             self.masse = 2.0
+            self.teile = _kwargs.get("teile", [])
 
         @classmethod
-        def verband(cls, *_args, **_kwargs):
-            return cls()
+        def verband(cls, spezifikationen, **_kwargs):
+            eintraege = []
+            for spec in spezifikationen:
+                if "teile" in spec:
+                    kind = cls.verband(spec["teile"])
+                else:
+                    kind = cls(**spec)
+                    kind._name = spec.get("_name")
+                eintraege.append((kind, None))
+            return cls(teile=eintraege)
 
     konfig = _Konfig()
     konfig.summenkoerper = {

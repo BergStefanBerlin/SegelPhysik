@@ -1,6 +1,6 @@
 # SegelPhysik – Spezifikation v1.1
 
-**Grundlage:** [Lehrbuch Schwimmsimulation](../Backlog/lehrbuch_schwimmsimulation.md),
+**Grundlage:** [Lehrbuch Schwimmsimulation](../../../../Backlog/lehrbuch_schwimmsimulation.md),
 Bestandsaufnahme des Codes auf `main` nach Commit `5a58ea1` und die unten
 festgehaltenen Nutzerentscheidungen.
 

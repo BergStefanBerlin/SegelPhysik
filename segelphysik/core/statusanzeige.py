@@ -51,7 +51,8 @@ def status_aus_ergebnis(ergebnis, rotationssymmetrisch=False, form=None):
     return "stabil", "ok"
 
 
-def status_aus_fehler(fehler, kandidat_gezeigt=False):
+def status_aus_fehler(fehler, kandidat_gezeigt=False,
+                      kandidat_abgelehnt=False):
     """Status für einen Solver-Fehler (SolverFehler oder andere Ausnahme)."""
     status = getattr(fehler, "status", None)
     if status is None:
@@ -62,6 +63,8 @@ def status_aus_fehler(fehler, kandidat_gezeigt=False):
         return "Schweben", "hinweis"
     if status == "instabile_lage":
         return "instabil", "hinweis"
+    if status in _KANDIDATEN_STATUS and kandidat_abgelehnt:
+        return "Kandidat nicht übernommen", "hinweis"
     if status in _KANDIDATEN_STATUS and kandidat_gezeigt:
         return "Näherungslösung", "hinweis"
     return "nicht lösbar", "problem"

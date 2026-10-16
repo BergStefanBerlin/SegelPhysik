@@ -280,7 +280,7 @@ Solver integrieren
   p95 31,6 ms, Eingabereaktion p95 4,1 ms, Durchsatz 0,9999x, Rückstand
   p95 49 ms, Trend +0,09 ms/s, keine Überlastpause, keine Fehler.
   Nicht gemessen: Nachholrate 1,25x. Bericht:
-  [`Abnahme_R-4a.md`](../Abnahmen/Abnahme_R-4a.md).
+  [`Abnahme_R-4a.md`](../WegZuV1.0/Revisionslog/Bisherige/Abnahmen/Abnahme_R-4a.md).
 - **Abnahme:** Präsentierte FPS, Eingabelatenz, Pflicht-Layer, sekündliche
   Rückstandszeitreihe und Fünf-Minuten-Trend valide erfassen; alle
   Phase-0-/Phase-9-Gates bestehen.
@@ -376,13 +376,13 @@ Solver integrieren
   Darstellungsoptionen.
 - Der Echtzeit-Physikdurchsatz bleibt niedriger als die Wandzeit. Physik-
   Rückstand wird angezeigt, nicht verworfen.
-- Weiterführende Quellen: [Umsetzungsplan](../Umsetzungsplan/Umsetzungsplan_vF1.md),
-  [Spezifikation](../Spezifikationen/Spezifikation_vF1.1.md),
-  [Voxelmodell](../../../segelphysik/core/voxelmodell.py),
-  [Auftrieb](../../../segelphysik/core/auftrieb.py),
-  [Union-Referenz](../../../segelphysik/core/volumen_union.py),
-  [Solver](../../../segelphysik/core/statisch_robust.py) und
-  [GUI-Hauptfenster](../../../segelphysik/gui/hauptfenster.py).
+- Weiterführende Quellen: [Umsetzungsplan](../WegZuV1.0/Revisionslog/Bisherige/Umsetzungsplan/Umsetzungsplan_vF1.md),
+  [Spezifikation](../WegZuV1.0/Revisionslog/Bisherige/Spezifikation/Spezifikation_vF1.1.md),
+  [Voxelmodell](../../segelphysik/core/voxelmodell.py),
+  [Auftrieb](../../segelphysik/core/auftrieb.py),
+  [Union-Referenz](../../segelphysik/core/volumen_union.py),
+  [Solver](../../segelphysik/core/statisch_robust.py) und
+  [GUI-Hauptfenster](../../segelphysik/gui/hauptfenster.py).
 
 ## Backlog pflegen
 
@@ -390,3 +390,124 @@ Neue Erkenntnisse als eigenen Eintrag mit Datum, Status, Messbedingungen,
 Ergebnis, Abnahmekriterium und Verweis auf betroffene Tests/Dokumente
 ergänzen. Überholte Befunde nicht stillschweigend entfernen, sondern mit
 einem Folgeeintrag und begründeter Statusänderung nachvollziehbar ablösen.
+
+### B-16 – Kanonischen OBJ-Import vor Produktionsumschaltung beschleunigen
+
+- **Datum:** 16.10.2026
+- **Priorität:** Hoch vor dem Loader-Cutover
+- **Status:** B-03-Leistungsgate bestanden; vollständiger Cutover bleibt bis Phase 11 offen
+- **Befund:** Der erste gepaarte B-03-Prototypvergleich mit fünf Warm-ups und
+  30 alternierenden Paaren maß das Paketladen samt referenzbasierter
+  Verbandserzeugung mit Medianverhältnis `2,095`
+  (Bootstrap-95-%-Intervall `2,054–2,130`); diese historischen Rohwerte stehen
+  in [`B03_Paketvergleich_Phase3.json`](../WegZuV1.0/Revisionslog/zuV0.5/B03_Paketvergleich_Phase3.json).
+  Der folgende Phase-4-Vergleich mit T-011 erreichte zunächst ein
+  Medianverhältnis von `19,063` (Bootstrap-95-%-Intervall `18,336–19,598`)
+  und bestand das Gate nicht. Dieser Befund wurde abgelöst: Mit explizitem
+  Legacy-Aufruf (`eintrag=...`), Paketpfad und aktiver T-011-Prüfung ergaben
+  fünf Warm-ups, 30 alternierende Paare und 20.000 Bootstrap-Resamples ein
+  aktuelles Medianverhältnis Paket/Legacy von `0,883` (95-%-Intervall
+  `0,859–0,913`); B-03 ist bestanden. Aktuelle Rohwerte stehen in
+  [`B03_Paketvergleich_Phase4.json`](../WegZuV1.0/Revisionslog/zuV0.5/B03_Paketvergleich_Phase4.json).
+- **Ziel:** Die zusätzliche Validierung erhalten und den Importpfad
+  optimieren, bevor Modellpakete den bisherigen Produktivpfad ersetzen.
+- **Abnahme:** B-03 ist für den gemessenen warmen Yacht-Pfad bestanden.
+  Die verbleibende Cutover-Abnahme (externe Migration, Alt-/Neu-Parität aller
+  unterstützten Workflows, GUI-/Physik-Gates und Rückfallplan) ist Phase 11
+  des [Umsetzungsplans](../WegZuV1.0/Revisionslog/zuV0.5/Umsetzungsplan.md);
+  Legacy-Adapter bleiben bis dahin verfügbar.
+
+### B-17 – Nautisches Weltsystem und Kurs-/Driftgrößen ergänzen
+
+- **Datum:** 16.10.2026
+- **Priorität:** Niedrig
+- **Status:** Zurückgestellt; ausdrücklich außerhalb des aktuellen Umbaus
+- **Ziel:** Ein separates nautisches Weltsystem auf Basis der festgelegten
+  Nord-/Ost-/Oben-Achsen einführen und darauf aufbauend Kompasskurs,
+  Abdrift sowie die in der Fachdomäne benötigten Kurs-/Geschwindigkeitsgrößen
+  definieren.
+- **Randbedingung:** Körper- und Kamerasystem bleiben davon getrennt; die
+  dafür nötigen Transformationen müssen explizite Quell- und Zielrahmen
+  verwenden.
+- **Ausgangspunkt:** Koordinatenverträge in der
+  [Spezifikation v0.5](../WegZuV1.0/Revisionslog/zuV0.5/Spezifikation_v0.5.md).
+
+### B-18 – Gekoppelte Dynamik beweglicher Teilkörper spezifizieren
+
+- **Datum:** 16.10.2026
+- **Priorität:** Mittel
+- **Status:** Zurückgestellt; nur nach eigener Physikspezifikation
+- **Ziel:** Dynamische Freiheitsgrade, lokale Frames, Gelenke/Kopplungen,
+  Impulsübertragung und numerische Stabilität beweglicher Teilkörper
+  modellieren.
+- **Randbedingung:** Bis zu einer gesonderten Freigabe bleiben bewegliche
+  Teile in der dynamischen Masse-/Schwerpunkt-/Trägheitsberechnung an ihrer
+  initialen Position. Eine Winkeländerung beeinflusst hydrodynamische bzw.
+  aerodynamische Einflüsse, aber nicht rückwirkend die Masseneigenschaften.
+- **Ausgangspunkt:** Laufzeitkörper- und Bewegungsregeln der
+  [Spezifikation v0.5](../WegZuV1.0/Revisionslog/zuV0.5/Spezifikation_v0.5.md).
+
+### B-19 – Nicht-mannigfaltige Großsegel-Quelle bereinigen
+
+- **Datum:** 16.10.2026
+- **Priorität:** Hoch vor Yacht-Paketfreigabe
+- **Status:** Technisch abgeschlossen; Legacy-Produktionspfad bleibt bis zum
+  Cutover-Gate aktiv.
+- **Befund:** Die Legacy-Dateien `grosssegel.obj` und `fock.obj` enthalten
+  drei bzw. eine exakt gegenläufige Kopie identischer Dreiecke. Separate,
+  deduplizierte Paketkopien liegen unter `yacht1/paket/`; die Legacy-Quellen
+  bleiben unverändert. Die Wanddicke beider Segel wurde im Manifest von
+  `0.0004 m` auf `0.0008 m` verdoppelt, sodass gewichtete Fläche, Masse,
+  Schwerpunkt und Trägheit den Legacy-Golden entsprechen.
+- **Validierung:** Alle acht Yacht-OBJ-Blätter bestehen die strenge
+  Topologie- und Masseneignungsvalidierung. Der paketbasierte Yachtverband
+  stimmt für Masse, Schwerpunkt/Modellversatz und Trägheit mit
+  [`Inventar_Phase3.json`](../WegZuV1.0/Revisionslog/zuV0.5/Inventar_Phase3.json)
+  innerhalb der vorab definierten Toleranzen überein.
+
+### B-20 – Allgemeine Selbstüberschneidungsprüfung für Meshes ergänzen
+
+- **Datum:** 16.10.2026
+- **Priorität:** Hoch vor Produktionsumschaltung
+- **Status:** Funktional umgesetzt; T-011 ist im bestandenen B-03-End-to-End-Gate enthalten
+- **Befund:** Sweep-and-prune mit coplanarem SAT-Test erkennt nicht-
+  benachbarte Selbstschnitte und liefert Dreiecks-IDs. Synthetische
+  Schnitt-, Kontakt-, getrennte-Komponenten- und Kontexttests bestehen.
+  Die neun getrennten, geschlossenen Mastkomponenten sind im Paket als eine
+  Mastbaugruppe (ein Mastprofil plus acht Beschlagkomponenten) modelliert;
+  die Legacy-OBJ-Quelle bleibt unverändert. Großbaum und Großsegel schneiden
+  den Mast nicht. Paket-/Golden-Tests bestehen, Masse und Trägheit bleiben
+  innerhalb der festgelegten Toleranzen. Der frühere Performancebefund
+  `19,063` wurde durch den korrigierten B-03-Lauf abgelöst: Mit aktiver
+  T-011-Prüfung liegt das Medianverhältnis Paket/Legacy bei `0,883`
+  (95-%-Intervall `0,859–0,913`); das Gate ist bestanden.
+- **Nächster Schritt:** Kein weiterer T-011-Performanceblocker bekannt.
+  Produktionsumschaltung bleibt bis zur vollständigen Phase-11-Abnahme
+  gesperrt. Fehler müssen weiterhin den Modell-/Knotenpfad nennen.
+- **Abnahme:** Tests mit echten Selbstüberschneidungen, Kontakt an
+  gemeinsamen Kanten, getrennten Komponenten und Nullflächen sowie der
+  B-03-Leistungsvergleich bestehen. Die umfassendere Produktionsfreigabe
+  bleibt von den übrigen Phase-11-Gates abhängig.
+
+### B-21 – Physikalische Eingaben für Hydrodynamik und Aerodynamik festlegen
+
+- **Datum:** 16.10.2026
+- **Priorität:** Hoch vor Phase 12
+- **Status:** Auf Nutzerwunsch vertagt; Implementierung mangels fachlicher Eingaben blockiert
+- **Befund:** Phase 12 verlangt getrennte Hydro-/Aerodynamikbeiträge und
+  Referenztests, aber die Spezifikation schließt empirisch nicht abgesicherte
+  Rumpf-, Kiel-, Ruder- und Segelkräfte aus. Freigegebene Wind-/Strömungs-
+  Snapshots, Koeffizienten, Anwendungsbereiche und Referenzmessungen liegen
+  noch nicht vor.
+- **Benötigte Festlegungen:** Eingabemodell für Wasser und Luft
+  (Geschwindigkeit, Dichte, Bezugssystem), Kraftmodelle je Rolle,
+  Koeffizienten/Polaren oder klar begrenzte analytische Annahmen,
+  Gültigkeitsbereiche, Vorzeichen-/Bezugspunktkonventionen und
+  Referenzfälle mit erwarteten Kräften/Momenten.
+- **Randbedingung:** Keine Parameter oder vermeintlich realistischen
+  Koeffizienten erfinden. Bis zur Freigabe bestehende validierte Physik
+  unverändert lassen.
+- **Ausgangspunkt:** Phase 12 im
+  [Umsetzungsplan](../WegZuV1.0/Revisionslog/zuV0.5/Umsetzungsplan.md) und
+  Abschnitt 11 der
+  [Spezifikation v0.5](../WegZuV1.0/Revisionslog/zuV0.5/Spezifikation_v0.5.md).

@@ -48,6 +48,57 @@ def quaternion_matrix(quaternion):
     ])
 
 
+def quaternion_aus_matrix(rotation):
+    """Wandelt eine rechtshändige 3x3-Rotation in ein Quaternion wxyz um."""
+    matrix = np.asarray(rotation, dtype=np.float64)
+    if (matrix.shape != (3, 3) or not np.isfinite(matrix).all()
+            or not np.allclose(matrix.T @ matrix, np.eye(3),
+                               rtol=0.0, atol=1e-8)
+            or not np.isclose(np.linalg.det(matrix), 1.0,
+                              rtol=0.0, atol=1e-8)):
+        raise ValueError("Orientierung muss eine gültige 3x3-Rotation sein")
+
+    spur = float(np.trace(matrix))
+    if spur > 0.0:
+        skala = math.sqrt(spur + 1.0) * 2.0
+        quaternion = np.array((
+            0.25 * skala,
+            (matrix[2, 1] - matrix[1, 2]) / skala,
+            (matrix[0, 2] - matrix[2, 0]) / skala,
+            (matrix[1, 0] - matrix[0, 1]) / skala,
+        ))
+    else:
+        achse = int(np.argmax(np.diag(matrix)))
+        if achse == 0:
+            skala = math.sqrt(1.0 + matrix[0, 0] - matrix[1, 1]
+                              - matrix[2, 2]) * 2.0
+            quaternion = np.array((
+                (matrix[2, 1] - matrix[1, 2]) / skala,
+                0.25 * skala,
+                (matrix[0, 1] + matrix[1, 0]) / skala,
+                (matrix[0, 2] + matrix[2, 0]) / skala,
+            ))
+        elif achse == 1:
+            skala = math.sqrt(1.0 + matrix[1, 1] - matrix[0, 0]
+                              - matrix[2, 2]) * 2.0
+            quaternion = np.array((
+                (matrix[0, 2] - matrix[2, 0]) / skala,
+                (matrix[0, 1] + matrix[1, 0]) / skala,
+                0.25 * skala,
+                (matrix[1, 2] + matrix[2, 1]) / skala,
+            ))
+        else:
+            skala = math.sqrt(1.0 + matrix[2, 2] - matrix[0, 0]
+                              - matrix[1, 1]) * 2.0
+            quaternion = np.array((
+                (matrix[1, 0] - matrix[0, 1]) / skala,
+                (matrix[0, 2] + matrix[2, 0]) / skala,
+                (matrix[1, 2] + matrix[2, 1]) / skala,
+                0.25 * skala,
+            ))
+    return tuple(float(x) for x in quaternion_normalisieren(quaternion))
+
+
 def quaternion_slerp(anfang, ende, anteil):
     q0 = quaternion_normalisieren(anfang)
     q1 = quaternion_normalisieren(ende)
@@ -140,8 +191,9 @@ def schritt(zustand, kraftfunktion, masse, traegheit_koerper, dt, g):
     mass_translation = np.diag(np.full(3, masse) + added[:3])
     mass_rotation = inertia + np.diag(added[3:])
 
-    gravity_welt = np.array((0.0, 0.0, -masse * g))
-    kraft_koerper = rotation.T @ (kraft + gravity_welt)
+    if getattr(ergebnis, "schwerkraft_beruecksichtigt", False) is not True:
+        kraft = kraft + np.array((0.0, 0.0, -masse * g))
+    kraft_koerper = rotation.T @ kraft
     moment_koerper = rotation.T @ moment
     a = np.linalg.solve(
         mass_translation,

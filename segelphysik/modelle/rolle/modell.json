@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "modell": {
+    "id": "rolle",
+    "name": "Rolle"
+  },
+  "geometrie_einheiten": {
+    "obj_zu_m": 1.0,
+    "obj_achsenmatrix_zu_blatt": [
+      [1, 0, 0],
+      [0, 1, 0],
+      [0, 0, 1]
+    ]
+  },
+  "koerper": {
+    "id": "root",
+    "name": "Rolle",
+    "geometrie": {
+      "quelle": "form",
+      "parameter": {
+        "typ": "cylinder",
+        "R_m": 0.5,
+        "H_m": 2.0,
+        "lage": "liegend"
+      }
+    },
+    "dichte_kg_pro_m3": 2700,
+    "farbe": "#1e90ff",
+    "farbe_unter_wasser": "#125699",
+    "rolle": "allgemein",
+    "verdrängend": true
+  }
+}

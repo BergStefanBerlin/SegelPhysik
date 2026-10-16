@@ -35,6 +35,7 @@ except ImportError:
 from .core.overlays import (LayerRegistry, hauptachsen,
                             LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN,
                             LAYER_KRAEFTE, LAYER_MOMENTE, LAYER_FREMDKRAFT)
+from .core.frames import pose_mit_gelenkwinkel
 from .core import pfeilstil
 
 FARBE_UNTEN = "#2166ac"
@@ -125,6 +126,46 @@ def _mesh_actor_setzen(plotter, refs, name, mesh, **kwargs):
 
 def _farbgruppen(koerper):
     """Farbgruppen eines Koerpers (P4 nach der Material-Reform)."""
+    def hat_gelenk(knoten):
+        return (
+            knoten.gelenkdefinition is not None
+            or any(hat_gelenk(kind) for kind, _pose in knoten.teile))
+
+    if koerper.teile and hat_gelenk(koerper):
+        gruppen = []
+
+        def sammle(knoten, rotation, translation):
+            for kind, _pose in knoten.teile:
+                pose = pose_mit_gelenkwinkel(
+                    kind.basis_pose,
+                    kind.gelenkdefinition,
+                    kind.gelenkwinkel_rad,
+                )
+                kind_rotation = rotation @ pose.rotationsmatrix
+                kind_translation = (
+                    translation + rotation @ np.asarray(pose.translation_m))
+                if kind.teile:
+                    sammle(kind, kind_rotation, kind_translation)
+                    continue
+                schwerpunkt = (
+                    kind_translation
+                    + kind_rotation @ np.asarray(kind._r_eingabe, float))
+                gruppen.append({
+                    "knoten_id": kind.knoten_id,
+                    "punkte": kind.punkte @ kind_rotation.T + schwerpunkt,
+                    "dreiecke": np.asarray(kind.dreiecke, np.int64),
+                    "farbe_oben": kind.farbe,
+                    "farbe_unten": kind.unterwasser_farbe(),
+                    "glanz": kind.glanz,
+                })
+
+        sammle(
+            koerper,
+            np.eye(3),
+            -np.asarray(koerper._r_eingabe, dtype=np.float64),
+        )
+        return gruppen
+
     if not getattr(koerper, "teile", None):
         return [{"punkte": np.asarray(koerper.punkte, float),
                  "dreiecke": np.asarray(koerper.dreiecke, np.int64),
@@ -408,6 +449,32 @@ class GrafikBruecke:
         self._koerper[name]["koerper"] = koerper
         self._koerper[name]["overlay_skala"] = self._overlay_skala(koerper)
         self._einhaengen(name)
+
+    def gelenkwinkel_setzen(self, name, knoten_id, winkel_rad):
+        koerperanzeige = self._koerper.get(name)
+        if koerperanzeige is None:
+            return False
+        koerper = koerperanzeige.get("koerper")
+        if koerper is None:
+            return False
+        koerper.gelenkwinkel_setzen(knoten_id, winkel_rad)
+        neue_gruppen = _farbgruppen(koerper)
+        alte_gruppen = koerperanzeige.get("gruppen", [])
+        if len(neue_gruppen) != len(alte_gruppen):
+            raise RuntimeError(
+                "Gelenkänderung hat die Blattanzahl des Renderers geändert")
+        for alt, neu in zip(alte_gruppen, neue_gruppen):
+            if alt.get("knoten_id") != neu.get("knoten_id"):
+                raise RuntimeError(
+                    "Gelenkänderung hat die Blattreihenfolge des Renderers geändert")
+            if not np.array_equal(alt["dreiecke"], neu["dreiecke"]):
+                raise RuntimeError(
+                    "Gelenkänderung hat die Blatt-Topologie des Renderers geändert")
+            alt["punkte"] = neu["punkte"]
+            alt["pd"]["referenz_punkte"] = np.array(
+                neu["punkte"], dtype=np.float64, copy=True)
+        self._statisch_anwenden(name, koerperanzeige)
+        return True
 
     def _koerper_ersetzen(self, name):
         alt = self._koerper.get(name)

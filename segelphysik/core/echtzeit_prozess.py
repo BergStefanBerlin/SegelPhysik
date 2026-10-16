@@ -20,7 +20,10 @@ def initialisieren(koerper, rho_w, physik, hydrostatik_pfad="exakt_union"):
         koerper, rho_w=rho_w, g=physik.g_m_pro_s2,
         pfad=hydrostatik_pfad)
     _kraftfunktion = KraftmodellMitHydroCache(
-        baue_kraftmodell(hydrostatik, physik), intervall=1)
+        baue_kraftmodell(
+            hydrostatik, physik, masse=koerper.masse,
+            g=physik.g_m_pro_s2),
+        intervall=1)
     _masse = float(koerper.masse)
     _traegheit = koerper.traegheitstensor
     _dt = float(physik.dt_s)

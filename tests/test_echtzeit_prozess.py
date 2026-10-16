@@ -6,6 +6,7 @@ from segelphysik.core import echtzeit_prozess
 def test_worker_initialisierung_uebernimmt_feste_hydrostatikzuordnung(
         monkeypatch):
     aufrufe = []
+    kraftmodell_aufrufe = []
 
     def kraftfunktion(_koerper, **kwargs):
         aufrufe.append(kwargs)
@@ -16,7 +17,8 @@ def test_worker_initialisierung_uebernimmt_feste_hydrostatikzuordnung(
         kraftfunktion)
     monkeypatch.setattr(
         "segelphysik.core.kraftmodell.baue_kraftmodell",
-        lambda funktion, _physik: funktion)
+        lambda funktion, _physik, **kwargs: (
+            kraftmodell_aufrufe.append(kwargs) or funktion))
     monkeypatch.setattr(
         "segelphysik.core.kraftmodell.KraftmodellMitHydroCache",
         lambda funktion, intervall: funktion)
@@ -31,3 +33,4 @@ def test_worker_initialisierung_uebernimmt_feste_hydrostatikzuordnung(
 
     assert aufrufe == [{
         "rho_w": 1000.0, "g": 9.81, "pfad": "voxel_opencl"}]
+    assert kraftmodell_aufrufe == [{"masse": 3.0, "g": 9.81}]

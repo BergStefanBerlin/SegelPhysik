@@ -1,10 +1,10 @@
 """Versionierte Einstellungen (konfigurationen/settings.json).
 
 Format der Datei:  {"schema_version": "M.N", "<bereich>": {"<schluessel>": wert}}
-Die Vorlage (doc/WegZuV1.0/Vorlagen/settings_vorlage.json, zusaetzlich fest im Code) beschreibt
+Die Vorlage (doc/Vorlagen/settings_vorlage.json, zusaetzlich fest im Code) beschreibt
 jeden Eintrag mit Default, Einheit, Grenzen und "seit_version".
 
-Kompatibilitaetsregeln (siehe doc/WegZuV1.0/Vorlagen/Settings.md):
+Kompatibilitaetsregeln (siehe doc/Vorlagen/Settings.md):
 - Neue Eintraege nur additiv: Minor erhoehen, Defaults ergaenzen fehlende.
 - Umbenennen, Loeschen oder geaenderte Bedeutung: Major erhoehen und eine
   Migration in MIGRATIONEN eintragen.
@@ -18,7 +18,7 @@ import os
 import shutil
 
 from . import pfeilstil
-SCHEMA_VERSION = "1.1"
+SCHEMA_VERSION = "1.2"
 DATEINAME = "settings.json"
 VORLAGE_DATEINAME = "settings_vorlage.json"
 
@@ -73,6 +73,13 @@ VORLAGE = {
             "float", 1.25, "Ziel-Nachholrate (Simulationszeit je Wandzeit)",
             "s/s", 1.0, 10.0, 2),
     },
+    "modell": {
+        "paketfabrik_aktiv": _eintrag(
+            "bool", True,
+            "Paketbasierte Modellfabrik verwenden; ausgeschaltet bleibt "
+            "der Legacy-Konfigurationspfad verfügbar",
+            seit="1.2"),
+    },
 }
 # Seit 1.1: Darstellung der Kraft- und Momentenpfeile
 VORLAGE.update(pfeilstil.vorlage_bereiche(_eintrag, "1.1"))
@@ -98,7 +105,7 @@ def vorlage_laden(pfad=None):
     if pfad is None:
         pfad = os.path.abspath(os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "..", "..", "doc",
-            "WegZuV1.0", "Vorlagen", VORLAGE_DATEINAME))
+            "Vorlagen", VORLAGE_DATEINAME))
     try:
         with open(pfad, encoding="utf-8") as f:
             daten = json.load(f)

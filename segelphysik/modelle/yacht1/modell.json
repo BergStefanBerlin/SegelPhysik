@@ -1,0 +1,164 @@
+{
+  "schema_version": "1.0",
+  "modell": {
+    "id": "yacht1",
+    "name": "Yacht 1",
+    "beschreibung": "Bestandsmodell mit acht OBJ-Komponenten."
+  },
+  "geometrie_einheiten": {
+    "obj_zu_m": 0.25,
+    "obj_achsenmatrix_zu_blatt": [
+      [0, 0, 1],
+      [1, 0, 0],
+      [0, 1, 0]
+    ]
+  },
+  "koerper": {
+    "id": "root",
+    "name": "Yacht 1",
+    "teile": [
+      {
+        "id": "rumpf",
+        "name": "Rumpf",
+        "geometrie": {
+          "quelle": "obj",
+          "datei": "rumpf.obj"
+        },
+        "material": "GfK",
+        "wanddicke_m": 0.005,
+        "rolle": "rumpf",
+        "verdrängend": true
+      },
+      {
+        "id": "ruder",
+        "name": "Ruder",
+        "geometrie": {
+          "quelle": "obj",
+          "datei": "ruder.obj"
+        },
+        "material": "GfK",
+        "wanddicke_m": 0.005,
+        "rolle": "ruder",
+        "verdrängend": true
+      },
+      {
+        "id": "kielsystem",
+        "name": "Kielsystem",
+        "rolle_default": "kiel",
+        "teile": [
+          {
+            "id": "kiel",
+            "name": "Kiel",
+            "geometrie": {
+              "quelle": "obj",
+              "datei": "kiel.obj"
+            },
+            "material": "Stahl",
+            "rolle": "kiel",
+            "verdrängend": true
+          },
+          {
+            "id": "bulb",
+            "name": "Bulb",
+            "geometrie": {
+              "quelle": "obj",
+              "datei": "bulb.obj"
+            },
+            "material": "Blei",
+            "rolle": "kiel",
+            "verdrängend": true
+          }
+        ]
+      },
+      {
+        "id": "rigg",
+        "name": "Rigg",
+        "rolle_default": "stehendes_gut",
+        "teile": [
+          {
+            "id": "mast_baugruppe",
+            "name": "Mastbaugruppe",
+            "teile": [
+              {
+                "id": "mast",
+                "name": "Mast",
+                "geometrie": {
+                  "quelle": "obj",
+                  "datei": "paket/mast_components/mast_korpus.obj"
+                },
+                "material": "Aluminium",
+                "wanddicke_m": 0.002,
+                "rolle": "stehendes_gut",
+                "verdrängend": true
+              },
+              {
+                "id": "mast_teil_01",
+                "name": "Mastkomponente 01",
+                "geometrie": {
+                  "quelle": "obj",
+                  "datei": "paket/mast_components/mast_teil_01.obj"
+                },
+                "material": "Aluminium",
+                "wanddicke_m": 0.002,
+                "rolle": "stehendes_gut",
+                "verdrängend": false
+              },
+              {
+                "id": "mast_teil_02",
+                "name": "Mastkomponente 02",
+                "geometrie": {
+                  "quelle": "obj",
+                  "datei": "paket/mast_components/mast_teil_02.obj"
+                },
+                "material": "Aluminium",
+                "wanddicke_m": 0.002,
+                "rolle": "stehendes_gut",
+                "verdrängend": true
+              }
+            ]
+          },
+          {
+            "id": "boom",
+            "name": "Baum",
+            "geometrie": {
+              "quelle": "obj",
+              "datei": "boom.obj"
+            },
+            "material": "Aluminium",
+            "wanddicke_m": 0.002,
+            "rolle": "stehendes_gut",
+            "verdrängend": true
+          },
+          {
+            "id": "grosssegel",
+            "name": "Großsegel",
+            "geometrie": {
+              "quelle": "obj",
+              "datei": "paket/grosssegel.obj"
+            },
+            "dichte_kg_pro_m3": 1250,
+            "wanddicke_m": 0.0008,
+            "farbe": "#fbfaf7",
+            "farbe_unter_wasser": "#d9d7cf",
+            "rolle": "segel",
+            "verdrängend": false
+          },
+          {
+            "id": "fock",
+            "name": "Fock",
+            "geometrie": {
+              "quelle": "obj",
+              "datei": "paket/fock.obj"
+            },
+            "dichte_kg_pro_m3": 1250,
+            "wanddicke_m": 0.0008,
+            "farbe": "#fbfaf7",
+            "farbe_unter_wasser": "#d9d7cf",
+            "rolle": "segel",
+            "verdrängend": false
+          }
+        ]
+      }
+    ]
+  }
+}

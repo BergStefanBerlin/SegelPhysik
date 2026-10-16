@@ -1,10 +1,12 @@
 import json
 import os
+from types import SimpleNamespace
 
 import pytest
 
 from segelphysik.core import einstellungen as ein
 from segelphysik.core.einstellungen import Einstellungen, VORLAGE
+from segelphysik.core.dynamik_6dof import Zustand6DOF
 
 # Eingefrorene Datei der Schema-Version 1.0: muss in allen spaeteren
 # Minor-Versionen weiter ladbar sein (Abwaertskompatibilitaet).
@@ -32,6 +34,7 @@ def test_fehlende_datei_wird_mit_defaults_angelegt(tmp_path):
     assert os.path.exists(pfad)
     assert e.get("dynamisch", "zeitgenau") is False
     assert e.get("statisch", "max_iterationen") == 60
+    assert e.get("modell", "paketfabrik_aktiv") is True
     assert json.load(open(pfad))["schema_version"] == ein.SCHEMA_VERSION
 
 
@@ -164,9 +167,12 @@ def test_takt_schnellmodus_rechnet_ohne_rueckstand_und_pause(tmp_path, monkeypat
     f._einstellungen.setzen("dynamisch", "zeitgenau", False)
     f._einstellungen.setzen("dynamisch", "max_schritte_pro_aufgabe", 5)
     f._echtzeit_physik = type("P", (), {"dt_s": 0.01})()
-    f._echtzeit_zustand = object()
+    f._echtzeit_zustand = Zustand6DOF()
     f._echtzeit_kraftfunktion = lambda *a: None
-    f._laufzeit_koerper["k"] = object()
+    f._laufzeit_koerper["k"] = SimpleNamespace(
+        zustand=f._echtzeit_zustand,
+        snapshot=lambda: SimpleNamespace(
+            zustand=f._echtzeit_zustand, version=0))
     f._echtzeit_name = "k"
     # lange "Wandzeit" seit dem letzten Takt darf keinen Rueckstand erzeugen
     f._echtzeit_letzte_wandzeit = time.perf_counter() - 100.0
@@ -190,9 +196,12 @@ def test_takt_schnellmodus_nie_schneller_als_reale_zeit(tmp_path, monkeypatch):
     f._einstellungen.setzen("dynamisch", "zeitgenau", False)
     f._einstellungen.setzen("dynamisch", "max_schritte_pro_aufgabe", 50)
     f._echtzeit_physik = type("P", (), {"dt_s": 0.01})()
-    f._echtzeit_zustand = object()
+    f._echtzeit_zustand = Zustand6DOF()
     f._echtzeit_kraftfunktion = lambda *a: None
-    f._laufzeit_koerper["k"] = object()
+    f._laufzeit_koerper["k"] = SimpleNamespace(
+        zustand=f._echtzeit_zustand,
+        snapshot=lambda: SimpleNamespace(
+            zustand=f._echtzeit_zustand, version=0))
     f._echtzeit_name = "k"
     f._echtzeit_letzte_wandzeit = time.perf_counter() - 0.05
     f._echtzeit_takt()

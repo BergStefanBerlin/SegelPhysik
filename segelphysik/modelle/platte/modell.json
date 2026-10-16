@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "modell": {
+    "id": "platte",
+    "name": "Platte"
+  },
+  "geometrie_einheiten": {
+    "obj_zu_m": 1.0,
+    "obj_achsenmatrix_zu_blatt": [
+      [1, 0, 0],
+      [0, 1, 0],
+      [0, 0, 1]
+    ]
+  },
+  "koerper": {
+    "id": "root",
+    "name": "Platte",
+    "geometrie": {
+      "quelle": "form",
+      "parameter": {
+        "typ": "plate",
+        "dx_m": 2.0,
+        "dy_m": 1.0,
+        "dicke_m": 0.02
+      }
+    },
+    "dichte_kg_pro_m3": 7850,
+    "farbe": "#708090",
+    "farbe_unter_wasser": "#434d56",
+    "rolle": "allgemein",
+    "verdrängend": true
+  }
+}

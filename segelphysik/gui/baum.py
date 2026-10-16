@@ -16,16 +16,23 @@ Unterobjekte inaktiv (E-2) | C-8 Schalter 'nur_aktives_bedienbar'
 """
 from __future__ import annotations
 
+import os
+
 ART_WELT="welt"; ART_SUMMEN="summen"; ART_GRUPPE="gruppe"; ART_BLATT="blatt"
 ICON_GLOBUS="globus"; ICON_YACHT="yacht"; ICON_KEGEL="kegel"; ICON_WUERFEL="wuerfel"
 _RESERVIERT=("darstellung",)
 
 class Knoten:
-    def __init__(self,name,art,icon_art,aktiv=True,sichtbar=False):
+    def __init__(self,name,art,icon_art,aktiv=True,sichtbar=False,
+                 knoten_id=None,label=None):
         self.name=name; self.art=art; self.icon_art=icon_art
+        self.id=name if knoten_id is None else knoten_id
+        self.label=name if label is None else label
         self.aktiv=aktiv; self.sichtbar=sichtbar; self.grau=False
         self.eigenschaften=[]; self.kinder=[]; self.eltern=None
         self.eintrag=None
+        self.rolle=None; self.rolle_default=None; self.verdrangend=None
+        self.gelenk=None
     def hinzufuegen(self,kind):
         kind.eltern=self; self.kinder.append(kind); return kind
     def iteriere(self):
@@ -67,6 +74,15 @@ def _form_knoten(name,eintrag):
 
 def welt_aus_konfig(konfig):
     """T-4: baut den Welt-Knoten aus dem Konfiguration-Objekt (J-1)."""
+    repo_konfigurationen = os.path.abspath(os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "..", "..",
+        "konfigurationen"))
+    ordner = getattr(konfig, "ordner", None)
+    if (ordner is not None
+            and os.path.normcase(os.path.abspath(ordner))
+            == os.path.normcase(repo_konfigurationen)):
+        return _welt_aus_repo_paketen(konfig)
+
     welt=welt_aus_json({"summenkoerper": konfig.summenkoerper,
                         "darstellung": {"standard_ansicht": konfig.standard_ansicht}})
     welt.konfiguration=konfig
@@ -79,6 +95,125 @@ def welt_aus_konfig(konfig):
     for haupt in summenkoerper(welt):
         binde_eintraege(haupt, konfig.summenkoerper[haupt.name])
     return welt
+
+
+def _welt_aus_repo_paketen(konfig):
+    from ..core.boot_bau import MODELL_ORDNER
+    from ..core.modell_lader import lade_modellkatalog
+
+    katalog = lade_modellkatalog(
+        MODELL_ORDNER, konfig.materialien_blocks)
+    manifest_ids = {manifest.id for manifest in katalog}
+    modell_ids = {
+        name for name in konfig.summenkoerper if not name.startswith("_")
+    }
+    if manifest_ids != modell_ids:
+        raise ValueError(
+            "Paketkatalog und Körperkonfiguration stimmen nicht überein: "
+            "fehlende Pakete %s; unbekannte Pakete %s"
+            % (sorted(modell_ids - manifest_ids),
+               sorted(manifest_ids - modell_ids)))
+
+    welt = Knoten("Welt", ART_WELT, ICON_GLOBUS)
+    welt.konfiguration = konfig
+    welt.manifest_baum = True
+    paket_ueberschreibungen = getattr(
+        konfig, "paket_ueberschreibungen", {})
+    for manifest in katalog:
+        legacy_root = konfig.summenkoerper[manifest.id]
+        legacy_by_name = {}
+
+        def indexiere(eintrag):
+            if "teile" in eintrag:
+                for kind in eintrag["teile"]:
+                    indexiere(kind)
+            elif "name" in eintrag:
+                legacy_by_name[eintrag["name"]] = eintrag
+
+        if "teile" in legacy_root:
+            indexiere(legacy_root)
+        else:
+            legacy_by_name["root"] = legacy_root
+
+        def legacy_fuer(knoten_id):
+            if knoten_id in legacy_by_name:
+                return legacy_by_name[knoten_id]
+            kandidaten = [
+                name for name in legacy_by_name
+                if knoten_id.startswith(name + "_")
+            ]
+            if kandidaten:
+                return legacy_by_name[max(kandidaten, key=len)]
+            return None
+
+        def eigenschaften(knoten):
+            quelle = paket_ueberschreibungen.get(
+                manifest.id, {}).get(knoten.id, {})
+            werte = []
+            material = quelle.get("material", knoten.material)
+            if material is not None:
+                werte.append(("Material", str(material)))
+            dichte = quelle.get("dichte_kg_pro_m3",
+                                knoten.dichte_kg_pro_m3)
+            if dichte is not None:
+                werte.append(("Dichte", "%g kg/m3" % dichte))
+            dicke = quelle.get("wanddicke_m", knoten.wanddicke_m)
+            if dicke is not None:
+                werte.append(("Wanddicke", "%g mm" % (dicke * 1000.0)))
+            if knoten.rolle is not None:
+                werte.append(("Rolle", knoten.rolle))
+            elif knoten.rolle_default is not None:
+                werte.append(("Rolle (Standard)", knoten.rolle_default))
+            if knoten.verdraengend is not None:
+                werte.append((
+                    "Verdrängend", "Ja" if knoten.verdraengend else "Nein"))
+            if knoten.gelenk is not None:
+                werte.append((
+                    "Gelenkwinkel (Start)", "%g rad" % knoten.gelenk.winkel_rad))
+            return werte
+
+        def baue_knoten(modellknoten, ist_wurzel=False):
+            art = (
+                ART_SUMMEN if ist_wurzel
+                else ART_GRUPPE if modellknoten.teile
+                else ART_BLATT)
+            icon = (
+                ICON_YACHT if modellknoten.teile
+                else ICON_KEGEL if ist_wurzel
+                else ICON_WUERFEL)
+            knoten = Knoten(
+                manifest.id if ist_wurzel else modellknoten.id,
+                art,
+                icon,
+                knoten_id=modellknoten.id,
+                label=manifest.name if ist_wurzel else modellknoten.name)
+            knoten.rolle = modellknoten.rolle
+            knoten.rolle_default = modellknoten.rolle_default
+            knoten.verdrangend = modellknoten.verdraengend
+            knoten.gelenk = modellknoten.gelenk
+            knoten.eintrag = (
+                legacy_root if ist_wurzel
+                else legacy_fuer(modellknoten.id))
+            knoten.eigenschaften = eigenschaften(modellknoten)
+            if ist_wurzel and "form" in legacy_root:
+                form = legacy_root.get("form", {})
+                try:
+                    from ..core.koerper_formen import FORMEN
+                    if form.get("typ") in FORMEN:
+                        knoten.eigenschaften.insert(
+                            0, ("Form", FORMEN[form["typ"]]["titel"](form)))
+                except (KeyError, TypeError):
+                    pass
+            for kind in modellknoten.teile:
+                knoten.hinzufuegen(baue_knoten(kind))
+            return knoten
+
+        haupt = baue_knoten(manifest.koerper, ist_wurzel=True)
+        haupt.sichtbar = manifest.id == konfig.standard_ansicht
+        welt.hinzufuegen(haupt)
+    _grau_aktualisieren(welt)
+    return welt
+
 
 def welt_aus_json(daten):
     """Baut den Welt-Knoten aus geparsten JSON-Daten (J-1; Uebergangszeit

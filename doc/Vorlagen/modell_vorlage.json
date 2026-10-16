@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "modell": {
+    "id": "beispiel",
+    "name": "Beispielmodell",
+    "beschreibung": "Minimales Paket mit einem parametrischen Körper."
+  },
+  "geometrie_einheiten": {
+    "obj_zu_m": 1.0,
+    "obj_achsenmatrix_zu_blatt": [
+      [1, 0, 0],
+      [0, 1, 0],
+      [0, 0, 1]
+    ]
+  },
+  "koerper": {
+    "id": "root",
+    "name": "Beispielmodell",
+    "teile": [
+      {
+        "id": "rumpf",
+        "name": "Rumpf",
+        "rolle": "rumpf",
+        "geometrie": {
+          "quelle": "form",
+          "parameter": {
+            "typ": "box",
+            "dx_m": 2.0,
+            "dy_m": 0.8,
+            "dz_m": 0.5
+          }
+        },
+        "material": "GfK",
+        "wanddicke_m": 0.005,
+        "verdrängend": true
+      }
+    ]
+  }
+}

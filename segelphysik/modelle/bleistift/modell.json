@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "modell": {
+    "id": "bleistift",
+    "name": "Bleistift"
+  },
+  "geometrie_einheiten": {
+    "obj_zu_m": 1.0,
+    "obj_achsenmatrix_zu_blatt": [
+      [1, 0, 0],
+      [0, 1, 0],
+      [0, 0, 1]
+    ]
+  },
+  "koerper": {
+    "id": "root",
+    "name": "Bleistift",
+    "geometrie": {
+      "quelle": "form",
+      "parameter": {
+        "typ": "hexprism",
+        "umkreisradius_m": 0.004,
+        "H_m": 0.17,
+        "spitzenlaenge_m": 0.015
+      }
+    },
+    "dichte_kg_pro_m3": 700,
+    "farbe": "#ffd21e",
+    "farbe_unter_wasser": "#997e12",
+    "rolle": "allgemein",
+    "verdrängend": true
+  }
+}

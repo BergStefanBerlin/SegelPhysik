@@ -22,6 +22,16 @@ def _qt_app():
     return QApplication.instance() or QApplication([])
 
 
+def _koerper_stub(**werte):
+    koerper = SimpleNamespace(**werte)
+
+    def snapshot():
+        return SimpleNamespace(**werte, version=0)
+
+    koerper.snapshot = snapshot
+    return koerper
+
+
 def _physik_stub(g=9.81, aufloesung=0.05, dt=0.004):
     return SimpleNamespace(
         dt_s=dt, g_m_pro_s2=g, daempfung_tauchung=0.0,
@@ -239,7 +249,7 @@ def test_statisch_modus_ruft_solver_auf_und_zeigt_ergebnis(
     sichtbarkeit_setzen(welt, "yacht1")
     fenster = HauptFenster()
     fenster.baum_setzen(welt)
-    koerper = SimpleNamespace(masse=123.0)
+    koerper = _koerper_stub(masse=123.0)
     fenster._laufzeit_koerper["yacht1"] = koerper
 
     class Bruecke:
@@ -307,7 +317,8 @@ def test_statisch_modus_ruft_solver_auf_und_zeigt_ergebnis(
 
     assert solveraufrufe
     assert len(kraftaufrufe) == 1
-    assert kraftaufrufe[0][0] is koerper
+    assert kraftaufrufe[0][0] is not koerper
+    assert kraftaufrufe[0][0].version == 0
     assert kraftaufrufe[0][1]["rho_w"] == konfig.wasser_dichte()
     assert kraftaufrufe[0][1]["g"] == params.g_m_pro_s2
     assert kraftaufrufe[0][1]["aufloesung"] == params.voxel_aufloesung_m
@@ -336,7 +347,7 @@ def test_echtzeit_gui_integriert_feste_physikschritte(monkeypatch, tmp_path):
     sichtbarkeit_setzen(welt, "yacht1")
     fenster = HauptFenster()
     fenster.baum_setzen(welt)
-    koerper = SimpleNamespace(
+    koerper = _koerper_stub(
         masse=2.0, traegheitstensor=np.diag([3.0, 1.0, 1.0]))
     fenster._laufzeit_koerper["yacht1"] = koerper
 
@@ -462,7 +473,7 @@ def test_echtzeit_physik_blockiert_gui_nicht_und_verwirft_pause_ergebnis(
     sichtbarkeit_setzen(welt, "yacht1")
     fenster = HauptFenster()
     fenster.baum_setzen(welt)
-    fenster._laufzeit_koerper["yacht1"] = SimpleNamespace(
+    fenster._laufzeit_koerper["yacht1"] = _koerper_stub(
         masse=2.0, traegheitstensor=np.diag([3.0, 1.0, 1.0]))
 
     class Bruecke:
@@ -549,7 +560,7 @@ def test_solverfehler_zeigt_abbruchgrund_und_letzte_residuen(
     sichtbarkeit_setzen(welt, "yacht1")
     fenster = HauptFenster()
     fenster.baum_setzen(welt)
-    fenster._laufzeit_koerper["yacht1"] = SimpleNamespace(masse=10.0)
+    fenster._laufzeit_koerper["yacht1"] = _koerper_stub(masse=10.0)
 
     class Bruecke:
         def __init__(self):
@@ -587,8 +598,8 @@ def test_solverfehler_zeigt_abbruchgrund_und_letzte_residuen(
         time.sleep(0.005)
 
     assert fenster._solver_werte["Lösungstyp"].text(1).startswith(
-        "Kandidat (nicht konvergiert/instabil) – Instabile Lage:")
-    assert fenster._bruecke.poses == [("yacht1", -0.2, 0.1)]
+        "Kandidat nicht übernommen – Instabile Lage:")
+    assert fenster._bruecke.poses == []
     assert fenster._solver_werte["Restkraft"].text(1) == "2.5 N"
     assert fenster._solver_werte["Restmoment"].text(1) == "4 N·m"
     assert fenster._solver_werte["z*"].text(1) == "-0.2000 m"
@@ -606,7 +617,7 @@ def test_statischer_solver_blockiert_gui_nicht_und_verwirft_altes_ergebnis(
     sichtbarkeit_setzen(welt, "yacht1")
     fenster = HauptFenster()
     fenster.baum_setzen(welt)
-    fenster._laufzeit_koerper["yacht1"] = SimpleNamespace(masse=10.0)
+    fenster._laufzeit_koerper["yacht1"] = _koerper_stub(masse=10.0)
     gestartet = threading.Event()
     freigeben = threading.Event()
 
