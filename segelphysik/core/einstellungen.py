@@ -1,10 +1,10 @@
 """Versionierte Einstellungen (konfigurationen/settings.json).
 
 Format der Datei:  {"schema_version": "M.N", "<bereich>": {"<schluessel>": wert}}
-Die Vorlage (doc/settings_vorlage.json, zusaetzlich fest im Code) beschreibt
+Die Vorlage (doc/WegZuV1.0/Vorlagen/settings_vorlage.json, zusaetzlich fest im Code) beschreibt
 jeden Eintrag mit Default, Einheit, Grenzen und "seit_version".
 
-Kompatibilitaetsregeln (siehe doc/Settings.md):
+Kompatibilitaetsregeln (siehe doc/WegZuV1.0/Vorlagen/Settings.md):
 - Neue Eintraege nur additiv: Minor erhoehen, Defaults ergaenzen fehlende.
 - Umbenennen, Loeschen oder geaenderte Bedeutung: Major erhoehen und eine
   Migration in MIGRATIONEN eintragen.
@@ -35,7 +35,7 @@ def _eintrag(typ, default, beschreibung, einheit="", minimum=None,
     return e
 
 
-# Eingebaute Vorlage: Rueckfallebene, falls doc/settings_vorlage.json fehlt.
+# Eingebaute Vorlage: Rueckfallebene, falls die Dokumentationsvorlage fehlt.
 VORLAGE = {
     "schema_version": SCHEMA_VERSION,
     "statisch": {
@@ -94,11 +94,11 @@ def standard_ordner():
 
 
 def vorlage_laden(pfad=None):
-    """Vorlage aus doc/settings_vorlage.json; bei Fehler die eingebaute."""
+    """Vorlage aus der Dokumentation; bei Fehler die eingebaute."""
     if pfad is None:
         pfad = os.path.abspath(os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "..", "..", "doc",
-            VORLAGE_DATEINAME))
+            "WegZuV1.0", "Vorlagen", VORLAGE_DATEINAME))
     try:
         with open(pfad, encoding="utf-8") as f:
             daten = json.load(f)

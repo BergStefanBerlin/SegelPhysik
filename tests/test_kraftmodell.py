@@ -126,7 +126,8 @@ def test_added_mass_aendert_effektive_tauchmasse_und_kraftresultat():
 
 def _physikdatei(tmp_path, kraefte=None):
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    with open(os.path.join(root, "doc", "physik_vorlage.json"),
+    with open(os.path.join(root, "doc", "WegZuV1.0", "Backlog",
+                           "physik_vorlage.json"),
               encoding="utf-8") as datei:
         daten = json.load(datei)
     if kraefte is not None:

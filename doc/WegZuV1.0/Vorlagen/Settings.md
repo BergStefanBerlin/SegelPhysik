@@ -5,7 +5,7 @@ Versionierte Einstellungen für die Solver-Parameter
 Änderungen im Dialog werden sofort gespeichert und wirken sofort.
 
 - Code: `segelphysik/core/einstellungen.py`, Dialog: `segelphysik/gui/einstellungen_dialog.py`
-- Vorlage mit Defaults, Einheiten und Grenzen: `doc/settings_vorlage.json`
+- Vorlage mit Defaults, Einheiten und Grenzen: `settings_vorlage.json`
   (zusätzlich fest im Code als Rückfallebene). Der Button „Standardwerte“
   lädt die Defaults daraus – auch nach Jahren und bei altem Dateistand.
 
@@ -17,7 +17,7 @@ Versionierte Einstellungen für die Solver-Parameter
   Default angeben. Fehlende Werte in alten Dateien werden mit dem Default ergänzt.
 - Umbenennen, Löschen oder geänderte Bedeutung: Major erhöhen und eine Migration
   in `MIGRATIONEN` eintragen (`{alte_major: funktion}`).
-- Nach jeder Änderung: `SCHEMA_VERSION` und `doc/settings_vorlage.json` anpassen.
+- Nach jeder Änderung: `SCHEMA_VERSION` und `settings_vorlage.json` anpassen.
   Der Test `test_doc_vorlage_entspricht_eingebauter_vorlage` prüft, dass beide gleich sind.
 - `ALTE_DATEI_1_0` in `tests/test_einstellungen.py` bleibt unverändert und muss
   immer ladbar sein.

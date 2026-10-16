@@ -160,7 +160,7 @@ def _val_koerper(d,mats,pfad):
     fr=[s for s in d if s not in _KOERPER_TOP and not s.startswith("_")]
     if fr: raise KonfigFehler("%s: unbekannte Abschnitte %s (erlaubt: %s; Unterstrich = Doku)"%(pfad,fr,", ".join(_KOERPER_TOP)))
     if "boot" in d and "summenkoerper" not in d:
-        raise KonfigFehler("%s: Schema geaendert (J-1): der feste Schluessel 'boot' gehoert jetzt unter 'summenkoerper' (z. B. 'yacht1'); Vorlage: doc/koerper_vorlage.json"%pfad)
+        raise KonfigFehler("%s: Schema geaendert (J-1): der feste Schluessel 'boot' gehoert jetzt unter 'summenkoerper' (z. B. 'yacht1'); Vorlage: doc/WegZuV1.0/Vorlagen/koerper_vorlage.json"%pfad)
     sk=d.get("summenkoerper")
     if not isinstance(sk,dict) or not sk:
         raise KonfigFehler("%s: Abschnitt 'summenkoerper' fehlt oder leer"%pfad)

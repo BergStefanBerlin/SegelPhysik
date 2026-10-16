@@ -279,7 +279,8 @@ Solver integrieren
   (`exakt_union`, Windows-QPA, 30 s Warm-up): FPS 69,8, Frameabstand
   p95 31,6 ms, Eingabereaktion p95 4,1 ms, Durchsatz 0,9999x, Rückstand
   p95 49 ms, Trend +0,09 ms/s, keine Überlastpause, keine Fehler.
-  Nicht gemessen: Nachholrate 1,25x. Bericht: `doc/Abnahme_R-4a.md`.
+  Nicht gemessen: Nachholrate 1,25x. Bericht:
+  [`Abnahme_R-4a.md`](../Abnahmen/Abnahme_R-4a.md).
 - **Abnahme:** Präsentierte FPS, Eingabelatenz, Pflicht-Layer, sekündliche
   Rückstandszeitreihe und Fünf-Minuten-Trend valide erfassen; alle
   Phase-0-/Phase-9-Gates bestehen.
@@ -375,13 +376,13 @@ Solver integrieren
   Darstellungsoptionen.
 - Der Echtzeit-Physikdurchsatz bleibt niedriger als die Wandzeit. Physik-
   Rückstand wird angezeigt, nicht verworfen.
-- Weiterführende Quellen: [Umsetzungsplan](./Umsetzungsplan_vF1.md),
-  [Spezifikation](./Spezifikation_v1.1.md),
-  [Voxelmodell](../segelphysik/core/voxelmodell.py),
-  [Auftrieb](../segelphysik/core/auftrieb.py),
-  [Union-Referenz](../segelphysik/core/volumen_union.py),
-  [Solver](../segelphysik/core/statisch_robust.py) und
-  [GUI-Hauptfenster](../segelphysik/gui/hauptfenster.py).
+- Weiterführende Quellen: [Umsetzungsplan](../Umsetzungsplan/Umsetzungsplan_vF1.md),
+  [Spezifikation](../Spezifikationen/Spezifikation_vF1.1.md),
+  [Voxelmodell](../../../segelphysik/core/voxelmodell.py),
+  [Auftrieb](../../../segelphysik/core/auftrieb.py),
+  [Union-Referenz](../../../segelphysik/core/volumen_union.py),
+  [Solver](../../../segelphysik/core/statisch_robust.py) und
+  [GUI-Hauptfenster](../../../segelphysik/gui/hauptfenster.py).
 
 ## Backlog pflegen
 

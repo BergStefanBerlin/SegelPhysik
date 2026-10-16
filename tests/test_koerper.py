@@ -23,8 +23,10 @@ from segelphysik.core.koerper import Koerper, KoerperFehler, helle_auf
 from segelphysik.core.konfig_lader import KonfigFehler, lade_konfig
 
 KONFIG_ORDNER = os.path.join(ROOT, "konfigurationen")
-MAT_VORLAGE = os.path.join(ROOT, "doc", "materialien_vorlage.json")
-KOR_VORLAGE = os.path.join(ROOT, "doc", "koerper_vorlage.json")
+MAT_VORLAGE = os.path.join(ROOT, "doc", "WegZuV1.0", "Vorlagen",
+                           "materialien_vorlage.json")
+KOR_VORLAGE = os.path.join(ROOT, "doc", "WegZuV1.0", "Vorlagen",
+                           "koerper_vorlage.json")
 YACHT = fabriken.YACHT_ORDNER
 
 

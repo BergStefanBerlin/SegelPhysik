@@ -263,7 +263,8 @@ def test_n15_physik_fehlt_kein_fallback():
         pass
 
 def test_n16_vorlage_selbst_gueltig():
-    with open(os.path.join("doc", "physik_vorlage.json"), encoding="utf-8") as f:
+    with open(os.path.join("doc", "WegZuV1.0", "Backlog",
+                           "physik_vorlage.json"), encoding="utf-8") as f:
         d = json.load(f)
     w = kl._val_physik(d, "vorlage")
     assert w["dt_s"] > 0 and w["g_m_pro_s2"] == 9.80665

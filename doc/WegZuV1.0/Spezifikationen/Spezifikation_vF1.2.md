@@ -1,11 +1,11 @@
 # SegelPhysik – Spezifikation vF1.2
 
 **Status:** Arbeitsgrundlage für die Überarbeitung des
-[Umsetzungsplans vF1](./Umsetzungsplan_vF1.md); noch nicht umgesetzt.
+[Umsetzungsplans vF1](../Umsetzungsplan/Umsetzungsplan_vF1.md); noch nicht umgesetzt.
 
 **Grundlage:** [Spezifikation vF1.1](./Spezifikation_vF1.1.md),
-[Umsetzungsplan vF1](./Umsetzungsplan_vF1.md),
-[Umsetzungsplan vF1a](./Umsetzungsplan_vF1a.md), dokumentierte
+[Umsetzungsplan vF1](../Umsetzungsplan/Umsetzungsplan_vF1.md),
+[Umsetzungsplan vF1a](../Umsetzungsplan/Umsetzungsplan_vF1a.md), dokumentierte
 Performance-Messungen und die nachfolgenden Nutzerentscheidungen.
 
 **Ziel:** Eine für den Nutzer flüssige, bedienbare Echtzeitsimulation mit

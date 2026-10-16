@@ -1,7 +1,7 @@
 # SegelPhysik – Umsetzungsplan vF1.2
 
 Dieser Plan setzt die Anforderungen aus
-[Spezifikation vF1.2](./Spezifikation_vF1.2.md) in überprüfbare Arbeitspakete
+[Spezifikation vF1.2](../Spezifikationen/Spezifikation_vF1.2.md) in überprüfbare Arbeitspakete
 um. Er baut auf den dokumentierten Arbeiten in
 [Umsetzungsplan vF1](./Umsetzungsplan_vF1.md) und
 [Umsetzungsplan vF1a](./Umsetzungsplan_vF1a.md) auf, ersetzt deren historische

@@ -2,7 +2,7 @@
 
 Dieser Plan sammelt alle Punkte aus [Umsetzungsplan_vF1](./Umsetzungsplan_vF1.md),
 [Umsetzungsplan_vF1.2](./Umsetzungsplan_vF1.2.md) und
-[Backlog_v1](./Backlog_v1.md), die bis zur Version vF2 noch offen sind.
+[Backlog_v1](../Backlog/Backlog_v1.md), die bis zur Version vF2 noch offen sind.
 Er ist ein Entwurf zur Abstimmung. Eine vF2-Spezifikation existiert noch
 nicht; Abschnitt 6 benennt die Entscheidungen, die vorab zu treffen sind.
 
@@ -229,7 +229,7 @@ Gemäß Leitprinzip (Abschnitt 0) zuerst Flüssigkeit, dann Genauigkeit:
 
 Nach jedem Paket: gezielte Tests, vollständige Suite, GUI-Regression
 (Offscreen), Backlog-Eintrag. Neu gefundene, nicht sofort umsetzbare Punkte
-kommen in `doc/Backlog_v1.md`.
+kommen in [`../Backlog/Backlog_v1.md`](../Backlog/Backlog_v1.md).
 
 **Genauigkeitsbericht (Nutzervorgabe 15.10.2026):** Am Ende jedes Pakets, das
 Hydrostatik, Solver oder Rechenpfade berührt, und im Abschlussbericht von R-11
