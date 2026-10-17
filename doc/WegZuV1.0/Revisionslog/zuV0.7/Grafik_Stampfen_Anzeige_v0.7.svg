@@ -87,6 +87,24 @@
         <text transform="translate(220.5 246.5) rotate(-30)" dominant-baseline="middle">−60°</text>
       </g>
 
+      <g id="stampfen_yacht_icon" transform="translate(152 258)">
+        <g transform="translate(160 0) scale(0.5565217391 1) translate(-160 0)" fill="none" stroke="#0b3472" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M160 71 V132.5"/>
+          <path d="M153 46.3 L82 103 H153 V97 Z"/>
+          <path d="M168 -8.8 L260 99 H168 V119 Z"/>
+          <g transform="translate(0 152.25) scale(1 0.5) translate(0 -147)">
+            <path d="M45 110.5 H275 L269 145 L244 149 L176 160.9 L178 164 Q179 258.9 174 258.9 H160 Q155 258.9 154 258.9 L132 160.9 L83.5 149 Z"/>
+          </g>
+          <path d="M91 134 L98.7 121.5 Q103 118 115.1 117.5 H179.7 Q192.9 118 197.2 121.5 L206 134 Z"/>
+        </g>
+        <g id="stampfenzeiger" fill="none" stroke="#ffbd16" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13.340625 147 H306.659375"/>
+          <path d="M-5.25 147 L17.471875 140 L17.471875 154 Z" fill="#ffbd16" stroke="none"/>
+          <path d="M325.25 147 L302.528125 140 L302.528125 154 Z" fill="#ffbd16" stroke="none"/>
+          <path id="stampfenzeiger_senkrecht" d="M160 -18.25 V312.25" stroke-dasharray="4 4"/>
+        </g>
+      </g>
+
       <g id="camera_symbol" transform="rotate(119 312 405)" class="camera">
         <rect x="299" y="145" width="26" height="21" rx="4"/>
         <path d="M306 145 L309 140 L315 140 L318 145"/>
@@ -94,7 +112,7 @@
         <circle cx="312" cy="153" r="4.5" fill="none"/>
       </g>
       <circle id="pivot" cx="312" cy="405" r="7" fill="#f4f8fb"/>
-      <text id="heading_value" x="312" y="347" text-anchor="middle" class="dial-value">074°</text>
+      <text id="heading_value" x="312" y="310" text-anchor="middle" class="dial-value">074°</text>
       <text id="heading_code" x="312" y="491" text-anchor="middle" class="dial-code">STAMPFEN</text>
     </g>
   </g>

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="580" height="580" viewBox="22 112 580 580" role="img" aria-labelledby="title desc">
   <title id="title">KRÄNGUNG</title>
-  <desc id="desc">Anzeige des Stampfwinkels um die Querachse. Der Headingzeiger und die 16-Punkt-Richtung des Kompass-Masters wurden entfernt.</desc>
+  <desc id="desc">Anzeige des Krängungswinkels um die Körperlängsachse. Der Headingzeiger und die 16-Punkt-Richtung des Kompass-Masters wurden entfernt.</desc>
   <defs>
     <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#193448"/>
@@ -26,7 +26,7 @@
   <g id="master_widget" filter="url(#shadow)">
     <rect class="card" x="42" y="132" width="540" height="540" rx="24"/>
     <text x="82" y="185" class="card-title">KRÄNGUNG</text>
-    <text x="70" y="642" class="small">Stampfwinkel um die Querachse</text>
+    <text x="70" y="642" class="small">Krängungswinkel um die Körperlängsachse</text>
 
     <g id="compass_face" transform="translate(0 5)">
       <circle cx="312" cy="405" r="210" fill="#0b1c2a" stroke="#49667a" stroke-width="2.5"/>
@@ -85,6 +85,26 @@
         <text transform="translate(129 405) rotate(90)" dominant-baseline="middle">0°</text>
         <text transform="translate(153.5 313.5) rotate(-60)" dominant-baseline="middle">−30°</text>
         <text transform="translate(220.5 246.5) rotate(-30)" dominant-baseline="middle">−60°</text>
+      </g>
+
+      <g id="kraengung_yacht_icon" transform="translate(150 179)">
+        <g fill="none" stroke="#0b3472" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M162 60.4 V217"/>
+          <path d="M154 70.2 L106 198 L154 178 Z"/>
+          <path d="M148 125.3 L127 182 L148 176 Z"/>
+          <g transform="translate(32.4 0) scale(0.8 1)">
+            <path d="M120 213 L127 200.5 Q131 197 142 196.5 H180 Q192 197 196 200.5 L204 213"/>
+            <path d="M77 213 H247"/>
+            <path d="M77 213 Q89 235 121 242 Q146 248 162 248 Q179 248 204 242 Q236 235 247 213"/>
+          </g>
+          <path d="M150 248 L152 279.2 Q153 287.2 160 287.2 Q167 287.2 168 279.2 L170 248"/>
+        </g>
+        <g id="kraengung_zeiger" transform="translate(2 79) translate(162 226) scale(1.0075642965) translate(-162 -226)" fill="none" stroke="#ffbd16" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13.340625 147 H306.659375"/>
+          <path d="M-5.25 147 L17.471875 140 L17.471875 154 Z" fill="#ffbd16" stroke="none"/>
+          <path d="M325.25 147 L302.528125 140 L302.528125 154 Z" fill="#ffbd16" stroke="none"/>
+          <path id="kraengung_zeiger_senkrecht" d="M160 -18.25 V312.25" stroke-dasharray="4 4"/>
+        </g>
       </g>
 
       <g id="camera_symbol" transform="rotate(119 312 405)" class="camera">

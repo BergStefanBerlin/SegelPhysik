@@ -724,15 +724,24 @@ unbewegte horizontale Linie markiert den lokalen Horizont. Die längeren
 Hauptstriche stehen im Abstand von 30°. Es gibt keine Himmelsrichtungs- oder
 16-Punkt-Texte, keinen rotierenden Instrumentenzeiger und keinen Mittelpunkt.
 An dessen Stelle steht eine stilisierte Yacht, die um den angezeigten
-Lagewinkel relativ zum Horizont rotiert. Der numerische Winkel mit Vorzeichen
-steht im oberen Teil der Rose. Der Mockup-Wert `+12°` ist nur illustrativ.
+Lagewinkel relativ zum Horizont rotiert. Die gelbe horizontale und vertikale
+Linie gehören gemeinsam mit dem Yacht-Icon zu einer grafischen Einheit. Beide
+Linien werden bei jeder Bewegung und Drehung stets zusammen mit dem Boot
+transformiert; sie dürfen nicht unabhängig vom Boot verschoben oder gedreht
+werden. Der numerische Winkel mit Vorzeichen steht im oberen Teil der Rose.
+Der Mockup-Wert `+12°` ist nur illustrativ.
 Die Teilstriche dienen der Orientierung; der exakte Zahlenwert ist maßgeblich.
 
 `Kraengungsanzeige` verwendet `φ` und eine ikonische Heckansicht von achtern
-nach vorn: flacher Rumpf, Kiel und Mast, kein Segel. Steuerbord liegt in
-dieser Ansicht rechts. Das Yacht-Icon dreht visuell um `−φ`: Bei `φ > 0`
-hebt die Steuerbordseite, bei `φ < 0` die Backbordseite. Das folgt der in
-Spec0078 definierten Anzeigenkonvention.
+nach vorn: flacher Rumpf, Kiel, Mast und ein stilisiertes Segel. Steuerbord
+liegt in dieser Ansicht rechts. Das Yacht-Icon dreht visuell um `−φ`: Bei
+`φ > 0` hebt die Steuerbordseite, bei `φ < 0` die Backbordseite. Das folgt
+der in Spec0078 definierten Anzeigenkonvention. Bei negativer Segelstellung
+(Backbord) oder `0°` (Mittellage) wird das Icon in seiner Grundausrichtung
+gezeigt. Bei positiver Segelstellung (Steuerbord) wird die SVG an der
+vertikalen Mittelachse gespiegelt, sodass das Segel rechts erscheint. Diese
+Spiegelung ist ein rein dekoratives Gimmick: Sie ändert weder den angezeigten
+Krängungswinkel noch die Lagewinkelrotation des Yacht-Icons.
 
 `Stampfanzeige` verwendet `θ` und eine ikonische Seitenansicht mit Bug nach
 rechts, Heck nach links, erkennbarem Rumpf, einfachem Kiel, Mast und einem
