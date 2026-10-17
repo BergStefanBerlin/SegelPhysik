@@ -1,4 +1,5 @@
 import os
+import time
 from types import SimpleNamespace
 
 import numpy as np
@@ -17,9 +18,44 @@ from segelphysik.gui.baum import (
 from segelphysik.gui.baum_widget import BaumWidget
 from segelphysik.gui.hauptfenster import HauptFenster
 
-
 def _qt_app():
     return QApplication.instance() or QApplication([])
+
+
+@pytest.mark.parametrize(
+    "berechnet,erwartet",
+    [(2.8, "bestanden"), (1.0, "nicht erreicht")],
+)
+def test_nachholrate_aktualisiert_sichtbares_gate(berechnet, erwartet,
+                                                  monkeypatch):
+    app = _qt_app()
+    fenster = HauptFenster()
+    jetzt = time.perf_counter()
+    schwellen = {
+        "zeitgenau": True,
+        "nachholen_ende_rueckstand_s": 0.1,
+        "nachholrate_ziel": 1.25,
+        "ueberlast_rueckstand_s": 5.0,
+        "max_schritte_nachholen": 64,
+        "max_schritte_pro_aufgabe": 64,
+    }
+    monkeypatch.setattr(
+        fenster, "_dyn", lambda schluessel: schwellen[schluessel])
+    fenster._echtzeit_physik = SimpleNamespace(dt_s=0.004)
+    fenster._echtzeit_zustand = SimpleNamespace()
+    fenster._echtzeit_modus = "nachholen"
+    fenster._echtzeit_nachholen_start = jetzt - 2.0
+    fenster._echtzeit_berechnet_s = berechnet
+    fenster._echtzeit_angefordert_s = berechnet
+    fenster._echtzeit_letzte_wandzeit = jetzt
+
+    try:
+        fenster._echtzeit_takt()
+
+        assert fenster._solver_werte["Nachholrate ≥1,25"].text(1) == erwartet
+    finally:
+        fenster.close()
+        app.processEvents()
 
 
 def _koerper_stub(**werte):

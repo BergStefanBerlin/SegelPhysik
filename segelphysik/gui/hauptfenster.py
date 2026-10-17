@@ -1113,7 +1113,7 @@ class HauptFenster(QMainWindow):
 
     def _echtzeit_prozess_pool_aktualisieren(
             self, koerper, rho_w, physik, hydrostatik_pfad):
-        if (not hasattr(koerper, "teile")
+        if (not hasattr(koerper, "blatt_meshes")
                 or QApplication.platformName().casefold()
                 in ("offscreen", "minimal")):
             return None
@@ -1328,7 +1328,7 @@ class HauptFenster(QMainWindow):
                         "von %.2f s/s." % (gesamt_rate, ziel_rate))
                 self._solver_status_aktualisieren({
                     "Nachholrate gesamt": "%.3f s/s" % gesamt_rate,
-                    "Nachholrate Ziel erreicht": gesamt_gate,
+                    "Nachholrate ≥1,25": gesamt_gate,
                     "Nachholfenster s/s": ", ".join(
                         "%.3f" % rate
                         for rate in self._echtzeit_nachholen_raten),

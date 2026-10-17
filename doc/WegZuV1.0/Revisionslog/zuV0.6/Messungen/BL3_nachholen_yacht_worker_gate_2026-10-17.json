@@ -1,0 +1,38 @@
+{
+  "szene": "yacht1",
+  "backend": "exakt_union",
+  "python": "3.14.8",
+  "plattform": "Windows-11-10.0.26200-SP0",
+  "kommando": "python werkzeuge/benchmark_nachholen.py --scene yacht1 --rueckstand 3 --wiederholungen 3",
+  "prozess_worker_aktiv": true,
+  "gate_s_pro_s": 1.25,
+  "messungen": [
+    {
+      "nachholmodus_gestartet": true,
+      "abgeschlossen": true,
+      "dauer_s": 3.064,
+      "rate_gesamt_s_pro_s": 1.874,
+      "gate_anzeige": "bestanden",
+      "fenster_raten_s_pro_s": [1.943, 1.731],
+      "rueckstand_danach_s": 0.0264
+    },
+    {
+      "nachholmodus_gestartet": true,
+      "abgeschlossen": true,
+      "dauer_s": 1.887,
+      "rate_gesamt_s_pro_s": 2.076,
+      "gate_anzeige": "bestanden",
+      "fenster_raten_s_pro_s": [1.779],
+      "rueckstand_danach_s": 0.0719
+    },
+    {
+      "nachholmodus_gestartet": true,
+      "abgeschlossen": true,
+      "dauer_s": 2.345,
+      "rate_gesamt_s_pro_s": 1.777,
+      "gate_anzeige": "bestanden",
+      "fenster_raten_s_pro_s": [1.641, 1.938],
+      "rueckstand_danach_s": 0.0215
+    }
+  ]
+}

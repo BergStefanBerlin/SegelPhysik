@@ -14,7 +14,10 @@ import traceback
 import numpy as np
 
 from segelphysik.core.statisch import SolverFehler, loese
-from segelphysik.core.statisch_robust import loese_robust
+from segelphysik.core.statisch_robust import (
+    _suche_stabile_rolllage,
+    loese_robust,
+)
 from segelphysik.core.stoerung import beste_loesung, kontakt_start
 
 
@@ -197,6 +200,62 @@ def test_t9_nichtendliche_kraefte_werden_klassifiziert():
         assert fehler.status == "ungueltige_rechenergebnisse"
         assert fehler.diagnose["z"] == 0.0
         assert fehler.diagnose["phi"] == 0.0
+
+
+def _synthetische_rollkraft(moment):
+    def kraft(lage, theta=0.0, trim=0.0):
+        z, phi = float(lage[0]), float(lage[1])
+        return _Erg(
+            _V3([0.0, 0.0, 9.81 - z]),
+            _V3([moment(phi), 0.0, 0.0]),
+            _V3([0.0, 0.0, 0.0]),
+            0.0)
+
+    return kraft
+
+
+def test_winkelabtastung_verfeinert_periodische_mehrfachnullstellen():
+    ergebnis = _suche_stabile_rolllage(
+        _synthetische_rollkraft(lambda phi: math.cos(2.0 * phi)),
+        start=(0.0, 0.0), m=1.0, g=9.81, tol=1e-8, restarts=0)
+
+    assert ergebnis is not None
+    assert ergebnis["stabil"] is True
+    assert abs(ergebnis["phi"] - math.pi / 4.0) < 1e-7
+    assert ergebnis["restkraft"] < 1e-8
+    assert ergebnis["restmoment"] < 1e-8
+
+
+def test_winkelabtastung_meldet_fehlende_rollnullstelle():
+    ergebnis = _suche_stabile_rolllage(
+        _synthetische_rollkraft(lambda _phi: 1.0),
+        start=(0.0, 0.0), m=1.0, g=9.81, tol=1e-8, restarts=0)
+
+    assert ergebnis is None
+
+
+def test_bleistift_findet_stabile_lage_aus_unstabiler_startpose():
+    from pathlib import Path
+
+    from segelphysik.core.auftrieb import G_NORM, baue_kraftfunktion
+    from segelphysik.core.fabriken import baue_summenkoerper
+    from segelphysik.core.konfig_lader import lade_konfig
+
+    konfiguration = Path(__file__).resolve().parents[1] / "konfigurationen"
+    konfig = lade_konfig(konfiguration)
+    koerper, _ = baue_summenkoerper(konfig, "bleistift")
+    kraftfunktion = baue_kraftfunktion(
+        koerper, rho_w=1000.0, g=G_NORM, pfad="exakt_union")
+
+    ergebnis = loese_robust(
+        kraftfunktion, koerper.masse, g=G_NORM, start=(0.0, 0.0))
+
+    assert ergebnis["stabil"] is True
+    assert ergebnis["neutral"] is False
+    assert math.radians(89.0) < ergebnis["phi"] < math.radians(91.0)
+    assert ergebnis["restkraft"] < 1e-8
+    assert ergebnis["restmoment"] < 1e-8
+    assert ergebnis["gm"] > 0.0
 
 
 if __name__ == "__main__":

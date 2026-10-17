@@ -47,6 +47,7 @@ _SCHRITTE_Z = (1e-6, 1e-3, 0.02, 0.1)
 _SCHRITTE_PHI = (1e-6, 1e-3, 0.02, 0.15)
 _STAG_WARTEN = 6
 _STAG_ANTEIL = 0.05
+_ROLL_SCAN_SCHRITTE = 180
 
 
 def _residuum(funktion, z, phi, m, g):
@@ -115,6 +116,120 @@ def _dmdphi(funktion, z, phi, m, g):
         if abs(d) > 0.0:
             return d
     return 0.0
+
+
+def _vertikales_gleichgewicht(funktion, phi, z_start, m, g, tol):
+    """Sucht bei festem Rollwinkel ein vertikales Kraftgleichgewicht."""
+    f_start = _residuum(funktion, z_start, phi, m, g)[0]
+    if abs(f_start) <= tol:
+        return float(z_start)
+    schritt = 1e-4
+    for _ in range(24):
+        z_a = float(z_start)
+        z_b = z_a + math.copysign(schritt, f_start)
+        f_a = f_start
+        f_b = _residuum(funktion, z_b, phi, m, g)[0]
+        if f_a * f_b <= 0.0:
+            break
+        schritt *= 2.0
+    else:
+        return None
+
+    links, rechts = sorted((z_a, z_b))
+    f_links = _residuum(funktion, links, phi, m, g)[0]
+    for _ in range(64):
+        mitte = (links + rechts) / 2.0
+        f_mitte = _residuum(funktion, mitte, phi, m, g)[0]
+        if abs(f_mitte) <= tol:
+            return mitte
+        if f_links * f_mitte <= 0.0:
+            rechts = mitte
+        else:
+            links, f_links = mitte, f_mitte
+
+    kandidaten = (links, rechts)
+    z_beste = min(
+        kandidaten,
+        key=lambda z: abs(_residuum(funktion, z, phi, m, g)[0]))
+    if abs(_residuum(funktion, z_beste, phi, m, g)[0]) <= (
+            _STAG_ANTEIL * m * g):
+        return float(z_beste)
+    return None
+
+
+def _gm_aus_rollableitung(funktion, lage, m, g):
+    for h in (1e-4, 1e-3, 0.02):
+        Mp = _residuum(
+            funktion, lage[0], lage[1] + h, m, g)[1]
+        Mm = _residuum(
+            funktion, lage[0], lage[1] - h, m, g)[1]
+        if abs(Mp - Mm) > 0.0:
+            return -(Mp - Mm) / (2.0 * h) / (m * g)
+    return None
+
+
+def _suche_stabile_rolllage(funktion, start, m, g, tol, restarts):
+    """Begrenzter Fallback entlang vertikaler Gleichgewichte, keine neue Physik."""
+    anzahl = _ROLL_SCAN_SCHRITTE
+    schritt = 2.0 * math.pi / anzahl
+    winkel = float(start[1])
+    z = float(start[0])
+    vorher = None
+    for index in range(anzahl + 1):
+        phi = winkel + index * schritt
+        z = _vertikales_gleichgewicht(funktion, phi, z, m, g, tol)
+        if z is None:
+            vorher = None
+            z = float(start[0])
+            continue
+        residuum = _residuum(funktion, z, phi, m, g)
+        aktuell = (phi, z, float(residuum[1]))
+        if vorher is not None and vorher[2] * aktuell[2] <= 0.0:
+            links, z_links, m_links = vorher
+            rechts, z_rechts, _m_rechts = aktuell
+            for _ in range(64):
+                mitte = (links + rechts) / 2.0
+                z_mitte = _vertikales_gleichgewicht(
+                    funktion, mitte, (z_links + z_rechts) / 2.0,
+                    m, g, tol)
+                if z_mitte is None:
+                    break
+                m_mitte = _residuum(
+                    funktion, z_mitte, mitte, m, g)[1]
+                if abs(m_mitte) <= tol:
+                    links = rechts = mitte
+                    z_links = z_rechts = z_mitte
+                    break
+                if m_links * m_mitte <= 0.0:
+                    rechts, z_rechts = mitte, z_mitte
+                else:
+                    links, z_links, m_links = mitte, z_mitte, m_mitte
+
+            phi_kandidat = (links + rechts) / 2.0
+            z_kandidat = _vertikales_gleichgewicht(
+                funktion, phi_kandidat, (z_links + z_rechts) / 2.0,
+                m, g, tol)
+            if z_kandidat is not None:
+                r_kandidat = _residuum(
+                    funktion, z_kandidat, phi_kandidat, m, g)
+                dM = _dmdphi(
+                    funktion, z_kandidat, phi_kandidat, m, g)
+                if (dM < 0.0
+                        and abs(float(r_kandidat[0])) <= max(
+                            tol, _STAG_ANTEIL * m * g)
+                        and abs(float(r_kandidat[1])) <= tol):
+                    lage = (float(z_kandidat), float(phi_kandidat))
+                    stag = bool(np.linalg.norm(r_kandidat) > tol)
+                    basis = _diagnose(
+                        lage, r_kandidat, 0, restarts, stag, stabil=True)
+                    basis.update({
+                        "neutral": False,
+                        "gm": _gm_aus_rollableitung(
+                            funktion, lage, m, g),
+                    })
+                    return basis
+        vorher = aktuell
+    return None
 
 
 def _newton_versuch(funktion, start, m, g, tol, max_iter, stag_anteil):
@@ -202,7 +317,10 @@ def loese_robust(funktion, m, g=G_NORM, start=(0.0, 0.0), tol=1e-8,
     "stagnation": bool und "neutral": bool (Roll neutral, gm dann None).
 
     neutral_toleranz: |dM/dphi| <= neutral_toleranz * m*g gilt als neutral.
-    Fuer geometrisch erkannte Kugeln wird sie gelockert (Netzrauschen)."""
+    Fuer geometrisch erkannte Kugeln wird sie gelockert (Netzrauschen).
+    Nach einer konvergierten, aber instabilen Lage kann eine nichtleere
+    Stoerleiter einen begrenzten Scan des periodischen 2D-Rollwinkels
+    ausloesen."""
     leiter = tuple(float(x) for x in stoerleiter)
     aktuelle = (float(start[0]), float(start[1]))
     restarts = 0
@@ -236,18 +354,16 @@ def loese_robust(funktion, m, g=G_NORM, start=(0.0, 0.0), tol=1e-8,
                 basis["gm"] = None
                 return basis
             if dM < 0.0:
-                h_gm = None
-                for h in (1e-4, 1e-3, 0.02):
-                    Mp = _residuum(
-                        ausgewertet, lage[0], h, m, g)[1]
-                    Mm = _residuum(
-                        ausgewertet, lage[0], -h, m, g)[1]
-                    if abs(Mp - Mm) > 0.0:
-                        h_gm = -(Mp - Mm) / (2.0 * h) / (m * g)
-                        break
-                basis["gm"] = h_gm
+                basis["gm"] = _gm_aus_rollableitung(
+                    ausgewertet, lage, m, g)
                 return basis
             if restarts >= len(leiter):
+                rolllage = (_suche_stabile_rolllage(
+                    ausgewertet, start, m, g, tol, restarts)
+                    if leiter else None)
+                if rolllage is not None:
+                    rolllage.update(cache_kennzahlen())
+                    return rolllage
                 raise SolverFehler(
                     "Stoerleiter erschoepft (%d Stufen), lage=%r"
                     % (len(leiter), lage), status="instabile_lage",

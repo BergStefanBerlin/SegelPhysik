@@ -1,6 +1,10 @@
+import os
 from types import SimpleNamespace
 
+os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
 from segelphysik.core import echtzeit_prozess
+from segelphysik.core.koerper import KoerperSnapshot
 
 
 def test_worker_initialisierung_uebernimmt_feste_hydrostatikzuordnung(
@@ -34,3 +38,51 @@ def test_worker_initialisierung_uebernimmt_feste_hydrostatikzuordnung(
     assert aufrufe == [{
         "rho_w": 1000.0, "g": 9.81, "pfad": "voxel_opencl"}]
     assert kraftmodell_aufrufe == [{"masse": 3.0, "g": 9.81}]
+
+
+def test_gui_erstellt_prozessworker_fuer_unveraenderlichen_koerpersnapshot(
+        monkeypatch):
+    from PySide6.QtWidgets import QApplication
+
+    from segelphysik.gui import hauptfenster
+    from segelphysik.gui.hauptfenster import HauptFenster
+
+    app = QApplication.instance() or QApplication([])
+    monkeypatch.setattr(
+        QApplication, "platformName", lambda: "windows")
+    snapshot = KoerperSnapshot(
+        masse=1.0,
+        traegheitstensor=((1.0, 0.0, 0.0),
+                          (0.0, 1.0, 0.0),
+                          (0.0, 0.0, 1.0)),
+        blatt_meshes=(),
+        r_S=(0.0, 0.0, 0.0),
+        zustand=None,
+        version=0)
+    erstellte_executor = []
+
+    class FakeExecutor:
+        def __init__(self, **kwargs):
+            self.kwargs = kwargs
+            self.beendet = False
+            erstellte_executor.append(self)
+
+        def shutdown(self, **_kwargs):
+            self.beendet = True
+
+    monkeypatch.setattr(
+        "concurrent.futures.ProcessPoolExecutor", FakeExecutor)
+    fenster = HauptFenster()
+    try:
+        executor = fenster._echtzeit_prozess_pool_aktualisieren(
+            snapshot, 1000.0,
+            SimpleNamespace(g_m_pro_s2=9.81, dt_s=0.004),
+            "exakt_union")
+
+        assert executor is erstellte_executor[0]
+        assert executor.kwargs["max_workers"] == 1
+        assert executor.kwargs["initargs"][0] is snapshot
+    finally:
+        fenster.close()
+        app.processEvents()
+    assert erstellte_executor[0].beendet
