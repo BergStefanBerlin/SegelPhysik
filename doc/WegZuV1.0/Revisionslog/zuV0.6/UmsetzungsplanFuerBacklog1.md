@@ -273,14 +273,12 @@ zählt nicht für Präsentations-FPS und Eingabe-bis-sichtbar-Latenz.
   vor. Fehlt er, wird diese Gate-Komponente als offen markiert und keine
   vollständige Cutover-Freigabe behauptet.
 
-Erste externe Kandidaten `doc/Backlog/Ideen/optimist_einzelteile.zip` und
-`optimist_obj.zip` wurden nur lesend geprüft. Von 20 Einzelteil-OBJ-Dateien
-wurden 16 wegen nicht-planarer Polygone vom bestehenden Parser abgelehnt;
-auch beide Gesamt-OBJ-Dateien wurden abgelehnt. Die README kennzeichnet den
-Meterfaktor ausdrücklich als Annahme; Manifest, Material-/Dichteangaben und
-Golden-Massen fehlen. Diese Archive sind damit noch kein freigegebener
-Phase-11-Bestand. Es werden weder die Geometrien automatisch repariert noch
-Maßstäbe oder Masseneigenschaften geraten.
+Der Ordner `doc/Backlog/Ideen/` enthält Ideensammlungen und Beispielmaterial,
+keinen freigegebenen externen Phase-11-Testbestand. Inhalte dort sind nicht
+Gegenstand dieser Prüfung und werden weder als Cutover-Eingabe interpretiert
+noch verändert. Ein repräsentativer, ausdrücklich freigegebener externer
+Nutzerbestand wurde für BL2 nicht bereitgestellt; dieses Gate bleibt daher
+offen.
 
 ### Arbeitsschritte
 

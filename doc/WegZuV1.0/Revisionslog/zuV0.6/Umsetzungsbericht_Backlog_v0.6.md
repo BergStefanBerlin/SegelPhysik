@@ -9,7 +9,7 @@ Modelle, Kraftgesetze oder Simulationsbeiträge.
 | Backlog-ID | Ergebnis | Abnahme |
 |---|---|---|
 | BL1 | Vorhandene Umwelt-/Kraftverträge und offene Datenquellen in [Bestandsaufnahme_Umwelteingaben_BL1.md](./Bestandsaufnahme_Umwelteingaben_BL1.md) dokumentiert. | Vorbereitung abgeschlossen; Datenquellen und Freigaben für künftige neue Physik bleiben offen. |
-| BL2 | Repository-Paket-, Migrations- und Paritätsregressionen ausgeführt; zwei Optimist-Archive als externe Kandidaten lesend geprüft. | Nicht vollständig abgenommen: die meisten OBJ-Dateien scheitern an nicht-planaren Polygonen, der README-Meterfaktor ist ausdrücklich eine Annahme und Manifest-/Material-/Golden-Daten fehlen; Produktions-Cutover bleibt gesperrt. |
+| BL2 | Repository-Paket-, Migrations- und Paritätsregressionen ausgeführt. | Teilweise: kein freigegebener externer Nutzerbestand für Dry-run und Paritätsprüfung bereitgestellt; Produktions-Cutover wurde nicht durchgeführt und bleibt gesperrt. |
 | BL3 | Prozessworker-Start und Gate-Anzeige korrigiert; Nachholrate nach Korrektur dreimal über `1,25 s/s`. | Teilweise: Zehnminuten-Live-Lauf löste eine automatische Überlastpause aus und verfehlte die Live-Zeitbilanz. |
 | BL4 | Historischen Bericht mit aktuellem sichtbarem Live-Lauf abgeglichen; Rohdaten gespeichert. | Teilweise: aktueller Lauf verfehlte FPS-/Frameabstand- und Überlast-Gates. |
 | BL5 | Bestehender 2D-Auftriebssolver um begrenzte stabile Winkelabtastung ergänzt; realer `bleistift`-Fall findet stabile Lage. | Abgeschlossen; Kraft-/Auftriebsmodelle unverändert. |
@@ -81,20 +81,12 @@ Die Paket-/Loader-/Mesh-/Fabrik-/Migrationsauswahl ergab `114 passed`,
 Formgeometrien, sichere Paketpfade, Meshfehler, Bestandsparität, Dry-run und
 Nichtüberschreiben ab. BL6 erforderte deshalb keine neue Importlogik.
 
-Die externen Kandidatenarchive
-[`optimist_einzelteile.zip`](../../../Backlog/Ideen/optimist_einzelteile.zip)
-und [`optimist_obj.zip`](../../../Backlog/Ideen/optimist_obj.zip) wurden
-nicht extrahiert oder verändert. 16 von 20 OBJ-Einzelteil-Dateien scheitern
-bereits beim Parsing an nicht-planaren Polygonen; die beiden Gesamt-OBJs
-scheitern ebenfalls. Nur Ruder und Pinne (jeweils Roh- und Meter-Variante)
-lassen sich syntaktisch einlesen; damit sind weder Topologie noch Masse
-abgenommen. Die README benennt `0,225105` als angenommene, nicht aus der
-Quelldatei belegte Skalierung. Manifest/Legacy-Materialdaten und erwartete
-Massen-/GUI-Golden fehlen. Für den BL2-Abschluss ist daher ein freigegebener,
-repräsentativer externer Bestand mit reparierten/unterstützten Geometrien und
-verifizierten Einheiten, Achsen, Material-/Dichteangaben und Golden-Daten
-erforderlich. Es wurden weder Meshreparaturen vorgenommen noch Werte
-geschätzt; die Produktionsumschaltung bleibt gesperrt.
+Inhalte unter `doc/Backlog/Ideen/` sind Ideensammlungen, kein für BL2
+freigegebener Bestand, und wurden nicht als Test- oder Migrationsquelle
+verwendet. Für die externe Phase-11-Abnahme wurde kein ausdrücklich
+freigegebener Nutzerbestand bereitgestellt. Die Produktionsumschaltung
+wurde nicht durchgeführt und bleibt bis zu einer separaten Freigabe sowie
+vollständigen Alt-/Neu-Paritäts- und Cutover-Gates gesperrt.
 
 ## Testläufe
 
