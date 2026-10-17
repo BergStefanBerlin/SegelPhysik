@@ -12,7 +12,7 @@ from segelphysik.gui.hauptfenster import (
     _StatischeAufgabe, _StatischeAufgabeSignale)
 
 
-def _lauf(name, dichte=None, form_ueberschreiben=None):
+def _lauf(name, dichte=None, form_ueberschreiben=None, fremdkraft=None):
     QApplication.instance() or QApplication([])
     konfig = lade_konfig("konfigurationen")
     if dichte is None and form_ueberschreiben is None:
@@ -28,7 +28,8 @@ def _lauf(name, dichte=None, form_ueberschreiben=None):
     empfangen = []
     signale.abgeschlossen.connect(lambda *a: empfangen.append(a))
     _StatischeAufgabe(1, name, koerper, konfig.ordner,
-                      konfig.wasser_dichte(), signale).run()
+                      konfig.wasser_dichte(), signale,
+                      fremdkraft=fremdkraft).run()
     _gen, _name, ergebnis, _arbeit, fehler = empfangen[0]
     return koerper, ergebnis, fehler
 
@@ -65,3 +66,13 @@ def test_quader_bleibt_stabil_nicht_neutral():
     koerper, ergebnis, fehler = _lauf("quader")
     assert fehler is None
     assert not ergebnis["neutral"]
+
+
+def test_statische_loesung_beruecksichtigt_fremdkraft():
+    _, ohne_kraft, fehler_ohne = _lauf("kugel")
+    _, mit_kraft, fehler_mit = _lauf(
+        "kugel", fremdkraft=((0.0, 0.0, 500.0), (0.0, 0.0, 0.0)))
+
+    assert fehler_ohne is None
+    assert fehler_mit is None
+    assert mit_kraft["z"] > ohne_kraft["z"]

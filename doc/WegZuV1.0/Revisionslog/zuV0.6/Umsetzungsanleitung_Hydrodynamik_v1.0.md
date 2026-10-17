@@ -37,13 +37,13 @@ Nicht erlaubt sind:
 
 ## 1. Abhängigkeiten und Freigabestufen
 
-| Phase | Arbeitspunkte | Ergebnis/Gate |
-|---|---|---|
-| A – Bestandsaufnahme | HYD-0001 bis HYD-0003 | Code-/Laufzeitpfad und Geometrie sind dokumentiert; keine produktive Physik geändert. |
-| B – Fachliche Modellauswahl | HYD-0004 bis HYD-0005 | Modellkandidaten, Quellen, Unsicherheiten und Referenzmanöver liegen vor. Ohne begründeten Modellzweig wird dessen Implementierung blockiert. |
-| C – Datenvertrag und isolierte Implementierung | HYD-0006 bis HYD-0010 | Metadaten-/Kennlinienvertrag und optionale isolierte Modellpfade bestehen ihre gezielten Tests; produktive Modelle bleiben unverändert. |
-| D – Integration und Yachtvergleich | HYD-0011 bis HYD-0014 | Bestehende Wrench-/Frame-Verträge, Summen und optionale Komponenten sowie Original-/Rudervariante sind regressionsgeprüft. |
-| E – Leistung und Freigabe | HYD-0015 und HYD-0016 | Live-Performance, Dokumentation und explizite Fachfreigabe bestanden. Erst dann darf die Produktivkonfiguration neue Beiträge aktivieren. |
+| Phase | Arbeitspunkte | Ergebnis/Gate | Umsetzungsstand |
+|---|---|---|---|
+| A – Bestandsaufnahme | HYD-0001 bis HYD-0003 | Code-/Laufzeitpfad und Geometrie sind dokumentiert; keine produktive Physik geändert. | Erledigt; Inventarbericht liegt vor. |
+| B – Fachliche Modellauswahl | HYD-0004 bis HYD-0005 | Modellkandidaten, Quellen, Unsicherheiten und Referenzmanöver liegen vor. Ohne begründeten Modellzweig wird dessen Implementierung blockiert. | Blockiert: passende Referenzdaten und autoritative Ruderkinematik fehlen. |
+| C – Datenvertrag und isolierte Implementierung | HYD-0006 bis HYD-0010 | Metadaten-/Kennlinienvertrag und optionale isolierte Modellpfade bestehen ihre gezielten Tests; produktive Modelle bleiben unverändert. | HYD-0006 erledigt; isolierter Kleinwinkel-Rudernäherungszweig als Teil von HYD-0010 implementiert und getestet. Kennlinienartefakt und übrige Modellzweige bleiben offen. |
+| D – Integration und Yachtvergleich | HYD-0011 bis HYD-0014 | Bestehende Wrench-/Frame-Verträge, Summen und optionale Komponenten sowie Original-/Rudervariante sind regressionsgeprüft. | Noch nicht begonnen; vorgelagerte Gates offen. |
+| E – Leistung und Freigabe | HYD-0015 und HYD-0016 | Live-Performance, Dokumentation und explizite Fachfreigabe bestanden. Erst dann darf die Produktivkonfiguration neue Beiträge aktivieren. | Sichtbarer Zehnminuten-Baseline-Lauf fehlgeschlagen: `12,97 FPS`, Frameabstand-P95 `205,186 ms`, Überlastpause und `0,00525 s/s` Simulationsdurchsatz. Freigabe nicht erteilt. |
 
 Eine Phase beginnt erst, wenn ihre Voraussetzungen erfüllt sind. Ein
 fehlgeschlagenes Gate blockiert nachfolgende Freigaben; ein Näherungsstatus
@@ -189,7 +189,7 @@ Implementierung beginnt, solange diese Angaben fehlen.
 ### HYD-0005 – Ruder-Manöver und Referenzbedingungen
 
 **Spec-Bezug:** Spec0019–Spec0022, Spec0041, Spec0051–Spec0052,
-Spec0064.
+Spec0064–Spec0066.
 
 1. Referenzkurs auf 0° und anfänglichen Kurs-über-Grund-Fehler auf 10°
    setzen. Kurs als Richtung des Geschwindigkeitsvektors im globalen
@@ -217,9 +217,9 @@ Spec0064.
 5. Kurs-über-Grund-Fehler, Bootskörper-Heading, Ruderwinkel, Kräfte,
    Momente, Geschwindigkeit und Überschwingung als Zeitreihe protokollieren.
 6. Erfolg liegt je Geschwindigkeitsfall vor, wenn der absolute Kursfehler
-   spätestens nach 10 s auf höchstens 50 % des Anfangsfehlers sinkt und am
-   Ende des 10-s-Fensters unter dieser Grenze bleibt und ab dem ersten
-   Erreichen der 50-%-Grenze nicht wieder darüber steigt. Eine Variante darf
+   spätestens nach 10 s auf höchstens 50 % des Anfangsfehlers sinkt und ab
+   dem ersten Erreichen dieser Grenze bis zum Ende des 10-s-Fensters
+   höchstens 50 % des Anfangsfehlers bleibt. Eine Variante darf
    nur empfohlen werden, wenn sie alle Fälle besteht, in denen das Original
    scheitert, und keinen vom Original bestandenen Fall verschlechtert. Das
    ist ein projektspezifischer Variantenvergleich, kein Sicherheitsnachweis.
@@ -240,6 +240,14 @@ Freigabelücke sichtbar. Original und Variante verwenden dieselbe
 Reglerverstärkung und dieselben Randbedingungen; Ergebnisse sind je
 Geschwindigkeitsfall ausgewiesen. Keine Rudervergrößerung darf allein über
 Einzelfall-Tuning dieses Tests entschieden werden.
+
+**Produktions-/Manöverblocker nach Spec0065:** Das aktuelle `yacht1`-Manifest
+enthält für `ruder` weder `pose` noch `gelenk`; autoritative Drehachse,
+Drehpunkt, Vorzeichen und mechanische Grenzen fehlen. Nach ausdrücklicher
+Nutzerfreigabe wird die Vorderkantenachse aus Spec0066 ausschließlich im
+getrennten Kleinwinkel-Kraftmodell verwendet. Sie erfüllt Spec0065 nicht.
+Es wurde kein Produktionsgelenk, kein mechanischer Winkelanschlag und keine
+vollständige Manöver-/Rudergrößenabnahme ergänzt.
 
 ### HYD-0006 – Vertrag für geometrische Importmetadaten
 
@@ -274,6 +282,15 @@ Schreibfehler/Abbruch ohne Teildatei und Nichtüberschreiben.
 **Abnahme:** identische Eingaben erzeugen byte-stabile kanonische
 Metadaten; Änderungen an Eingang/Verfahren werden erkannt; aktueller Loader
 und bestehende Manifeste bleiben rückwärtskompatibel.
+
+**Umgesetzt:** `segelphysik/core/hydrodynamik_metadaten.py` berechnet
+hashgebundene SI-Geometrie-, Topologie-, Schwerpunkt- und
+Oberflächen-Hauptachsmetadaten. Nicht unterstützte Profil-/Querschnitts-
+klassifikation bleibt ausdrücklich `unklar`. Das explizite Werkzeug
+`werkzeuge/erzeuge_hydrodynamik_metadaten.py` erzeugt ein Sidecar atomar und
+ohne Überschreiben bzw. prüft seine Aktualität; der normale Paketloader
+bleibt schreibfrei. Gezielte Tests liegen in
+`tests/test_hydrodynamik_metadaten.py`.
 
 ### HYD-0007 – Vertrag und Erzeugung optionaler Kennlinien
 
@@ -373,8 +390,11 @@ Spec0044.
    übernehmen.
 2. Modellannahmen, Bezugsflächen, Einfallsrichtung, Sättigungs-/Grenzfälle
    und Unsicherheit vor Implementierung dokumentieren.
-3. Koeffizienten erst aus HYD-0004-Freigabe eintragen; keine Konstanten
-   aus dem alten Guide übernehmen, solange Quelle/Anwendbarkeit fehlen.
+3. Koeffizienten nur nach HYD-0004 eintragen. Für einen ausdrücklich
+   freigegebenen Lehrmodellzweig darf eine hergeleitete Näherung verwendet
+   werden, wenn Gleichung, Quelle, Parameter, Gültigkeitsbereich und
+   Unsicherheitsstatus dokumentiert sind. Keine Konstanten aus dem alten
+   Guide ungeprüft übernehmen.
 4. Ergebnisse als Näherung markieren und visuell/diagnostisch von
    Profilkennlinien unterscheiden.
 
@@ -383,6 +403,20 @@ Nullfluss, Winkelbereiche, ungültige Fläche und Leistungsbilanz.
 
 **Abnahme:** kein unprofilierter Körper wird als Profil behandelt; ohne
 begründete Parameterfreigabe bleibt der Zweig deaktiviert.
+
+**Teilweise umgesetzt:** `segelphysik/core/hydrodynamik_ruder_naeherung.py`
+enthält ein getrenntes, nicht produktiv eingebundenes Rudernormalkraftmodell
+für das vorhandene Yachtmesh. Die Testachse ist die ausdrücklich freigegebene
+Vorderkantenannahme nach Spec0066; das Meshklassifikationsfeld bleibt
+`unklar`. Die MMG-artige Endspannweitenformel verwendet geometrisch
+abgeleitete Projektionsfläche und Streckung. Berücksichtigt werden lokale
+Seitwärts-/Giergeschwindigkeit sowie ein idealisierter induzierter
+Widerstand; Profilwiderstand, Stall, Rumpf-/Kielnachlauf und mechanische
+Anschläge sind nicht modelliert. Der effektive Anstellwinkel ist auf ±10°
+begrenzt; außerhalb wird mit `HydrodynamikModellFehler` abgelehnt. Ergebnisse
+tragen `berechnete_naeherung`. Der separate Prüfvorschlag dokumentiert
+Gleichung, Eingaben, Quellen und Grenzen; das Modell ist kein Ersatz für
+HYD-0004-Referenzvalidierung.
 
 ### HYD-0011 – Einbindung in Kraftbeiträge und Wrenches
 
@@ -437,7 +471,7 @@ Frame-/Modus-/Körperwechsel.
 ### HYD-0013 – Getrennte Rudergrößenvariante und Steuervergleich
 
 **Spec-Bezug:** Spec0019–Spec0022, Spec0043, Spec0051–Spec0052,
-Spec0060, Spec0064.
+Spec0060, Spec0064–Spec0065.
 
 1. Originalruder und Yachtpaket unverändert sichern/hashprüfen.
 2. Nur nach HYD-0003/HYD-0004 eine separate Variante anlegen, die
@@ -567,7 +601,7 @@ Modelle.
 | G1 – Geometrievertrag | Meshmetriken, Klassen, Hashes, Paketmetadaten | deterministisch; Originaldateien unverändert; fehlende Merkmale als fehlend markiert. |
 | G2 – Fachmodell | Quellen, Kurven, Vertrauensstatus, Gültigkeitsbereiche | jede Zahl nachvollziehbar; Näherung bleibt als solche markiert; Referenzvalidierung belegt. |
 | G3 – Kräfte/Frames | Einzelbeiträge, Summenwrench, Energie, Vorzeichen | automatisierte Sollwerte und Wrench-Parität innerhalb vorab definierter Toleranzen. |
-| G4 – Ruder | Je vorab festgelegtem Geschwindigkeitsfall: 50 % Abbau des 10° Kurs-über-Grund-Anfangsfehlers innerhalb 10 s nach Spec0064 | identischer Testregler, Geschwindigkeitsfall, Randbedingungen und Anfangszustand; Fehler bleibt nach erstmaligem Erreichen unter 50 %; kein Überschwingen oberhalb der Winkeltoleranz; Variante besteht Original-Fehlerfälle ohne Regression bestandener Fälle. |
+| G4 – Ruder | Je vorab festgelegtem Geschwindigkeitsfall: 50 % Abbau des 10° Kurs-über-Grund-Anfangsfehlers innerhalb 10 s nach Spec0064 | identischer Testregler, Geschwindigkeitsfall, Randbedingungen und Anfangszustand; Fehler bleibt nach erstmaligem Erreichen bei höchstens 50 %; kein Überschwingen oberhalb der Winkeltoleranz; Variante besteht Original-Fehlerfälle ohne Regression bestandener Fälle. |
 | G5 – GUI | Summe immer, Komponenten optional/hierarchisch | korrekte Summe/Momente/Punkte; optionales Einblenden verändert keine Physikwerte. |
 | G6 – Live | Zielhardware, Nachholrate, zehnminütiger Sichtlauf | mindestens `1,25 s/s`, mindestens `30 FPS`, keine Überlastpause/kein wachsender Rückstand sowie geltende P95-Gates. |
 | G7 – Produktivfreigabe | vollständige Traceability und alle vorherigen Gates | explizite Fachfreigabe; alle anwendbaren Gates bestanden. |
@@ -600,6 +634,8 @@ Modelle.
 | Spec0062 | HYD-0004, HYD-0007 |
 | Spec0063 | HYD-0004 |
 | Spec0064 | HYD-0005, HYD-0013, HYD-0014 |
+| Spec0065 | HYD-0005, HYD-0013 |
+| Spec0066 | HYD-0005, HYD-0010, HYD-0013 |
 
 ## 6. Quellen und methodische Hinweise
 

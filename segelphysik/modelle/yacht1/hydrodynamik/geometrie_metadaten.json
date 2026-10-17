@@ -1,0 +1,750 @@
+{
+  "algorithm": {
+    "name": "segelphysik.core.hydrodynamik_metadaten",
+    "version": "1.0"
+  },
+  "model": {
+    "id": "yacht1",
+    "leaf_frame": "blatt",
+    "manifest_sha256": "4257bf9e93fe4c4bd63366ec2a085a754c32ff80b94a645dfbe44732d3e8dc58",
+    "name": "Yacht 1",
+    "obj_axes_matrix_to_leaf": [
+      [
+        0.0,
+        0.0,
+        1.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0
+      ]
+    ],
+    "obj_to_m": 0.25
+  },
+  "parts": [
+    {
+      "canonical_mesh_sha256": "0c7b69e68e2a60fa143c3ce99c82e203c8c50f218d5341ee3b463a71a4bfe6b5",
+      "geometry": {
+        "bounds_m": {
+          "extent": [
+            4.225,
+            1.2648155,
+            1.1374335
+          ],
+          "max": [
+            2.1125,
+            0.63240775,
+            0.4875
+          ],
+          "min": [
+            -2.1125,
+            -0.63240775,
+            -0.6499335
+          ],
+          "status": "geometrisch_abgeleitet"
+        },
+        "centroid_m": {
+          "method": "homogenes_volumen",
+          "status": "geometrisch_abgeleitet",
+          "value": [
+            0.022694205787,
+            5.384427e-06,
+            -0.00969505291
+          ]
+        },
+        "frame": "blatt",
+        "profile_sections": {
+          "classification": "unklar",
+          "reason": "Kein validierter Profil- und Querschnittsdetektor in dieser Algorithmusversion",
+          "sections": null,
+          "status": "unklar"
+        },
+        "surface_area_m2": {
+          "status": "geometrisch_abgeleitet",
+          "value": 14.240168764036
+        },
+        "surface_principal_axes": {
+          "convention": "Eigenvektor-Vorzeichen durch groesste Komponente kanonisiert; bei mehrfachen Eigenwerten nicht eindeutig",
+          "directions_as_columns": [
+            [
+              0.999902119005,
+              3.2663943e-05,
+              0.013991116551
+            ],
+            [
+              -3.0353061e-05,
+              0.999999985864,
+              -0.000165380105
+            ],
+            [
+              -0.013991121755,
+              0.000164939244,
+              0.999902105862
+            ]
+          ],
+          "eigenvalues_m4": [
+            3.760754160821,
+            20.048826015504,
+            20.156260172995
+          ],
+          "status": "geometrisch_abgeleitet"
+        },
+        "topology": {
+          "boundary_edge_count": 0,
+          "closed_oriented_surface": true,
+          "status": "validiert"
+        },
+        "triangle_count": 3072,
+        "vertex_count": 1538,
+        "volume_m3": {
+          "status": "geometrisch_abgeleitet",
+          "value": 3.112343422095
+        }
+      },
+      "node_id": "rumpf",
+      "node_path": "root/rumpf",
+      "role": "rumpf",
+      "source": {
+        "hash_scope": "raw_file_bytes",
+        "path": "rumpf.obj",
+        "sha256": "5a2d8873746552c18d20ac5a46ebf9d4d31486d658b9a66fc487841457e1fdbd",
+        "type": "obj"
+      }
+    },
+    {
+      "canonical_mesh_sha256": "2d538d56c4f826a865e60b1b7dec7bc87d1c7df83b765eaf742096bc8036456c",
+      "geometry": {
+        "bounds_m": {
+          "extent": [
+            0.2625,
+            0.0275,
+            0.424575
+          ],
+          "max": [
+            -1.825,
+            0.01375,
+            -0.012925
+          ],
+          "min": [
+            -2.0875,
+            -0.01375,
+            -0.4375
+          ],
+          "status": "geometrisch_abgeleitet"
+        },
+        "centroid_m": {
+          "method": "homogenes_volumen",
+          "status": "geometrisch_abgeleitet",
+          "value": [
+            -1.969285028694,
+            0.0,
+            -0.269169447707
+          ]
+        },
+        "frame": "blatt",
+        "profile_sections": {
+          "classification": "unklar",
+          "reason": "Kein validierter Profil- und Querschnittsdetektor in dieser Algorithmusversion",
+          "sections": null,
+          "status": "unklar"
+        },
+        "surface_area_m2": {
+          "status": "geometrisch_abgeleitet",
+          "value": 0.205962451594
+        },
+        "surface_principal_axes": {
+          "convention": "Eigenvektor-Vorzeichen durch groesste Komponente kanonisiert; bei mehrfachen Eigenwerten nicht eindeutig",
+          "directions_as_columns": [
+            [
+              -0.352133294576,
+              0.0,
+              0.935949861291
+            ],
+            [
+              0.935949861291,
+              0.0,
+              0.352133294576
+            ],
+            [
+              0.0,
+              1.0,
+              0.0
+            ]
+          ],
+          "eigenvalues_m4": [
+            0.001200677,
+            0.002728303808,
+            0.003859750991
+          ],
+          "status": "geometrisch_abgeleitet"
+        },
+        "topology": {
+          "boundary_edge_count": 0,
+          "closed_oriented_surface": true,
+          "status": "validiert"
+        },
+        "triangle_count": 96,
+        "vertex_count": 50,
+        "volume_m3": {
+          "status": "geometrisch_abgeleitet",
+          "value": 0.002360179946
+        }
+      },
+      "node_id": "ruder",
+      "node_path": "root/ruder",
+      "role": "ruder",
+      "source": {
+        "hash_scope": "raw_file_bytes",
+        "path": "ruder.obj",
+        "sha256": "c7771fb72834b6dff6069c6826988495e09ffbe116d3edee43877cf6380020ff",
+        "type": "obj"
+      }
+    },
+    {
+      "canonical_mesh_sha256": "1b4a93a364b52244722f0ad2bc27572746f1d5f0d258ad0a7181992640698ae3",
+      "geometry": {
+        "bounds_m": {
+          "extent": [
+            1.1,
+            0.075,
+            0.385625
+          ],
+          "max": [
+            0.55,
+            0.0375,
+            -0.539375
+          ],
+          "min": [
+            -0.55,
+            -0.0375,
+            -0.925
+          ],
+          "status": "geometrisch_abgeleitet"
+        },
+        "centroid_m": {
+          "method": "homogenes_volumen",
+          "status": "geometrisch_abgeleitet",
+          "value": [
+            -1.980631e-06,
+            0.0,
+            -0.744957336644
+          ]
+        },
+        "frame": "blatt",
+        "profile_sections": {
+          "classification": "unklar",
+          "reason": "Kein validierter Profil- und Querschnittsdetektor in dieser Algorithmusversion",
+          "sections": null,
+          "status": "unklar"
+        },
+        "surface_area_m2": {
+          "status": "geometrisch_abgeleitet",
+          "value": 0.93963342832
+        },
+        "surface_principal_axes": {
+          "convention": "Eigenvektor-Vorzeichen durch groesste Komponente kanonisiert; bei mehrfachen Eigenwerten nicht eindeutig",
+          "directions_as_columns": [
+            [
+              0.999999999995,
+              0.0,
+              -3.072275e-06
+            ],
+            [
+              3.072275e-06,
+              0.0,
+              0.999999999995
+            ],
+            [
+              0.0,
+              1.0,
+              0.0
+            ]
+          ],
+          "eigenvalues_m4": [
+            0.013843528671,
+            0.097072219213,
+            0.109418226538
+          ],
+          "status": "geometrisch_abgeleitet"
+        },
+        "topology": {
+          "boundary_edge_count": 0,
+          "closed_oriented_surface": true,
+          "status": "validiert"
+        },
+        "triangle_count": 184,
+        "vertex_count": 94,
+        "volume_m3": {
+          "status": "geometrisch_abgeleitet",
+          "value": 0.022734755729
+        }
+      },
+      "node_id": "kiel",
+      "node_path": "root/kielsystem/kiel",
+      "role": "kiel",
+      "source": {
+        "hash_scope": "raw_file_bytes",
+        "path": "kiel.obj",
+        "sha256": "355d65a511b5d6603891d85379edfb614e275cc381e172b5292bc5fa459db8b9",
+        "type": "obj"
+      }
+    },
+    {
+      "canonical_mesh_sha256": "ccfd893039fa67cd793ba06fdba23302ff371b07de2cc29b92abca8c340358e4",
+      "geometry": {
+        "bounds_m": {
+          "extent": [
+            0.575,
+            0.175,
+            0.208984545455
+          ],
+          "max": [
+            0.3125,
+            0.0875,
+            -0.896015454545
+          ],
+          "min": [
+            -0.2625,
+            -0.0875,
+            -1.105
+          ],
+          "status": "geometrisch_abgeleitet"
+        },
+        "centroid_m": {
+          "method": "homogenes_volumen",
+          "status": "geometrisch_abgeleitet",
+          "value": [
+            0.025039594974,
+            2.4e-10,
+            -1.001206702705
+          ]
+        },
+        "frame": "blatt",
+        "profile_sections": {
+          "classification": "unklar",
+          "reason": "Kein validierter Profil- und Querschnittsdetektor in dieser Algorithmusversion",
+          "sections": null,
+          "status": "unklar"
+        },
+        "surface_area_m2": {
+          "status": "geometrisch_abgeleitet",
+          "value": 0.30282563371
+        },
+        "surface_principal_axes": {
+          "convention": "Eigenvektor-Vorzeichen durch groesste Komponente kanonisiert; bei mehrfachen Eigenwerten nicht eindeutig",
+          "directions_as_columns": [
+            [
+              0.999999816877,
+              1.25817e-07,
+              0.000605182052
+            ],
+            [
+              -0.000605182052,
+              -3.31613e-07,
+              0.999999816877
+            ],
+            [
+              -1.26018e-07,
+              1.0,
+              3.31537e-07
+            ]
+          ],
+          "eigenvalues_m4": [
+            0.002011737569,
+            0.00728998099,
+            0.007580758625
+          ],
+          "status": "geometrisch_abgeleitet"
+        },
+        "topology": {
+          "boundary_edge_count": 0,
+          "closed_oriented_surface": true,
+          "status": "validiert"
+        },
+        "triangle_count": 758,
+        "vertex_count": 381,
+        "volume_m3": {
+          "status": "geometrisch_abgeleitet",
+          "value": 0.010575765
+        }
+      },
+      "node_id": "bulb",
+      "node_path": "root/kielsystem/bulb",
+      "role": "kiel",
+      "source": {
+        "hash_scope": "raw_file_bytes",
+        "path": "bulb.obj",
+        "sha256": "282294f26b4e01e49e0d9b42791f2ce9ada0d7e9bee6300487f4b24fe6b3d778",
+        "type": "obj"
+      }
+    },
+    {
+      "canonical_mesh_sha256": "0964cbd7825493ea717f1a44678166f10c6f5c750e1533faf21d17dcd024ad54",
+      "geometry": {
+        "bounds_m": {
+          "extent": [
+            0.09865,
+            0.091975,
+            4.92515
+          ],
+          "max": [
+            0.340925,
+            0.0446,
+            5.18705
+          ],
+          "min": [
+            0.242275,
+            -0.047375,
+            0.2619
+          ],
+          "status": "geometrisch_abgeleitet"
+        },
+        "centroid_m": {
+          "method": "homogenes_volumen",
+          "status": "geometrisch_abgeleitet",
+          "value": [
+            0.288271574759,
+            -0.00139013081,
+            2.393004696214
+          ]
+        },
+        "frame": "blatt",
+        "profile_sections": {
+          "classification": "unklar",
+          "reason": "Kein validierter Profil- und Querschnittsdetektor in dieser Algorithmusversion",
+          "sections": null,
+          "status": "unklar"
+        },
+        "surface_area_m2": {
+          "status": "geometrisch_abgeleitet",
+          "value": 1.250116904273
+        },
+        "surface_principal_axes": {
+          "convention": "Eigenvektor-Vorzeichen durch groesste Komponente kanonisiert; bei mehrfachen Eigenwerten nicht eindeutig",
+          "directions_as_columns": [
+            [
+              -2.449728e-06,
+              9.62158e-07,
+              0.999999999997
+            ],
+            [
+              0.999895614338,
+              -0.014448543897,
+              2.463374e-06
+            ],
+            [
+              0.014448543899,
+              0.999895614341,
+              -9.26662e-07
+            ]
+          ],
+          "eigenvalues_m4": [
+            0.001962842667,
+            2.523483365308,
+            2.523483819163
+          ],
+          "status": "geometrisch_abgeleitet"
+        },
+        "topology": {
+          "boundary_edge_count": 0,
+          "closed_oriented_surface": true,
+          "status": "validiert"
+        },
+        "triangle_count": 58,
+        "vertex_count": 43,
+        "volume_m3": {
+          "status": "geometrisch_abgeleitet",
+          "value": 0.02372641736
+        }
+      },
+      "node_id": "mast",
+      "node_path": "root/rigg/mast",
+      "role": "stehendes_gut",
+      "source": {
+        "hash_scope": "raw_file_bytes",
+        "path": "paket/mast_components/mast_korpus.obj",
+        "sha256": "e5ccb640ed86f63b51108a2dc6c986c3ad1ee4db54ae12a7cb01dd498d32685a",
+        "type": "obj"
+      }
+    },
+    {
+      "canonical_mesh_sha256": "272e290fd318439a4116c039f97f1cfc859ac5aba0bda5c36489fc980b4a7d43",
+      "geometry": {
+        "bounds_m": {
+          "extent": [
+            1.5283,
+            0.056825,
+            0.122475
+          ],
+          "max": [
+            0.190975,
+            0.028225,
+            0.64205
+          ],
+          "min": [
+            -1.337325,
+            -0.0286,
+            0.519575
+          ],
+          "status": "geometrisch_abgeleitet"
+        },
+        "centroid_m": {
+          "method": "homogenes_volumen",
+          "status": "geometrisch_abgeleitet",
+          "value": [
+            -0.573109742809,
+            -0.000134699284,
+            0.58080158995
+          ]
+        },
+        "frame": "blatt",
+        "profile_sections": {
+          "classification": "unklar",
+          "reason": "Kein validierter Profil- und Querschnittsdetektor in dieser Algorithmusversion",
+          "sections": null,
+          "status": "unklar"
+        },
+        "surface_area_m2": {
+          "status": "geometrisch_abgeleitet",
+          "value": 0.264708629305
+        },
+        "surface_principal_axes": {
+          "convention": "Eigenvektor-Vorzeichen durch groesste Komponente kanonisiert; bei mehrfachen Eigenwerten nicht eindeutig",
+          "directions_as_columns": [
+            [
+              0.998847180509,
+              -3.5080558e-05,
+              -0.048003216123
+            ],
+            [
+              0.044148512118,
+              -0.391953206689,
+              0.918925237788
+            ],
+            [
+              0.018847250901,
+              0.919985153432,
+              0.391499806638
+            ]
+          ],
+          "eigenvalues_m4": [
+            0.000176751556,
+            0.053201131122,
+            0.053202194347
+          ],
+          "status": "geometrisch_abgeleitet"
+        },
+        "topology": {
+          "boundary_edge_count": 0,
+          "closed_oriented_surface": true,
+          "status": "validiert"
+        },
+        "triangle_count": 24,
+        "vertex_count": 14,
+        "volume_m3": {
+          "status": "geometrisch_abgeleitet",
+          "value": 0.003205395589
+        }
+      },
+      "node_id": "boom",
+      "node_path": "root/rigg/boom",
+      "role": "stehendes_gut",
+      "source": {
+        "hash_scope": "raw_file_bytes",
+        "path": "boom.obj",
+        "sha256": "3353f2314a974747b3653281552d9b16cab2b71ea633813f8332153543b72a77",
+        "type": "obj"
+      }
+    },
+    {
+      "canonical_mesh_sha256": "39473871e9d39c6b996a802f57da4a3e7609afd548a8fbd87207a58d403d2905",
+      "geometry": {
+        "bounds_m": {
+          "extent": [
+            1.571725,
+            2.5e-05,
+            4.39095
+          ],
+          "max": [
+            0.256,
+            0.001,
+            4.958
+          ],
+          "min": [
+            -1.315725,
+            0.000975,
+            0.56705
+          ],
+          "status": "geometrisch_abgeleitet"
+        },
+        "centroid_m": {
+          "method": "flaechengewichteter_schwerpunkt",
+          "status": "geometrisch_abgeleitet",
+          "value": [
+            -0.287768431101,
+            0.000983176227,
+            2.031443402345
+          ]
+        },
+        "frame": "blatt",
+        "profile_sections": {
+          "classification": "unklar",
+          "reason": "Kein validierter Profil- und Querschnittsdetektor in dieser Algorithmusversion",
+          "sections": null,
+          "status": "unklar"
+        },
+        "surface_area_m2": {
+          "status": "geometrisch_abgeleitet",
+          "value": 3.212373252813
+        },
+        "surface_principal_axes": {
+          "convention": "Eigenvektor-Vorzeichen durch groesste Komponente kanonisiert; bei mehrfachen Eigenwerten nicht eindeutig",
+          "directions_as_columns": [
+            [
+              0.191891670133,
+              9.554721e-06,
+              0.981416112993
+            ],
+            [
+              0.981416113039,
+              -5.18597e-07,
+              -0.191891670137
+            ],
+            [
+              -1.324512e-06,
+              0.999999999954,
+              -9.476671e-06
+            ]
+          ],
+          "eigenvalues_m4": [
+            0.300770495875,
+            3.465728725236,
+            3.76649922086
+          ],
+          "status": "geometrisch_abgeleitet"
+        },
+        "topology": {
+          "boundary_edge_count": 8,
+          "closed_oriented_surface": false,
+          "status": "validiert"
+        },
+        "triangle_count": 4,
+        "vertex_count": 8,
+        "volume_m3": {
+          "status": "nicht_verfuegbar",
+          "value": null
+        }
+      },
+      "node_id": "grosssegel",
+      "node_path": "root/rigg/grosssegel",
+      "role": "segel",
+      "source": {
+        "hash_scope": "raw_file_bytes",
+        "path": "paket/grosssegel.obj",
+        "sha256": "c215c90938b75c8dacb461f989d0428c4382560d4140fb3de06451a3f5c5f0f0",
+        "type": "obj"
+      }
+    },
+    {
+      "canonical_mesh_sha256": "108b964b96554fbd8b9bfe79de18cb2e69966a23e2dc195018049455dd958af4",
+      "geometry": {
+        "bounds_m": {
+          "extent": [
+            1.62435,
+            0.305875,
+            4.4981
+          ],
+          "max": [
+            1.9447,
+            -0.001175,
+            5.0016
+          ],
+          "min": [
+            0.32035,
+            -0.30705,
+            0.5035
+          ],
+          "status": "geometrisch_abgeleitet"
+        },
+        "centroid_m": {
+          "method": "flaechengewichteter_schwerpunkt",
+          "status": "geometrisch_abgeleitet",
+          "value": [
+            0.896425,
+            -0.105866666667,
+            2.068191666667
+          ]
+        },
+        "frame": "blatt",
+        "profile_sections": {
+          "classification": "unklar",
+          "reason": "Kein validierter Profil- und Querschnittsdetektor in dieser Algorithmusversion",
+          "sections": null,
+          "status": "unklar"
+        },
+        "surface_area_m2": {
+          "status": "geometrisch_abgeleitet",
+          "value": 3.337870485703
+        },
+        "surface_principal_axes": {
+          "convention": "Eigenvektor-Vorzeichen durch groesste Komponente kanonisiert; bei mehrfachen Eigenwerten nicht eindeutig",
+          "directions_as_columns": [
+            [
+              -0.219762197869,
+              0.028991110957,
+              0.975122603509
+            ],
+            [
+              0.954661465876,
+              0.212145743571,
+              0.208843647392
+            ],
+            [
+              -0.20081350044,
+              0.976807913036,
+              -0.07429831136
+            ]
+          ],
+          "eigenvalues_m4": [
+            0.305079207718,
+            3.767398497694,
+            4.072477705412
+          ],
+          "status": "geometrisch_abgeleitet"
+        },
+        "topology": {
+          "boundary_edge_count": 3,
+          "closed_oriented_surface": false,
+          "status": "validiert"
+        },
+        "triangle_count": 1,
+        "vertex_count": 3,
+        "volume_m3": {
+          "status": "nicht_verfuegbar",
+          "value": null
+        }
+      },
+      "node_id": "fock",
+      "node_path": "root/rigg/fock",
+      "role": "segel",
+      "source": {
+        "hash_scope": "raw_file_bytes",
+        "path": "paket/fock.obj",
+        "sha256": "a9e4bf5e028e3f8e0c96ef74218257e5b7c5dd3b7e51d1a06041807389435b1d",
+        "type": "obj"
+      }
+    }
+  ],
+  "schema_version": "1.0",
+  "units": {
+    "area": "m^2",
+    "length": "m",
+    "volume": "m^3"
+  }
+}

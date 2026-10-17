@@ -109,7 +109,7 @@ class _StatischeAufgabeSignale(QObject):
 
 class _StatischeAufgabe(QRunnable):
     def __init__(self, generation, name, koerper, ordner, rho_w, signale,
-                 parameter=None):
+                 parameter=None, fremdkraft=None):
         super().__init__()
         self.generation = generation
         self.name = name
@@ -118,6 +118,7 @@ class _StatischeAufgabe(QRunnable):
         self.ordner = ordner
         self.rho_w = rho_w
         self.signale = signale
+        self.fremdkraft = fremdkraft
         p = parameter or {}
         self.parameter = {"tol": p.get("toleranz", 1e-8),
                           "max_iter": p.get("max_iterationen", 60),
@@ -141,6 +142,7 @@ class _StatischeAufgabe(QRunnable):
             kraftfunktion = baue_kraftmodell(
                 kraftfunktion, physik, masse=self.koerper.masse,
                 g=physik.g_m_pro_s2)
+            kraftfunktion.fremdkraft_setzen(self.fremdkraft)
             problem = statusanzeige.schwimmpruefung(
                 kraftfunktion, self.koerper, self.koerper.masse,
                 physik.g_m_pro_s2)
@@ -224,6 +226,7 @@ class HauptFenster(QMainWindow):
             self._statische_aufgabe_abgeschlossen)
         self._statische_ergebnisse = {}
         self._statische_arbeitsdaten = {}
+        self._statische_fremdkraft = None
         for meldung in self._einstellungen.meldungen:
             self.protokoll_schreiben("Einstellungen: %s" % meldung)
 
@@ -881,6 +884,8 @@ class HauptFenster(QMainWindow):
     def _statische_simulation_ausfuehren(self):
         self._statisch_generation += 1
         generation = self._statisch_generation
+        fremdkraft = self._fremdkraft_aktuell()
+        self._statische_fremdkraft = fremdkraft
         self._wasserpunkte_fuer_modus(True)
         welt = self.baum._welt
         konfiguration = getattr(welt, "konfiguration", None)
@@ -907,7 +912,8 @@ class HauptFenster(QMainWindow):
             generation, hauptkoerper.name, koerper,
             konfiguration.ordner, konfiguration.wasser_dichte(),
             self._statisch_signale,
-            self._einstellungen.bereich("statisch"))
+            self._einstellungen.bereich("statisch"),
+            fremdkraft=fremdkraft)
         QThreadPool.globalInstance().start(aufgabe)
     def _statische_aufgabe_abgeschlossen(
             self, generation, name, ergebnis, arbeitsdaten, fehler):
@@ -1513,7 +1519,11 @@ class HauptFenster(QMainWindow):
 
     def _fremdkraft_geaendert(self, *_):
         if self._btn_statisch.isChecked():
+            fremdkraft = self._fremdkraft_aktuell()
+            if fremdkraft == self._statische_fremdkraft:
+                return
             self._statisches_kraftbild_aktualisieren()
+            self._statische_simulation_ausfuehren()
             return
         if self._echtzeit_kraftfunktion is None:
             return
@@ -1533,8 +1543,7 @@ class HauptFenster(QMainWindow):
             self._echtzeit_pose_anzeigen(self._echtzeit_zustand, render=True)
 
     def _statisches_kraftbild_aktualisieren(self):
-        """Zeichnet das Kraftbild der statischen Lage mit der aktuellen
-        Fremdkraft neu (ohne den Solver erneut zu starten)."""
+        """Zeichnet die geänderte Fremdkraft bis zum neuen Gleichgewicht."""
         bruecke = getattr(self, "_bruecke", None)
         if bruecke is None:
             return

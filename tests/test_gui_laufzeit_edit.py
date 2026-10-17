@@ -807,3 +807,39 @@ def test_statusliste_kennt_alle_echtzeit_schluessel():
         "Physik angefordert": "1.000 s", "Unbekannt": "x"})
     assert fenster._solver_werte["Zeitfaktor"].text(1) == "1.00 ×"
     assert fenster._solver_werte["Bildrate"].text(1) == "60.0 FPS"
+
+
+def test_fremdkraftaenderung_startet_statische_neuberechnung(monkeypatch):
+    app = _qt_app()
+    fenster = HauptFenster()
+    aufrufe = []
+
+    def neuberechnen():
+        fremdkraft = fenster._fremdkraft_aktuell()
+        aufrufe.append(fremdkraft)
+        fenster._statische_fremdkraft = fremdkraft
+
+    monkeypatch.setattr(
+        fenster, "_statische_simulation_ausfuehren",
+        neuberechnen)
+    try:
+        fenster._fremd_felder["betrag"].setValue(125.0)
+        assert aufrufe == []
+
+        fenster._fremd_check.setChecked(True)
+        assert len(aufrufe) == 1
+        assert aufrufe[-1] is not None
+
+        fenster._fremd_felder["betrag"].setValue(250.0)
+        assert len(aufrufe) == 2
+        assert aufrufe[-1][0][1] == pytest.approx(250.0)
+
+        fenster._fremd_check.setChecked(False)
+        assert len(aufrufe) == 3
+        assert aufrufe[-1] is None
+
+        fenster._fremd_felder["betrag"].setValue(500.0)
+        assert len(aufrufe) == 3
+    finally:
+        fenster.close()
+        app.processEvents()

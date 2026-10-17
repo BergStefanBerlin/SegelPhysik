@@ -228,11 +228,10 @@ Rudermechanik.
 
 Primärmessgröße ist der Betrag des Kurs-über-Grund-Fehlers. Das Ziel aus
 Spec0051 gilt als bestanden, wenn der Betrag innerhalb von höchstens 10 s
-auf höchstens 50 % des Anfangsbetrags sinkt und am Ende des 10-s-Fensters
-unter dieser Grenze bleibt. Ab dem ersten Erreichen der 50-%-Grenze muss
-der Fehler bis zum Ende des Fensters innerhalb der Grenze bleiben. Zusätzlich
-sind Kurs, Bootskörper-Heading,
-Ruderwinkel, Kräfte, Momente, Geschwindigkeit und Überschwingung vollständig
+auf höchstens 50 % des Anfangsbetrags sinkt und ab dem ersten Erreichen
+dieser Grenze bis zum Ende des 10-s-Fensters höchstens 50 % des
+Anfangsbetrags bleibt. Zusätzlich sind Kurs, Bootskörper-Heading, Ruderwinkel,
+Kräfte, Momente, Geschwindigkeit und Überschwingung vollständig
 zu protokollieren. Als Überschwingen zählt ein Vorzeichenwechsel des
 Kursfehlers mit einem Gegenseitenbetrag oberhalb der vorab festgelegten
 Winkeltoleranz; ein solcher Lauf gilt nicht als bestanden. Jeder vorab
@@ -241,6 +240,29 @@ darf nur empfohlen werden, wenn sie die Referenzfälle, in denen das Original
 das Ziel verfehlt, besteht und keinen Referenzfall, den das Original besteht,
 zum Fehlschlag verschlechtert. Das Testergebnis ist ein reproduzierbarer
 Variantenvergleich, kein nautischer Sicherheits- oder Vollsystemnachweis.
+
+### Spec0065 — Nachweis der Ruderkinematik vor dem Manövertest
+
+Vor einer Ruder-Manöver- oder Größenbewertung müssen Drehachse,
+Drehpunkt/Bezugslage, positives Vorzeichen und zulässige Winkelgrenzen aus
+einer autoritativen Modell- oder Konstruktionsquelle nachgewiesen sein. Ein
+Meshname, eine Bounding-Box oder eine visuelle Schätzung genügt dafür nicht.
+Fehlen Gelenk und Pose im Modellmanifest, bleibt der Test blockiert, bis
+diese Angaben dokumentiert und die Testkinematik ausdrücklich festgelegt
+sind. Es darf weder stillschweigend ein Gelenk erzeugt noch eine
+Produktivgeometrie oder -pose verändert werden.
+
+### Spec0066 — Ausdrücklich angenommene Testkinematik ohne Produktionsnachweis
+
+Eine ausdrücklich von der Nutzerin freigegebene, aus dem vorhandenen Mesh
+abgeleitete Ruderdrehachse darf ausschließlich in einem getrennten
+Test-/Lehrmodell als klar markierte Annahme verwendet werden. Sie gilt nicht
+als Erfüllung von Spec0065, nicht als Nachweis der realen Konstruktion und
+nicht als Freigabe eines Produktivgelenks, einer Rudervariante oder einer
+Manöver-/Größenbewertung. Das bestehende Yachtmanifest, die Pose und das
+Produktivverhalten bleiben unverändert. Der Näherungszweig muss außerhalb
+seines dokumentierten Gültigkeitsbereichs explizit abbrechen und darf keinen
+Validierungsstatus vortäuschen.
 
 ## 5. Modellanforderungen
 
@@ -549,8 +571,9 @@ Manifest-Einheiten und Achsentransformation geladen und berechnet.
 
 Gemäß dem reproduzierbaren Referenzmanöver aus Spec0064 muss die Yacht
 innerhalb von höchstens 10 Sekunden mindestens 50 % des anfänglichen
-Kurs-über-Grund-Fehlers abbauen und am Ende des 10-s-Fensters unter dieser
-Grenze bleiben. Dieses projektspezifische Ziel ist kein allgemeiner
+Kurs-über-Grund-Fehlers abbauen und nach dem ersten Erreichen der Grenze bis
+zum Ende des 10-s-Fensters höchstens 50 % des Anfangsfehlers beibehalten.
+Dieses projektspezifische Ziel ist kein allgemeiner
 nautischer Sicherheits- oder Leistungsnachweis. Ausgangsruder und getrennte,
 nach unten vergrößerte Variante werden unter denselben, vorab dokumentierten
 Geschwindigkeits-, Regler- und Anfangsbedingungen verglichen. Die

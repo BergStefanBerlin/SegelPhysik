@@ -6,7 +6,7 @@
     "stagnation_anteil": 0.05
   },
   "dynamisch": {
-    "zeitgenau": true,
+    "zeitgenau": false,
     "max_schritte_pro_aufgabe": 16,
     "max_schritte_nachholen": 64,
     "ueberlast_rueckstand_s": 1.0,
