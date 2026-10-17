@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="790" viewBox="0 0 1440 790" role="img" aria-labelledby="title desc">
+  <title id="title">Körperlage der Yacht in drei Ansichten</title>
+  <desc id="desc">Vereinfachte orthogonale Silhouetten auf Basis der Rumpfgeometrie aus Yacht 1: Draufsicht mit Gieren, Backbordseitenansicht mit Stampfen und Heckansicht mit Krängung. In allen seitlichen Winkeln ist Backbord negativ und Steuerbord positiv.</desc>
+  <defs>
+    <marker id="axis" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1769aa"/>
+    </marker>
+    <marker id="angle" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c43b32"/>
+    </marker>
+    <marker id="negative" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b46b18"/>
+    </marker>
+    <style>
+      text { font-family: "Segoe UI", Arial, sans-serif; fill: #20252b; }
+      .title { font-size: 25px; font-weight: 700; }
+      .view { font-size: 19px; font-weight: 650; }
+      .label { font-size: 16px; font-weight: 600; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
+      .small { font-size: 14px; fill: #4b5563; paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
+      .tiny { font-size: 12px; fill: #56616c; }
+      .hull { fill: #e6edf2; stroke: #354b5e; stroke-width: 3; stroke-linejoin: round; }
+      .neutral { fill: #f6f8fa; stroke: #8997a4; stroke-width: 2; stroke-dasharray: 7 6; }
+      .axis-line { stroke: #1769aa; stroke-width: 3; fill: none; }
+      .angle-line { stroke: #c43b32; stroke-width: 3; fill: none; }
+      .negative-line { stroke: #b46b18; stroke-width: 2.5; fill: none; stroke-dasharray: 6 4; }
+      .horizon { stroke: #71808e; stroke-width: 1.5; stroke-dasharray: 8 6; }
+    </style>
+  </defs>
+  <rect width="1440" height="790" fill="#fff"/>
+  <text x="38" y="44" class="title">Körperlage der Yacht — Rumpf in drei orthogonalen Ansichten</text>
+  <text x="38" y="73" class="small">Vereinfachte Silhouetten nach Yacht 1 / rumpf.obj und der Modell-Achsenmatrix. Winkel und Neigungen sind zur Lesbarkeit schematisch überhöht.</text>
+  <line x1="32" y1="96" x2="1408" y2="96" stroke="#d7dde4"/>
+  <line x1="480" y1="112" x2="480" y2="738" stroke="#d7dde4"/>
+  <line x1="960" y1="112" x2="960" y2="738" stroke="#d7dde4"/>
+
+  <text x="48" y="132" class="view">Draufsicht — Gieren / Heading</text>
+  <text x="48" y="155" class="small">Blick von oben; Backbord liegt links.</text>
+  <line x1="62" y1="590" x2="455" y2="590" class="horizon"/>
+  <g transform="translate(255 390)">
+    <path class="neutral" d="M0,-178 C-7,-174 -16,-164 -24,-148 C-42,-118 -53,-67 -54,-20 C-56,32 -47,87 -33,126 C-23,152 -11,172 0,178 C11,172 23,152 33,126 C47,87 56,32 54,-20 C53,-67 42,-118 24,-148 C16,-164 7,-174 0,-178 Z"/>
+  </g>
+  <g transform="translate(255 390) rotate(20)">
+    <path class="hull" d="M0,-178 C-7,-174 -16,-164 -24,-148 C-42,-118 -53,-67 -54,-20 C-56,32 -47,87 -33,126 C-23,152 -11,172 0,178 C11,172 23,152 33,126 C47,87 56,32 54,-20 C53,-67 42,-118 24,-148 C16,-164 7,-174 0,-178 Z"/>
+    <line x1="0" y1="0" x2="0" y2="-93" class="axis-line" marker-end="url(#axis)"/>
+    <line x1="0" y1="0" x2="-73" y2="0" class="axis-line" marker-end="url(#axis)"/>
+  </g>
+  <circle cx="255" cy="390" r="10" fill="#fff" stroke="#1769aa" stroke-width="3"/>
+  <circle cx="255" cy="390" r="3.5" fill="#1769aa"/>
+  <text x="270" y="415" class="small">+Z_W aus der Ebene</text>
+  <text x="184" y="207" class="label">+X_B Voraus</text>
+  <text x="100" y="444" class="label">+Y_B Backbord</text>
+  <line x1="410" y1="256" x2="410" y2="207" class="axis-line" marker-end="url(#axis)"/>
+  <line x1="410" y1="256" x2="453" y2="256" class="axis-line" marker-end="url(#axis)"/>
+  <text x="401" y="198" class="label">N</text>
+  <text x="432" y="280" class="small">E</text>
+  <text x="365" y="300" class="tiny">Welt-Nord</text>
+  <path d="M255 314 A76 76 0 0 0 229 319" class="negative-line" marker-end="url(#negative)"/>
+  <path d="M255 314 A76 76 0 0 1 281 319" class="angle-line" marker-end="url(#angle)"/>
+  <text x="177" y="304" class="label" fill="#b46b18">− ψ</text>
+  <text x="291" y="304" class="label" fill="#c43b32">+ ψ</text>
+  <text x="48" y="638" class="small">−ψ: Bug dreht nach Backbord; +ψ: nach Steuerbord.</text>
+  <text x="48" y="660" class="small">HDG wird im Uhrzeigersinn ab Nord gemessen (Nord = 0°).</text>
+  <text x="48" y="682" class="small">ψ = wrap₁₈₀(HDG); Nord entspricht ψ = 0°.</text>
+  <text x="48" y="705" class="tiny">Gestrichelt: neutrale Referenz; gefüllt: beispielhaft nach Backbord gegierte Lage (−ψ).</text>
+
+  <text x="505" y="132" class="view">Backbordansicht — Stampfen</text>
+  <text x="505" y="155" class="small">Blick von Backbord; Bug zeigt nach links.</text>
+  <line x1="500" y1="390" x2="938" y2="390" class="horizon"/>
+  <text x="510" y="382" class="tiny">Horizont</text>
+  <g transform="translate(720 390)">
+    <path class="neutral" d="M-176,-30 C-145,-38 -105,-43 -65,-45 C-20,-47 30,-48 75,-45 C120,-41 155,-32 176,-25 C161,0 137,29 102,48 C60,66 20,75 0,76 C-32,73 -75,63 -112,48 C-145,28 -164,0 -176,-30 Z"/>
+  </g>
+  <g transform="translate(720 390) rotate(-22)">
+    <path class="hull" d="M-176,-30 C-145,-38 -105,-43 -65,-45 C-20,-47 30,-48 75,-45 C120,-41 155,-32 176,-25 C161,0 137,29 102,48 C60,66 20,75 0,76 C-32,73 -75,63 -112,48 C-145,28 -164,0 -176,-30 Z"/>
+    <line x1="0" y1="0" x2="-83" y2="0" class="axis-line" marker-end="url(#axis)"/>
+    <line x1="0" y1="0" x2="0" y2="-78" class="axis-line" marker-end="url(#axis)"/>
+  </g>
+  <circle cx="720" cy="390" r="10" fill="#fff" stroke="#1769aa" stroke-width="3"/>
+  <circle cx="720" cy="390" r="3.5" fill="#1769aa"/>
+  <text x="738" y="418" class="small">+Y_B Backbord, aus der Ebene</text>
+  <text x="555" y="465" class="label">+X_B Voraus</text>
+  <text x="750" y="300" class="label">+Z_B Oben</text>
+  <path d="M643 390 A77 77 0 0 0 648 419" class="angle-line" marker-end="url(#angle)"/>
+  <path d="M643 390 A77 77 0 0 1 648 361" class="negative-line" marker-end="url(#negative)"/>
+  <text x="601" y="440" class="label" fill="#c43b32">+ θ</text>
+  <text x="601" y="358" class="label" fill="#b46b18">− θ</text>
+  <text x="505" y="638" class="small">+θ: Bug senkt sich; −θ: Bug hebt sich.</text>
+  <text x="505" y="660" class="small">Drehachse ist +Y_B (Backbordachse).</text>
+  <text x="505" y="705" class="tiny">Gestrichelt: waagerechte Referenz; gefüllt: beispielhaft Bug nach unten.</text>
+
+  <text x="985" y="132" class="view">Heckansicht — Krängung</text>
+  <text x="985" y="155" class="small">Blick von achtern nach vorn; Backbord liegt links.</text>
+  <line x1="985" y1="390" x2="1408" y2="390" class="horizon"/>
+  <text x="992" y="382" class="tiny">Horizont</text>
+  <g transform="translate(1190 390)">
+    <path class="neutral" d="M0,-66 C-22,-64 -52,-58 -81,-49 C-86,-35 -78,-12 -69,10 C-57,39 -33,66 0,88 C33,66 57,39 69,10 C78,-12 86,-35 81,-49 C52,-58 22,-64 0,-66 Z"/>
+  </g>
+  <g transform="translate(1190 390) rotate(22)">
+    <path class="hull" d="M0,-66 C-22,-64 -52,-58 -81,-49 C-86,-35 -78,-12 -69,10 C-57,39 -33,66 0,88 C33,66 57,39 69,10 C78,-12 86,-35 81,-49 C52,-58 22,-64 0,-66 Z"/>
+    <line x1="0" y1="0" x2="-66" y2="0" class="axis-line" marker-end="url(#axis)"/>
+    <line x1="0" y1="0" x2="0" y2="-66" class="axis-line" marker-end="url(#axis)"/>
+  </g>
+  <circle cx="1190" cy="390" r="10" fill="#fff" stroke="#1769aa" stroke-width="3"/>
+  <line x1="1185" y1="385" x2="1195" y2="395" stroke="#1769aa" stroke-width="3"/>
+  <line x1="1185" y1="395" x2="1195" y2="385" stroke="#1769aa" stroke-width="3"/>
+  <text x="1208" y="418" class="small">+X_B Voraus, in die Ebene</text>
+  <text x="1010" y="335" class="label">+Y_B Backbord</text>
+  <text x="1235" y="300" class="label">+Z_B Oben</text>
+  <path d="M1112 390 A78 78 0 0 0 1118 361" class="negative-line" marker-end="url(#negative)"/>
+  <path d="M1112 390 A78 78 0 0 1 1118 419" class="angle-line" marker-end="url(#angle)"/>
+  <text x="1068" y="356" class="label" fill="#b46b18">− φ</text>
+  <text x="1068" y="437" class="label" fill="#c43b32">+ φ</text>
+  <text x="985" y="638" class="small">−φ: Backbordseite hebt sich; +φ: Steuerbordseite hebt sich.</text>
+  <text x="985" y="660" class="small">Drehachse ist +X_B (Längsachse).</text>
+  <text x="985" y="705" class="tiny">Gestrichelt: aufrechter Rumpf; gefüllt: Backbordseite oben (−φ).</text>
+</svg>

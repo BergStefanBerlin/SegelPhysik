@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="620" viewBox="0 0 1100 620" role="img" aria-labelledby="title desc">
+  <title id="title">Bewegliche Teile und Stellwinkel</title>
+  <desc id="desc">Bootsdraufsicht mit Winkelsymbolen um Segel- und Ruderdrehpunkte. Minus bedeutet Backbord, Plus Steuerbord. Schwertstellungsanzeige von null Prozent eingefahren bis hundert Prozent ausgefahren.</desc>
+  <defs>
+    <marker id="blue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1769aa"/>
+    </marker>
+    <marker id="red" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c43b32"/>
+    </marker>
+    <style>
+      text { font-family: "Segoe UI", Arial, sans-serif; fill: #20252b; }
+      .head { font-size: 23px; font-weight: 700; }
+      .label { font-size: 17px; font-weight: 600; }
+      .small { font-size: 14px; fill: #4b5563; }
+    </style>
+  </defs>
+  <rect width="1100" height="620" fill="#fff"/>
+  <text x="40" y="45" class="head">Bewegliche Teile: Winkelkonventionen und Schwertstellung</text>
+  <text x="40" y="72" class="small">Segel und Ruder: − = Backbord, + = Steuerbord. Winkelbögen beginnen jeweils an der Referenzlinie.</text>
+  <line x1="35" y1="94" x2="1065" y2="94" stroke="#d7dde4"/>
+
+  <text x="80" y="135" class="label">Draufsicht — Segeltrim und Ruder</text>
+  <path d="M290 160 Q325 188 325 260 L325 420 Q325 500 290 535 Q255 500 255 420 L255 260 Q255 188 290 160 Z" fill="#eef2f6" stroke="#354052" stroke-width="3"/>
+  <line x1="290" y1="500" x2="290" y2="190" stroke="#7a8795" stroke-width="2" stroke-dasharray="8 6"/>
+  <text x="300" y="205" class="small">Mittellinie / +X_B</text>
+  <text x="75" y="178" class="small">Fock: 0° dicht achtern</text>
+  <circle cx="290" cy="220" r="6" fill="#30343b"/>
+  <line x1="290" y1="220" x2="290" y2="264" stroke="#7a8795" stroke-width="2" stroke-dasharray="6 4"/>
+  <line x1="290" y1="220" x2="334" y2="264" stroke="#26834a" stroke-width="6"/>
+  <line x1="290" y1="220" x2="246" y2="264" stroke="#26834a" stroke-width="4" stroke-dasharray="7 4"/>
+  <path d="M290 264 A44 44 0 0 0 321 251" fill="none" stroke="#c43b32" stroke-width="3" marker-end="url(#red)"/>
+  <path d="M290 264 A44 44 0 0 1 259 251" fill="none" stroke="#c43b32" stroke-width="3" marker-end="url(#red)"/>
+  <text x="326" y="242" class="label">+</text>
+  <text x="244" y="242" class="label">−</text>
+  <text x="75" y="300" class="small">Großsegel: 0° dicht achtern</text>
+  <circle cx="290" cy="330" r="6" fill="#30343b"/>
+  <line x1="290" y1="330" x2="290" y2="376" stroke="#7a8795" stroke-width="2" stroke-dasharray="6 4"/>
+  <line x1="290" y1="330" x2="244" y2="330" stroke="#1769aa" stroke-width="6"/>
+  <line x1="290" y1="330" x2="336" y2="330" stroke="#1769aa" stroke-width="4" stroke-dasharray="7 4"/>
+  <path d="M290 376 A46 46 0 0 0 336 330" fill="none" stroke="#c43b32" stroke-width="3" marker-end="url(#red)"/>
+  <path d="M290 376 A46 46 0 0 1 244 330" fill="none" stroke="#c43b32" stroke-width="3" marker-end="url(#red)"/>
+  <text x="335" y="365" class="label">+</text>
+  <text x="232" y="365" class="label">−</text>
+  <text x="75" y="475" class="small">Ruder: 0° Mitte / längsschiffs</text>
+  <circle cx="290" cy="520" r="6" fill="#30343b"/>
+  <line x1="290" y1="520" x2="290" y2="562" stroke="#7a8795" stroke-width="2" stroke-dasharray="6 4"/>
+  <line x1="290" y1="520" x2="250" y2="520" stroke="#d6a84f" stroke-width="7"/>
+  <line x1="290" y1="520" x2="330" y2="520" stroke="#c43b32" stroke-width="5" stroke-dasharray="7 4"/>
+  <path d="M290 560 A40 40 0 0 1 250 520" fill="none" stroke="#c43b32" stroke-width="3" marker-end="url(#red)"/>
+  <path d="M290 560 A40 40 0 0 0 330 520" fill="none" stroke="#c43b32" stroke-width="3" marker-end="url(#red)"/>
+  <text x="238" y="565" class="label">−</text>
+  <text x="330" y="565" class="label">+</text>
+  <text x="75" y="585" class="small">−90° Backbord · +90° Steuerbord</text>
+  <text x="55" y="605" class="small">Segel und Ruder: Minus = Backbord, Plus = Steuerbord.</text>
+
+  <line x1="550" y1="125" x2="550" y2="575" stroke="#d7dde4"/>
+  <text x="600" y="135" class="label">Schwert — Winkel und Stellungsanteil</text>
+  <text x="620" y="175" class="small">A. Klappschwert — Seitenansicht</text>
+  <text x="620" y="198" class="small">Heck / achtern (−X_B) ←</text>
+  <text x="840" y="198" class="small">Bug / voraus (+X_B) →</text>
+  <line x1="635" y1="225" x2="920" y2="225" stroke="#354052" stroke-width="8"/>
+  <circle cx="770" cy="248" r="8" fill="#30343b"/>
+  <line x1="770" y1="253" x2="770" y2="370" stroke="#1769aa" stroke-width="9"/>
+  <line x1="770" y1="253" x2="650" y2="253" stroke="#c43b32" stroke-width="8" stroke-dasharray="10 6"/>
+  <path d="M770 315 A62 62 0 0 1 708 253" fill="none" stroke="#c43b32" stroke-width="4" marker-end="url(#red)"/>
+  <text x="709" y="292" class="label">+</text>
+  <text x="625" y="385" class="small">100 %: senkrecht unten</text>
+  <text x="790" y="270" class="small">0 %: voll nach achtern</text>
+  <text x="620" y="410" class="small">Positiver Winkel um +Y_B klappt das Schwert zum Heck.</text>
+
+  <text x="620" y="452" class="small">B. Schiebe-/Hubschwert — Seitenansicht</text>
+  <line x1="635" y1="490" x2="920" y2="490" stroke="#354052" stroke-width="8"/>
+  <line x1="770" y1="490" x2="770" y2="555" stroke="#c43b32" stroke-width="8" stroke-dasharray="10 6"/>
+  <line x1="770" y1="490" x2="770" y2="585" stroke="#1769aa" stroke-width="9"/>
+  <line x1="825" y1="505" x2="825" y2="570" stroke="#1769aa" stroke-width="3" marker-end="url(#blue)"/>
+  <text x="845" y="515" class="small">0 % angehoben</text>
+  <text x="845" y="580" class="small">100 % ausgefahren</text>
+  <text x="620" y="610" class="small">Stellungsanteil: 0 % eingefahren/oben, 100 % ausgefahren/unten.</text>
+</svg>

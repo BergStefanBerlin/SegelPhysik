@@ -1,0 +1,184 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="820" viewBox="0 0 1280 820" role="img" aria-labelledby="title desc">
+  <title id="title">Kompass-Master – Elemente zum Referenzieren</title>
+  <desc id="desc">Fortlaufende Elementbibliothek der Navigationsanzeigen. Die vergrößerte Kompasskarte links hat nummerierte Markierungen; rechts benennt die Legende Widgetrahmen, Titel, Titelbeschreibung, Skalenringe, Teilstriche, Kardinalpunkte, Winkelwert, Headingzeiger, Richtungstext, HDG, Drehzentrum und Kamerasymbol. Neue gemeinsame oder spezifische Elemente werden hier ergänzt; konkrete Widgets blenden nicht benötigte Elemente aus.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#102437"/>
+      <stop offset="1" stop-color="#07131f"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#193448"/>
+      <stop offset="1" stop-color="#11283a"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000814" flood-opacity=".35"/>
+    </filter>
+    <marker id="callout-end" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+      <circle cx="4" cy="4" r="3" fill="#5ee2d0"/>
+    </marker>
+    <style>
+      text { font-family: "Segoe UI", Arial, sans-serif; fill: #f4f8fb; }
+      .eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 1.7px; fill: #8da9bb; }
+      .title { font-size: 25px; font-weight: 700; }
+      .card { fill: url(#card); stroke: #315066; stroke-width: 1.5; }
+      .card-title { font-size: 19px; font-weight: 700; letter-spacing: 1.2px; fill: #b8cad5; }
+      .small { font-size: 13px; fill: #8da9bb; }
+      .dial-value { font-size: 48px; font-weight: 700; }
+      .dial-caption { font-size: 17px; fill: #9eb4c2; }
+      .dial-code { font-size: 18px; font-weight: 700; letter-spacing: 2px; fill: #8da9bb; }
+      .tick-minor { stroke: #49667a; stroke-width: 2; }
+      .tick-major { stroke: #7892a3; stroke-width: 2.7; }
+      .callout-line { fill: none; stroke: #5ee2d0; stroke-width: 1.5; opacity: .8; }
+      .callout-dot { fill: #102437; stroke: #5ee2d0; stroke-width: 2; }
+      .callout-number { font-size: 12px; font-weight: 700; text-anchor: middle; dominant-baseline: central; }
+      .legend-number { font-size: 14px; font-weight: 700; fill: #5ee2d0; }
+      .legend-title { font-size: 14px; font-weight: 700; }
+      .legend-description { font-size: 12px; fill: #9eb4c2; }
+      .camera { fill: #11283a; stroke: #ffdf70; stroke-width: 2.5; stroke-linejoin: round; }
+    </style>
+  </defs>
+
+  <rect width="1280" height="820" fill="url(#background)"/>
+  <text x="42" y="42" class="eyebrow">REFERENZBLATT · WELTKOMPASS</text>
+  <text x="42" y="78" class="title">Kompass-Master – Elemente benennen</text>
+  <text x="42" y="105" class="small">Nummern in der Grafik entsprechen der Legende rechts. Werte sind Beispiele.</text>
+
+  <g id="master_widget" filter="url(#shadow)">
+    <rect class="card" x="42" y="132" width="540" height="540" rx="24"/>
+    <text x="82" y="185" class="card-title">KOMPASS</text>
+    <text x="70" y="642" class="small">Bugrichtung relativ zu lokalem Nord</text>
+
+    <g id="compass_face" transform="translate(0 5)">
+      <circle cx="312" cy="405" r="210" fill="#0b1c2a" stroke="#49667a" stroke-width="2.5"/>
+      <circle cx="312" cy="405" r="166.5" fill="none" stroke="#29485d" stroke-width="1.8"/>
+
+      <g id="compass_ticks" fill="none">
+        <g class="tick-minor">
+          <line x1="312" y1="195" x2="312" y2="219"/>
+          <line x1="312" y1="195" x2="312" y2="219" transform="rotate(22.5 312 405)"/>
+          <line x1="312" y1="195" x2="312" y2="219" transform="rotate(67.5 312 405)"/>
+          <line x1="312" y1="195" x2="312" y2="219" transform="rotate(112.5 312 405)"/>
+          <line x1="312" y1="195" x2="312" y2="219" transform="rotate(157.5 312 405)"/>
+          <line x1="312" y1="195" x2="312" y2="219" transform="rotate(202.5 312 405)"/>
+          <line x1="312" y1="195" x2="312" y2="219" transform="rotate(247.5 312 405)"/>
+          <line x1="312" y1="195" x2="312" y2="219" transform="rotate(292.5 312 405)"/>
+          <line x1="312" y1="195" x2="312" y2="219" transform="rotate(337.5 312 405)"/>
+        </g>
+        <g class="tick-major">
+          <line x1="312" y1="195" x2="312" y2="226" transform="rotate(45 312 405)"/>
+          <line x1="312" y1="195" x2="312" y2="226" transform="rotate(135 312 405)"/>
+          <line x1="312" y1="195" x2="312" y2="226" transform="rotate(225 312 405)"/>
+          <line x1="312" y1="195" x2="312" y2="226" transform="rotate(315 312 405)"/>
+        </g>
+      </g>
+
+      <g id="heading_pointer" transform="rotate(74 312 405)">
+        <path d="M312 260 L298 418 L312 399 L326 418 Z" fill="#ffc66d"/>
+        <line x1="312" y1="405" x2="312" y2="268" stroke="#ffc66d" stroke-width="3"/>
+      </g>
+      <g id="camera_symbol" transform="rotate(119 312 405)"
+         class="camera">
+        <rect x="299" y="145" width="26" height="21" rx="4"/>
+        <path d="M306 145 L309 140 L315 140 L318 145"/>
+        <path d="M306 166 L312 175 L318 166 Z"/>
+        <circle cx="312" cy="153" r="4.5" fill="none"/>
+      </g>
+      <g id="cardinal_labels" class="small" text-anchor="middle" font-weight="700">
+        <text x="312" y="216" font-size="15">N</text>
+        <text x="500" y="409" font-size="16">O</text>
+        <text x="312" y="610" font-size="15">S</text>
+        <text x="124" y="409" font-size="16">W</text>
+      </g>
+      <circle id="pivot" cx="312" cy="405" r="7" fill="#f4f8fb"/>
+      <text id="heading_value" x="312" y="347" text-anchor="middle" class="dial-value">074°</text>
+      <text id="heading_direction" x="312" y="457" text-anchor="middle" class="dial-caption">ONO</text>
+      <text id="heading_code" x="312" y="491" text-anchor="middle" class="dial-code">HDG</text>
+    </g>
+  </g>
+
+  <g id="callouts" aria-label="Nummerierte Elementhinweise">
+    <path class="callout-line" d="M74 220 H30 V132 H42" marker-end="url(#callout-end)"/>
+    <path class="callout-line" d="M193 177 H608 V151 H650" marker-end="url(#callout-end)"/>
+    <path class="callout-line" d="M340 642 H610 V207 H650" marker-end="url(#callout-end)"/>
+    <path class="callout-line" d="M106 285 H615 V263 H650" marker-end="url(#callout-end)"/>
+    <path class="callout-line" d="M145 307 H620 V319 H650" marker-end="url(#callout-end)"/>
+    <path class="callout-line" d="M184 253 H625 V375 H650" marker-end="url(#callout-end)"/>
+    <path class="callout-line" d="M345 219 H630 V431 H650" marker-end="url(#callout-end)"/>
+    <path class="callout-line" d="M382 344 H635 V487 H650" marker-end="url(#callout-end)"/>
+    <path class="callout-line" d="M400 383 H640 V543 H650" marker-end="url(#callout-end)"/>
+    <path class="callout-line" d="M380 457 H645 V599 H650" marker-end="url(#callout-end)"/>
+    <path class="callout-line" d="M380 491 H645 V655 H650" marker-end="url(#callout-end)"/>
+    <path class="callout-line" d="M342 420 H645 V711 H650" marker-end="url(#callout-end)"/>
+    <path class="callout-line" d="M484 225 H640 V767 H650" marker-end="url(#callout-end)"/>
+    <g>
+      <circle class="callout-dot" cx="74" cy="220" r="12"/><text class="callout-number" x="74" y="220">1</text>
+      <circle class="callout-dot" cx="193" cy="177" r="12"/><text class="callout-number" x="193" y="177">2</text>
+      <circle class="callout-dot" cx="340" cy="642" r="12"/><text class="callout-number" x="340" y="642">3</text>
+      <circle class="callout-dot" cx="106" cy="285" r="12"/><text class="callout-number" x="106" y="285">4</text>
+      <circle class="callout-dot" cx="145" cy="307" r="12"/><text class="callout-number" x="145" y="307">5</text>
+      <circle class="callout-dot" cx="184" cy="253" r="12"/><text class="callout-number" x="184" y="253">6</text>
+      <circle class="callout-dot" cx="345" cy="219" r="12"/><text class="callout-number" x="345" y="219">7</text>
+      <circle class="callout-dot" cx="382" cy="344" r="12"/><text class="callout-number" x="382" y="344">8</text>
+      <circle class="callout-dot" cx="400" cy="383" r="12"/><text class="callout-number" x="400" y="383">9</text>
+      <circle class="callout-dot" cx="380" cy="457" r="12"/><text class="callout-number" x="380" y="457">10</text>
+      <circle class="callout-dot" cx="380" cy="491" r="12"/><text class="callout-number" x="380" y="491">11</text>
+      <circle class="callout-dot" cx="342" cy="420" r="12"/><text class="callout-number" x="342" y="420">12</text>
+      <circle class="callout-dot" cx="484" cy="225" r="12"/><text class="callout-number" x="484" y="225">13</text>
+    </g>
+  </g>
+
+  <g id="element_legend">
+    <text x="674" y="151" class="legend-number">01</text>
+    <text x="710" y="151" class="legend-title">Widgetrahmen</text>
+    <text x="710" y="168" class="legend-description">Quadratische Karte mit gerundeten Ecken</text>
+
+    <text x="674" y="207" class="legend-number">02</text>
+    <text x="710" y="207" class="legend-title">Titel</text>
+    <text x="710" y="224" class="legend-description">„KOMPASS“ oben links in der Karte</text>
+
+    <text x="674" y="263" class="legend-number">03</text>
+    <text x="710" y="263" class="legend-title">Titelbeschreibung</text>
+    <text x="710" y="280" class="legend-description">Unten links innerhalb des Widgetrahmens</text>
+
+    <text x="674" y="319" class="legend-number">04</text>
+    <text x="710" y="319" class="legend-title">Äußerer Skalenring</text>
+    <text x="710" y="336" class="legend-description">Äußere Begrenzung der Kompassrose</text>
+
+    <text x="674" y="375" class="legend-number">05</text>
+    <text x="710" y="375" class="legend-title">Innerer Skalenring</text>
+    <text x="710" y="392" class="legend-description">Begrenzt den Ring mit den Himmelsbuchstaben</text>
+
+    <text x="674" y="431" class="legend-number">06</text>
+    <text x="710" y="431" class="legend-title">Teilstriche</text>
+    <text x="710" y="448" class="legend-description">Kleine bei 22,5°, längere bei 45°; Kardinale frei</text>
+
+    <text x="674" y="487" class="legend-number">07</text>
+    <text x="710" y="487" class="legend-title">Kardinalbuchstaben</text>
+    <text x="710" y="504" class="legend-description">N, O, S, W zwischen den beiden Skalenringen</text>
+
+    <text x="674" y="543" class="legend-number">08</text>
+    <text x="710" y="543" class="legend-title">Numerischer Headingwert</text>
+    <text x="710" y="560" class="legend-description">Große Gradzahl im oberen Teil der Rose</text>
+
+    <text x="674" y="599" class="legend-number">09</text>
+    <text x="710" y="599" class="legend-title">Headingzeiger</text>
+    <text x="710" y="616" class="legend-description">Goldener, gefüllter Zeiger für HDG</text>
+
+    <text x="674" y="655" class="legend-number">10</text>
+    <text x="710" y="655" class="legend-title">16-Punkt-Richtung</text>
+    <text x="710" y="672" class="legend-description">Strichgenauer Text, z. B. ONO</text>
+
+    <text x="674" y="711" class="legend-number">11</text>
+    <text x="710" y="711" class="legend-title">HDG-Kürzel</text>
+    <text x="710" y="728" class="legend-description">Kennzeichnet den Zahlenwert als Heading</text>
+
+    <text x="674" y="767" class="legend-number">12</text>
+    <text x="710" y="767" class="legend-title">Zeigerdrehpunkt</text>
+    <text x="710" y="784" class="legend-description">Gemeinsamer Bezugspunkt in der Rosenmitte</text>
+
+    <text x="1010" y="151" class="legend-number">13</text>
+    <text x="1046" y="151" class="legend-title">Kamerasymbol</text>
+    <text x="1046" y="168" class="legend-description">Umläuft die Rose mit KAM_AZ;</text>
+    <text x="1046" y="185" class="legend-description">die Linse weist nach innen</text>
+  </g>
+</svg>

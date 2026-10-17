@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" role="img" aria-labelledby="title desc">
+  <title id="title">Welt- und Körperachsen</title>
+  <desc id="desc">Rechtshändiges lokales Weltsystem Nord-West-Oben und Körperachsen Voraus-Backbord-Oben bei Bugrichtung Nord.</desc>
+  <defs>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1769aa"/>
+    </marker>
+    <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c43b32"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#26834a"/>
+    </marker>
+    <marker id="arrowDark" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#30343b"/>
+    </marker>
+    <style>
+      text { font-family: "Segoe UI", Arial, sans-serif; fill: #20252b; }
+      .head { font-size: 23px; font-weight: 700; }
+      .sub { font-size: 15px; fill: #4b5563; }
+      .label { font-size: 17px; font-weight: 600; }
+      .small { font-size: 14px; }
+    </style>
+  </defs>
+  <rect width="1000" height="560" fill="#ffffff"/>
+  <text x="40" y="44" class="head">Lokales Weltsystem W und Körperframe B</text>
+  <text x="40" y="70" class="sub">Rechtshändig: Nord × West = Oben. Körper ist level, Bug zeigt nach Nord.</text>
+  <line x1="35" y1="88" x2="965" y2="88" stroke="#d7dde4"/>
+
+  <text x="90" y="125" class="label">Weltframe W</text>
+  <circle cx="245" cy="380" r="5" fill="#20252b"/>
+  <line x1="245" y1="380" x2="245" y2="220" stroke="#1769aa" stroke-width="5" marker-end="url(#arrowBlue)"/>
+  <text x="258" y="220" class="label" fill="#1769aa">+X_W Nord</text>
+  <line x1="245" y1="380" x2="125" y2="380" stroke="#c43b32" stroke-width="5" marker-end="url(#arrowRed)"/>
+  <text x="50" y="386" class="label" fill="#c43b32">+Y_W West</text>
+  <line x1="245" y1="380" x2="340" y2="465" stroke="#26834a" stroke-width="5" marker-end="url(#arrowGreen)"/>
+  <text x="326" y="492" class="label" fill="#26834a">+Z_W Oben</text>
+  <line x1="245" y1="380" x2="160" y2="304" stroke="#30343b" stroke-width="3" stroke-dasharray="8 6" marker-end="url(#arrowDark)"/>
+  <text x="80" y="300" class="small">g_W nach unten</text>
+
+  <text x="570" y="125" class="label">Körperframe B (Ansicht von oben)</text>
+  <circle cx="735" cy="380" r="5" fill="#20252b"/>
+  <path d="M685 390 L735 245 L785 390 Z" fill="#e8edf2" stroke="#354052" stroke-width="3"/>
+  <line x1="735" y1="380" x2="735" y2="205" stroke="#1769aa" stroke-width="5" marker-end="url(#arrowBlue)"/>
+  <text x="750" y="207" class="label" fill="#1769aa">+X_B Voraus</text>
+  <line x1="735" y1="380" x2="595" y2="380" stroke="#c43b32" stroke-width="5" marker-end="url(#arrowRed)"/>
+  <text x="485" y="412" class="label" fill="#c43b32">+Y_B Backbord</text>
+  <line x1="735" y1="380" x2="850" y2="480" stroke="#26834a" stroke-width="5" marker-end="url(#arrowGreen)"/>
+  <text x="850" y="505" class="label" fill="#26834a">+Z_B Oben</text>
+  <text x="640" y="438" class="small">Bug nach Nord; Backbord nach West</text>
+
+  <rect x="45" y="515" width="910" height="28" rx="5" fill="#f2f5f8"/>
+  <text x="60" y="535" class="small">Weltwerte werden für jeden Körper mit R_WBᵀ in dessen Körperframe ausgedrückt; Umwelt bleibt eine gemeinsame Weltquelle.</text>
+</svg>

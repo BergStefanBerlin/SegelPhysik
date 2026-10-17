@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="720" viewBox="0 0 1440 720" role="img" aria-labelledby="title desc">
+  <title id="title">Kamerawinkel relativ zu Körper und Horizont</title>
+  <desc id="desc">Drei Schemata: der Kamerastandpunkt folgt in der Draufsicht dem Heading mit festem Winkelversatz; Kamera-Höhenwinkel und Horizont bleiben stabil, sodass Stampfen und Krängung des Boots sichtbar bleiben.</desc>
+  <defs>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2877a8"/>
+    </marker>
+    <marker id="arrow-teal" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#168b83"/>
+    </marker>
+    <marker id="arrow-gold" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#bd861e"/>
+    </marker>
+    <marker id="arrow-gray" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#647485"/>
+    </marker>
+    <style>
+      text { font-family: "Segoe UI", Arial, sans-serif; fill: #20252b; }
+      .title { font-size: 25px; font-weight: 700; }
+      .subtitle { font-size: 15px; fill: #536170; }
+      .panel-title { font-size: 17px; font-weight: 700; }
+      .label { font-size: 14px; font-weight: 600; }
+      .small { font-size: 13px; fill: #536170; }
+      .horizon { stroke: #5b9ab4; stroke-width: 2; stroke-dasharray: 9 6; }
+      .axis { stroke: #2877a8; stroke-width: 3; }
+      .body { fill: #e8edf2; stroke: #354b5e; stroke-width: 3; stroke-linejoin: round; }
+      .camera { fill: #fff4cf; stroke: #bd861e; stroke-width: 2.5; }
+      .look { stroke: #bd861e; stroke-width: 2.5; stroke-dasharray: 7 5; }
+      .panel { fill: #f8fafc; stroke: #d2dae2; stroke-width: 1.2; }
+    </style>
+  </defs>
+  <rect width="1440" height="720" fill="#fff"/>
+  <text x="40" y="46" class="title">Kamerawinkel — Gieren folgen, Horizont halten</text>
+  <text x="40" y="75" class="subtitle">Die Kamera folgt der Bootsrichtung nur in der Horizontalen. Stampfen und Krängung bleiben gegenüber dem Horizont sichtbar.</text>
+  <line x1="40" y1="94" x2="1400" y2="94" stroke="#d6dde4"/>
+
+  <g id="camera_azimuth_diagram">
+    <rect class="panel" x="40" y="116" width="430" height="548" rx="12"/>
+    <text x="64" y="151" class="panel-title">1 · Draufsicht: Azimut folgt Gieren</text>
+    <text x="64" y="175" class="small">Kamera-Standpunkt dreht mit dem Heading um das Boot.</text>
+    <circle cx="255" cy="395" r="142" fill="#fff" stroke="#d7e0e7" stroke-width="1.5"/>
+    <line x1="255" y1="395" x2="255" y2="236" class="axis" marker-end="url(#arrow-blue)"/>
+    <text x="267" y="238" class="label">Nord · +X_W</text>
+    <line x1="255" y1="395" x2="154" y2="395" stroke="#647485" stroke-width="2" marker-end="url(#arrow-gray)"/>
+    <text x="92" y="420" class="small">West · +Y_W</text>
+    <line x1="255" y1="395" x2="341" y2="292" stroke="#2877a8" stroke-width="4" marker-end="url(#arrow-blue)"/>
+    <text x="339" y="287" class="label">Bug · HDG</text>
+    <path d="M255 327 A68 68 0 0 1 302 346" fill="none" stroke="#2877a8" stroke-width="2"/>
+    <text x="304" y="341" class="small">HDG</text>
+    <circle cx="255" cy="395" r="8" fill="#354b5e"/>
+    <text x="268" y="418" class="small">Boot / Zielpunkt</text>
+    <g transform="translate(392 395)">
+      <rect x="-15" y="-13" width="30" height="24" rx="5" class="camera"/>
+      <circle cx="0" cy="-1" r="5" fill="none" stroke="#bd861e" stroke-width="2"/>
+      <path d="M-7 -14 L0 -21 L7 -14" fill="none" stroke="#bd861e" stroke-width="2"/>
+    </g>
+    <line x1="389" y1="395" x2="265" y2="395" class="look" marker-end="url(#arrow-gold)"/>
+    <text x="323" y="448" text-anchor="middle" class="small">Kamera blickt zum Boot</text>
+    <path d="M255 253 A142 142 0 0 1 397 395" fill="none" stroke="#bd861e" stroke-width="2" stroke-dasharray="5 5"/>
+    <text x="342" y="264" class="label">KAM_AZ</text>
+    <rect x="65" y="542" width="380" height="86" rx="8" fill="#edf4f8"/>
+    <text x="82" y="570" class="label">KAM_AZ = HDG + Δ_Kamera</text>
+    <text x="82" y="594" class="small">Δ_Kamera bleibt konstant relativ zum Bug.</text>
+    <text x="82" y="614" class="small">Das Bootsgieren dreht den Kamerastandpunkt mit.</text>
+  </g>
+
+  <g id="camera_elevation_diagram">
+    <rect class="panel" x="505" y="116" width="430" height="548" rx="12"/>
+    <text x="529" y="151" class="panel-title">2 · Seitenansicht: Horizont stabil</text>
+    <text x="529" y="175" class="small">Kamera-Höhenwinkel bleibt relativ zum Horizont fest.</text>
+    <line x1="545" y1="415" x2="895" y2="415" class="horizon"/>
+    <text x="550" y="404" class="small">Lokaler Horizont</text>
+    <circle cx="720" cy="415" r="7" fill="#354b5e"/>
+    <g id="pitching_hull" transform="rotate(-13 720 415)">
+      <path d="M625 399 C664 406 776 406 815 399 L795 421 C768 441 674 441 645 421 Z" class="body"/>
+      <line x1="720" y1="415" x2="720" y2="358" class="axis" marker-end="url(#arrow-blue)"/>
+    </g>
+    <text x="652" y="466" class="label">Bug nach unten · θ sichtbar</text>
+    <path d="M839 266 L720 415" class="look" marker-end="url(#arrow-gold)"/>
+    <g transform="translate(839 266)">
+      <rect x="-15" y="-13" width="30" height="24" rx="5" class="camera"/>
+      <circle cx="0" cy="-1" r="5" fill="none" stroke="#bd861e" stroke-width="2"/>
+      <path d="M-7 -14 L0 -21 L7 -14" fill="none" stroke="#bd861e" stroke-width="2"/>
+    </g>
+    <line x1="720" y1="415" x2="839" y2="415" stroke="#8a98a6" stroke-width="1.5" stroke-dasharray="5 5"/>
+    <path d="M766 415 A46 46 0 0 0 749 379" fill="none" stroke="#bd861e" stroke-width="2"/>
+    <text x="768" y="388" class="label">KAM_EL</text>
+    <text x="550" y="505" class="small">Kamera-Roll = 0° relativ zum Horizont.</text>
+    <text x="550" y="527" class="small">Die Bootsneigung wird nicht durch die Kamera ausgeglichen.</text>
+    <rect x="530" y="558" width="380" height="70" rx="8" fill="#edf4f8"/>
+    <text x="547" y="585" class="label">KAM_EL = festgelegter Blickwinkel über Horizont</text>
+    <text x="547" y="609" class="small">Stampfen ändert die Bootslage, nicht die Kameraneigung.</text>
+  </g>
+
+  <g id="camera_roll_diagram">
+    <rect class="panel" x="970" y="116" width="430" height="548" rx="12"/>
+    <text x="994" y="151" class="panel-title">3 · Heckansicht: Krängung sichtbar</text>
+    <text x="994" y="175" class="small">Die Kamera bleibt waagerecht, der Rumpf darf rollen.</text>
+    <line x1="1008" y1="415" x2="1362" y2="415" class="horizon"/>
+    <text x="1014" y="404" class="small">Lokaler Horizont</text>
+    <g id="rolling_hull" transform="rotate(16 1185 415)">
+      <path d="M1185 345 C1159 350 1120 364 1101 381 C1112 414 1140 443 1185 469 C1230 443 1258 414 1269 381 C1250 364 1211 350 1185 345 Z" class="body"/>
+      <line x1="1185" y1="415" x2="1185" y2="341" class="axis" marker-end="url(#arrow-blue)"/>
+    </g>
+    <text x="1050" y="493" class="label">Krängung φ bleibt gegenüber Horizont sichtbar</text>
+    <g transform="translate(1185 285)">
+      <rect x="-15" y="-13" width="30" height="24" rx="5" class="camera"/>
+      <circle cx="0" cy="-1" r="5" fill="none" stroke="#bd861e" stroke-width="2"/>
+      <path d="M-7 -14 L0 -21 L7 -14" fill="none" stroke="#bd861e" stroke-width="2"/>
+      <line x1="-44" y1="0" x2="44" y2="0" stroke="#bd861e" stroke-width="2"/>
+    </g>
+    <text x="1208" y="287" class="small">Kamera-Roll = 0°</text>
+    <rect x="995" y="558" width="380" height="70" rx="8" fill="#edf4f8"/>
+    <text x="1012" y="585" class="label">Gieren wird nachgeführt; Rollen wird nicht nachgeführt.</text>
+    <text x="1012" y="609" class="small">So bleibt der Horizont ruhig und die Bootsbewegung lesbar.</text>
+  </g>
+</svg>
