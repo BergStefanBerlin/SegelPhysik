@@ -1,8 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="320" height="240" viewBox="0 0 320 240" role="img" aria-labelledby="title desc">
   <title id="title">Stampfen-Yacht-Icon – Entwurf</title>
-  <desc id="desc">Transparente Seitenansicht einer Segelyacht mit gelber, beidseitig gepfeilter Wasserlinie. Der Mast endet am Rumpf; seine verlängerte Achse trifft die Wasserlinie mittig am Drehpunkt. Die Linie reicht von dort jeweils 80 Einheiten nach links und rechts.</desc>
-  <g transform="translate(160 0) scale(0.5565217391 1) translate(-160 0)" fill="none" stroke="#0b3472" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M160 71 V132.5"/>
+  <desc id="desc">Transparente, mastlose Seitenansicht einer Segelyacht mit gelber, beidseitig gepfeilter Wasserlinie. Die Linie trifft den Drehpunkt mittig und reicht von dort jeweils 80 Einheiten nach links und rechts.</desc>
+  <g transform="translate(160 0) scale(0.5565217391 1) translate(-160 0)" fill="none" stroke="#f4f8fb" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
     <path d="M153 78 L82 132.5 H153 Z"/>
     <path d="M168 71 L260 132.5 H168 Z"/>
     <g transform="translate(0 152.25) scale(1 0.5) translate(0 -147)">
@@ -13,6 +12,5 @@
     <path d="M89 147 H231"/>
     <path d="M80 147 L91 141 M80 147 L91 153"/>
     <path d="M240 147 L229 141 M240 147 L229 153"/>
-    <path id="stampfenzeiger_senkrecht" d="M160 67 V227" stroke-dasharray="4 4"/>
   </g>
 </svg>

@@ -1,12 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 400" width="512" height="400">
   <title>Segelyacht mit gelber horizontaler Referenzlinie</title>
-  <desc>Minimalistische Seitenansicht einer nach links gerichteten Segelyacht, dunkelblaue Umrisse und kurze Kielflosse, gelbe horizontale Linie mit schlanken Pfeilspitzen.</desc>
+  <desc>Minimalistische Seitenansicht einer nach links gerichteten Segelyacht ohne Mast, helle Umrisse und kurze Kielflosse, gelbe horizontale Linie mit schlanken Pfeilspitzen.</desc>
   <g fill="none" stroke="#d5e1e8" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
     <!-- Segel -->
     <path d="M278 42 L278 204 L438 204 Z"/>
     <path d="M265 60 L265 190 L151 204 Z"/>
-    <!-- Mast -->
-    <path d="M272 28 L272 216"/>
     <!-- Rumpf: Bug zeigt nach links -->
     <path d="M100 214 L442 214 L428 241 Q425 247 414 249 L298 260 L291 305 L322 321 L283 321 L264 260 L136 252 Q127 251 121 244 Z"/>
     <!-- Waagerechte Messlinie mit schlanken Pfeilen -->

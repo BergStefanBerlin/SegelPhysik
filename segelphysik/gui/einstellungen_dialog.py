@@ -12,7 +12,8 @@ from PySide6.QtWidgets import (
 )
 
 TITEL = {"statisch": "Solver-Parameter: Statisch",
-         "dynamisch": "Solver-Parameter: Dynamisch"}
+         "dynamisch": "Solver-Parameter: Dynamisch",
+         "anzeigen": "Anzeigeoptionen"}
 
 _HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
 

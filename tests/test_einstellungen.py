@@ -43,6 +43,10 @@ def test_alte_datei_1_0_bleibt_ladbar(tmp_path):
     for bereich in ("statisch", "dynamisch"):
         for k, v in ALTE_DATEI_1_0[bereich].items():
             assert e.get(bereich, k) == v
+    assert e.get("anzeigen", "titel_sichtbar") is True
+    assert e.get("anzeigen", "titel_beschreibung_sichtbar") is True
+    assert e.get("anzeigen", "analog_sichtbar") is True
+    assert e.get("anzeigen", "numerisch_sichtbar") is True
     assert e.meldungen == []
 
 
@@ -151,6 +155,26 @@ def test_dialog_aendert_und_setzt_zurueck(tmp_path):
     d._standard()
     assert e.get("dynamisch", "zeitgenau") is False
     assert d._felder["max_schritte_pro_aufgabe"].value() == 16
+
+
+def test_anzeigeoptionen_dialog_speichert_sichtbarkeit(tmp_path):
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    from PySide6.QtWidgets import QApplication
+    from segelphysik.gui.einstellungen_dialog import EinstellungenDialog
+    QApplication.instance() or QApplication([])
+    e = Einstellungen.laden(str(tmp_path / "s.json"))
+    d = EinstellungenDialog(e, "anzeigen")
+    assert d.windowTitle() == "Anzeigeoptionen"
+    assert all(d._felder[k].isChecked() for k in (
+        "titel_sichtbar", "titel_beschreibung_sichtbar",
+        "analog_sichtbar", "numerisch_sichtbar"))
+    d._felder["analog_sichtbar"].setChecked(False)
+    assert e.get("anzeigen", "analog_sichtbar") is False
+    with open(e.pfad, encoding="utf-8") as f:
+        gespeichert = json.load(f)
+    assert gespeichert["anzeigen"]["analog_sichtbar"] is False
+    d._standard()
+    assert e.get("anzeigen", "analog_sichtbar") is True
 
 
 def test_takt_schnellmodus_rechnet_ohne_rueckstand_und_pause(tmp_path, monkeypatch):

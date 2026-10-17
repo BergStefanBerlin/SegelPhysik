@@ -166,7 +166,7 @@ Die Quaternion ist die einzige autoritative Orientierungsgröße. GUI- und
 Diagnosewinkel `φ`, `θ`, `ψ` und `HDG` werden aus Orientierung, Schwerkraft
 und Nordrichtung abgeleitet und nicht als weitere unabhängig veränderbare
 Orientierungszustände gespeichert. Die Euler-Zerlegung ist festgelegt als
-`R_WB = Rz_W(−ψ) · Ry(θ) · Rx(−φ)` mit aktiven rechtshändigen Rotationen.
+`R_WB = Rz_W(−ψ) · Ry(−θ) · Rx(−φ)` mit aktiven rechtshändigen Rotationen.
 Die negativen Vorzeichen bei `ψ` und `φ` bilden die Anzeigekonvention
 Backbord-negativ/Steuerbord-positiv auf die mathematisch rechtshändigen
 Rotationsmatrizen ab. Die Zerlegung dient nur zur Anzeige und ist bei
@@ -176,7 +176,7 @@ Die Anzeigen werden so definiert:
 
 - `HDG`: Azimut der auf den Horizont projizierten Körperlängsachse,
   im Uhrzeigersinn ab Nord, modulo `360°`.
-- `θ` (Stampfen): `atan2(-f·u_W, |f_h|)`; positiv bedeutet Bug nach unten.
+- `θ` (Stampfen): `atan2(f·u_W, |f_h|)`; positiv bedeutet Bug nach oben.
 - `φ` (Krängung): signierter Winkel um die Körperlängsachse. `φ < 0`
   bedeutet Backbordseite hebt sich; `φ > 0` bedeutet Steuerbordseite hebt
   sich. Damit gilt auch für Lagewinkel Backbord negativ, Steuerbord positiv.
@@ -211,7 +211,7 @@ Körpers übernehmen.
 Rumpfes (Drauf-, Backbord- und Heckansicht) mit Körperachsen und positiven/
 negativen Vorzeichen von Gieren, Stampfen und Krängung. Bei seitlichen
 Winkeln gilt Backbord negativ/Steuerbord positiv; beim Stampfen bedeutet
-positiv Bug nach unten. Winkel sind zur Lesbarkeit schematisch überhöht.*
+positiv Bug nach oben. Winkel sind zur Lesbarkeit schematisch überhöht.*
 
 ## 4. Umwelt- und Bewegungsgrößen
 
@@ -236,7 +236,7 @@ sind keine unabhängigen Eingaben.
 | `KoerperZustand.winkelgeschwindigkeit_B` | Drehgeschwindigkeit | `ω` | Vektor, `B`, rad/s | Körperwinkelgeschwindigkeit, nicht Lagewinkel. |
 | `KoerperUmweltwerte.geschwindigkeit_grund_B` | Geschwindigkeit im Körperframe | `vG,B` | Vektor, `B`, m/s | `R_WBᵀ · vG_W`; abgeleitete Körperkomponenten der Grundgeschwindigkeit. |
 | Abgeleitete Orientierung | Krängung | `φ` | Winkel, ° | Negativ: Backbordseite hebt sich; positiv: Steuerbordseite hebt sich. |
-| Abgeleitete Orientierung | Stampfen | `θ` | Winkel, ° | Positiv: Bug nach unten; Bezug lokaler Horizont. |
+| Abgeleitete Orientierung | Stampfen | `θ` | Winkel, ° | Positiv: Bug nach oben; Bezug lokaler Horizont. |
 | Abgeleitete Orientierung | Gierwinkel | `ψ` | Winkel, ° | Negativ: Bug dreht nach Backbord; positiv: nach Steuerbord. Kein Ersatz für `HDG`. |
 | Abgeleitete Orientierung | Bugrichtung | `HDG` | Winkel, ° | Uhrzeigersinn ab Nord; aus horizontal projizierter Bugachse. |
 | `KoerperUmweltwerte.luft_relativ_B` | Luftbewegung relativ zum Körper | `AW` | Vektor, `B`, m/s | Luftgeschwindigkeit am Bezugspunkt relativ zum Körper. |
@@ -706,35 +706,47 @@ Die Kameraimplementierung muss gezielt nachweisen, dass:
 
 Die Anzeigen `Kraengungsanzeige` und `Stampfanzeige` sind zwei eigenständige
 Qt-Widget-Klassen. Sie übernehmen die quadratische Karte, Typografie,
-Kreisanordnung und das außen umlaufende Kamerasymbol des Kompass-Masters.
-Jedes Instrument erhält zunächst eine eigene Einzelgrafik. Die
+Kreisanordnung und das außen umlaufende Kamerasymbol des Kompass-Masters. Die
+Lageanzeigen ergänzen je eine eigene Yachtansicht und einen an die Yacht
+gekoppelten Lagezeiger. Die
 [Kompass-Einzelgrafik](./Grafik_Kompass_Anzeige_v0.7.svg) übernimmt die
 Kompass-Masterkarte einschließlich ihrer Geometrie, Farben und Schriftmaße.
-Die [Stampfen-Einzelgrafik](./Grafik_Stampfen_Anzeige_v0.7.svg) übernimmt
-dieselbe Masterkarte mit ausschließlich geändertem Titel. Das separate
-[Vergleichsdokument](./Grafik_Anzeigen_Vergleich_v0.7.svg) führt beide Widgets
-nebeneinander auf; weitere Anzeigen werden dort erst nach ihrer
-Einzelgestaltung ergänzt. Die Stampfen-Einzelgrafik ist zunächst eine
-Layoutkopie und zeigt noch nicht die später spezifizierte Winkelskala und
-Yachtansicht.
+Die Einzelgrafiken für
+[Stampfen](./Grafik_Stampfen_Anzeige_v0.7.svg) und
+[Krängung](./Grafik_Kraengung_Anzeige_v0.7.svg) sowie das separate
+[Vergleichsdokument](./Grafik_Anzeigen_Vergleich_v0.7.svg) zeigen diese
+Instrumentgestaltung.
 
 Beide analogen Anzeigen haben 36 gleichmäßig verteilte Teilstriche im Abstand
-von 10°. Der rechte horizontale Strich ist die Nullrichtung; eine feine,
-unbewegte horizontale Linie markiert den lokalen Horizont. Die längeren
-Hauptstriche stehen im Abstand von 30°. Es gibt keine Himmelsrichtungs- oder
-16-Punkt-Texte, keinen rotierenden Instrumentenzeiger und keinen Mittelpunkt.
-An dessen Stelle steht eine stilisierte Yacht, die um den angezeigten
-Lagewinkel relativ zum Horizont rotiert. Die gelbe horizontale und vertikale
-Linie gehören gemeinsam mit dem Yacht-Icon zu einer grafischen Einheit. Beide
-Linien werden bei jeder Bewegung und Drehung stets zusammen mit dem Boot
-transformiert; sie dürfen nicht unabhängig vom Boot verschoben oder gedreht
-werden. Der numerische Winkel mit Vorzeichen steht im oberen Teil der Rose.
-Der Mockup-Wert `+12°` ist nur illustrativ.
+von 10°. Die längeren Hauptstriche stehen im Abstand von 30°. Beide
+Lageanzeigeskalen verwenden dieselbe Beschriftung. Bei `0°` rechts, positiv
+gegen den Uhrzeigersinn und negativ im Uhrzeigersinn stehen oben `+90°`, links
+`±180°` und unten `−90°`; die Zwischenwerte laufen in 30°-Schritten. Damit
+bildet die Rose Winkel bis `±180°` eindeutig ab. Normal- und Gefahrenvariante
+zeigen dieselbe Beschriftung. Es gibt keine Himmelsrichtungs-
+oder 16-Punkt-Texte und keinen unabhängigen Kompasszeiger. Stattdessen wird der
+einzelne, gefüllte Zeiger des Kompass-Masters als Lagezeiger verwendet. Seine
+Form und Farbgebung entsprechen dem Kompasszeiger. Bei `0°` zeigt seine Spitze
+nach rechts: beim Stampfen in Richtung Bug, bei der Krängung nach Steuerbord.
+Der Zeiger ist an das Yacht-Icon gekoppelt; beide bilden eine gemeinsame
+rotierende Einheit und dürfen nicht unabhängig voneinander bewegt oder
+gedreht werden. Die gelbe horizontale und die gelb gestrichelte vertikale
+Referenzlinie sind dagegen fest im Zifferblatt verankert. Beide verlaufen
+durch den Kreismittelpunkt und enden am inneren Kreis. Die Zeichnungsreihenfolge
+ist Referenzlinien, Zeiger und Yacht; die Yacht überlagert daher Linien und
+Zeiger. Sämtliche Yachtkonturen sind weiß, ein Mast wird nicht dargestellt.
+Im Kompass sind dieselben gelben Referenzlinien feststehend; nur sein
+Richtungspfeil dreht. Der numerische Winkel mit Vorzeichen steht im oberen
+Teil der Rose und erhält zusammen mit dem Gradzeichen eine dünne dunkle
+Kontur in der Farbe des inneren Kreishintergrunds. Der Mockup-Wert ist nur
+illustrativ. Der Wert steht in allen drei Anzeigen auf derselben Höhe wie der
+Kompasswert; die Unterkante der Kennzeichnungen `STAMPFEN` und `KRÄNGUNG`
+liegt auf derselben Höhe wie die Unterkante von `HDG`.
 Die Teilstriche dienen der Orientierung; der exakte Zahlenwert ist maßgeblich.
 
 `Kraengungsanzeige` verwendet `φ` und eine ikonische Heckansicht von achtern
-nach vorn: flacher Rumpf, Kiel, Mast und ein stilisiertes Segel. Steuerbord
-liegt in dieser Ansicht rechts. Das Yacht-Icon dreht visuell um `−φ`: Bei
+nach vorn: flacher Rumpf, Kiel und stilisierte Segelflächen ohne Mast.
+Steuerbord liegt in dieser Ansicht rechts. Das Yacht-Icon dreht visuell um `−φ`: Bei
 `φ > 0` hebt die Steuerbordseite, bei `φ < 0` die Backbordseite. Das folgt
 der in Spec0078 definierten Anzeigenkonvention. Bei negativer Segelstellung
 (Backbord) oder `0°` (Mittellage) wird das Icon in seiner Grundausrichtung
@@ -744,10 +756,11 @@ Spiegelung ist ein rein dekoratives Gimmick: Sie ändert weder den angezeigten
 Krängungswinkel noch die Lagewinkelrotation des Yacht-Icons.
 
 `Stampfanzeige` verwendet `θ` und eine ikonische Seitenansicht mit Bug nach
-rechts, Heck nach links, erkennbarem Rumpf, einfachem Kiel, Mast und einem
-einfachen Segel. Das Icon dreht visuell um `+θ`: positives `θ` senkt den Bug,
-negatives `θ` hebt ihn. Der Rumpf ist mit klar unterscheidbarem Bug und Heck
-gezeichnet.
+rechts, Heck nach links, erkennbarem Rumpf, einfachem Kiel und Segelflächen
+ohne Mast. Das Icon dreht visuell um `−θ`: positives `θ` hebt den Bug,
+negatives `θ` senkt ihn. Der Lagezeiger dreht jeweils mit dem Yacht-Icon:
+Krängung um `−φ`, Stampfen um `−θ`. Der Rumpf ist mit klar unterscheidbarem Bug
+und Heck gezeichnet.
 
 Beide Widgets erhalten ihren eigenen Lagewinkel und `KAM_AZ` aus demselben
 unveränderlichen Physik-Snapshot. Das Kamerasymbol bleibt identisch zum
@@ -757,6 +770,30 @@ gedreht. Ungültige oder singuläre Lagewinkel werden explizit als nicht
 verfügbar dargestellt, niemals als Nullwinkel. Sichtbarkeit von Titel,
 Titelbeschreibung, Analog- und Digitaldarstellung folgt dem gemeinsamen
 Widgetvertrag.
+
+### Gefahrenanzeige bei Überschreiten von ±90°
+
+Kompass, Stampfen und Krängung sind drei eigenständige Widgets und damit drei
+eigenständige Widget-Klassen. Der Gefahrenzustand einer Lageanzeige wird nur
+aus ihrem eigenen Winkel im eigenen Widget bestimmt; er beeinflusst weder das
+andere Lagewidget noch den Kompass.
+
+Für Stampfen (`θ`) und Krängung (`φ`) gilt dieselbe Umschaltregel: Bei
+`−90° ≤ Winkel ≤ +90°` bleibt die Normalanzeige aktiv. Sobald der Winkel
+`< −90°` oder `> +90°` beträgt, wechselt das betreffende Widget in die
+Gefahrenanzeige. Genau `−90°` und `+90°` gehören noch zur Normalanzeige.
+Die Umschaltung färbt den Ringbereich zwischen innerem und äußerem Kreis rot
+ein. Die Rotfärbung verwendet einen gedämpften Rotton aus derselben dunklen
+Farbwelt wie das Blau der Normalanzeige; sie kennzeichnet den Gefahrenzustand,
+ohne die Instrumentfarben insgesamt zu verändern.
+
+Die Winkel werden aus der Orientierung abgeleitet und auf `−180°` bis
+`+180°` begrenzt. Daher verwenden Normal- und Gefahrenanzeige dieselbe
+Winkelzuordnung und Skalenbeschriftung. Die rote Gefahrenfarbe ändert nicht
+die Skala. Die Vergleichsgrafik zeigt unten je eine rote Ringdarstellung als
+Gefahrenbeispiel; die unteren Karten übernehmen Yacht, Lagezeiger und
+Beschriftung der oberen Widgets. Die SVG ist eine statische Spezifikations-
+und Vergleichsdarstellung und implementiert selbst keine Laufzeit-Umschaltung.
 
 ## Diagrammlegende
 

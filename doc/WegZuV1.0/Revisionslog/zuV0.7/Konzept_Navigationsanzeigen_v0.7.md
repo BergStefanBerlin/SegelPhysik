@@ -100,9 +100,11 @@ Vektorlängen.
 ![Stampfenanzeige als unveränderte Masterkopie mit angepasstem Titel](./Grafik_Stampfen_Anzeige_v0.7.svg)
 
 Die Einzelgrafik übernimmt die Kompasskarte direkt aus der nummerierten
-Masterreferenz; Geometrie, Farben und Schriftmaße bleiben erhalten. Das
-Stampfen-Widget übernimmt dieselbe Masterkarte 1:1 und ändert zunächst nur
-den Titel. Das separate
+Masterreferenz; Geometrie, Farben und Schriftmaße bleiben erhalten. Die
+Stampfen- und Krängungsanzeigen verwenden dieselbe Karten- und Skalenbasis,
+ergänzt um je ein mastloses Yacht-Icon, den gekoppelten Lagezeiger und feste
+gelbe Referenzachsen. Zahlenwerte erhalten eine dunkle Kontur zur besseren
+Abgrenzung vom Zifferblatt. Das separate
 [Vergleichsdokument](./Grafik_Anzeigen_Vergleich_v0.7.svg) enthält beide
 Einzelanzeigen direkt nebeneinander. Weitere Widgets erhalten jeweils zuerst
 eine eigene Einzelgrafik und werden anschließend in das Vergleichsdokument

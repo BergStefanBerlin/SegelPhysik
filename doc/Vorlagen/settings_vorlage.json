@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.2",
+  "schema_version": "1.3",
   "statisch": {
     "toleranz": {
       "typ": "float",
@@ -105,6 +105,36 @@
       "einheit": "",
       "beschreibung": "Paketbasierte Modellfabrik verwenden; ausgeschaltet bleibt der Legacy-Konfigurationspfad verfügbar",
       "seit_version": "1.2"
+    }
+  },
+  "anzeigen": {
+    "titel_sichtbar": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "Titel der Instrumentkarten anzeigen",
+      "seit_version": "1.3"
+    },
+    "titel_beschreibung_sichtbar": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "Beschreibung unter dem Titel anzeigen",
+      "seit_version": "1.3"
+    },
+    "analog_sichtbar": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "Analoge Instrumentdarstellung anzeigen",
+      "seit_version": "1.3"
+    },
+    "numerisch_sichtbar": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "Numerische Instrumentwerte anzeigen",
+      "seit_version": "1.3"
     }
   },
   "kraftpfeile_allgemein": {

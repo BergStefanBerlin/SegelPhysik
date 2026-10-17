@@ -61,3 +61,19 @@ Menü: Einstellungen → Modellfabrik. `modell.paketfabrik_aktiv` wählt
 explizit den paketbasierten Laufzeitpfad. Der Standard ist aktiviert; bei
 Deaktivierung bleibt für die Repository-Modelle der Legacy-Konfigurationspfad
 als Rückfall-/Vergleichspfad verfügbar.
+
+## Parameter (Version 1.3: Anzeigeoptionen)
+
+Menü: Einstellungen → Anzeigeoptionen. Die gemeinsamen Sichtbarkeitsschalter
+für Instrumentkarten sind:
+
+- `titel_sichtbar`: Anzeigetitel ein-/ausblenden.
+- `titel_beschreibung_sichtbar`: Beschreibung unter dem Titel ein-/ausblenden.
+- `analog_sichtbar`: analoge Anzeigeelemente ein-/ausblenden.
+- `numerisch_sichtbar`: numerische Werte ein-/ausblenden.
+
+Alle Optionen sind standardmäßig aktiviert. Vorläufig gelten sie gemeinsam
+für alle Instrumentkarten; individuelle Werte pro Anzeige können bei der
+Umsetzung der jeweiligen Anzeige-Klassen ergänzt werden. Die Einstellungen
+stellen zunächst nur die Konfiguration bereit; sie ändern noch keine
+Darstellung, solange die jeweilige Anzeige-Klasse nicht implementiert ist.

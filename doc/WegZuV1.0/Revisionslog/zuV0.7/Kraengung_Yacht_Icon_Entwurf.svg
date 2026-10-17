@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="332" height="400" viewBox="-4 0 332 400" role="img" aria-labelledby="title desc">
+  <title id="title">Krängungs-Yacht-Icon – Entwurf</title>
+  <desc id="desc">Transparente, vektorisierte Annäherung an die Yachtgrafik aus Krängung.png mit den horizontalen und senkrechten gelben Zeigern des Stampfen-Widgets.</desc>
+  <g fill="none" stroke="#f4f8fb" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M154 70.2 L106 198 L154 178 Z"/>
+    <path d="M148 125.3 L127 182 L148 176 Z"/>
+
+    <g transform="translate(32.4 0) scale(0.8 1)">
+      <path d="M120 213 L127 200.5 Q131 197 142 196.5 H180 Q192 197 196 200.5 L204 213"/>
+      <path d="M77 213 H247"/>
+      <path d="M77 213 Q89 235 121 242 Q146 248 162 248 Q179 248 204 242 Q236 235 247 213"/>
+    </g>
+    <path d="M150 248 L152 279.2 Q153 287.2 160 287.2 Q167 287.2 168 279.2 L170 248"/>
+  </g>
+
+  <g id="kraengungszeiger" transform="translate(2 79)" fill="none" stroke="#ffbd16" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13.340625 147 H306.659375"/>
+    <path d="M-5.25 147 L17.471875 140 L17.471875 154 Z" fill="#ffbd16" stroke="none"/>
+    <path d="M325.25 147 L302.528125 140 L302.528125 154 Z" fill="#ffbd16" stroke="none"/>
+  </g>
+</svg>

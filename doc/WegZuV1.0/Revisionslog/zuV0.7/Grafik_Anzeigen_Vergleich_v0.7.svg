@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1820" height="720" viewBox="0 0 1820 720" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1820" height="1320" viewBox="0 0 1820 1320" role="img" aria-labelledby="title desc">
   <title id="title">Vergleich der Instrumentanzeigen</title>
-  <desc id="desc">Übersicht der Instrumentanzeigen. Kompass, Stampfen und Krängung sind als gleich gestaltete Karten enthalten und zusätzlich jeweils als Einzelgrafik verfügbar.</desc>
+  <desc id="desc">Übersicht der Instrumentanzeigen in drei Spalten: Kompass links sowie Stampf- und Krängungsanzeigen oben und als Kopien darunter. Jeweils ein einzelner Kompasszeiger ist mit dem Yacht-Icon gekoppelt.</desc>
   <defs>
     <linearGradient id="background" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#102437"/>
@@ -21,7 +21,7 @@
       .compass-card { fill: url(#compass-card); stroke: #315066; stroke-width: 1.5; }
       .compass-title { font-size: 19px; font-weight: 700; letter-spacing: 1.2px; fill: #b8cad5; }
       .compass-small { font-size: 13px; fill: #8da9bb; }
-      .compass-value { font-size: 48px; font-weight: 700; }
+      .compass-value { font-size: 48px; font-weight: 700; stroke: #0b1c2a; stroke-width: 3px; paint-order: stroke; stroke-linejoin: round; }
       .compass-caption { font-size: 17px; fill: #9eb4c2; }
       .compass-code { font-size: 18px; font-weight: 700; letter-spacing: 2px; fill: #8da9bb; }
       .compass-tick-minor { stroke: #49667a; stroke-width: 2; }
@@ -30,10 +30,12 @@
     </style>
   </defs>
 
-  <rect width="1820" height="720" fill="url(#background)"/>
+  <rect width="1820" height="1320" fill="url(#background)"/>
   <text x="24" y="38" class="eyebrow">SEGELPHYSIK · INSTRUMENTE</text>
   <text x="24" y="76" class="title">Vergleich der Anzeigen</text>
   <text x="24" y="101" class="note">Kompass · Stampfen · KRÄNGUNG</text>
+  <text x="24" y="120" class="note">NORMALANZEIGE</text>
+  <text x="24" y="700" class="note">UNTERE KARTEN: KOPIEN DER NORMALANZEIGEN</text>
 
   <svg id="kompass_widget" x="20" y="125" width="580" height="580" viewBox="22 112 580 580">
     <g id="master_widget" filter="url(#compass-shadow)">
@@ -65,6 +67,10 @@
           </g>
         </g>
 
+        <g id="compass_reference_lines" fill="none" stroke="#ffbd16" stroke-width="2.5" stroke-linecap="round">
+          <path d="M145.5 405 H478.5"/>
+          <path d="M312 238.5 V571.5" stroke-dasharray="4 4"/>
+        </g>
         <g id="heading_pointer" transform="rotate(74 312 405)">
           <path d="M312 260 L298 418 L312 399 L326 418 Z" fill="#ffc66d"/>
           <line x1="312" y1="405" x2="312" y2="268" stroke="#ffc66d" stroke-width="3"/>
@@ -96,10 +102,11 @@
       <text x="70" y="642" class="compass-small">Stampfwinkel um die Querachse</text>
 
       <g id="stampfen_compass_face" transform="translate(0 5)">
-        <circle cx="312" cy="405" r="210" fill="#0b1c2a" stroke="#49667a" stroke-width="2.5"/>
-        <circle cx="312" cy="405" r="166.5" fill="none" stroke="#29485d" stroke-width="1.8"/>
+        <circle cx="312" cy="405" r="210" fill="var(--instrument-ring-fill, #0b1c2a)" stroke="#49667a" stroke-width="2.5"/>
+        <circle cx="312" cy="405" r="166.5" fill="var(--instrument-face-fill, #0b1c2a)" stroke="#29485d" stroke-width="1.8"/>
 
-        <line id="stampfen_pitch_zero_line" x1="147" y1="405" x2="477" y2="405" stroke="#f4f8fb" stroke-width="1.5"/>
+        <line id="stampfen_pitch_zero_line" x1="145.5" y1="405" x2="478.5" y2="405" stroke="#ffbd16" stroke-width="2.5"/>
+        <line id="stampfen_pitch_vertical_line" x1="312" y1="238.5" x2="312" y2="571.5" stroke="#ffbd16" stroke-width="2.5" stroke-dasharray="4 4"/>
 
         <g id="stampfen_pitch_scale_ticks" fill="none">
           <line class="compass-tick-major" x1="312.0" y1="207.0" x2="312.0" y2="195.0"/>
@@ -140,35 +147,36 @@
           <line class="compass-tick-minor" x1="276.7" y1="205.1" x2="275.5" y2="198.2"/>
         </g>
         <g id="stampfen_pitch_scale_labels" class="compass-small" text-anchor="middle" font-weight="700">
-          <text transform="translate(312 222) rotate(0)" dominant-baseline="middle">−90°</text>
-          <text transform="translate(403.5 246.5) rotate(30)" dominant-baseline="middle">−60°</text>
-          <text transform="translate(470.5 313.5) rotate(60)" dominant-baseline="middle">−30°</text>
+          <text transform="translate(312 222) rotate(0)" dominant-baseline="middle">+90°</text>
+          <text transform="translate(403.5 246.5) rotate(30)" dominant-baseline="middle">+60°</text>
+          <text transform="translate(470.5 313.5) rotate(60)" dominant-baseline="middle">+30°</text>
           <text transform="translate(495 405) rotate(90)" dominant-baseline="middle">0°</text>
-          <text transform="translate(470.5 496.5) rotate(-60)" dominant-baseline="middle">+30°</text>
-          <text transform="translate(403.5 563.5) rotate(-30)" dominant-baseline="middle">+60°</text>
-          <text transform="translate(312 588) rotate(0)" dominant-baseline="middle">+90°</text>
-          <text transform="translate(220.5 563.5) rotate(30)" dominant-baseline="middle">+60°</text>
-          <text transform="translate(153.5 496.5) rotate(60)" dominant-baseline="middle">+30°</text>
-          <text transform="translate(129 405) rotate(90)" dominant-baseline="middle">0°</text>
-          <text transform="translate(153.5 313.5) rotate(-60)" dominant-baseline="middle">−30°</text>
-          <text transform="translate(220.5 246.5) rotate(-30)" dominant-baseline="middle">−60°</text>
+          <text transform="translate(470.5 496.5) rotate(-60)" dominant-baseline="middle">−30°</text>
+          <text transform="translate(403.5 563.5) rotate(-30)" dominant-baseline="middle">−60°</text>
+          <text transform="translate(312 588) rotate(0)" dominant-baseline="middle">−90°</text>
+          <text transform="translate(220.5 563.5) rotate(30)" dominant-baseline="middle">−120°</text>
+          <text transform="translate(153.5 496.5) rotate(60)" dominant-baseline="middle">−150°</text>
+          <text transform="translate(129 405) rotate(90)" dominant-baseline="middle">±180°</text>
+          <text transform="translate(153.5 313.5) rotate(-60)" dominant-baseline="middle">+150°</text>
+          <text transform="translate(220.5 246.5) rotate(-30)" dominant-baseline="middle">+120°</text>
         </g>
 
+        <g id="stampfen_pose" style="transform: rotate(var(--instrument-rotation, -30deg)); transform-origin: 312px 405px; transform-box: view-box;">
         <g id="stampfen_yacht_icon" transform="translate(152 258)">
-          <g transform="translate(160 0) scale(0.5565217391 1) translate(-160 0)" fill="none" stroke="#0b3472" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M160 71 V132.5"/>
+          <g id="stampfenzeiger" fill="none" stroke="#ffbd16" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <g transform="rotate(90 160 147)" fill="#ffc66d" stroke="#ffc66d">
+              <path d="M160 2 L146 160 L160 141 L174 160 Z" stroke="none"/>
+              <line x1="160" y1="147" x2="160" y2="10" stroke-width="3"/>
+            </g>
+          </g>
+          <g transform="translate(160 0) scale(-0.5565217391 1) translate(-160 0)" fill="none" stroke="#f4f8fb" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M153 46.3 L82 103 H153 V97 Z"/>
             <path d="M168 -8.8 L260 99 H168 V119 Z"/>
             <g transform="translate(0 152.25) scale(1 0.5) translate(0 -147)">
               <path d="M45 110.5 H275 L269 145 L244 149 L176 160.9 L178 164 Q179 258.9 174 258.9 H160 Q155 258.9 154 258.9 L132 160.9 L83.5 149 Z"/>
             </g>
+            </g>
             <path d="M91 134 L98.7 121.5 Q103 118 115.1 117.5 H179.7 Q192.9 118 197.2 121.5 L206 134 Z"/>
-          </g>
-          <g id="stampfenzeiger" fill="none" stroke="#ffbd16" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M13.340625 147 H306.659375"/>
-            <path d="M-5.25 147 L17.471875 140 L17.471875 154 Z" fill="#ffbd16" stroke="none"/>
-            <path d="M325.25 147 L302.528125 140 L302.528125 154 Z" fill="#ffbd16" stroke="none"/>
-            <path id="stampfenzeiger_senkrecht" d="M160 -18.25 V312.25" stroke-dasharray="4 4"/>
           </g>
         </g>
 
@@ -179,7 +187,7 @@
           <circle cx="312" cy="153" r="4.5" fill="none"/>
         </g>
         <circle id="stampfen_pivot" cx="312" cy="405" r="7" fill="#f4f8fb"/>
-        <text id="stampfen_heading_value" x="312" y="310" text-anchor="middle" class="compass-value">074°</text>
+        <text id="stampfen_heading_value" x="312" y="347" text-anchor="middle" class="compass-value"><tspan style="display:var(--upright-value, inline)">+30°</tspan><tspan style="display:var(--capsized-value, none)">+150°</tspan></text>
         <text id="stampfen_heading_code" x="312" y="491" text-anchor="middle" class="compass-code">STAMPFEN</text>
       </g>
     </g>
@@ -192,10 +200,11 @@
       <text x="70" y="642" class="compass-small">Krängungswinkel um die Körperlängsachse</text>
 
       <g id="kraengung_compass_face" transform="translate(0 5)">
-        <circle cx="312" cy="405" r="210" fill="#0b1c2a" stroke="#49667a" stroke-width="2.5"/>
-        <circle cx="312" cy="405" r="166.5" fill="none" stroke="#29485d" stroke-width="1.8"/>
+        <circle cx="312" cy="405" r="210" fill="var(--instrument-ring-fill, #0b1c2a)" stroke="#49667a" stroke-width="2.5"/>
+        <circle cx="312" cy="405" r="166.5" fill="var(--instrument-face-fill, #0b1c2a)" stroke="#29485d" stroke-width="1.8"/>
 
-        <line id="kraengung_pitch_zero_line" x1="147" y1="405" x2="477" y2="405" stroke="#f4f8fb" stroke-width="1.5"/>
+        <line id="kraengung_pitch_zero_line" x1="145.5" y1="405" x2="478.5" y2="405" stroke="#ffbd16" stroke-width="2.5"/>
+        <line id="kraengung_pitch_vertical_line" x1="312" y1="238.5" x2="312" y2="571.5" stroke="#ffbd16" stroke-width="2.5" stroke-dasharray="4 4"/>
 
         <g id="kraengung_pitch_scale_ticks" fill="none">
           <line class="compass-tick-major" x1="312.0" y1="207.0" x2="312.0" y2="195.0"/>
@@ -236,23 +245,29 @@
           <line class="compass-tick-minor" x1="276.7" y1="205.1" x2="275.5" y2="198.2"/>
         </g>
         <g id="kraengung_pitch_scale_labels" class="compass-small" text-anchor="middle" font-weight="700">
-          <text transform="translate(312 222) rotate(0)" dominant-baseline="middle">−90°</text>
-          <text transform="translate(403.5 246.5) rotate(30)" dominant-baseline="middle">−60°</text>
-          <text transform="translate(470.5 313.5) rotate(60)" dominant-baseline="middle">−30°</text>
+          <text transform="translate(312 222) rotate(0)" dominant-baseline="middle">+90°</text>
+          <text transform="translate(403.5 246.5) rotate(30)" dominant-baseline="middle">+60°</text>
+          <text transform="translate(470.5 313.5) rotate(60)" dominant-baseline="middle">+30°</text>
           <text transform="translate(495 405) rotate(90)" dominant-baseline="middle">0°</text>
-          <text transform="translate(470.5 496.5) rotate(-60)" dominant-baseline="middle">+30°</text>
-          <text transform="translate(403.5 563.5) rotate(-30)" dominant-baseline="middle">+60°</text>
-          <text transform="translate(312 588) rotate(0)" dominant-baseline="middle">+90°</text>
-          <text transform="translate(220.5 563.5) rotate(30)" dominant-baseline="middle">+60°</text>
-          <text transform="translate(153.5 496.5) rotate(60)" dominant-baseline="middle">+30°</text>
-          <text transform="translate(129 405) rotate(90)" dominant-baseline="middle">0°</text>
-          <text transform="translate(153.5 313.5) rotate(-60)" dominant-baseline="middle">−30°</text>
-          <text transform="translate(220.5 246.5) rotate(-30)" dominant-baseline="middle">−60°</text>
+          <text transform="translate(470.5 496.5) rotate(-60)" dominant-baseline="middle">−30°</text>
+          <text transform="translate(403.5 563.5) rotate(-30)" dominant-baseline="middle">−60°</text>
+          <text transform="translate(312 588) rotate(0)" dominant-baseline="middle">−90°</text>
+          <text transform="translate(220.5 563.5) rotate(30)" dominant-baseline="middle">−120°</text>
+          <text transform="translate(153.5 496.5) rotate(60)" dominant-baseline="middle">−150°</text>
+          <text transform="translate(129 405) rotate(90)" dominant-baseline="middle">±180°</text>
+          <text transform="translate(153.5 313.5) rotate(-60)" dominant-baseline="middle">+150°</text>
+          <text transform="translate(220.5 246.5) rotate(-30)" dominant-baseline="middle">+120°</text>
         </g>
 
+        <g id="kraengung_pose" style="transform: rotate(var(--instrument-rotation, 30deg)); transform-origin: 312px 405px; transform-box: view-box;">
         <g id="kraengung_yacht_icon" transform="translate(150 179)">
-          <g fill="none" stroke="#0b3472" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M162 60.4 V217"/>
+          <g id="kraengung_zeiger" transform="translate(2 79) translate(162 226) scale(1.0075642965) translate(-162 -226)" fill="none" stroke="#ffbd16" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <g transform="rotate(90 160 147)" fill="#ffc66d" stroke="#ffc66d">
+              <path d="M160 2 L146 160 L160 141 L174 160 Z" stroke="none"/>
+              <line x1="160" y1="147" x2="160" y2="10" stroke-width="3"/>
+            </g>
+          </g>
+          <g fill="none" stroke="#f4f8fb" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M154 70.2 L106 198 L154 178 Z"/>
             <path d="M148 125.3 L127 182 L148 176 Z"/>
             <g transform="translate(32.4 0) scale(0.8 1)">
@@ -260,13 +275,8 @@
               <path d="M77 213 H247"/>
               <path d="M77 213 Q89 235 121 242 Q146 248 162 248 Q179 248 204 242 Q236 235 247 213"/>
             </g>
+            </g>
             <path d="M150 248 L152 279.2 Q153 287.2 160 287.2 Q167 287.2 168 279.2 L170 248"/>
-          </g>
-          <g id="kraengung_zeiger" transform="translate(2 79) translate(162 226) scale(1.0075642965) translate(-162 -226)" fill="none" stroke="#ffbd16" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M13.340625 147 H306.659375"/>
-            <path d="M-5.25 147 L17.471875 140 L17.471875 154 Z" fill="#ffbd16" stroke="none"/>
-            <path d="M325.25 147 L302.528125 140 L302.528125 154 Z" fill="#ffbd16" stroke="none"/>
-            <path id="kraengung_zeiger_senkrecht" d="M160 -18.25 V312.25" stroke-dasharray="4 4"/>
           </g>
         </g>
 
@@ -277,9 +287,12 @@
           <circle cx="312" cy="153" r="4.5" fill="none"/>
         </g>
         <circle id="kraengung_pivot" cx="312" cy="405" r="7" fill="#f4f8fb"/>
-        <text id="kraengung_heading_value" x="312" y="347" text-anchor="middle" class="compass-value">074°</text>
+        <text id="kraengung_heading_value" x="312" y="347" text-anchor="middle" class="compass-value"><tspan style="display:var(--upright-value, inline)">−30°</tspan><tspan style="display:var(--capsized-value, none)">−150°</tspan></text>
         <text id="kraengung_heading_code" x="312" y="491" text-anchor="middle" class="compass-code">KRÄNGUNG</text>
       </g>
     </g>
   </svg>
+
+  <use id="stampfen_gefahren_widget" href="#stampfen_widget" transform="translate(0 580)" style="--instrument-ring-fill: #843642; --instrument-rotation: -150deg; --upright-value: none; --capsized-value: inline"/>
+  <use id="kraengung_gefahren_widget" href="#kraengung_widget" transform="translate(0 580)" style="--instrument-ring-fill: #843642; --instrument-rotation: 150deg; --upright-value: none; --capsized-value: inline"/>
 </svg>

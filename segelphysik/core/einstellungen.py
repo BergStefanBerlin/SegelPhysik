@@ -18,7 +18,7 @@ import os
 import shutil
 
 from . import pfeilstil
-SCHEMA_VERSION = "1.2"
+SCHEMA_VERSION = "1.3"
 DATEINAME = "settings.json"
 VORLAGE_DATEINAME = "settings_vorlage.json"
 
@@ -79,6 +79,19 @@ VORLAGE = {
             "Paketbasierte Modellfabrik verwenden; ausgeschaltet bleibt "
             "der Legacy-Konfigurationspfad verfügbar",
             seit="1.2"),
+    },
+    "anzeigen": {
+        "titel_sichtbar": _eintrag(
+            "bool", True, "Titel der Instrumentkarten anzeigen", seit="1.3"),
+        "titel_beschreibung_sichtbar": _eintrag(
+            "bool", True, "Beschreibung unter dem Titel anzeigen",
+            seit="1.3"),
+        "analog_sichtbar": _eintrag(
+            "bool", True, "Analoge Instrumentdarstellung anzeigen",
+            seit="1.3"),
+        "numerisch_sichtbar": _eintrag(
+            "bool", True, "Numerische Instrumentwerte anzeigen",
+            seit="1.3"),
     },
 }
 # Seit 1.1: Darstellung der Kraft- und Momentenpfeile

@@ -23,7 +23,7 @@
       .card { fill: url(#card); stroke: #315066; stroke-width: 1.5; }
       .card-title { font-size: 19px; font-weight: 700; letter-spacing: 1.2px; fill: #b8cad5; }
       .small { font-size: 13px; fill: #8da9bb; }
-      .dial-value { font-size: 48px; font-weight: 700; }
+      .dial-value { font-size: 48px; font-weight: 700; stroke: #0b1c2a; stroke-width: 3px; paint-order: stroke; stroke-linejoin: round; }
       .dial-caption { font-size: 17px; fill: #9eb4c2; }
       .dial-code { font-size: 18px; font-weight: 700; letter-spacing: 2px; fill: #8da9bb; }
       .tick-minor { stroke: #49667a; stroke-width: 2; }
@@ -72,6 +72,10 @@
         </g>
       </g>
 
+      <g id="compass_reference_lines" fill="none" stroke="#ffbd16" stroke-width="2.5" stroke-linecap="round">
+        <path d="M145.5 405 H478.5"/>
+        <path d="M312 238.5 V571.5" stroke-dasharray="4 4"/>
+      </g>
       <g id="heading_pointer" transform="rotate(74 312 405)">
         <path d="M312 260 L298 418 L312 399 L326 418 Z" fill="#ffc66d"/>
         <line x1="312" y1="405" x2="312" y2="268" stroke="#ffc66d" stroke-width="3"/>

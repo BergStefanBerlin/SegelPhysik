@@ -315,6 +315,9 @@ class HauptFenster(QMainWindow):
             "Dynamisch …", lambda: self._einstellungen_dialog("dynamisch"))
         m_einst.addAction(
             "Modellfabrik …", lambda: self._einstellungen_dialog("modell"))
+        m_einst.addAction(
+            "Anzeigeoptionen …",
+            lambda: self._einstellungen_dialog("anzeigen"))
         self._kraftpfeil_menue_bauen(m_einst)
         self._act_nur_aktives = m_einst.addAction(
             "Nur aktive Unterobjekte bedienbar")

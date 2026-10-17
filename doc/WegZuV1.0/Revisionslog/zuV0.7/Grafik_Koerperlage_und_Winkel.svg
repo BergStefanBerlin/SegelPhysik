@@ -70,7 +70,7 @@
   <g transform="translate(720 390)">
     <path class="neutral" d="M-176,-30 C-145,-38 -105,-43 -65,-45 C-20,-47 30,-48 75,-45 C120,-41 155,-32 176,-25 C161,0 137,29 102,48 C60,66 20,75 0,76 C-32,73 -75,63 -112,48 C-145,28 -164,0 -176,-30 Z"/>
   </g>
-  <g transform="translate(720 390) rotate(-22)">
+  <g transform="translate(720 390) rotate(22)">
     <path class="hull" d="M-176,-30 C-145,-38 -105,-43 -65,-45 C-20,-47 30,-48 75,-45 C120,-41 155,-32 176,-25 C161,0 137,29 102,48 C60,66 20,75 0,76 C-32,73 -75,63 -112,48 C-145,28 -164,0 -176,-30 Z"/>
     <line x1="0" y1="0" x2="-83" y2="0" class="axis-line" marker-end="url(#axis)"/>
     <line x1="0" y1="0" x2="0" y2="-78" class="axis-line" marker-end="url(#axis)"/>
@@ -80,13 +80,13 @@
   <text x="738" y="418" class="small">+Y_B Backbord, aus der Ebene</text>
   <text x="555" y="465" class="label">+X_B Voraus</text>
   <text x="750" y="300" class="label">+Z_B Oben</text>
-  <path d="M643 390 A77 77 0 0 0 648 419" class="angle-line" marker-end="url(#angle)"/>
-  <path d="M643 390 A77 77 0 0 1 648 361" class="negative-line" marker-end="url(#negative)"/>
-  <text x="601" y="440" class="label" fill="#c43b32">+ θ</text>
-  <text x="601" y="358" class="label" fill="#b46b18">− θ</text>
-  <text x="505" y="638" class="small">+θ: Bug senkt sich; −θ: Bug hebt sich.</text>
+  <path d="M643 390 A77 77 0 0 1 648 361" class="angle-line" marker-end="url(#angle)"/>
+  <path d="M643 390 A77 77 0 0 0 648 419" class="negative-line" marker-end="url(#negative)"/>
+  <text x="601" y="358" class="label" fill="#c43b32">+ θ</text>
+  <text x="601" y="440" class="label" fill="#b46b18">− θ</text>
+  <text x="505" y="638" class="small">+θ: Bug hebt sich; −θ: Bug senkt sich.</text>
   <text x="505" y="660" class="small">Drehachse ist +Y_B (Backbordachse).</text>
-  <text x="505" y="705" class="tiny">Gestrichelt: waagerechte Referenz; gefüllt: beispielhaft Bug nach unten.</text>
+  <text x="505" y="705" class="tiny">Gestrichelt: waagerechte Referenz; gefüllt: beispielhaft Bug nach oben.</text>
 
   <text x="985" y="132" class="view">Heckansicht — Krängung</text>
   <text x="985" y="155" class="small">Blick von achtern nach vorn; Backbord liegt links.</text>
