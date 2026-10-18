@@ -26,6 +26,7 @@ Bogenpfeil um die Rollachse gerendert (kb.moment_bogen, violett); im
 Gleichgewicht verschwindet er automatisch (Zielbild Z3).
 """
 from __future__ import annotations
+import math
 import numpy as np
 
 try:
@@ -221,6 +222,11 @@ class GrafikBruecke:
         self._vg_unmoeglich = False
         self._folge_aktiv = False
         self._folge_letzt = None
+        self._navigationskamera = None
+        self._navigationskamera_name = None
+        self._navigationskamera_heading = None
+        self._navigationskamera_busy = False
+        self._navigationskamera_observer = None
         self._wasserpunkte = None
         self._wasserpunkte_meshes = {}
         self._wasserpunkte_actor = None
@@ -610,14 +616,138 @@ class GrafikBruecke:
             self.app.cfg.water["depth"])
         if preset not in presets:
             raise ValueError("Unbekanntes Kamera-Preset: %s" % preset)
-        self._plotter.camera_position = presets[preset]
-        if self._folge_aktiv and self._folge_letzt is not None:
-            delta = np.array([self._folge_letzt[0], self._folge_letzt[1], 0.0])
-            kamera = self._plotter.camera
-            kamera.position = tuple(np.asarray(kamera.position) + delta)
-            kamera.focal_point = tuple(np.asarray(kamera.focal_point) + delta)
+        self._navigationskamera_busy = True
+        try:
+            self._plotter.camera_position = presets[preset]
+            if self._folge_aktiv and self._folge_letzt is not None:
+                delta = np.array(
+                    [self._folge_letzt[0], self._folge_letzt[1], 0.0])
+                kamera = self._plotter.camera
+                kamera.position = tuple(
+                    np.asarray(kamera.position) + delta)
+                kamera.focal_point = tuple(
+                    np.asarray(kamera.focal_point) + delta)
+        finally:
+            self._navigationskamera_busy = False
+        self._navigationskamera = None
+        self._navigationskamera_name = None
+        self._navigationskamera_heading = None
         self.render()
         return True
+
+    def _navigationskamera_geaendert(self, _kamera, _ereignis):
+        if (self._navigationskamera_busy
+                or self._navigationskamera is None
+                or self._navigationskamera_heading is None):
+            return
+        kamera = self._plotter.camera
+        position = np.asarray(kamera.position, dtype=np.float64)
+        ziel = np.asarray(kamera.focal_point, dtype=np.float64)
+        richtung = position - ziel
+        distanz = float(np.linalg.norm(richtung))
+        horizontal = float(np.linalg.norm(richtung[:2]))
+        if (not np.isfinite(richtung).all() or not math.isfinite(distanz)
+                or distanz <= 1e-10):
+            return
+        elevation = math.atan2(float(richtung[2]), horizontal)
+        if horizontal <= 1e-10:
+            offset = None
+        else:
+            azimut = math.atan2(-float(richtung[1]),
+                                float(richtung[0]))
+            from .core.navigationsanzeigen import wrap_180
+            offset = wrap_180(azimut - self._navigationskamera_heading)
+        self._navigationskamera = (offset, elevation, distanz)
+
+    def navigationskamera_aktualisieren(self, name, ziel, heading_rad):
+        """Koppelt den Kamera-Standpunkt gierfest, ohne Stampfen/Krängung."""
+        if self._plotter is None:
+            return None, None
+        ziel = np.asarray(ziel, dtype=np.float64)
+        heading = None if heading_rad is None else float(heading_rad)
+        if (ziel.shape != (3,) or not np.isfinite(ziel).all()
+                or (heading is not None and not math.isfinite(heading))):
+            raise ValueError("Navigationskamera benötigt endliche Posewerte")
+        kamera = self._plotter.camera
+        if self._navigationskamera_observer is None:
+            self._navigationskamera_observer = kamera.AddObserver(
+                "ModifiedEvent", self._navigationskamera_geaendert)
+
+        if (self._navigationskamera is None
+                or self._navigationskamera_name != name):
+            position = np.asarray(kamera.position, dtype=np.float64)
+            fokus = np.asarray(kamera.focal_point, dtype=np.float64)
+            richtung = position - fokus
+            distanz = float(np.linalg.norm(richtung))
+            horizontal = float(np.linalg.norm(richtung[:2]))
+            if (not np.isfinite(richtung).all()
+                    or not math.isfinite(distanz) or distanz <= 1e-10):
+                return None, None
+            elevation = math.atan2(float(richtung[2]), horizontal)
+            if horizontal <= 1e-10:
+                offset = None
+            elif heading is None:
+                offset = None
+            else:
+                azimut = math.atan2(-float(richtung[1]),
+                                    float(richtung[0]))
+                from .core.navigationsanzeigen import wrap_180
+                offset = wrap_180(azimut - heading)
+            self._navigationskamera = (offset, elevation, distanz)
+            self._navigationskamera_name = name
+
+        offset, elevation, distanz = self._navigationskamera
+        if heading is not None:
+            self._navigationskamera_heading = heading
+            if offset is None:
+                position = np.asarray(kamera.position, dtype=np.float64)
+                fokus = np.asarray(kamera.focal_point, dtype=np.float64)
+                richtung = position - fokus
+                horizontal = float(np.linalg.norm(richtung[:2]))
+                if horizontal > 1e-10:
+                    azimut = math.atan2(-float(richtung[1]),
+                                        float(richtung[0]))
+                    from .core.navigationsanzeigen import wrap_180
+                    offset = wrap_180(azimut - heading)
+                    self._navigationskamera = (
+                        offset, elevation, distanz)
+
+        if offset is None:
+            versatz = (np.asarray(kamera.position, dtype=np.float64)
+                       - np.asarray(kamera.focal_point, dtype=np.float64))
+        else:
+            azimut = (heading if heading is not None
+                      else self._navigationskamera_heading) + offset
+            versatz = distanz * np.array((
+                math.cos(elevation) * math.cos(azimut),
+                -math.cos(elevation) * math.sin(azimut),
+                math.sin(elevation),
+            ))
+        blickrichtung = -versatz / max(float(np.linalg.norm(versatz)), 1e-10)
+        hoch = np.array((0.0, 0.0, 1.0))
+        oben = hoch - float(np.dot(hoch, blickrichtung)) * blickrichtung
+        oben_betrag = float(np.linalg.norm(oben))
+        if oben_betrag > 1e-10:
+            oben /= oben_betrag
+        else:
+            oben = np.asarray(kamera.up, dtype=np.float64)
+
+        neue_position = ziel + versatz
+        neue_oben = np.asarray(oben, dtype=np.float64)
+        if (np.allclose(kamera.position, neue_position, rtol=0.0, atol=1e-9)
+                and np.allclose(
+                    kamera.focal_point, ziel, rtol=0.0, atol=1e-9)
+                and np.allclose(
+                    kamera.up, neue_oben, rtol=0.0, atol=1e-9)):
+            return offset, elevation
+        self._navigationskamera_busy = True
+        try:
+            kamera.position = tuple(neue_position)
+            kamera.focal_point = tuple(ziel)
+            kamera.up = tuple(neue_oben)
+        finally:
+            self._navigationskamera_busy = False
+        return offset, elevation
 
     def hintergrund_setzen(self, preset):
         if self._plotter is None:

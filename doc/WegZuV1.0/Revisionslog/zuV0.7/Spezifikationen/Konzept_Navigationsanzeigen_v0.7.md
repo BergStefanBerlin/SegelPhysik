@@ -1,10 +1,42 @@
 # Navigationsanzeigen – Konzept v0.7
 
+**Anforderungsstatus:** Normative Anforderungen dieses Konzepts sind durch
+die jeweils zugeordneten dauerhaften `SpecNNNN`-Kennungen in der
+[Spezifikation Navigationswidgets v0.7](./Spezifikation_Navigationswidgets_v0.7.md)
+oder der
+[Spezifikation Weltsystem, Umwelt und Körperbewegung v0.7](./Spezifikation_Weltsystem_Bewegung_v0.7.md)
+verbindlich festgelegt. Die Spezifikationspunkte sind maßgeblich; dieses
+Konzept erläutert ihre visuelle Darstellung. Herstellerbeispiele und
+## Anforderungszuordnung
+
+| Konzeptabschnitt / Anforderung | Spezifikations-IDs |
+|---|---|
+| Zwischenlösung mit drei Widgets und 3D-Szene im Hauptfenster | `Spec0107` |
+| Unabhängige langfristige Vier-Karten-Zielkomposition | `Spec0110` |
+| Herstellerbeispiele als nicht zu kopierende Inspirationsquellen | Hintergrundinformation, keine umzusetzende Anforderung |
+| Nummerierte Mastergrafik, gemeinsame Elementgestaltung und ausgeblendete ungenutzte Elemente | `Spec0087`, `Spec0110` |
+| Kompasskarte: Beschriftung, Rose, Striche, Kardinalpunkte, Abstände, Heading-/Kamerazeiger, digitales Feld und Himmelsrichtungssektoren | `Spec0087`, `Spec0092`, `Spec0095`, `Spec0097`–`Spec0099` |
+| Zielkarte Fahrt über Grund (`SOG`, `COG`, Richtungsscheibe) | `Spec0080`–`Spec0081`, `Spec0111` |
+| Zielkarte Fahrt durchs Wasser (`STW`, `CTW`, `λ`, Bezugsrahmen und Vorzeichen) | `Spec0080`–`Spec0082`, `Spec0112` |
+| Zielkarte Wind (Messgrößen, Gültigkeit, keine künstlichen Nullwerte) | `Spec0076`, `Spec0080`–`Spec0081`, `Spec0087`, `Spec0113` |
+| Illustrative Zahlen, Vektoren und Yachtformen sind keine Laufzeitwerte | `Spec0087`, `Spec0095`, `Spec0109` |
+| Einzelgrafiken, Karten-/Skalenbasis, Pose, Referenzachsen und Statusdarstellung | `Spec0093`, `Spec0095`–`Spec0106` |
+| Begriffe, Formeln, Frames und Richtungsauflösung der Messgrößen | `Spec0067`–`Spec0082`, `Spec0087`–`Spec0089`, `Spec0111`–`Spec0113` |
+| Qt-Widgetklassen, SVG-Elementnamen und Laufzeitbindung | `Spec0087`, `Spec0095`, `Spec0106`, `Spec0110`–`Spec0113` |
+| Vier unabhängige Sichtbarkeitsoptionen | `Spec0087`, `Spec0096`, `Spec0099`, `Spec0102`, `Spec0105` |
+| Gemeinsamer Snapshot, Update-Timer, getrennte Felder und nicht blockierende GUI | `Spec0087`, `Spec0096`, `Spec0106` |
+| Kamera-Kopplung, Projektion und ungültige Kamerawerte | `Spec0092`, `Spec0097`–`Spec0098`, `Spec0100`–`Spec0104`, `Spec0108` |
+| Einheiten und Körperwechsel | `Spec0074`, `Spec0077`, `Spec0079`, `Spec0087`, `Spec0096` |
+| Fehler-, Gefahren- und Nichtverfügbarkeitszustände | `Spec0081`, `Spec0087`–`Spec0088`, `Spec0096`, `Spec0100`–`Spec0106`, `Spec0108` |
+| Konzept-Abnahmepunkte | Jeweils den Spezifikations-IDs der betreffenden Anforderung zugeordnet; vollständig einzeln im Umsetzungsplan nachverfolgt |
+
 ## Zweck und Hersteller-Anregungen
 
-Die Anzeige soll die 3D-Szene nicht durch ein Instrumentenbrett ersetzen. Die
-Ecken zeigen die wichtigsten Werte dauerhaft und auf einen Blick; die Yacht
-bleibt in der Mitte sichtbar. Der Entwurf übernimmt allgemeine, bei
+Die Anzeige soll die 3D-Szene nicht durch ein Instrumentenbrett ersetzen. Als
+Zwischenlösung werden Kompass, Krängung und Stampfen in einem separaten, frei
+schwebenden Fenster untereinander angeordnet; die 3D-Szene bleibt im
+Hauptfenster sichtbar. Die langfristige Anordnung weiterer Navigationskarten
+ist davon unabhängig. Der Entwurf übernimmt allgemeine, bei
 Navigationsgeräten wiederkehrende Bedienideen, nicht deren Gestaltung:
 
 - **Garmin GPSMAP / SailAssist:** Kompass- und Kursreferenzen gemeinsam mit
@@ -20,13 +52,15 @@ und [Raymarine i70s](https://www.raymarine.com/en-us/our-products/marine-instrum
 Die Quellen dienen als Inspiration für Informationshierarchie und
 Darstellungsformen, nicht als Vorlage zum Kopieren.
 
-## Instrumentkarten im Vergleich
-
-![Vergleich der Kompass-, Stampfen- und Krängungsanzeigen](../Widgets/VergleichWidgets.svg)
+## Instrumentkarten
 
 ### Kompass-Master als gemeinsame Elementbibliothek
 
 ![Kompass-Master mit benannten Anzeigeelementen](../Widgets/BeschreibungElementeWidgets.svg)
+
+Die verbindlichen Funktions-, Interface- und Einstellungsanforderungen der
+drei Widgets stehen in der
+[Spezifikation Navigationswidgets v0.7](./Spezifikation_Navigationswidgets_v0.7.md).
 
 Die nummerierte Mastergrafik ist die verbindliche visuelle Referenz für alle
 Instrumentkarten. Die Elementnummern und Legendentexte werden fortlaufend
@@ -93,7 +127,7 @@ Alle Zahlen und Vektoren der Grafik sind illustrative Beispiele, keine
 berechneten Ergebnisse. Das gilt auch für die gezeichnete Yacht und die
 Vektorlängen.
 
-## Einzel- und Vergleichsgrafiken der Instrumente
+## Einzelgrafiken der Instrumente
 
 ![Kompassanzeige aus dem Master](../Widgets/Widget_Kompass.svg)
 
@@ -104,11 +138,12 @@ Masterreferenz; Geometrie, Farben und Schriftmaße bleiben erhalten. Die
 Stampfen- und Krängungsanzeigen verwenden dieselbe Karten- und Skalenbasis,
 ergänzt um je ein mastloses Yacht-Icon, den gekoppelten Lagezeiger und feste
 gelbe Referenzachsen. Zahlenwerte erhalten eine dunkle Kontur zur besseren
-Abgrenzung vom Zifferblatt. Das
-[Vergleichsdokument](../Widgets/VergleichWidgets.svg) enthält die drei
-Einzelanzeigen sowie Normal- und Gefahrenbeispiele für Stampfen und Krängung.
-Weitere Widgets erhalten jeweils zuerst eine eigene Einzelgrafik und werden
-anschließend in das Vergleichsdokument aufgenommen.
+Abgrenzung vom Zifferblatt. Die benannten Elemente der drei Widgets sind in
+der [Elementbeschreibung](../Widgets/BeschreibungElementeWidgets.svg)
+dokumentiert. Normal- und Gefahrenzustände für Stampfen und Krängung sind in
+der [Widgetspezifikation](./Spezifikation_Navigationswidgets_v0.7.md)
+festgelegt. Weitere Widgets erhalten zuerst eine eigene Spezifikation und
+Einzelgrafik.
 
 ## Begriffe und Bezugsrahmen
 
@@ -139,8 +174,12 @@ Implementierung festgelegt und getestet werden, nicht durch das Mockup.
 
 ## Umsetzung in Python/Qt
 
-Die SVG ist ein visuelles Konzept, keine Laufzeit-Abhängigkeit. Für die GUI
-erhält jede Instrumentkarte eine eigene Qt-Widget-Klasse. So sind Schrift,
+Die drei Widget-SVGs sind verbindliche Laufzeitvorlagen und müssen als
+Quelldateien unverändert bleiben. Die Anwendung lädt sie und aktualisiert nur
+eine flüchtige Laufzeitinstanz; sie schreibt keine veränderte SVG-Datei
+zurück. Statusfarben dürfen als getrennte Render-Ebenen ergänzt werden, ohne
+Geometrie, Element-IDs, Drehpunkte oder Winkeldefinitionen der Vorlagen zu
+verändern. Für die GUI erhält jede Instrumentkarte eine eigene Qt-Widget-Klasse. So sind Schrift,
 Skalierung, Barrierefreiheit und Verhalten bei fehlenden Daten robust
 kontrollierbar. Die Gruppen- und Element-IDs der SVG sind zugleich stabile
 semantische Namen für die spätere Umsetzung, zum Beispiel
@@ -181,35 +220,49 @@ Simulations-Default.
 Einheiten werden nur in der Darstellung umgerechnet; die Physik bleibt im
 SI-System. Die Karte zeigt ausschließlich Werte des gewählten Körpers,
 während Welt- und Umweltwerte bei einem Körperwechsel konsistent bleiben.
-Das Bedienkonzept muss bei kleinen Fenstern skalieren oder Karten kontrolliert
-ausblenden/umschalten, statt über der 3D-Szene unlesbar zu überlagern.
+Die drei Widgets stehen in der Zwischenlösung in einem separaten, frei
+schwebenden Fenster; sie dürfen auch bei kleiner Fenstergröße nicht
+ausgeblendet oder durch eine Umschaltung ersetzt werden. Das Fenster muss
+eine Mindestgröße haben, bei der alle drei Widgets gleichzeitig sichtbar
+bleiben; der Nutzer kann das Fenster bei Bedarf vergrößern. Die Zielkomposition
+weiterer Instrumentkarten ist davon getrennt.
+
+Bei ungültigem oder logisch fehlerhaftem primärem Messwert bleibt das
+betroffene Widget sichtbar: Die Innenfläche wird rot und das Winkelwertfeld
+zeigt „FEHLER“. Nur bei einem gültigen Lagewinkel außerhalb `±90°` wird
+stattdessen ausschließlich das Ringband rot dargestellt. Ein ungültiger
+Nebenwert betrifft nur sein Anzeigeelement. Die Fehleranzeige bleibt
+unabhängig von den Sichtbarkeitseinstellungen aktiv.
 
 ## Abnahmepunkte
 
 - Kompassrose und `HDG` teilen dieselbe lokale Nordreferenz; Marker und Zahl
-  stammen aus demselben Snapshot.
+  stammen aus demselben Snapshot. (`Spec0075`, `Spec0078`, `Spec0096`–`Spec0098`)
 - Die Rose verwendet 22,5°-Teilstriche; für `N`, `O`, `S`, `W` bleibt der
   jeweilige Strich frei; auch am Nordpunkt darf keine Linie erscheinen. Die
   Buchstaben sitzen sauber zwischen Innen- und Außenkreis. Das digitale Feld
   sitzt innerhalb der Rose: Winkelwert oben, darunter im unteren Halbkreis
   Richtungstext und `HDG`, ohne mit dem Zeiger zu kollidieren.
+  (`Spec0087`, `Spec0097`–`Spec0098`)
 - Das nach innen gerichtete Kamerasymbol liegt außerhalb der Kompassrose und
   umläuft sie entsprechend `KAM_AZ`; es folgt dem Bootsheading mit konstantem
-  horizontalem Relativwinkel.
+  horizontalem Relativwinkel. (`Spec0092`, `Spec0095`, `Spec0097`–`Spec0098`)
 - Kamera-Azimut folgt dem Gieren, nicht Stampfen oder Krängung. Kamera-Höhe
   und Roll bleiben horizontstabil, so dass Nick- und Krängwinkel des Boots
-  sichtbar bleiben.
+  sichtbar bleiben. (`Spec0092`)
 - Die Kamerarahmen-Grafik zeigt Draufsicht, Höhenwinkel und die gegenüber dem
-  Horizont sichtbare Bootsneigung.
+  Horizont sichtbare Bootsneigung. (`Spec0092`, `Spec0109`)
 - `SOG`/`COG` und `STW`/`CTW` sind sichtbar getrennt und ihre Labels nennen
-  den Bezugsrahmen.
+  den Bezugsrahmen. (`Spec0080`, `Spec0087`, `Spec0111`–`Spec0112`)
 - Werte unterhalb der definierten Richtungsauflösung erzeugen „nicht
   verfügbar“, keinen Rausch-Kurs; `λ` benötigt Heading und `CTW`.
+  (`Spec0081`, `Spec0087`–`Spec0089`, `Spec0112`)
 - Ohne Windzustand sind keine Windzahlen und keine künstlichen Nullwerte
   sichtbar. Bei gültigem Wind folgen Windwerte später derselben
-  Gültigkeits- und Einheitenbehandlung.
+  Gültigkeits- und Einheitenbehandlung. (`Spec0076`, `Spec0080`–`Spec0081`,
+  `Spec0087`, `Spec0113`)
 - Das Aktualisieren der Karten blockiert oder beschleunigt keinen
   Physikschritt; Widget-Updates erfolgen aus dem neuesten verfügbaren
-  Snapshot.
+  Snapshot. (`Spec0087`, `Spec0096`, `Spec0106`)
 - Die Beispielwerte der SVG werden nicht als Start- oder Fallbackwerte der
-  Simulation verwendet.
+  Simulation verwendet. (`Spec0087`, `Spec0095`, `Spec0109`)

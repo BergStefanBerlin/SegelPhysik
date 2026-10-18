@@ -1,26 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="820" viewBox="0 0 1280 820" role="img" aria-labelledby="title desc">
-  <title id="title">Kompass-Master – Elemente zum Referenzieren</title>
-  <desc id="desc">Fortlaufende Elementbibliothek der Navigationsanzeigen. Die vergrößerte Kompasskarte links hat nummerierte Markierungen; rechts benennt die Legende Widgetrahmen, Titel, Titelbeschreibung, Skalenringe, Teilstriche, Kardinalpunkte, Winkelwert, Headingzeiger, Richtungstext, HDG, Drehzentrum und Kamerasymbol. Neue gemeinsame oder spezifische Elemente werden hier ergänzt; konkrete Widgets blenden nicht benötigte Elemente aus.</desc>
-  <defs>
-    <linearGradient id="background" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#102437"/>
-      <stop offset="1" stop-color="#07131f"/>
-    </linearGradient>
-    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#193448"/>
-      <stop offset="1" stop-color="#11283a"/>
-    </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
-      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000814" flood-opacity=".35"/>
-    </filter>
-    <marker id="callout-end" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
-      <circle cx="4" cy="4" r="3" fill="#5ee2d0"/>
-    </marker>
-    <style>
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="5232" viewBox="0 0 1000 5232" role="img" aria-labelledby="overview_title overview_desc">
+  <title id="overview_title">SegelPhysik - Anzeigen und SVG-Elemente</title>
+  <desc id="overview_desc">Drei Normalanzeigen mit deutschen Erklärungen zu allen IDs; mit der Maus oder per Klick lassen sich einzelne Elemente hervorheben.</desc>
+  <style id="spotlight_styles">
+text { font-family: "Segoe UI", Arial, sans-serif; }
+.element-id { cursor: pointer; text-decoration: underline; text-decoration-color: transparent; }
+.element-id:hover, .element-id:focus, .element-id.spotlight-selected { fill: #fff !important; text-decoration-color: #ffc66d; outline: none; }
+.spotlight-hidden { display: none !important; }
+</style>
+  <rect width="1000" height="5232" fill="#091824" />
+  <text x="28" y="38" font-size="15px" fill="#8da9bb" font-weight="700">SEGELPHYSIK · INSTRUMENTE</text>
+  <text x="28" y="76" font-size="29px" fill="#f4f8fb" font-weight="700">Widget-Übersicht und SVG-Elemente</text>
+  <text x="28" y="104" font-size="13px" fill="#a9bdca">ID überfahren: Element isolieren. ID anklicken: Auswahl festhalten; erneut anklicken oder Escape setzt zurück.</text>
+  <g>
+    <rect x="14" y="126" width="972" height="1589" rx="16" fill="#102638" stroke="#315066" stroke-width="2" />
+    <text x="32" y="161" font-size="18px" fill="#f4f8fb" font-weight="700">KOMPASS · Normalzustand · Kurs 074° ab Nord, im Uhrzeigersinn</text>
+    <text x="34" y="187" font-size="11px" fill="#8da9bb" font-weight="700">VORSCHAU</text>
+    <svg id="normal0_compass_preview" x="25" y="194" width="330" height="330" viewBox="22 112 580 580" role="img" data-preview-key="normal0_compass">
+      <title id="normal0_compass_widget_title">Kompassanzeige aus dem Master</title>
+      <desc id="normal0_compass_widget_description">Eigenständige Kompasskarte, direkt aus dem Kompass-Master übernommen. Farben, Geometrie, Schriftgrößen, Skala, Headingzeiger und Kamerasymbol entsprechen dem Master.</desc>
+      <defs>
+        <linearGradient id="normal0_compass_card_gradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#193448" />
+          <stop offset="1" stop-color="#11283a" />
+        </linearGradient>
+        <filter id="normal0_compass_card_shadow" x="-20%" y="-20%" width="140%" height="150%">
+          <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000814" flood-opacity=".35" />
+        </filter>
+        <style id="normal0_compass_compass_styles">
       text { font-family: "Segoe UI", Arial, sans-serif; fill: #f4f8fb; }
-      .eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 1.7px; fill: #8da9bb; }
-      .title { font-size: 25px; font-weight: 700; }
-      .card { fill: url(#card); stroke: #315066; stroke-width: 1.5; }
+      .card { fill: url(#normal0_compass_card_gradient); stroke: #315066; stroke-width: 1.5; }
       .card-title { font-size: 19px; font-weight: 700; letter-spacing: 1.2px; fill: #b8cad5; }
       .small { font-size: 13px; fill: #8da9bb; }
       .dial-value { font-size: 48px; font-weight: 700; stroke: #0b1c2a; stroke-width: 3px; paint-order: stroke; stroke-linejoin: round; }
@@ -28,161 +37,1153 @@
       .dial-code { font-size: 18px; font-weight: 700; letter-spacing: 2px; fill: #8da9bb; }
       .tick-minor { stroke: #49667a; stroke-width: 2; }
       .tick-major { stroke: #7892a3; stroke-width: 2.7; }
-      .callout-line { fill: none; stroke: #5ee2d0; stroke-width: 1.5; opacity: .8; }
-      .callout-dot { fill: #102437; stroke: #5ee2d0; stroke-width: 2; }
-      .callout-number { font-size: 12px; font-weight: 700; text-anchor: middle; dominant-baseline: central; }
-      .legend-number { font-size: 14px; font-weight: 700; fill: #5ee2d0; }
-      .legend-title { font-size: 14px; font-weight: 700; }
-      .legend-description { font-size: 12px; fill: #9eb4c2; }
       .camera { fill: #11283a; stroke: #ffdf70; stroke-width: 2.5; stroke-linejoin: round; }
     </style>
-  </defs>
-
-  <rect width="1280" height="820" fill="url(#background)"/>
-  <text x="42" y="42" class="eyebrow">REFERENZBLATT · WELTKOMPASS</text>
-  <text x="42" y="78" class="title">Kompass-Master – Elemente benennen</text>
-  <text x="42" y="105" class="small">Nummern in der Grafik entsprechen der Legende rechts. Werte sind Beispiele.</text>
-
-  <g id="master_widget" filter="url(#shadow)">
-    <rect class="card" x="42" y="132" width="540" height="540" rx="24"/>
-    <text x="82" y="185" class="card-title">KOMPASS</text>
-    <text x="70" y="642" class="small">Bugrichtung relativ zu lokalem Nord</text>
-
-    <g id="compass_face" transform="translate(0 5)">
-      <circle cx="312" cy="405" r="210" fill="#0b1c2a" stroke="#49667a" stroke-width="2.5"/>
-      <circle cx="312" cy="405" r="166.5" fill="none" stroke="#29485d" stroke-width="1.8"/>
-
-      <g id="compass_ticks" fill="none">
-        <g class="tick-minor">
-          <line x1="312" y1="195" x2="312" y2="219"/>
-          <line x1="312" y1="195" x2="312" y2="219" transform="rotate(22.5 312 405)"/>
-          <line x1="312" y1="195" x2="312" y2="219" transform="rotate(67.5 312 405)"/>
-          <line x1="312" y1="195" x2="312" y2="219" transform="rotate(112.5 312 405)"/>
-          <line x1="312" y1="195" x2="312" y2="219" transform="rotate(157.5 312 405)"/>
-          <line x1="312" y1="195" x2="312" y2="219" transform="rotate(202.5 312 405)"/>
-          <line x1="312" y1="195" x2="312" y2="219" transform="rotate(247.5 312 405)"/>
-          <line x1="312" y1="195" x2="312" y2="219" transform="rotate(292.5 312 405)"/>
-          <line x1="312" y1="195" x2="312" y2="219" transform="rotate(337.5 312 405)"/>
+      </defs>
+      <g id="normal0_compass_compass_widget" filter="url(#normal0_compass_card_shadow)">
+        <rect id="normal0_compass_card_background" class="card" x="42" y="132" width="540" height="540" rx="24" />
+        <text id="normal0_compass_card_title" x="82" y="185" class="card-title">KOMPASS</text>
+        <text id="normal0_compass_card_description" x="70" y="642" class="small">Bugrichtung relativ zu lokalem Nord</text>
+        <g id="normal0_compass_compass_face" transform="translate(0 5)">
+          <circle id="normal0_compass_dial_outer_ring" cx="312" cy="405" r="210" fill="#0b1c2a" stroke="#49667a" stroke-width="2.5" />
+          <path id="normal0_compass_dial_status" d="M312 195 A210 210 0 1 1 312 615 A210 210 0 1 1 312 195 Z M312 238.5 A166.5 166.5 0 1 0 312 571.5 A166.5 166.5 0 1 0 312 238.5 Z" fill="#ffbd16" fill-opacity="0" fill-rule="evenodd" pointer-events="none" />
+          <circle id="normal0_compass_dial_inner_ring" cx="312" cy="405" r="166.5" fill="none" stroke="#29485d" stroke-width="1.8" />
+          <g id="normal0_compass_compass_ticks" fill="none">
+            <g id="normal0_compass_tick_minor" class="tick-minor">
+              <line x1="312" y1="195" x2="312" y2="219" />
+              <line x1="312" y1="195" x2="312" y2="219" transform="rotate(22.5 312 405)" />
+              <line x1="312" y1="195" x2="312" y2="219" transform="rotate(67.5 312 405)" />
+              <line x1="312" y1="195" x2="312" y2="219" transform="rotate(112.5 312 405)" />
+              <line x1="312" y1="195" x2="312" y2="219" transform="rotate(157.5 312 405)" />
+              <line x1="312" y1="195" x2="312" y2="219" transform="rotate(202.5 312 405)" />
+              <line x1="312" y1="195" x2="312" y2="219" transform="rotate(247.5 312 405)" />
+              <line x1="312" y1="195" x2="312" y2="219" transform="rotate(292.5 312 405)" />
+              <line x1="312" y1="195" x2="312" y2="219" transform="rotate(337.5 312 405)" />
+            </g>
+            <g id="normal0_compass_tick_major" class="tick-major">
+              <line x1="312" y1="195" x2="312" y2="226" transform="rotate(45 312 405)" />
+              <line x1="312" y1="195" x2="312" y2="226" transform="rotate(135 312 405)" />
+              <line x1="312" y1="195" x2="312" y2="226" transform="rotate(225 312 405)" />
+              <line x1="312" y1="195" x2="312" y2="226" transform="rotate(315 312 405)" />
+            </g>
+          </g>
+          <g id="normal0_compass_compass_references" fill="none" stroke="#ffbd16" stroke-width="2.5" stroke-linecap="round">
+            <path id="normal0_compass_reference_horizontal" d="M145.5 405 H478.5" />
+            <path id="normal0_compass_reference_vertical" d="M312 238.5 V571.5" stroke-dasharray="4 4" />
+          </g>
+          <g id="normal0_compass_heading_pointer" transform="rotate(74 312 405)">
+            <path id="normal0_compass_pointer_tip" d="M312 260 L298 418 L312 399 L326 418 Z" fill="#ffc66d" />
+            <line id="normal0_compass_pointer_shaft" x1="312" y1="405" x2="312" y2="268" stroke="#ffc66d" stroke-width="3" />
+          </g>
+          <g id="normal0_compass_camera_symbol" transform="rotate(119 312 405)" class="camera">
+            <rect id="normal0_compass_camera_body" x="299" y="145" width="26" height="21" rx="4" />
+            <path id="normal0_compass_camera_top" d="M306 145 L309 140 L315 140 L318 145" />
+            <path id="normal0_compass_camera_direction" d="M306 166 L312 175 L318 166 Z" />
+            <circle id="normal0_compass_camera_lens" cx="312" cy="153" r="4.5" fill="none" />
+          </g>
+          <g id="normal0_compass_cardinal_labels" class="small" text-anchor="middle" font-weight="700">
+            <text id="normal0_compass_cardinal_north" x="312" y="216" font-size="15">N</text>
+            <text id="normal0_compass_cardinal_east" x="500" y="409" font-size="16">O</text>
+            <text id="normal0_compass_cardinal_south" x="312" y="610" font-size="15">S</text>
+            <text id="normal0_compass_cardinal_west" x="124" y="409" font-size="16">W</text>
+          </g>
+          <circle id="normal0_compass_pointer_pivot" cx="312" cy="405" r="7" fill="#f4f8fb" />
+          <text id="normal0_compass_heading_value" x="312" y="347" text-anchor="middle" class="dial-value">074°</text>
+          <text id="normal0_compass_heading_direction" x="312" y="457" text-anchor="middle" class="dial-caption">ONO</text>
+          <text id="normal0_compass_heading_label" x="312" y="491" text-anchor="middle" class="dial-code">HDG</text>
         </g>
-        <g class="tick-major">
-          <line x1="312" y1="195" x2="312" y2="226" transform="rotate(45 312 405)"/>
-          <line x1="312" y1="195" x2="312" y2="226" transform="rotate(135 312 405)"/>
-          <line x1="312" y1="195" x2="312" y2="226" transform="rotate(225 312 405)"/>
-          <line x1="312" y1="195" x2="312" y2="226" transform="rotate(315 312 405)"/>
+      </g>
+    </svg>
+    <text x="375" y="230" font-size="12px" fill="#c2d2dc">Kurs: 0° bis &lt;360°, im Uhrzeigersinn ab Nord. Zeiger, Kurszahl</text>
+    <text x="375" y="248" font-size="12px" fill="#c2d2dc">und 16-Strich-Richtung verwenden denselben Kurs. Drehpunkt und</text>
+    <text x="375" y="266" font-size="12px" fill="#c2d2dc">Winkelkonvention sind fest.</text>
+    <text x="30" y="554" font-size="11px" fill="#8da9bb" font-weight="700">SVG-ID</text>
+    <text x="255" y="554" font-size="11px" fill="#8da9bb" font-weight="700">BESCHREIBUNG</text>
+    <text x="610" y="554" font-size="11px" fill="#8da9bb" font-weight="700">INPUT</text>
+    <line x1="28" y1="561" x2="972" y2="561" stroke="#315066" stroke-width="1" />
+    <rect x="24" y="566" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="581" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="widget_title: Element im Widget hervorheben" data-focus-id="normal0_compass_card_title" data-preview-id="normal0_compass_preview" data-description="Barrierefreier SVG-Titel der Kompassanzeige; statisch." data-input="—">widget_title</text>
+    <text x="610" y="581.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="581" font-size="10px" fill="#e0eaf0">Barrierefreier SVG-Titel der Kompassanzeige;</text>
+    <text x="255" y="596" font-size="10px" fill="#e0eaf0">statisch.</text>
+    <text x="30" y="617" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="widget_description: Element im Widget hervorheben" data-focus-id="normal0_compass_card_description" data-preview-id="normal0_compass_preview" data-description="Beschreibt die Anzeige für assistive Technik; statisch." data-input="—">widget_description</text>
+    <text x="610" y="617.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="617" font-size="10px" fill="#e0eaf0">Beschreibt die Anzeige für assistive Technik;</text>
+    <text x="255" y="632" font-size="10px" fill="#e0eaf0">statisch.</text>
+    <rect x="24" y="638" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="653" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="card_gradient: Element im Widget hervorheben" data-focus-id="normal0_compass_card_background" data-preview-id="normal0_compass_preview" data-description="Farbverlauf des Kartenhintergrunds; nur Gestaltung." data-input="—">card_gradient</text>
+    <text x="610" y="653.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="653" font-size="10px" fill="#e0eaf0">Farbverlauf des Kartenhintergrunds; nur</text>
+    <text x="255" y="668" font-size="10px" fill="#e0eaf0">Gestaltung.</text>
+    <text x="30" y="689" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="card_shadow: Element im Widget hervorheben" data-focus-id="normal0_compass_compass_widget" data-preview-id="normal0_compass_preview" data-description="Filter für den Schatten; nur Gestaltung." data-input="—">card_shadow</text>
+    <text x="610" y="689.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="689" font-size="10px" fill="#e0eaf0">Filter für den Schatten; nur Gestaltung.</text>
+    <rect x="24" y="697" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="712" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="compass_styles: Element im Widget hervorheben" data-focus-id="normal0_compass_compass_widget" data-preview-id="normal0_compass_preview" data-description="CSS für Schrift, Farben und Skalenstriche; keine Messwerte." data-input="—">compass_styles</text>
+    <text x="610" y="712.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="712" font-size="10px" fill="#e0eaf0">CSS für Schrift, Farben und Skalenstriche; keine</text>
+    <text x="255" y="727" font-size="10px" fill="#e0eaf0">Messwerte.</text>
+    <text x="30" y="748" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="compass_widget: Element im Widget hervorheben" data-focus-id="normal0_compass_compass_widget" data-preview-id="normal0_compass_preview" data-description="Oberste Gruppe der Karte; fasst alle Kompassbestandteile zusammen." data-input="—">compass_widget</text>
+    <text x="610" y="748.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="748" font-size="10px" fill="#e0eaf0">Oberste Gruppe der Karte; fasst alle</text>
+    <text x="255" y="763" font-size="10px" fill="#e0eaf0">Kompassbestandteile zusammen.</text>
+    <rect x="24" y="769" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="784" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="card_background: Element im Widget hervorheben" data-focus-id="normal0_compass_card_background" data-preview-id="normal0_compass_preview" data-description="Abgerundeter Kartenhintergrund; Geometrie bleibt fest." data-input="—">card_background</text>
+    <text x="610" y="784.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="784" font-size="10px" fill="#e0eaf0">Abgerundeter Kartenhintergrund; Geometrie bleibt</text>
+    <text x="255" y="799" font-size="10px" fill="#e0eaf0">fest.</text>
+    <text x="30" y="820" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="card_title: Element im Widget hervorheben" data-focus-id="normal0_compass_card_title" data-preview-id="normal0_compass_preview" data-description="Text KOMPASS; statisch." data-input="—">card_title</text>
+    <text x="610" y="820.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="820" font-size="10px" fill="#e0eaf0">Text KOMPASS; statisch.</text>
+    <rect x="24" y="828" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="843" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="card_description: Element im Widget hervorheben" data-focus-id="normal0_compass_card_description" data-preview-id="normal0_compass_preview" data-description="Erklärung Bugrichtung relativ zu lokalem Nord; statisch." data-input="—">card_description</text>
+    <text x="610" y="843.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="843" font-size="10px" fill="#e0eaf0">Erklärung Bugrichtung relativ zu lokalem Nord;</text>
+    <text x="255" y="858" font-size="10px" fill="#e0eaf0">statisch.</text>
+    <text x="30" y="879" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="compass_face: Element im Widget hervorheben" data-focus-id="normal0_compass_compass_face" data-preview-id="normal0_compass_preview" data-description="Enthaelt Skala, Referenzlinien, Zeiger, Kamera und Werte." data-input="—">compass_face</text>
+    <text x="610" y="879.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="879" font-size="10px" fill="#e0eaf0">Enthaelt Skala, Referenzlinien, Zeiger, Kamera</text>
+    <text x="255" y="894" font-size="10px" fill="#e0eaf0">und Werte.</text>
+    <rect x="24" y="900" width="952" height="23" fill="#163247" opacity="0.62" />
+    <text x="30" y="915" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="dial_outer_ring: Element im Widget hervorheben" data-focus-id="normal0_compass_dial_outer_ring" data-preview-id="normal0_compass_preview" data-description="Fester äußerer Zifferblattring." data-input="—">dial_outer_ring</text>
+    <text x="610" y="915.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="915" font-size="10px" fill="#e0eaf0">Fester äußerer Zifferblattring.</text>
+    <text x="30" y="938" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="dial_status: Element im Widget hervorheben" data-focus-id="normal0_compass_dial_status" data-preview-id="normal0_compass_preview" data-description="Transparente Fläche zwischen den Ringen; derzeit unsichtbar, für spätere Fehlersignalisierung vorgesehen." data-input="&#8212; (Normalzustand; später optional Statuswert für Farbe/Deckkraft).">dial_status</text>
+    <text x="610" y="938.0" font-size="10px" fill="#e0eaf0">— im Normalbetrieb; später optional</text>
+    <text x="610" y="953.0" font-size="10px" fill="#e0eaf0">Status-/Fehlersignal über Füllung/Deckkraft.</text>
+    <text x="255" y="938" font-size="10px" fill="#e0eaf0">Transparente Fläche zwischen Ringen; reserviert</text>
+    <text x="255" y="953" font-size="10px" fill="#e0eaf0">für spätere Status-/Fehlersignalisierung,</text>
+    <text x="255" y="968" font-size="10px" fill="#e0eaf0">derzeit unsichtbar.</text>
+    <rect x="24" y="974" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="989" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="dial_inner_ring: Element im Widget hervorheben" data-focus-id="normal0_compass_dial_inner_ring" data-preview-id="normal0_compass_preview" data-description="Fester innerer Ring; begrenzt die spätere Statusfläche." data-input="—">dial_inner_ring</text>
+    <text x="610" y="989.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="989" font-size="10px" fill="#e0eaf0">Fester innerer Ring; begrenzt die spätere</text>
+    <text x="255" y="1004" font-size="10px" fill="#e0eaf0">Statusfläche.</text>
+    <text x="30" y="1025" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="compass_ticks: Element im Widget hervorheben" data-focus-id="normal0_compass_compass_ticks" data-preview-id="normal0_compass_preview" data-description="Gruppe aller Teilstriche; fest und nicht durch Messwerte gedreht." data-input="—">compass_ticks</text>
+    <text x="610" y="1025.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="1025" font-size="10px" fill="#e0eaf0">Gruppe aller Teilstriche; fest und nicht durch</text>
+    <text x="255" y="1040" font-size="10px" fill="#e0eaf0">Messwerte gedreht.</text>
+    <rect x="24" y="1046" width="952" height="23" fill="#163247" opacity="0.62" />
+    <text x="30" y="1061" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="tick_minor: Element im Widget hervorheben" data-focus-id="normal0_compass_tick_minor" data-preview-id="normal0_compass_preview" data-description="Untergruppe der kleinen Teilstriche; fest." data-input="—">tick_minor</text>
+    <text x="610" y="1061.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="1061" font-size="10px" fill="#e0eaf0">Untergruppe der kleinen Teilstriche; fest.</text>
+    <text x="30" y="1084" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="tick_major: Element im Widget hervorheben" data-focus-id="normal0_compass_tick_major" data-preview-id="normal0_compass_preview" data-description="Untergruppe der Hauptstriche; fest." data-input="—">tick_major</text>
+    <text x="610" y="1084.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="1084" font-size="10px" fill="#e0eaf0">Untergruppe der Hauptstriche; fest.</text>
+    <rect x="24" y="1092" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="1107" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="compass_references: Element im Widget hervorheben" data-focus-id="normal0_compass_compass_references" data-preview-id="normal0_compass_preview" data-description="Gruppe der festen horizontalen und vertikalen Orientierungslinien." data-input="—">compass_references</text>
+    <text x="610" y="1107.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="1107" font-size="10px" fill="#e0eaf0">Gruppe der festen horizontalen und vertikalen</text>
+    <text x="255" y="1122" font-size="10px" fill="#e0eaf0">Orientierungslinien.</text>
+    <text x="30" y="1143" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="reference_horizontal: Element im Widget hervorheben" data-focus-id="normal0_compass_reference_horizontal" data-preview-id="normal0_compass_preview" data-description="Feste gelbe Horizontale; Python verändert weder Lage noch Winkel." data-input="—">reference_horizontal</text>
+    <text x="610" y="1143.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="1143" font-size="10px" fill="#e0eaf0">Feste gelbe Horizontale; Python verändert weder</text>
+    <text x="255" y="1158" font-size="10px" fill="#e0eaf0">Lage noch Winkel.</text>
+    <rect x="24" y="1164" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="1179" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="reference_vertical: Element im Widget hervorheben" data-focus-id="normal0_compass_reference_vertical" data-preview-id="normal0_compass_preview" data-description="Feste gelbe gestrichelte Vertikale; bleibt unverändert." data-input="—">reference_vertical</text>
+    <text x="610" y="1179.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="1179" font-size="10px" fill="#e0eaf0">Feste gelbe gestrichelte Vertikale; bleibt</text>
+    <text x="255" y="1194" font-size="10px" fill="#e0eaf0">unverändert.</text>
+    <text x="30" y="1215" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="heading_pointer: Element im Widget hervorheben" data-focus-id="normal0_compass_heading_pointer" data-preview-id="normal0_compass_preview" data-description="Kurszeiger. Die Gruppe dreht den Zeiger ab Nord im Uhrzeigersinn." data-input="Kurswinkel von 0&#176; bis &lt;360&#176;, im Uhrzeigersinn ab Nord; Python setzt die Gruppenrotation.">heading_pointer</text>
+    <text x="610" y="1215.0" font-size="10px" fill="#e0eaf0">Kurswinkel 0° bis &lt;360°, Uhrzeigersinn ab Nord;</text>
+    <text x="610" y="1230.0" font-size="10px" fill="#e0eaf0">Python setzt die Gruppenrotation.</text>
+    <text x="255" y="1215" font-size="10px" fill="#e0eaf0">Gemeinsame Gruppe des Kurszeigers; dreht</text>
+    <text x="255" y="1230" font-size="10px" fill="#e0eaf0">im Uhrzeigersinn ab Nord.</text>
+    <rect x="24" y="1236" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="1251" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pointer_tip: Element im Widget hervorheben" data-focus-id="normal0_compass_pointer_tip" data-preview-id="normal0_compass_preview" data-description="Sichtbare Spitze des Kurszeigers; Teil der gemeinsam rotierenden Zeigergruppe." data-input="&#8212;">pointer_tip</text>
+    <text x="610" y="1251.0" font-size="10px" fill="#e0eaf0">— (dreht gemeinsam mit heading_pointer).</text>
+    <text x="255" y="1251" font-size="10px" fill="#e0eaf0">Sichtbare Spitze des Kurszeigers; dreht mit</text>
+    <text x="255" y="1266" font-size="10px" fill="#e0eaf0">heading_pointer.</text>
+    <text x="30" y="1287" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pointer_shaft: Element im Widget hervorheben" data-focus-id="normal0_compass_pointer_shaft" data-preview-id="normal0_compass_preview" data-description="Schaft des Kurszeigers; Teil der gemeinsam rotierenden Zeigergruppe." data-input="&#8212;">pointer_shaft</text>
+    <text x="610" y="1287.0" font-size="10px" fill="#e0eaf0">— (dreht gemeinsam mit heading_pointer).</text>
+    <text x="255" y="1287" font-size="10px" fill="#e0eaf0">Schaft des Kurszeigers; dreht mit</text>
+    <text x="255" y="1302" font-size="10px" fill="#e0eaf0">heading_pointer.</text>
+    <rect x="24" y="1308" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="1323" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="camera_symbol: Element im Widget hervorheben" data-focus-id="normal0_compass_camera_symbol" data-preview-id="normal0_compass_preview" data-description="Kamera-Gruppe mit fester eigener Ausrichtung; kein Kurs-Input." data-input="—">camera_symbol</text>
+    <text x="610" y="1323.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="1323" font-size="10px" fill="#e0eaf0">Kamera-Gruppe mit fester eigener Ausrichtung;</text>
+    <text x="255" y="1338" font-size="10px" fill="#e0eaf0">kein Kurs-Input.</text>
+    <text x="30" y="1359" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="camera_body: Element im Widget hervorheben" data-focus-id="normal0_compass_camera_body" data-preview-id="normal0_compass_preview" data-description="Umriss des Kamerasymbols." data-input="—">camera_body</text>
+    <text x="610" y="1359.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="1359" font-size="10px" fill="#e0eaf0">Umriss des Kamerasymbols.</text>
+    <rect x="24" y="1367" width="952" height="23" fill="#163247" opacity="0.62" />
+    <text x="30" y="1382" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="camera_top: Element im Widget hervorheben" data-focus-id="normal0_compass_camera_top" data-preview-id="normal0_compass_preview" data-description="Oberer Gehaeuseteil." data-input="—">camera_top</text>
+    <text x="610" y="1382.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="1382" font-size="10px" fill="#e0eaf0">Oberer Gehaeuseteil.</text>
+    <text x="30" y="1405" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="camera_direction: Element im Widget hervorheben" data-focus-id="normal0_compass_camera_direction" data-preview-id="normal0_compass_preview" data-description="Kleiner Richtungspfeil der Kamera." data-input="—">camera_direction</text>
+    <text x="610" y="1405.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="1405" font-size="10px" fill="#e0eaf0">Kleiner Richtungspfeil der Kamera.</text>
+    <rect x="24" y="1413" width="952" height="23" fill="#163247" opacity="0.62" />
+    <text x="30" y="1428" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="camera_lens: Element im Widget hervorheben" data-focus-id="normal0_compass_camera_lens" data-preview-id="normal0_compass_preview" data-description="Kreisfoermiges Objektiv." data-input="—">camera_lens</text>
+    <text x="610" y="1428.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="1428" font-size="10px" fill="#e0eaf0">Kreisfoermiges Objektiv.</text>
+    <text x="30" y="1451" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="cardinal_labels: Element im Widget hervorheben" data-focus-id="normal0_compass_cardinal_labels" data-preview-id="normal0_compass_preview" data-description="Gruppe der festen Richtungsbuchstaben." data-input="—">cardinal_labels</text>
+    <text x="610" y="1451.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="1451" font-size="10px" fill="#e0eaf0">Gruppe der festen Richtungsbuchstaben.</text>
+    <rect x="24" y="1459" width="952" height="23" fill="#163247" opacity="0.62" />
+    <text x="30" y="1474" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="cardinal_north: Element im Widget hervorheben" data-focus-id="normal0_compass_cardinal_north" data-preview-id="normal0_compass_preview" data-description="N-Markierung am oberen Zifferblattrand." data-input="—">cardinal_north</text>
+    <text x="610" y="1474.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="1474" font-size="10px" fill="#e0eaf0">N-Markierung am oberen Zifferblattrand.</text>
+    <text x="30" y="1497" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="cardinal_east: Element im Widget hervorheben" data-focus-id="normal0_compass_cardinal_east" data-preview-id="normal0_compass_preview" data-description="O-Markierung rechts; deutsche Ost-Abkuerzung." data-input="—">cardinal_east</text>
+    <text x="610" y="1497.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="1497" font-size="10px" fill="#e0eaf0">O-Markierung rechts; deutsche Ost-Abkuerzung.</text>
+    <rect x="24" y="1505" width="952" height="23" fill="#163247" opacity="0.62" />
+    <text x="30" y="1520" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="cardinal_south: Element im Widget hervorheben" data-focus-id="normal0_compass_cardinal_south" data-preview-id="normal0_compass_preview" data-description="S-Markierung am unteren Rand." data-input="—">cardinal_south</text>
+    <text x="610" y="1520.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="1520" font-size="10px" fill="#e0eaf0">S-Markierung am unteren Rand.</text>
+    <text x="30" y="1543" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="cardinal_west: Element im Widget hervorheben" data-focus-id="normal0_compass_cardinal_west" data-preview-id="normal0_compass_preview" data-description="W-Markierung links." data-input="—">cardinal_west</text>
+    <text x="610" y="1543.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="1543" font-size="10px" fill="#e0eaf0">W-Markierung links.</text>
+    <rect x="24" y="1551" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="1566" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pointer_pivot: Element im Widget hervorheben" data-focus-id="normal0_compass_pointer_pivot" data-preview-id="normal0_compass_preview" data-description="Fester Mittelpunkt des Kurszeigers." data-input="&#8212; (x=312, y=405; nicht veränderbar).">pointer_pivot</text>
+    <text x="610" y="1566.0" font-size="10px" fill="#e0eaf0">— (fester Punkt bei x=312, y=405; nicht</text>
+    <text x="610" y="1581.0" font-size="10px" fill="#e0eaf0">veränderbar).</text>
+    <text x="255" y="1566" font-size="10px" fill="#e0eaf0">Unveränderlicher Drehpunkt bei (312, 405);</text>
+    <text x="255" y="1581" font-size="10px" fill="#e0eaf0">Python darf ihn nicht verschieben.</text>
+    <text x="30" y="1602" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="heading_value: Element im Widget hervorheben" data-focus-id="normal0_compass_heading_value" data-preview-id="normal0_compass_preview" data-description="Numerische Anzeige des Kurswinkels." data-input="Derselbe Kurswinkel in Grad, z. B. 074&#176;; von Python formatiert.">heading_value</text>
+    <text x="610" y="1602.0" font-size="10px" fill="#e0eaf0">Derselbe Kurswinkel in Grad, z. B. 074°; von</text>
+    <text x="610" y="1617.0" font-size="10px" fill="#e0eaf0">Python formatiert.</text>
+    <text x="255" y="1602" font-size="10px" fill="#e0eaf0">Kurs in Grad, z. B. 074 Grad; Python setzt</text>
+    <text x="255" y="1617" font-size="10px" fill="#e0eaf0">denselben normalisierten Kurs wie beim Zeiger.</text>
+    <rect x="24" y="1623" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="1638" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="heading_direction: Element im Widget hervorheben" data-focus-id="normal0_compass_heading_direction" data-preview-id="normal0_compass_preview" data-description="Abgeleitete 16-Strich-Himmelsrichtung." data-input="&#8212; (aus dem Kurswinkel abgeleitet, kein eigener Input).">heading_direction</text>
+    <text x="610" y="1638.0" font-size="10px" fill="#e0eaf0">Kein separater Input; aus dem Kurswert</text>
+    <text x="610" y="1653.0" font-size="10px" fill="#e0eaf0">abgeleitete 16-Strich-Richtung.</text>
+    <text x="255" y="1638" font-size="10px" fill="#e0eaf0">Abgeleitete 16-Strich-Richtung, z. B. ONO; kein</text>
+    <text x="255" y="1653" font-size="10px" fill="#e0eaf0">separater Winkelinput.</text>
+    <text x="30" y="1674" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="heading_label: Element im Widget hervorheben" data-focus-id="normal0_compass_heading_label" data-preview-id="normal0_compass_preview" data-description="Statisches Label HDG." data-input="—">heading_label</text>
+    <text x="610" y="1674.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="1674" font-size="10px" fill="#e0eaf0">Statisches Label HDG.</text>
+  </g>
+  <g>
+    <rect x="14" y="1731" width="972" height="1299" rx="16" fill="#102638" stroke="#315066" stroke-width="2" />
+    <text x="32" y="1766" font-size="18px" fill="#f4f8fb" font-weight="700">STAMPFEN · Normalzustand · Beispiel +30°; Bug hebt sich</text>
+    <text x="34" y="1792" font-size="11px" fill="#8da9bb" font-weight="700">VORSCHAU</text>
+    <svg id="normal1_pitch_preview" x="25" y="1799" width="330" height="330" viewBox="22 112 580 580" role="img" data-preview-key="normal1_pitch">
+      <title id="normal1_pitch_pitch_title">Stampfenanzeige</title>
+      <desc id="normal1_pitch_pitch_description">Anzeige des Stampfwinkels um die Querachse mit einem einzelnen Kompasszeiger, der gemeinsam mit dem Yacht-Icon rotiert.</desc>
+      <defs>
+        <linearGradient id="normal1_pitch_pitch_gradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#193448" />
+          <stop offset="1" stop-color="#11283a" />
+        </linearGradient>
+        <filter id="normal1_pitch_pitch_shadow" x="-20%" y="-20%" width="140%" height="150%">
+          <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000814" flood-opacity=".35" />
+        </filter>
+        <style id="normal1_pitch_pitch_styles">
+      text { font-family: "Segoe UI", Arial, sans-serif; fill: #f4f8fb; }
+      .card { fill: url(#normal1_pitch_pitch_gradient); stroke: #315066; stroke-width: 1.5; }
+      .card-title { font-size: 19px; font-weight: 700; letter-spacing: 1.2px; fill: #b8cad5; }
+      .small { font-size: 13px; fill: #8da9bb; }
+      .dial-value { font-size: 48px; font-weight: 700; stroke: #0b1c2a; stroke-width: 3px; paint-order: stroke; stroke-linejoin: round; }
+      .dial-caption { font-size: 17px; fill: #9eb4c2; }
+      .dial-code { font-size: 18px; font-weight: 700; letter-spacing: 2px; fill: #8da9bb; }
+      .tick-minor { stroke: #49667a; stroke-width: 2; }
+      .tick-major { stroke: #7892a3; stroke-width: 2.7; }
+      .camera { fill: #11283a; stroke: #ffdf70; stroke-width: 2.5; stroke-linejoin: round; }
+    </style>
+      </defs>
+      <g id="normal1_pitch_pitch_widget" filter="url(#normal1_pitch_pitch_shadow)">
+        <rect id="normal1_pitch_pitch_card_background" class="card" x="42" y="132" width="540" height="540" rx="24" />
+        <text id="normal1_pitch_pitch_card_title" x="82" y="185" class="card-title">STAMPFEN</text>
+        <text id="normal1_pitch_pitch_card_description" x="70" y="642" class="small">Stampfwinkel um die Querachse</text>
+        <g id="normal1_pitch_pitch_face" transform="translate(0 5)">
+          <circle id="normal1_pitch_pitch_ring_outer" cx="312" cy="405" r="210" fill="#0b1c2a" stroke="#49667a" stroke-width="2.5" />
+          <circle id="normal1_pitch_pitch_ring_inner" cx="312" cy="405" r="166.5" fill="none" stroke="#29485d" stroke-width="1.8" />
+          <line id="normal1_pitch_pitch_reference_horizontal" x1="145.5" y1="405" x2="478.5" y2="405" stroke="#ffbd16" stroke-width="2.5" />
+          <line id="normal1_pitch_pitch_reference_vertical" x1="312" y1="238.5" x2="312" y2="571.5" stroke="#ffbd16" stroke-width="2.5" stroke-dasharray="4 4" />
+          <g id="normal1_pitch_pitch_scale_ticks" fill="none">
+            <line class="tick-major" x1="312.0" y1="207.0" x2="312.0" y2="195.0" />
+            <line class="tick-minor" x1="347.3" y1="205.1" x2="348.5" y2="198.2" />
+            <line class="tick-minor" x1="381.4" y1="214.2" x2="383.8" y2="207.7" />
+            <line class="tick-major" x1="411.0" y1="233.5" x2="417.0" y2="223.1" />
+            <line class="tick-minor" x1="442.5" y1="249.5" x2="447.0" y2="244.1" />
+            <line class="tick-minor" x1="467.5" y1="274.5" x2="472.9" y2="270.0" />
+            <line class="tick-major" x1="483.5" y1="306.0" x2="493.9" y2="300.0" />
+            <line class="tick-minor" x1="502.8" y1="335.6" x2="509.3" y2="333.2" />
+            <line class="tick-minor" x1="511.9" y1="369.7" x2="518.8" y2="368.5" />
+            <line class="tick-major" x1="510.0" y1="405.0" x2="522.0" y2="405.0" />
+            <line class="tick-minor" x1="511.9" y1="440.3" x2="518.8" y2="441.5" />
+            <line class="tick-minor" x1="502.8" y1="474.4" x2="509.3" y2="476.8" />
+            <line class="tick-major" x1="483.5" y1="504.0" x2="493.9" y2="510.0" />
+            <line class="tick-minor" x1="467.5" y1="535.5" x2="472.9" y2="540.0" />
+            <line class="tick-minor" x1="442.5" y1="560.5" x2="447.0" y2="565.9" />
+            <line class="tick-major" x1="411.0" y1="576.5" x2="417.0" y2="586.9" />
+            <line class="tick-minor" x1="381.4" y1="595.8" x2="383.8" y2="602.3" />
+            <line class="tick-minor" x1="347.3" y1="604.9" x2="348.5" y2="611.8" />
+            <line class="tick-major" x1="312.0" y1="603.0" x2="312.0" y2="615.0" />
+            <line class="tick-minor" x1="276.7" y1="604.9" x2="275.5" y2="611.8" />
+            <line class="tick-minor" x1="242.6" y1="595.8" x2="240.2" y2="602.3" />
+            <line class="tick-major" x1="213.0" y1="576.5" x2="207.0" y2="586.9" />
+            <line class="tick-minor" x1="181.5" y1="560.5" x2="177.0" y2="565.9" />
+            <line class="tick-minor" x1="156.5" y1="535.5" x2="151.1" y2="540.0" />
+            <line class="tick-major" x1="140.5" y1="504.0" x2="130.1" y2="510.0" />
+            <line class="tick-minor" x1="121.2" y1="474.4" x2="114.7" y2="476.8" />
+            <line class="tick-minor" x1="112.1" y1="440.3" x2="105.2" y2="441.5" />
+            <line class="tick-major" x1="114.0" y1="405.0" x2="102.0" y2="405.0" />
+            <line class="tick-minor" x1="112.1" y1="369.7" x2="105.2" y2="368.5" />
+            <line class="tick-minor" x1="121.2" y1="335.6" x2="114.7" y2="333.2" />
+            <line class="tick-major" x1="140.5" y1="306.0" x2="130.1" y2="300.0" />
+            <line class="tick-minor" x1="156.5" y1="274.5" x2="151.1" y2="270.0" />
+            <line class="tick-minor" x1="181.5" y1="249.5" x2="177.0" y2="244.1" />
+            <line class="tick-major" x1="213.0" y1="233.5" x2="207.0" y2="223.1" />
+            <line class="tick-minor" x1="242.6" y1="214.2" x2="240.2" y2="207.7" />
+            <line class="tick-minor" x1="276.7" y1="205.1" x2="275.5" y2="198.2" />
+          </g>
+          <g id="normal1_pitch_pitch_scale_labels" class="small" text-anchor="middle" font-weight="700">
+            <text transform="translate(312 222) rotate(0)" dominant-baseline="middle">+90°</text>
+            <text transform="translate(403.5 246.5) rotate(30)" dominant-baseline="middle">+60°</text>
+            <text transform="translate(470.5 313.5) rotate(60)" dominant-baseline="middle">+30°</text>
+            <text transform="translate(495 405) rotate(90)" dominant-baseline="middle">0°</text>
+            <text transform="translate(470.5 496.5) rotate(-60)" dominant-baseline="middle">−30°</text>
+            <text transform="translate(403.5 563.5) rotate(-30)" dominant-baseline="middle">−60°</text>
+            <text transform="translate(312 588) rotate(0)" dominant-baseline="middle">−90°</text>
+            <text transform="translate(220.5 563.5) rotate(30)" dominant-baseline="middle">−120°</text>
+            <text transform="translate(153.5 496.5) rotate(60)" dominant-baseline="middle">−150°</text>
+            <text transform="translate(129 405) rotate(90)" dominant-baseline="middle">±180°</text>
+            <text transform="translate(153.5 313.5) rotate(-60)" dominant-baseline="middle">+150°</text>
+            <text transform="translate(220.5 246.5) rotate(-30)" dominant-baseline="middle">+120°</text>
+          </g>
+          <g id="normal1_pitch_pitch_pose" style="transform: rotate(-30deg); transform-origin: 312px 405px; transform-box: view-box;">
+            <g id="normal1_pitch_pitch_yacht" transform="translate(152 258)">
+              <g id="normal1_pitch_pitch_pointer" fill="none" stroke="#ffbd16" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <g transform="rotate(90 160 147)" fill="#ffc66d" stroke="#ffc66d">
+                  <path id="normal1_pitch_pitch_pointer_tip" d="M160 2 L146 160 L160 141 L174 160 Z" stroke="none" />
+                  <line id="normal1_pitch_pitch_pointer_shaft" x1="160" y1="147" x2="160" y2="10" stroke-width="3" />
+                </g>
+              </g>
+              <g transform="translate(160 0) scale(-0.5565217391 1) translate(-160 0)" fill="none" stroke="#f4f8fb" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M153 46.3 L82 103 H153 V97 Z" />
+                <path d="M168 -8.8 L260 99 H168 V119 Z" />
+                <g transform="translate(0 152.25) scale(1 0.5) translate(0 -147)">
+                  <path d="M45 110.5 H275 L269 145 L244 149 L176 160.9 L178 164 Q179 258.9 174 258.9 H160 Q155 258.9 154 258.9 L132 160.9 L83.5 149 Z" />
+                </g>
+              </g>
+              <path d="M136 134 L141 121.5 Q143.9 118 149.9 117.5 H174 Q180.9 118 183.2 121.5 L186 134 Z" fill="none" stroke="#f4f8fb" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+            </g>
+          </g>
+          <g id="normal1_pitch_pitch_camera" transform="rotate(119 312 405)" class="camera">
+            <rect x="299" y="145" width="26" height="21" rx="4" />
+            <path d="M306 145 L309 140 L315 140 L318 145" />
+            <path d="M306 166 L312 175 L318 166 Z" />
+            <circle cx="312" cy="153" r="4.5" fill="none" />
+          </g>
+          <circle id="normal1_pitch_pitch_pivot" cx="312" cy="405" r="7" fill="#f4f8fb" />
+          <text id="normal1_pitch_pitch_value" x="312" y="347" text-anchor="middle" class="dial-value">+30°</text>
+          <text id="normal1_pitch_pitch_label" x="312" y="491" text-anchor="middle" class="dial-code">STAMPFEN</text>
         </g>
       </g>
-
-      <g id="compass_reference_lines" fill="none" stroke="#ffbd16" stroke-width="2.5" stroke-linecap="round">
-        <path d="M145.5 405 H478.5"/>
-        <path d="M312 238.5 V571.5" stroke-dasharray="4 4"/>
-      </g>
-      <g id="heading_pointer" transform="rotate(74 312 405)">
-        <path d="M312 260 L298 418 L312 399 L326 418 Z" fill="#ffc66d"/>
-        <line x1="312" y1="405" x2="312" y2="268" stroke="#ffc66d" stroke-width="3"/>
-      </g>
-      <g id="camera_symbol" transform="rotate(119 312 405)"
-         class="camera">
-        <rect x="299" y="145" width="26" height="21" rx="4"/>
-        <path d="M306 145 L309 140 L315 140 L318 145"/>
-        <path d="M306 166 L312 175 L318 166 Z"/>
-        <circle cx="312" cy="153" r="4.5" fill="none"/>
-      </g>
-      <g id="cardinal_labels" class="small" text-anchor="middle" font-weight="700">
-        <text x="312" y="216" font-size="15">N</text>
-        <text x="500" y="409" font-size="16">O</text>
-        <text x="312" y="610" font-size="15">S</text>
-        <text x="124" y="409" font-size="16">W</text>
-      </g>
-      <circle id="pivot" cx="312" cy="405" r="7" fill="#f4f8fb"/>
-      <text id="heading_value" x="312" y="347" text-anchor="middle" class="dial-value">074°</text>
-      <text id="heading_direction" x="312" y="457" text-anchor="middle" class="dial-caption">ONO</text>
-      <text id="heading_code" x="312" y="491" text-anchor="middle" class="dial-code">HDG</text>
-    </g>
+    </svg>
+    <text x="375" y="1835" font-size="12px" fill="#c2d2dc">Stampfen: −180° bis +180°; positiv = Bug hebt sich. Boot und</text>
+    <text x="375" y="1853" font-size="12px" fill="#c2d2dc">Zeiger drehen gemeinsam entgegengesetzt zum Messwinkel; Achsen</text>
+    <text x="375" y="1871" font-size="12px" fill="#c2d2dc">und Skala bleiben fest.</text>
+    <text x="30" y="2159" font-size="11px" fill="#8da9bb" font-weight="700">SVG-ID</text>
+    <text x="255" y="2159" font-size="11px" fill="#8da9bb" font-weight="700">BESCHREIBUNG</text>
+    <text x="610" y="2159" font-size="11px" fill="#8da9bb" font-weight="700">INPUT</text>
+    <line x1="28" y1="2166" x2="972" y2="2166" stroke="#315066" stroke-width="1" />
+    <rect x="24" y="2171" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="2186" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_title: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_card_title" data-preview-id="normal1_pitch_preview" data-description="Barrierefreier Titel der Stampfenanzeige; statisch." data-input="—">pitch_title</text>
+    <text x="610" y="2186.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="2186" font-size="10px" fill="#e0eaf0">Barrierefreier Titel der Stampfenanzeige;</text>
+    <text x="255" y="2201" font-size="10px" fill="#e0eaf0">statisch.</text>
+    <text x="30" y="2222" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_description: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_card_description" data-preview-id="normal1_pitch_preview" data-description="Beschreibt die Anzeige und die gemeinsam rotierende Yacht-/Zeigergruppe." data-input="—">pitch_description</text>
+    <text x="610" y="2222.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="2222" font-size="10px" fill="#e0eaf0">Beschreibt die Anzeige und die gemeinsam</text>
+    <text x="255" y="2237" font-size="10px" fill="#e0eaf0">rotierende Yacht-/Zeigergruppe.</text>
+    <rect x="24" y="2243" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="2258" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_gradient: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_card_background" data-preview-id="normal1_pitch_preview" data-description="Farbverlauf des Kartenhintergrunds; nur Gestaltung." data-input="—">pitch_gradient</text>
+    <text x="610" y="2258.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="2258" font-size="10px" fill="#e0eaf0">Farbverlauf des Kartenhintergrunds; nur</text>
+    <text x="255" y="2273" font-size="10px" fill="#e0eaf0">Gestaltung.</text>
+    <text x="30" y="2294" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_shadow: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_widget" data-preview-id="normal1_pitch_preview" data-description="Schattenfilter; nur Gestaltung." data-input="—">pitch_shadow</text>
+    <text x="610" y="2294.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="2294" font-size="10px" fill="#e0eaf0">Schattenfilter; nur Gestaltung.</text>
+    <rect x="24" y="2302" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="2317" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_styles: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_widget" data-preview-id="normal1_pitch_preview" data-description="CSS für Typografie, Farben und Stricharten; keine Messwerte." data-input="—">pitch_styles</text>
+    <text x="610" y="2317.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="2317" font-size="10px" fill="#e0eaf0">CSS für Typografie, Farben und Stricharten;</text>
+    <text x="255" y="2332" font-size="10px" fill="#e0eaf0">keine Messwerte.</text>
+    <text x="30" y="2353" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_widget: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_widget" data-preview-id="normal1_pitch_preview" data-description="Oberste Gruppe der Stampfenanzeige." data-input="—">pitch_widget</text>
+    <text x="610" y="2353.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="2353" font-size="10px" fill="#e0eaf0">Oberste Gruppe der Stampfenanzeige.</text>
+    <rect x="24" y="2361" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="2376" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_card_background: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_card_background" data-preview-id="normal1_pitch_preview" data-description="Abgerundeter Kartenhintergrund; statische Geometrie." data-input="—">pitch_card_background</text>
+    <text x="610" y="2376.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="2376" font-size="10px" fill="#e0eaf0">Abgerundeter Kartenhintergrund; statische</text>
+    <text x="255" y="2391" font-size="10px" fill="#e0eaf0">Geometrie.</text>
+    <text x="30" y="2412" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_card_title: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_card_title" data-preview-id="normal1_pitch_preview" data-description="Text STAMPFEN; statisch." data-input="—">pitch_card_title</text>
+    <text x="610" y="2412.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="2412" font-size="10px" fill="#e0eaf0">Text STAMPFEN; statisch.</text>
+    <rect x="24" y="2420" width="952" height="23" fill="#163247" opacity="0.62" />
+    <text x="30" y="2435" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_card_description: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_card_description" data-preview-id="normal1_pitch_preview" data-description="Benennt Stampfwinkel um die Querachse; statisch." data-input="—">pitch_card_description</text>
+    <text x="610" y="2435.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="2435" font-size="10px" fill="#e0eaf0">Benennt Stampfwinkel um die Querachse; statisch.</text>
+    <text x="30" y="2458" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_face: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_face" data-preview-id="normal1_pitch_preview" data-description="Enthaelt Ringe, feste Achsen, Skala, Yacht-Pose und Messwert." data-input="—">pitch_face</text>
+    <text x="610" y="2458.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="2458" font-size="10px" fill="#e0eaf0">Enthaelt Ringe, feste Achsen, Skala, Yacht-Pose</text>
+    <text x="255" y="2473" font-size="10px" fill="#e0eaf0">und Messwert.</text>
+    <rect x="24" y="2479" width="952" height="23" fill="#163247" opacity="0.62" />
+    <text x="30" y="2494" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_ring_outer: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_ring_outer" data-preview-id="normal1_pitch_preview" data-description="Fester äußerer Ring des Zifferblatts." data-input="—">pitch_ring_outer</text>
+    <text x="610" y="2494.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="2494" font-size="10px" fill="#e0eaf0">Fester äußerer Ring des Zifferblatts.</text>
+    <text x="30" y="2517" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_ring_inner: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_ring_inner" data-preview-id="normal1_pitch_preview" data-description="Fester innerer Ring des Zifferblatts." data-input="—">pitch_ring_inner</text>
+    <text x="610" y="2517.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="2517" font-size="10px" fill="#e0eaf0">Fester innerer Ring des Zifferblatts.</text>
+    <rect x="24" y="2525" width="952" height="23" fill="#163247" opacity="0.62" />
+    <text x="30" y="2540" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_reference_horizontal: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_reference_horizontal" data-preview-id="normal1_pitch_preview" data-description="Feste gelbe Null-Linie; wird nicht mitgedreht." data-input="—">pitch_reference_horizontal</text>
+    <text x="610" y="2540.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="2540" font-size="10px" fill="#e0eaf0">Feste gelbe Null-Linie; wird nicht mitgedreht.</text>
+    <text x="30" y="2563" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_reference_vertical: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_reference_vertical" data-preview-id="normal1_pitch_preview" data-description="Feste gelbe gestrichelte Achse; bleibt bei jeder Pose unverändert." data-input="—">pitch_reference_vertical</text>
+    <text x="610" y="2563.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="2563" font-size="10px" fill="#e0eaf0">Feste gelbe gestrichelte Achse; bleibt bei jeder</text>
+    <text x="255" y="2578" font-size="10px" fill="#e0eaf0">Pose unverändert.</text>
+    <rect x="24" y="2584" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="2599" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_scale_ticks: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_scale_ticks" data-preview-id="normal1_pitch_preview" data-description="Alle Teilstriche; fest. Skala: rechts 0, oben +90, links +/-180, unten -90 Grad." data-input="—">pitch_scale_ticks</text>
+    <text x="610" y="2599.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="2599" font-size="10px" fill="#e0eaf0">Alle Teilstriche; fest. Skala: rechts 0, oben</text>
+    <text x="255" y="2614" font-size="10px" fill="#e0eaf0">+90, links +/-180, unten -90 Grad.</text>
+    <text x="30" y="2635" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_scale_labels: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_scale_labels" data-preview-id="normal1_pitch_preview" data-description="Feste Winkelwerte im Bereich -180 bis +180 Grad; positive Werte gegen den Uhrzeigersinn." data-input="—">pitch_scale_labels</text>
+    <text x="610" y="2635.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="2635" font-size="10px" fill="#e0eaf0">Feste Winkelwerte im Bereich -180 bis +180 Grad;</text>
+    <text x="255" y="2650" font-size="10px" fill="#e0eaf0">positive Werte gegen den Uhrzeigersinn.</text>
+    <rect x="24" y="2656" width="952" height="51" fill="#163247" opacity="0.62" />
+    <text x="30" y="2671" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_pose: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_pose" data-preview-id="normal1_pitch_preview" data-description="Gemeinsame Bewegungsgruppe von Boot und Stampfzeiger; Referenzachsen bleiben ausserhalb." data-input="Stampfwinkel von &#8722;180&#176; bis +180&#176;; SVG-Rotation mit umgekehrtem Vorzeichen.">pitch_pose</text>
+    <text x="610" y="2671.0" font-size="10px" fill="#e0eaf0">Stampfwinkel −180° bis +180°; Python setzt die</text>
+    <text x="610" y="2686.0" font-size="10px" fill="#e0eaf0">SVG-Rotation mit umgekehrtem Vorzeichen.</text>
+    <text x="255" y="2671" font-size="10px" fill="#e0eaf0">Boot und Stampfzeiger bewegen sich gemeinsam.</text>
+    <text x="255" y="2686" font-size="10px" fill="#e0eaf0">Die Referenzachsen bleiben fest.</text>
+    <text x="255" y="2701" font-size="10px" fill="#e0eaf0">Drehpunkt und Skala bleiben unverändert.</text>
+    <text x="30" y="2722" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_yacht: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_yacht" data-preview-id="normal1_pitch_preview" data-description="Bootssymbol innerhalb der beweglichen Posegruppe." data-input="&#8212; (dreht gemeinsam mit pitch_pointer über pitch_pose).">pitch_yacht</text>
+    <text x="610" y="2722.0" font-size="10px" fill="#e0eaf0">— (dreht gemeinsam mit pitch_pointer über</text>
+    <text x="610" y="2737.0" font-size="10px" fill="#e0eaf0">pitch_pose).</text>
+    <text x="255" y="2722" font-size="10px" fill="#e0eaf0">Bootsgrafik innerhalb der beweglichen Pose;</text>
+    <text x="255" y="2737" font-size="10px" fill="#e0eaf0">dreht gemeinsam mit dem Zeiger.</text>
+    <rect x="24" y="2743" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="2758" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_pointer: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_pointer" data-preview-id="normal1_pitch_preview" data-description="Stampfzeiger innerhalb der Posegruppe; keine unabhängige Drehung." data-input="&#8212; (dreht gemeinsam mit dem Boot über pitch_pose).">pitch_pointer</text>
+    <text x="610" y="2758.0" font-size="10px" fill="#e0eaf0">— (wird gemeinsam mit dem Boot über pitch_pose</text>
+    <text x="610" y="2773.0" font-size="10px" fill="#e0eaf0">gedreht; keine Einzelrotation).</text>
+    <text x="255" y="2758" font-size="10px" fill="#e0eaf0">Zeigergruppe innerhalb der Pose; dreht gemeinsam</text>
+    <text x="255" y="2773" font-size="10px" fill="#e0eaf0">mit dem Boot, nicht separat.</text>
+    <text x="30" y="2794" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_pointer_tip: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_pointer_tip" data-preview-id="normal1_pitch_preview" data-description="Spitze des Stampfzeigers." data-input="&#8212; (Teil von pitch_pointer).">pitch_pointer_tip</text>
+    <text x="610" y="2794.0" font-size="10px" fill="#e0eaf0">— (Bestandteil von pitch_pointer).</text>
+    <text x="255" y="2794" font-size="10px" fill="#e0eaf0">Spitze des Stampfzeigers; keine separate</text>
+    <text x="255" y="2809" font-size="10px" fill="#e0eaf0">Python-Transformation.</text>
+    <rect x="24" y="2815" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="2830" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_pointer_shaft: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_pointer_shaft" data-preview-id="normal1_pitch_preview" data-description="Schaft des Stampfzeigers." data-input="&#8212; (Teil von pitch_pointer).">pitch_pointer_shaft</text>
+    <text x="610" y="2830.0" font-size="10px" fill="#e0eaf0">— (Bestandteil von pitch_pointer).</text>
+    <text x="255" y="2830" font-size="10px" fill="#e0eaf0">Schaft des Stampfzeigers; keine separate</text>
+    <text x="255" y="2845" font-size="10px" fill="#e0eaf0">Python-Transformation.</text>
+    <text x="30" y="2866" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_camera: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_camera" data-preview-id="normal1_pitch_preview" data-description="Kamera ausserhalb der Pose; feste Orientierung, wird nicht mit Stampfen gedreht." data-input="—">pitch_camera</text>
+    <text x="610" y="2866.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="2866" font-size="10px" fill="#e0eaf0">Kamera ausserhalb der Pose; feste Orientierung,</text>
+    <text x="255" y="2881" font-size="10px" fill="#e0eaf0">wird nicht mit Stampfen gedreht.</text>
+    <rect x="24" y="2887" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="2902" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_pivot: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_pivot" data-preview-id="normal1_pitch_preview" data-description="Fester Mittelpunkt der Posegruppe." data-input="&#8212; (x=312, y=405; nicht veränderbar).">pitch_pivot</text>
+    <text x="610" y="2902.0" font-size="10px" fill="#e0eaf0">— (fester Punkt bei x=312, y=405; nicht</text>
+    <text x="610" y="2917.0" font-size="10px" fill="#e0eaf0">veränderbar).</text>
+    <text x="255" y="2902" font-size="10px" fill="#e0eaf0">Fester Mittelpunkt (312, 405); niemals per Input</text>
+    <text x="255" y="2917" font-size="10px" fill="#e0eaf0">veraendern.</text>
+    <text x="30" y="2938" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_value: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_value" data-preview-id="normal1_pitch_preview" data-description="Numerische Anzeige des Stampfwinkels." data-input="Derselbe Stampfwinkel mit Vorzeichen und Gradzeichen, z. B. +30&#176;.">pitch_value</text>
+    <text x="610" y="2938.0" font-size="10px" fill="#e0eaf0">Derselbe Stampfwinkel in Grad mit Vorzeichen,</text>
+    <text x="610" y="2953.0" font-size="10px" fill="#e0eaf0">z. B. +30°.</text>
+    <text x="255" y="2938" font-size="10px" fill="#e0eaf0">Numerischer Messwert mit Vorzeichen und</text>
+    <text x="255" y="2953" font-size="10px" fill="#e0eaf0">Gradzeichen, z. B. +30 Grad; identisch zum</text>
+    <text x="255" y="2968" font-size="10px" fill="#e0eaf0">Pose-Input.</text>
+    <rect x="24" y="2974" width="952" height="23" fill="#163247" opacity="0.62" />
+    <text x="30" y="2989" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="pitch_label: Element im Widget hervorheben" data-focus-id="normal1_pitch_pitch_label" data-preview-id="normal1_pitch_preview" data-description="Statisches Label STAMPFEN." data-input="—">pitch_label</text>
+    <text x="610" y="2989.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="2989" font-size="10px" fill="#e0eaf0">Statisches Label STAMPFEN.</text>
   </g>
-
-  <g id="callouts" aria-label="Nummerierte Elementhinweise">
-    <path class="callout-line" d="M74 220 H30 V132 H42" marker-end="url(#callout-end)"/>
-    <path class="callout-line" d="M193 177 H608 V151 H650" marker-end="url(#callout-end)"/>
-    <path class="callout-line" d="M340 642 H610 V207 H650" marker-end="url(#callout-end)"/>
-    <path class="callout-line" d="M106 285 H615 V263 H650" marker-end="url(#callout-end)"/>
-    <path class="callout-line" d="M145 307 H620 V319 H650" marker-end="url(#callout-end)"/>
-    <path class="callout-line" d="M184 253 H625 V375 H650" marker-end="url(#callout-end)"/>
-    <path class="callout-line" d="M345 219 H630 V431 H650" marker-end="url(#callout-end)"/>
-    <path class="callout-line" d="M382 344 H635 V487 H650" marker-end="url(#callout-end)"/>
-    <path class="callout-line" d="M400 383 H640 V543 H650" marker-end="url(#callout-end)"/>
-    <path class="callout-line" d="M380 457 H645 V599 H650" marker-end="url(#callout-end)"/>
-    <path class="callout-line" d="M380 491 H645 V655 H650" marker-end="url(#callout-end)"/>
-    <path class="callout-line" d="M342 420 H645 V711 H650" marker-end="url(#callout-end)"/>
-    <path class="callout-line" d="M484 225 H640 V767 H650" marker-end="url(#callout-end)"/>
-    <g>
-      <circle class="callout-dot" cx="74" cy="220" r="12"/><text class="callout-number" x="74" y="220">1</text>
-      <circle class="callout-dot" cx="193" cy="177" r="12"/><text class="callout-number" x="193" y="177">2</text>
-      <circle class="callout-dot" cx="340" cy="642" r="12"/><text class="callout-number" x="340" y="642">3</text>
-      <circle class="callout-dot" cx="106" cy="285" r="12"/><text class="callout-number" x="106" y="285">4</text>
-      <circle class="callout-dot" cx="145" cy="307" r="12"/><text class="callout-number" x="145" y="307">5</text>
-      <circle class="callout-dot" cx="184" cy="253" r="12"/><text class="callout-number" x="184" y="253">6</text>
-      <circle class="callout-dot" cx="345" cy="219" r="12"/><text class="callout-number" x="345" y="219">7</text>
-      <circle class="callout-dot" cx="382" cy="344" r="12"/><text class="callout-number" x="382" y="344">8</text>
-      <circle class="callout-dot" cx="400" cy="383" r="12"/><text class="callout-number" x="400" y="383">9</text>
-      <circle class="callout-dot" cx="380" cy="457" r="12"/><text class="callout-number" x="380" y="457">10</text>
-      <circle class="callout-dot" cx="380" cy="491" r="12"/><text class="callout-number" x="380" y="491">11</text>
-      <circle class="callout-dot" cx="342" cy="420" r="12"/><text class="callout-number" x="342" y="420">12</text>
-      <circle class="callout-dot" cx="484" cy="225" r="12"/><text class="callout-number" x="484" y="225">13</text>
-    </g>
+  <g>
+    <rect x="14" y="3046" width="972" height="1332" rx="16" fill="#102638" stroke="#315066" stroke-width="2" />
+    <text x="32" y="3081" font-size="18px" fill="#f4f8fb" font-weight="700">KRÄNGUNG · Normalzustand · Beispiel −30°; Backbordseite hebt sich</text>
+    <text x="34" y="3107" font-size="11px" fill="#8da9bb" font-weight="700">VORSCHAU</text>
+    <svg id="normal2_roll_preview" x="25" y="3114" width="330" height="330" viewBox="22 112 580 580" role="img" data-preview-key="normal2_roll">
+      <title id="normal2_roll_roll_title">KRÄNGUNG</title>
+      <desc id="normal2_roll_roll_description">Anzeige des Krängungswinkels um die Körperlängsachse. Boot und Zeiger rotieren gemeinsam; die Segelstellung wird separat über roll_sail_side gesteuert. Ein negativer Segelstellwinkel bedeutet Backbord, ein positiver Steuerbord; bei 0° oder fehlendem Segelstellwinkel gilt Backbord.</desc>
+      <defs>
+        <linearGradient id="normal2_roll_roll_gradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#193448" />
+          <stop offset="1" stop-color="#11283a" />
+        </linearGradient>
+        <filter id="normal2_roll_roll_shadow" x="-20%" y="-20%" width="140%" height="150%">
+          <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000814" flood-opacity=".35" />
+        </filter>
+        <style id="normal2_roll_roll_styles">
+      text { font-family: "Segoe UI", Arial, sans-serif; fill: #f4f8fb; }
+      .card { fill: url(#normal2_roll_roll_gradient); stroke: #315066; stroke-width: 1.5; }
+      .card-title { font-size: 19px; font-weight: 700; letter-spacing: 1.2px; fill: #b8cad5; }
+      .small { font-size: 13px; fill: #8da9bb; }
+      .dial-value { font-size: 48px; font-weight: 700; stroke: #0b1c2a; stroke-width: 3px; paint-order: stroke; stroke-linejoin: round; }
+      .dial-caption { font-size: 17px; fill: #9eb4c2; }
+      .dial-code { font-size: 18px; font-weight: 700; letter-spacing: 2px; fill: #8da9bb; }
+      .tick-minor { stroke: #49667a; stroke-width: 2; }
+      .tick-major { stroke: #7892a3; stroke-width: 2.7; }
+      .camera { fill: #11283a; stroke: #ffdf70; stroke-width: 2.5; stroke-linejoin: round; }
+    </style>
+      </defs>
+      <g id="normal2_roll_roll_widget" filter="url(#normal2_roll_roll_shadow)">
+        <rect id="normal2_roll_roll_card_background" class="card" x="42" y="132" width="540" height="540" rx="24" />
+        <text id="normal2_roll_roll_card_title" x="82" y="185" class="card-title">KRÄNGUNG</text>
+        <text id="normal2_roll_roll_card_description" x="70" y="642" class="small">Krängungswinkel um die Körperlängsachse</text>
+        <g id="normal2_roll_roll_face" transform="translate(0 5)">
+          <circle id="normal2_roll_roll_ring_outer" cx="312" cy="405" r="210" fill="#0b1c2a" stroke="#49667a" stroke-width="2.5" />
+          <circle id="normal2_roll_roll_ring_inner" cx="312" cy="405" r="166.5" fill="none" stroke="#29485d" stroke-width="1.8" />
+          <line id="normal2_roll_roll_reference_horizontal" x1="145.5" y1="405" x2="478.5" y2="405" stroke="#ffbd16" stroke-width="2.5" />
+          <line id="normal2_roll_roll_reference_vertical" x1="312" y1="238.5" x2="312" y2="571.5" stroke="#ffbd16" stroke-width="2.5" stroke-dasharray="4 4" />
+          <g id="normal2_roll_roll_scale_ticks" fill="none">
+            <line class="tick-major" x1="312.0" y1="207.0" x2="312.0" y2="195.0" />
+            <line class="tick-minor" x1="347.3" y1="205.1" x2="348.5" y2="198.2" />
+            <line class="tick-minor" x1="381.4" y1="214.2" x2="383.8" y2="207.7" />
+            <line class="tick-major" x1="411.0" y1="233.5" x2="417.0" y2="223.1" />
+            <line class="tick-minor" x1="442.5" y1="249.5" x2="447.0" y2="244.1" />
+            <line class="tick-minor" x1="467.5" y1="274.5" x2="472.9" y2="270.0" />
+            <line class="tick-major" x1="483.5" y1="306.0" x2="493.9" y2="300.0" />
+            <line class="tick-minor" x1="502.8" y1="335.6" x2="509.3" y2="333.2" />
+            <line class="tick-minor" x1="511.9" y1="369.7" x2="518.8" y2="368.5" />
+            <line class="tick-major" x1="510.0" y1="405.0" x2="522.0" y2="405.0" />
+            <line class="tick-minor" x1="511.9" y1="440.3" x2="518.8" y2="441.5" />
+            <line class="tick-minor" x1="502.8" y1="474.4" x2="509.3" y2="476.8" />
+            <line class="tick-major" x1="483.5" y1="504.0" x2="493.9" y2="510.0" />
+            <line class="tick-minor" x1="467.5" y1="535.5" x2="472.9" y2="540.0" />
+            <line class="tick-minor" x1="442.5" y1="560.5" x2="447.0" y2="565.9" />
+            <line class="tick-major" x1="411.0" y1="576.5" x2="417.0" y2="586.9" />
+            <line class="tick-minor" x1="381.4" y1="595.8" x2="383.8" y2="602.3" />
+            <line class="tick-minor" x1="347.3" y1="604.9" x2="348.5" y2="611.8" />
+            <line class="tick-major" x1="312.0" y1="603.0" x2="312.0" y2="615.0" />
+            <line class="tick-minor" x1="276.7" y1="604.9" x2="275.5" y2="611.8" />
+            <line class="tick-minor" x1="242.6" y1="595.8" x2="240.2" y2="602.3" />
+            <line class="tick-major" x1="213.0" y1="576.5" x2="207.0" y2="586.9" />
+            <line class="tick-minor" x1="181.5" y1="560.5" x2="177.0" y2="565.9" />
+            <line class="tick-minor" x1="156.5" y1="535.5" x2="151.1" y2="540.0" />
+            <line class="tick-major" x1="140.5" y1="504.0" x2="130.1" y2="510.0" />
+            <line class="tick-minor" x1="121.2" y1="474.4" x2="114.7" y2="476.8" />
+            <line class="tick-minor" x1="112.1" y1="440.3" x2="105.2" y2="441.5" />
+            <line class="tick-major" x1="114.0" y1="405.0" x2="102.0" y2="405.0" />
+            <line class="tick-minor" x1="112.1" y1="369.7" x2="105.2" y2="368.5" />
+            <line class="tick-minor" x1="121.2" y1="335.6" x2="114.7" y2="333.2" />
+            <line class="tick-major" x1="140.5" y1="306.0" x2="130.1" y2="300.0" />
+            <line class="tick-minor" x1="156.5" y1="274.5" x2="151.1" y2="270.0" />
+            <line class="tick-minor" x1="181.5" y1="249.5" x2="177.0" y2="244.1" />
+            <line class="tick-major" x1="213.0" y1="233.5" x2="207.0" y2="223.1" />
+            <line class="tick-minor" x1="242.6" y1="214.2" x2="240.2" y2="207.7" />
+            <line class="tick-minor" x1="276.7" y1="205.1" x2="275.5" y2="198.2" />
+          </g>
+          <g id="normal2_roll_roll_scale_labels" class="small" text-anchor="middle" font-weight="700">
+            <text transform="translate(312 222) rotate(0)" dominant-baseline="middle">+90°</text>
+            <text transform="translate(403.5 246.5) rotate(30)" dominant-baseline="middle">+60°</text>
+            <text transform="translate(470.5 313.5) rotate(60)" dominant-baseline="middle">+30°</text>
+            <text transform="translate(495 405) rotate(90)" dominant-baseline="middle">0°</text>
+            <text transform="translate(470.5 496.5) rotate(-60)" dominant-baseline="middle">−30°</text>
+            <text transform="translate(403.5 563.5) rotate(-30)" dominant-baseline="middle">−60°</text>
+            <text transform="translate(312 588) rotate(0)" dominant-baseline="middle">−90°</text>
+            <text transform="translate(220.5 563.5) rotate(30)" dominant-baseline="middle">−120°</text>
+            <text transform="translate(153.5 496.5) rotate(60)" dominant-baseline="middle">−150°</text>
+            <text transform="translate(129 405) rotate(90)" dominant-baseline="middle">±180°</text>
+            <text transform="translate(153.5 313.5) rotate(-60)" dominant-baseline="middle">+150°</text>
+            <text transform="translate(220.5 246.5) rotate(-30)" dominant-baseline="middle">+120°</text>
+          </g>
+          <g id="normal2_roll_roll_pose" style="transform: rotate(30deg); transform-origin: 312px 405px; transform-box: view-box;">
+            <g id="normal2_roll_roll_yacht" transform="translate(150 179)">
+              <g id="normal2_roll_roll_pointer" transform="translate(2 79) translate(162 226) scale(1.0075642965) translate(-162 -226)" fill="none" stroke="#ffbd16" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <g transform="rotate(90 160 147)" fill="#ffc66d" stroke="#ffc66d">
+                  <path id="normal2_roll_roll_pointer_tip" d="M160 2 L146 160 L160 141 L174 160 Z" stroke="none" />
+                  <line id="normal2_roll_roll_pointer_shaft" x1="160" y1="147" x2="160" y2="10" stroke-width="3" />
+                </g>
+              </g>
+              <g id="normal2_roll_roll_sail_side" data-side="port" data-negative-side="port" data-zero-side="port" data-positive-side="starboard" data-starboard-transform="translate(324 0) scale(-1 1)">
+              <title>Segelstellwinkel: negativ = Backbord, positiv = Steuerbord, 0° oder fehlend = Backbord.</title>
+              <g fill="none" stroke="#f4f8fb" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M154 70.2 L106 198 L154 178 Z" />
+                <path d="M148 125.3 L127 182 L148 176 Z" />
+                <g transform="translate(32.4 0) scale(0.8 1)">
+                  <path d="M120 213 L127 200.5 Q131 197 142 196.5 H180 Q192 197 196 200.5 L204 213" />
+                  <path d="M77 213 H247" />
+                  <path d="M77 213 Q89 235 121 242 Q146 248 162 248 Q179 248 204 242 Q236 235 247 213" />
+                </g>
+              </g>
+              <path d="M150 248 L152 279.2 Q153 287.2 160 287.2 Q167 287.2 168 279.2 L170 248" fill="none" stroke="#f4f8fb" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+              </g>
+            </g>
+          </g>
+          <g id="normal2_roll_roll_camera" transform="rotate(119 312 405)" class="camera">
+            <rect x="299" y="145" width="26" height="21" rx="4" />
+            <path d="M306 145 L309 140 L315 140 L318 145" />
+            <path d="M306 166 L312 175 L318 166 Z" />
+            <circle cx="312" cy="153" r="4.5" fill="none" />
+          </g>
+          <circle id="normal2_roll_roll_pivot" cx="312" cy="405" r="7" fill="#f4f8fb" />
+          <text id="normal2_roll_roll_value" x="312" y="347" text-anchor="middle" class="dial-value">−30°</text>
+          <text id="normal2_roll_roll_label" x="312" y="491" text-anchor="middle" class="dial-code">KRÄNGUNG</text>
+        </g>
+      </g>
+    </svg>
+    <text x="375" y="3150" font-size="12px" fill="#c2d2dc">Krängung: −180° bis +180°; positiv = Steuerbordseite hebt sich.</text>
+    <text x="375" y="3168" font-size="12px" fill="#c2d2dc">Boot und Zeiger drehen gemeinsam entgegengesetzt zum Messwinkel;</text>
+    <text x="375" y="3186" font-size="12px" fill="#c2d2dc">Achsen und Skala bleiben fest.</text>
+    <text x="30" y="3474" font-size="11px" fill="#8da9bb" font-weight="700">SVG-ID</text>
+    <text x="255" y="3474" font-size="11px" fill="#8da9bb" font-weight="700">BESCHREIBUNG</text>
+    <text x="610" y="3474" font-size="11px" fill="#8da9bb" font-weight="700">INPUT</text>
+    <line x1="28" y1="3481" x2="972" y2="3481" stroke="#315066" stroke-width="1" />
+    <rect x="24" y="3486" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="3501" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_title: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_card_title" data-preview-id="normal2_roll_preview" data-description="Barrierefreier Titel der Krängungsanzeige; statisch." data-input="—">roll_title</text>
+    <text x="610" y="3501.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="3501" font-size="10px" fill="#e0eaf0">Barrierefreier Titel der Krängungsanzeige;</text>
+    <text x="255" y="3516" font-size="10px" fill="#e0eaf0">statisch.</text>
+    <text x="30" y="3537" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_description: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_card_description" data-preview-id="normal2_roll_preview" data-description="Beschreibt die Anzeige und die gemeinsam rotierende Yacht-/Zeigergruppe." data-input="—">roll_description</text>
+    <text x="610" y="3537.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="3537" font-size="10px" fill="#e0eaf0">Beschreibt die Anzeige und die gemeinsam</text>
+    <text x="255" y="3552" font-size="10px" fill="#e0eaf0">rotierende Yacht-/Zeigergruppe.</text>
+    <rect x="24" y="3558" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="3573" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_gradient: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_card_background" data-preview-id="normal2_roll_preview" data-description="Farbverlauf des Kartenhintergrunds; nur Gestaltung." data-input="—">roll_gradient</text>
+    <text x="610" y="3573.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="3573" font-size="10px" fill="#e0eaf0">Farbverlauf des Kartenhintergrunds; nur</text>
+    <text x="255" y="3588" font-size="10px" fill="#e0eaf0">Gestaltung.</text>
+    <text x="30" y="3609" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_shadow: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_widget" data-preview-id="normal2_roll_preview" data-description="Schattenfilter; nur Gestaltung." data-input="—">roll_shadow</text>
+    <text x="610" y="3609.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="3609" font-size="10px" fill="#e0eaf0">Schattenfilter; nur Gestaltung.</text>
+    <rect x="24" y="3617" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="3632" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_styles: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_widget" data-preview-id="normal2_roll_preview" data-description="CSS für Typografie, Farben und Stricharten; keine Messwerte." data-input="—">roll_styles</text>
+    <text x="610" y="3632.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="3632" font-size="10px" fill="#e0eaf0">CSS für Typografie, Farben und Stricharten;</text>
+    <text x="255" y="3647" font-size="10px" fill="#e0eaf0">keine Messwerte.</text>
+    <text x="30" y="3668" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_widget: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_widget" data-preview-id="normal2_roll_preview" data-description="Oberste Gruppe der Krängungsanzeige." data-input="—">roll_widget</text>
+    <text x="610" y="3668.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="3668" font-size="10px" fill="#e0eaf0">Oberste Gruppe der Krängungsanzeige.</text>
+    <rect x="24" y="3676" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="3691" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_card_background: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_card_background" data-preview-id="normal2_roll_preview" data-description="Abgerundeter Kartenhintergrund; statische Geometrie." data-input="—">roll_card_background</text>
+    <text x="610" y="3691.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="3691" font-size="10px" fill="#e0eaf0">Abgerundeter Kartenhintergrund; statische</text>
+    <text x="255" y="3706" font-size="10px" fill="#e0eaf0">Geometrie.</text>
+    <text x="30" y="3727" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_card_title: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_card_title" data-preview-id="normal2_roll_preview" data-description="Text KRÄNGUNG; statisch." data-input="—">roll_card_title</text>
+    <text x="610" y="3727.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="3727" font-size="10px" fill="#e0eaf0">Text KRÄNGUNG; statisch.</text>
+    <rect x="24" y="3735" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="3750" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_card_description: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_card_description" data-preview-id="normal2_roll_preview" data-description="Benennt Krängungswinkel um die Körperlängsachse; statisch." data-input="—">roll_card_description</text>
+    <text x="610" y="3750.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="3750" font-size="10px" fill="#e0eaf0">Benennt Krängungswinkel um die Körperlängsachse;</text>
+    <text x="255" y="3765" font-size="10px" fill="#e0eaf0">statisch.</text>
+    <text x="30" y="3786" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_face: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_face" data-preview-id="normal2_roll_preview" data-description="Enthaelt Ringe, feste Achsen, Skala, Yacht-Pose und Messwert." data-input="—">roll_face</text>
+    <text x="610" y="3786.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="3786" font-size="10px" fill="#e0eaf0">Enthaelt Ringe, feste Achsen, Skala, Yacht-Pose</text>
+    <text x="255" y="3801" font-size="10px" fill="#e0eaf0">und Messwert.</text>
+    <rect x="24" y="3807" width="952" height="23" fill="#163247" opacity="0.62" />
+    <text x="30" y="3822" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_ring_outer: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_ring_outer" data-preview-id="normal2_roll_preview" data-description="Fester äußerer Ring des Zifferblatts." data-input="—">roll_ring_outer</text>
+    <text x="610" y="3822.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="3822" font-size="10px" fill="#e0eaf0">Fester äußerer Ring des Zifferblatts.</text>
+    <text x="30" y="3845" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_ring_inner: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_ring_inner" data-preview-id="normal2_roll_preview" data-description="Fester innerer Ring des Zifferblatts." data-input="—">roll_ring_inner</text>
+    <text x="610" y="3845.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="3845" font-size="10px" fill="#e0eaf0">Fester innerer Ring des Zifferblatts.</text>
+    <rect x="24" y="3853" width="952" height="23" fill="#163247" opacity="0.62" />
+    <text x="30" y="3868" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_reference_horizontal: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_reference_horizontal" data-preview-id="normal2_roll_preview" data-description="Feste gelbe Null-Linie; wird nicht mitgedreht." data-input="—">roll_reference_horizontal</text>
+    <text x="610" y="3868.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="3868" font-size="10px" fill="#e0eaf0">Feste gelbe Null-Linie; wird nicht mitgedreht.</text>
+    <text x="30" y="3891" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_reference_vertical: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_reference_vertical" data-preview-id="normal2_roll_preview" data-description="Feste gelbe gestrichelte Achse; bleibt bei jeder Pose unverändert." data-input="—">roll_reference_vertical</text>
+    <text x="610" y="3891.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="3891" font-size="10px" fill="#e0eaf0">Feste gelbe gestrichelte Achse; bleibt bei jeder</text>
+    <text x="255" y="3906" font-size="10px" fill="#e0eaf0">Pose unverändert.</text>
+    <rect x="24" y="3912" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="3927" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_scale_ticks: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_scale_ticks" data-preview-id="normal2_roll_preview" data-description="Alle Teilstriche; fest. Skala: rechts 0, oben +90, links +/-180, unten -90 Grad." data-input="—">roll_scale_ticks</text>
+    <text x="610" y="3927.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="3927" font-size="10px" fill="#e0eaf0">Alle Teilstriche; fest. Skala: rechts 0, oben</text>
+    <text x="255" y="3942" font-size="10px" fill="#e0eaf0">+90, links +/-180, unten -90 Grad.</text>
+    <text x="30" y="3963" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_scale_labels: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_scale_labels" data-preview-id="normal2_roll_preview" data-description="Feste Winkelwerte im Bereich -180 bis +180 Grad; positive Werte gegen den Uhrzeigersinn." data-input="—">roll_scale_labels</text>
+    <text x="610" y="3963.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="3963" font-size="10px" fill="#e0eaf0">Feste Winkelwerte im Bereich -180 bis +180 Grad;</text>
+    <text x="255" y="3978" font-size="10px" fill="#e0eaf0">positive Werte gegen den Uhrzeigersinn.</text>
+    <rect x="24" y="3984" width="952" height="51" fill="#163247" opacity="0.62" />
+    <text x="30" y="3999" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_pose: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_pose" data-preview-id="normal2_roll_preview" data-description="Gemeinsame Bewegungsgruppe von Boot und Krängungszeiger; Referenzachsen bleiben außerhalb." data-input="Krängungswinkel von &#8722;180&#176; bis +180&#176;; SVG-Rotation mit umgekehrtem Vorzeichen.">roll_pose</text>
+    <text x="610" y="3999.0" font-size="10px" fill="#e0eaf0">Krängungswinkel −180° bis +180°; Python setzt</text>
+    <text x="610" y="4014.0" font-size="10px" fill="#e0eaf0">die SVG-Rotation mit umgekehrtem Vorzeichen.</text>
+    <text x="255" y="3999" font-size="10px" fill="#e0eaf0">Boot und Krängungszeiger bewegen sich gemeinsam.</text>
+    <text x="255" y="4014" font-size="10px" fill="#e0eaf0">Die Referenzachsen bleiben fest.</text>
+    <text x="255" y="4029" font-size="10px" fill="#e0eaf0">Drehpunkt und Skala bleiben unverändert.</text>
+    <text x="30" y="4050" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_yacht: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_yacht" data-preview-id="normal2_roll_preview" data-description="Bootssymbol innerhalb der beweglichen Posegruppe." data-input="&#8212; (dreht gemeinsam mit roll_pointer über roll_pose).">roll_yacht</text>
+    <text x="610" y="4050.0" font-size="10px" fill="#e0eaf0">— (dreht gemeinsam mit roll_pointer über</text>
+    <text x="610" y="4065.0" font-size="10px" fill="#e0eaf0">roll_pose).</text>
+    <text x="255" y="4050" font-size="10px" fill="#e0eaf0">Bootsgrafik innerhalb der beweglichen Pose;</text>
+    <text x="255" y="4065" font-size="10px" fill="#e0eaf0">dreht gemeinsam mit dem Zeiger.</text>
+    <rect x="24" y="4071" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="4086" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_pointer: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_pointer" data-preview-id="normal2_roll_preview" data-description="Krängungszeiger innerhalb der Posegruppe; keine unabhängige Drehung." data-input="&#8212; (dreht gemeinsam mit dem Boot über roll_pose).">roll_pointer</text>
+    <text x="610" y="4086.0" font-size="10px" fill="#e0eaf0">— (wird gemeinsam mit dem Boot über roll_pose</text>
+    <text x="610" y="4101.0" font-size="10px" fill="#e0eaf0">gedreht; keine Einzelrotation).</text>
+    <text x="255" y="4086" font-size="10px" fill="#e0eaf0">Zeigergruppe innerhalb der Pose; dreht gemeinsam</text>
+    <text x="255" y="4101" font-size="10px" fill="#e0eaf0">mit dem Boot, nicht separat.</text>
+    <text x="30" y="4122" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_pointer_tip: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_pointer_tip" data-preview-id="normal2_roll_preview" data-description="Spitze des Krängungszeigers." data-input="&#8212; (Teil von roll_pointer).">roll_pointer_tip</text>
+    <text x="610" y="4122.0" font-size="10px" fill="#e0eaf0">— (Bestandteil von roll_pointer).</text>
+    <text x="255" y="4122" font-size="10px" fill="#e0eaf0">Spitze des Krängungszeigers; keine separate</text>
+    <text x="255" y="4137" font-size="10px" fill="#e0eaf0">Python-Transformation.</text>
+    <rect x="24" y="4143" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="4158" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_pointer_shaft: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_pointer_shaft" data-preview-id="normal2_roll_preview" data-description="Schaft des Krängungszeigers." data-input="&#8212; (Teil von roll_pointer).">roll_pointer_shaft</text>
+    <text x="610" y="4158.0" font-size="10px" fill="#e0eaf0">— (Bestandteil von roll_pointer).</text>
+    <text x="255" y="4158" font-size="10px" fill="#e0eaf0">Schaft des Krängungszeigers; keine separate</text>
+    <text x="255" y="4173" font-size="10px" fill="#e0eaf0">Python-Transformation.</text>
+    <text x="30" y="4194" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_camera: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_camera" data-preview-id="normal2_roll_preview" data-description="Kamera ausserhalb der Pose; feste Orientierung, wird nicht mit Krängung gedreht." data-input="—">roll_camera</text>
+    <text x="610" y="4194.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="4194" font-size="10px" fill="#e0eaf0">Kamera ausserhalb der Pose; feste Orientierung,</text>
+    <text x="255" y="4209" font-size="10px" fill="#e0eaf0">wird nicht mit Krängung gedreht.</text>
+    <rect x="24" y="4215" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="4230" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_pivot: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_pivot" data-preview-id="normal2_roll_preview" data-description="Fester Mittelpunkt der Posegruppe." data-input="&#8212; (x=312, y=405; nicht veränderbar).">roll_pivot</text>
+    <text x="610" y="4230.0" font-size="10px" fill="#e0eaf0">— (fester Punkt bei x=312, y=405; nicht</text>
+    <text x="610" y="4245.0" font-size="10px" fill="#e0eaf0">veränderbar).</text>
+    <text x="255" y="4230" font-size="10px" fill="#e0eaf0">Fester Mittelpunkt (312, 405); niemals per Input</text>
+    <text x="255" y="4245" font-size="10px" fill="#e0eaf0">veraendern.</text>
+    <text x="30" y="4266" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_value: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_value" data-preview-id="normal2_roll_preview" data-description="Numerische Anzeige des Krängungswinkels." data-input="Derselbe Krängungswinkel mit Vorzeichen und Gradzeichen, z. B. &#8722;30&#176;.">roll_value</text>
+    <text x="610" y="4266.0" font-size="10px" fill="#e0eaf0">Derselbe Krängungswinkel in Grad mit</text>
+    <text x="610" y="4281.0" font-size="10px" fill="#e0eaf0">Vorzeichen, z. B. −30°.</text>
+    <text x="255" y="4266" font-size="10px" fill="#e0eaf0">Numerischer Messwert mit Vorzeichen und</text>
+    <text x="255" y="4281" font-size="10px" fill="#e0eaf0">Gradzeichen, z. B. -30 Grad; identisch zum</text>
+    <text x="255" y="4296" font-size="10px" fill="#e0eaf0">Pose-Input.</text>
+    <rect x="24" y="4302" width="952" height="23" fill="#163247" opacity="0.62" />
+    <text x="30" y="4317" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_label: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_label" data-preview-id="normal2_roll_preview" data-description="Statisches Label KRÄNGUNG." data-input="—">roll_label</text>
+    <text x="610" y="4317.0" font-size="10px" fill="#e0eaf0">—</text>
+    <text x="255" y="4317" font-size="10px" fill="#e0eaf0">Statisches Label KRÄNGUNG.</text>
+    <rect x="24" y="4328" width="952" height="36" fill="#163247" opacity="0.62" />
+    <text x="30" y="4343" font-size="10px" fill="#ffc66d" font-weight="700" class="element-id" tabindex="0" role="button" aria-label="roll_sail_side: Element im Widget hervorheben" data-focus-id="normal2_roll_roll_sail_side" data-preview-id="normal2_roll_preview" data-description="Spiegelt nur den Bootskörper um die feste senkrechte Achse; der Zeiger bleibt unverändert." data-input="Segelstellwinkel: &lt;0° Backbord; &gt;0° Steuerbord; 0° oder fehlend = Backbord.">roll_sail_side</text>
+    <text x="610" y="4343.0" font-size="10px" fill="#e0eaf0">Segelstellwinkel: &lt;0° Backbord; &gt;0°</text>
+    <text x="610" y="4358.0" font-size="10px" fill="#e0eaf0">Steuerbord; 0° oder fehlend = Backbord.</text>
+    <text x="255" y="4343" font-size="10px" fill="#e0eaf0">Der Bootskörper wird an der senkrechten</text>
+    <text x="255" y="4358" font-size="10px" fill="#e0eaf0">Achse gespiegelt; der Zeiger nicht.</text>
   </g>
-
-  <g id="element_legend">
-    <text x="674" y="151" class="legend-number">01</text>
-    <text x="710" y="151" class="legend-title">Widgetrahmen</text>
-    <text x="710" y="168" class="legend-description">Quadratische Karte mit gerundeten Ecken</text>
-
-    <text x="674" y="207" class="legend-number">02</text>
-    <text x="710" y="207" class="legend-title">Titel</text>
-    <text x="710" y="224" class="legend-description">„KOMPASS“ oben links in der Karte</text>
-
-    <text x="674" y="263" class="legend-number">03</text>
-    <text x="710" y="263" class="legend-title">Titelbeschreibung</text>
-    <text x="710" y="280" class="legend-description">Unten links innerhalb des Widgetrahmens</text>
-
-    <text x="674" y="319" class="legend-number">04</text>
-    <text x="710" y="319" class="legend-title">Äußerer Skalenring</text>
-    <text x="710" y="336" class="legend-description">Äußere Begrenzung der Kompassrose</text>
-
-    <text x="674" y="375" class="legend-number">05</text>
-    <text x="710" y="375" class="legend-title">Innerer Skalenring</text>
-    <text x="710" y="392" class="legend-description">Begrenzt den Ring mit den Himmelsbuchstaben</text>
-
-    <text x="674" y="431" class="legend-number">06</text>
-    <text x="710" y="431" class="legend-title">Teilstriche</text>
-    <text x="710" y="448" class="legend-description">Kleine bei 22,5°, längere bei 45°; Kardinale frei</text>
-
-    <text x="674" y="487" class="legend-number">07</text>
-    <text x="710" y="487" class="legend-title">Kardinalbuchstaben</text>
-    <text x="710" y="504" class="legend-description">N, O, S, W zwischen den beiden Skalenringen</text>
-
-    <text x="674" y="543" class="legend-number">08</text>
-    <text x="710" y="543" class="legend-title">Numerischer Headingwert</text>
-    <text x="710" y="560" class="legend-description">Große Gradzahl im oberen Teil der Rose</text>
-
-    <text x="674" y="599" class="legend-number">09</text>
-    <text x="710" y="599" class="legend-title">Headingzeiger</text>
-    <text x="710" y="616" class="legend-description">Goldener, gefüllter Zeiger für HDG</text>
-
-    <text x="674" y="655" class="legend-number">10</text>
-    <text x="710" y="655" class="legend-title">16-Punkt-Richtung</text>
-    <text x="710" y="672" class="legend-description">Strichgenauer Text, z. B. ONO</text>
-
-    <text x="674" y="711" class="legend-number">11</text>
-    <text x="710" y="711" class="legend-title">HDG-Kürzel</text>
-    <text x="710" y="728" class="legend-description">Kennzeichnet den Zahlenwert als Heading</text>
-
-    <text x="674" y="767" class="legend-number">12</text>
-    <text x="710" y="767" class="legend-title">Zeigerdrehpunkt</text>
-    <text x="710" y="784" class="legend-description">Gemeinsamer Bezugspunkt in der Rosenmitte</text>
-
-    <text x="1010" y="151" class="legend-number">13</text>
-    <text x="1046" y="151" class="legend-title">Kamerasymbol</text>
-    <text x="1046" y="168" class="legend-description">Umläuft die Rose mit KAM_AZ;</text>
-    <text x="1046" y="185" class="legend-description">die Linse weist nach innen</text>
+  <g transform="translate(0 30)">
+  <line x1="28" y1="4374" x2="972" y2="4374" stroke="#49667a" stroke-width="2" />
+  <text x="30" y="4408" font-size="17px" fill="#f4f8fb" font-weight="700">GEFAHREN-/KENTERBEISPIELE · KOPIEN DER NORMALANZEIGEN</text>
+  <text x="30" y="4431" font-size="12px" fill="#a9bdca">Hier sind die Beispiele verkleinert dargestellt; die interaktive ID-Tabelle gehört zu den drei Normalanzeigen.</text>
+  <g>
+    <rect x="14" y="4450" width="972" height="365" rx="16" fill="#102638" stroke="#843642" stroke-width="2" />
+    <text x="32" y="4482" font-size="16px" fill="#f4f8fb" font-weight="700">STAMPFEN · Gefahrenbeispiel +150°</text>
+    <svg id="danger_pitch_art_danger_pitch_preview" x="25" y="4488" width="320" height="320" viewBox="22 112 580 580" role="img" data-preview-key="danger_pitch_art">
+      <title id="danger_pitch_art_pitch_title">Stampfenanzeige</title>
+      <desc id="danger_pitch_art_pitch_description">Anzeige des Stampfwinkels um die Querachse mit einem einzelnen Kompasszeiger, der gemeinsam mit dem Yacht-Icon rotiert.</desc>
+      <defs>
+        <linearGradient id="danger_pitch_art_pitch_gradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#193448" />
+          <stop offset="1" stop-color="#11283a" />
+        </linearGradient>
+        <filter id="danger_pitch_art_pitch_shadow" x="-20%" y="-20%" width="140%" height="150%">
+          <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000814" flood-opacity=".35" />
+        </filter>
+        <style id="danger_pitch_art_pitch_styles">
+      text { font-family: "Segoe UI", Arial, sans-serif; fill: #f4f8fb; }
+      .card { fill: url(#danger_pitch_art_pitch_gradient); stroke: #315066; stroke-width: 1.5; }
+      .card-title { font-size: 19px; font-weight: 700; letter-spacing: 1.2px; fill: #b8cad5; }
+      .small { font-size: 13px; fill: #8da9bb; }
+      .dial-value { font-size: 48px; font-weight: 700; stroke: #0b1c2a; stroke-width: 3px; paint-order: stroke; stroke-linejoin: round; }
+      .dial-caption { font-size: 17px; fill: #9eb4c2; }
+      .dial-code { font-size: 18px; font-weight: 700; letter-spacing: 2px; fill: #8da9bb; }
+      .tick-minor { stroke: #49667a; stroke-width: 2; }
+      .tick-major { stroke: #7892a3; stroke-width: 2.7; }
+      .camera { fill: #11283a; stroke: #ffdf70; stroke-width: 2.5; stroke-linejoin: round; }
+    </style>
+      </defs>
+      <g id="danger_pitch_art_pitch_widget" filter="url(#danger_pitch_art_pitch_shadow)">
+        <rect id="danger_pitch_art_pitch_card_background" class="card" x="42" y="132" width="540" height="540" rx="24" />
+        <text id="danger_pitch_art_pitch_card_title" x="82" y="185" class="card-title">STAMPFEN</text>
+        <text id="danger_pitch_art_pitch_card_description" x="70" y="642" class="small">Stampfwinkel um die Querachse</text>
+        <g id="danger_pitch_art_pitch_face" transform="translate(0 5)">
+          <circle id="danger_pitch_art_pitch_ring_outer" cx="312" cy="405" r="210" fill="#843642" stroke="#49667a" stroke-width="2.5" />
+          <circle id="danger_pitch_art_pitch_ring_inner" cx="312" cy="405" r="166.5" fill="#0b1c2a" stroke="#29485d" stroke-width="1.8" />
+          <line id="danger_pitch_art_pitch_reference_horizontal" x1="145.5" y1="405" x2="478.5" y2="405" stroke="#ffbd16" stroke-width="2.5" />
+          <line id="danger_pitch_art_pitch_reference_vertical" x1="312" y1="238.5" x2="312" y2="571.5" stroke="#ffbd16" stroke-width="2.5" stroke-dasharray="4 4" />
+          <g id="danger_pitch_art_pitch_scale_ticks" fill="none">
+            <line class="tick-major" x1="312.0" y1="207.0" x2="312.0" y2="195.0" />
+            <line class="tick-minor" x1="347.3" y1="205.1" x2="348.5" y2="198.2" />
+            <line class="tick-minor" x1="381.4" y1="214.2" x2="383.8" y2="207.7" />
+            <line class="tick-major" x1="411.0" y1="233.5" x2="417.0" y2="223.1" />
+            <line class="tick-minor" x1="442.5" y1="249.5" x2="447.0" y2="244.1" />
+            <line class="tick-minor" x1="467.5" y1="274.5" x2="472.9" y2="270.0" />
+            <line class="tick-major" x1="483.5" y1="306.0" x2="493.9" y2="300.0" />
+            <line class="tick-minor" x1="502.8" y1="335.6" x2="509.3" y2="333.2" />
+            <line class="tick-minor" x1="511.9" y1="369.7" x2="518.8" y2="368.5" />
+            <line class="tick-major" x1="510.0" y1="405.0" x2="522.0" y2="405.0" />
+            <line class="tick-minor" x1="511.9" y1="440.3" x2="518.8" y2="441.5" />
+            <line class="tick-minor" x1="502.8" y1="474.4" x2="509.3" y2="476.8" />
+            <line class="tick-major" x1="483.5" y1="504.0" x2="493.9" y2="510.0" />
+            <line class="tick-minor" x1="467.5" y1="535.5" x2="472.9" y2="540.0" />
+            <line class="tick-minor" x1="442.5" y1="560.5" x2="447.0" y2="565.9" />
+            <line class="tick-major" x1="411.0" y1="576.5" x2="417.0" y2="586.9" />
+            <line class="tick-minor" x1="381.4" y1="595.8" x2="383.8" y2="602.3" />
+            <line class="tick-minor" x1="347.3" y1="604.9" x2="348.5" y2="611.8" />
+            <line class="tick-major" x1="312.0" y1="603.0" x2="312.0" y2="615.0" />
+            <line class="tick-minor" x1="276.7" y1="604.9" x2="275.5" y2="611.8" />
+            <line class="tick-minor" x1="242.6" y1="595.8" x2="240.2" y2="602.3" />
+            <line class="tick-major" x1="213.0" y1="576.5" x2="207.0" y2="586.9" />
+            <line class="tick-minor" x1="181.5" y1="560.5" x2="177.0" y2="565.9" />
+            <line class="tick-minor" x1="156.5" y1="535.5" x2="151.1" y2="540.0" />
+            <line class="tick-major" x1="140.5" y1="504.0" x2="130.1" y2="510.0" />
+            <line class="tick-minor" x1="121.2" y1="474.4" x2="114.7" y2="476.8" />
+            <line class="tick-minor" x1="112.1" y1="440.3" x2="105.2" y2="441.5" />
+            <line class="tick-major" x1="114.0" y1="405.0" x2="102.0" y2="405.0" />
+            <line class="tick-minor" x1="112.1" y1="369.7" x2="105.2" y2="368.5" />
+            <line class="tick-minor" x1="121.2" y1="335.6" x2="114.7" y2="333.2" />
+            <line class="tick-major" x1="140.5" y1="306.0" x2="130.1" y2="300.0" />
+            <line class="tick-minor" x1="156.5" y1="274.5" x2="151.1" y2="270.0" />
+            <line class="tick-minor" x1="181.5" y1="249.5" x2="177.0" y2="244.1" />
+            <line class="tick-major" x1="213.0" y1="233.5" x2="207.0" y2="223.1" />
+            <line class="tick-minor" x1="242.6" y1="214.2" x2="240.2" y2="207.7" />
+            <line class="tick-minor" x1="276.7" y1="205.1" x2="275.5" y2="198.2" />
+          </g>
+          <g id="danger_pitch_art_pitch_scale_labels" class="small" text-anchor="middle" font-weight="700">
+            <text transform="translate(312 222) rotate(0)" dominant-baseline="middle">+90°</text>
+            <text transform="translate(403.5 246.5) rotate(30)" dominant-baseline="middle">+60°</text>
+            <text transform="translate(470.5 313.5) rotate(60)" dominant-baseline="middle">+30°</text>
+            <text transform="translate(495 405) rotate(90)" dominant-baseline="middle">0°</text>
+            <text transform="translate(470.5 496.5) rotate(-60)" dominant-baseline="middle">−30°</text>
+            <text transform="translate(403.5 563.5) rotate(-30)" dominant-baseline="middle">−60°</text>
+            <text transform="translate(312 588) rotate(0)" dominant-baseline="middle">−90°</text>
+            <text transform="translate(220.5 563.5) rotate(30)" dominant-baseline="middle">−120°</text>
+            <text transform="translate(153.5 496.5) rotate(60)" dominant-baseline="middle">−150°</text>
+            <text transform="translate(129 405) rotate(90)" dominant-baseline="middle">±180°</text>
+            <text transform="translate(153.5 313.5) rotate(-60)" dominant-baseline="middle">+150°</text>
+            <text transform="translate(220.5 246.5) rotate(-30)" dominant-baseline="middle">+120°</text>
+          </g>
+          <g id="danger_pitch_art_pitch_pose" style="transform: rotate(-150deg); transform-origin: 312px 405px; transform-box: view-box;">
+            <g id="danger_pitch_art_pitch_yacht" transform="translate(152 258)">
+              <g id="danger_pitch_art_pitch_pointer" fill="none" stroke="#ffbd16" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <g transform="rotate(90 160 147)" fill="#ffc66d" stroke="#ffc66d">
+                  <path id="danger_pitch_art_pitch_pointer_tip" d="M160 2 L146 160 L160 141 L174 160 Z" stroke="none" />
+                  <line id="danger_pitch_art_pitch_pointer_shaft" x1="160" y1="147" x2="160" y2="10" stroke-width="3" />
+                </g>
+              </g>
+              <g transform="translate(160 0) scale(-0.5565217391 1) translate(-160 0)" fill="none" stroke="#f4f8fb" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M153 46.3 L82 103 H153 V97 Z" />
+                <path d="M168 -8.8 L260 99 H168 V119 Z" />
+                <g transform="translate(0 152.25) scale(1 0.5) translate(0 -147)">
+                  <path d="M45 110.5 H275 L269 145 L244 149 L176 160.9 L178 164 Q179 258.9 174 258.9 H160 Q155 258.9 154 258.9 L132 160.9 L83.5 149 Z" />
+                </g>
+              </g>
+              <path d="M136 134 L141 121.5 Q143.9 118 149.9 117.5 H174 Q180.9 118 183.2 121.5 L186 134 Z" fill="none" stroke="#f4f8fb" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+            </g>
+          </g>
+          <g id="danger_pitch_art_pitch_camera" transform="rotate(119 312 405)" class="camera">
+            <rect x="299" y="145" width="26" height="21" rx="4" />
+            <path d="M306 145 L309 140 L315 140 L318 145" />
+            <path d="M306 166 L312 175 L318 166 Z" />
+            <circle cx="312" cy="153" r="4.5" fill="none" />
+          </g>
+          <circle id="danger_pitch_art_pitch_pivot" cx="312" cy="405" r="7" fill="#f4f8fb" />
+          <text id="danger_pitch_art_pitch_value" x="312" y="347" text-anchor="middle" class="dial-value">+150°</text>
+          <text id="danger_pitch_art_pitch_label" x="312" y="491" text-anchor="middle" class="dial-code">STAMPFEN</text>
+        </g>
+      </g>
+    </svg>
+    <text x="375" y="4550" font-size="12px" fill="#e0eaf0">Bug hebt sich; SVG-Posewinkel −150°. Boot und Zeiger drehen</text>
+    <text x="375" y="4569" font-size="12px" fill="#e0eaf0">gemeinsam.</text>
+    <text x="375" y="4595" font-size="12px" fill="#a9bdca">Referenzachsen und Skala bleiben fest; nur Boot und Zeiger bewegen</text>
+    <text x="375" y="4614" font-size="12px" fill="#a9bdca">sich gemeinsam.</text>
   </g>
+  <g>
+    <rect x="14" y="4831" width="972" height="365" rx="16" fill="#102638" stroke="#843642" stroke-width="2" />
+    <text x="32" y="4863" font-size="16px" fill="#f4f8fb" font-weight="700">KRÄNGUNG · Gefahrenbeispiel −150°</text>
+    <svg id="danger_roll_art_danger_roll_preview" x="25" y="4869" width="320" height="320" viewBox="22 112 580 580" role="img" data-preview-key="danger_roll_art">
+      <title id="danger_roll_art_roll_title">KRÄNGUNG</title>
+      <desc id="danger_roll_art_roll_description">Anzeige des Krängungswinkels um die Körperlängsachse. Boot und Zeiger rotieren gemeinsam; die Segelstellung wird separat über roll_sail_side gesteuert. Ein negativer Segelstellwinkel bedeutet Backbord, ein positiver Steuerbord; bei 0° oder fehlendem Segelstellwinkel gilt Backbord.</desc>
+      <defs>
+        <linearGradient id="danger_roll_art_roll_gradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#193448" />
+          <stop offset="1" stop-color="#11283a" />
+        </linearGradient>
+        <filter id="danger_roll_art_roll_shadow" x="-20%" y="-20%" width="140%" height="150%">
+          <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000814" flood-opacity=".35" />
+        </filter>
+        <style id="danger_roll_art_roll_styles">
+      text { font-family: "Segoe UI", Arial, sans-serif; fill: #f4f8fb; }
+      .card { fill: url(#danger_roll_art_roll_gradient); stroke: #315066; stroke-width: 1.5; }
+      .card-title { font-size: 19px; font-weight: 700; letter-spacing: 1.2px; fill: #b8cad5; }
+      .small { font-size: 13px; fill: #8da9bb; }
+      .dial-value { font-size: 48px; font-weight: 700; stroke: #0b1c2a; stroke-width: 3px; paint-order: stroke; stroke-linejoin: round; }
+      .dial-caption { font-size: 17px; fill: #9eb4c2; }
+      .dial-code { font-size: 18px; font-weight: 700; letter-spacing: 2px; fill: #8da9bb; }
+      .tick-minor { stroke: #49667a; stroke-width: 2; }
+      .tick-major { stroke: #7892a3; stroke-width: 2.7; }
+      .camera { fill: #11283a; stroke: #ffdf70; stroke-width: 2.5; stroke-linejoin: round; }
+    </style>
+      </defs>
+      <g id="danger_roll_art_roll_widget" filter="url(#danger_roll_art_roll_shadow)">
+        <rect id="danger_roll_art_roll_card_background" class="card" x="42" y="132" width="540" height="540" rx="24" />
+        <text id="danger_roll_art_roll_card_title" x="82" y="185" class="card-title">KRÄNGUNG</text>
+        <text id="danger_roll_art_roll_card_description" x="70" y="642" class="small">Krängungswinkel um die Körperlängsachse</text>
+        <g id="danger_roll_art_roll_face" transform="translate(0 5)">
+          <circle id="danger_roll_art_roll_ring_outer" cx="312" cy="405" r="210" fill="#843642" stroke="#49667a" stroke-width="2.5" />
+          <circle id="danger_roll_art_roll_ring_inner" cx="312" cy="405" r="166.5" fill="#0b1c2a" stroke="#29485d" stroke-width="1.8" />
+          <line id="danger_roll_art_roll_reference_horizontal" x1="145.5" y1="405" x2="478.5" y2="405" stroke="#ffbd16" stroke-width="2.5" />
+          <line id="danger_roll_art_roll_reference_vertical" x1="312" y1="238.5" x2="312" y2="571.5" stroke="#ffbd16" stroke-width="2.5" stroke-dasharray="4 4" />
+          <g id="danger_roll_art_roll_scale_ticks" fill="none">
+            <line class="tick-major" x1="312.0" y1="207.0" x2="312.0" y2="195.0" />
+            <line class="tick-minor" x1="347.3" y1="205.1" x2="348.5" y2="198.2" />
+            <line class="tick-minor" x1="381.4" y1="214.2" x2="383.8" y2="207.7" />
+            <line class="tick-major" x1="411.0" y1="233.5" x2="417.0" y2="223.1" />
+            <line class="tick-minor" x1="442.5" y1="249.5" x2="447.0" y2="244.1" />
+            <line class="tick-minor" x1="467.5" y1="274.5" x2="472.9" y2="270.0" />
+            <line class="tick-major" x1="483.5" y1="306.0" x2="493.9" y2="300.0" />
+            <line class="tick-minor" x1="502.8" y1="335.6" x2="509.3" y2="333.2" />
+            <line class="tick-minor" x1="511.9" y1="369.7" x2="518.8" y2="368.5" />
+            <line class="tick-major" x1="510.0" y1="405.0" x2="522.0" y2="405.0" />
+            <line class="tick-minor" x1="511.9" y1="440.3" x2="518.8" y2="441.5" />
+            <line class="tick-minor" x1="502.8" y1="474.4" x2="509.3" y2="476.8" />
+            <line class="tick-major" x1="483.5" y1="504.0" x2="493.9" y2="510.0" />
+            <line class="tick-minor" x1="467.5" y1="535.5" x2="472.9" y2="540.0" />
+            <line class="tick-minor" x1="442.5" y1="560.5" x2="447.0" y2="565.9" />
+            <line class="tick-major" x1="411.0" y1="576.5" x2="417.0" y2="586.9" />
+            <line class="tick-minor" x1="381.4" y1="595.8" x2="383.8" y2="602.3" />
+            <line class="tick-minor" x1="347.3" y1="604.9" x2="348.5" y2="611.8" />
+            <line class="tick-major" x1="312.0" y1="603.0" x2="312.0" y2="615.0" />
+            <line class="tick-minor" x1="276.7" y1="604.9" x2="275.5" y2="611.8" />
+            <line class="tick-minor" x1="242.6" y1="595.8" x2="240.2" y2="602.3" />
+            <line class="tick-major" x1="213.0" y1="576.5" x2="207.0" y2="586.9" />
+            <line class="tick-minor" x1="181.5" y1="560.5" x2="177.0" y2="565.9" />
+            <line class="tick-minor" x1="156.5" y1="535.5" x2="151.1" y2="540.0" />
+            <line class="tick-major" x1="140.5" y1="504.0" x2="130.1" y2="510.0" />
+            <line class="tick-minor" x1="121.2" y1="474.4" x2="114.7" y2="476.8" />
+            <line class="tick-minor" x1="112.1" y1="440.3" x2="105.2" y2="441.5" />
+            <line class="tick-major" x1="114.0" y1="405.0" x2="102.0" y2="405.0" />
+            <line class="tick-minor" x1="112.1" y1="369.7" x2="105.2" y2="368.5" />
+            <line class="tick-minor" x1="121.2" y1="335.6" x2="114.7" y2="333.2" />
+            <line class="tick-major" x1="140.5" y1="306.0" x2="130.1" y2="300.0" />
+            <line class="tick-minor" x1="156.5" y1="274.5" x2="151.1" y2="270.0" />
+            <line class="tick-minor" x1="181.5" y1="249.5" x2="177.0" y2="244.1" />
+            <line class="tick-major" x1="213.0" y1="233.5" x2="207.0" y2="223.1" />
+            <line class="tick-minor" x1="242.6" y1="214.2" x2="240.2" y2="207.7" />
+            <line class="tick-minor" x1="276.7" y1="205.1" x2="275.5" y2="198.2" />
+          </g>
+          <g id="danger_roll_art_roll_scale_labels" class="small" text-anchor="middle" font-weight="700">
+            <text transform="translate(312 222) rotate(0)" dominant-baseline="middle">+90°</text>
+            <text transform="translate(403.5 246.5) rotate(30)" dominant-baseline="middle">+60°</text>
+            <text transform="translate(470.5 313.5) rotate(60)" dominant-baseline="middle">+30°</text>
+            <text transform="translate(495 405) rotate(90)" dominant-baseline="middle">0°</text>
+            <text transform="translate(470.5 496.5) rotate(-60)" dominant-baseline="middle">−30°</text>
+            <text transform="translate(403.5 563.5) rotate(-30)" dominant-baseline="middle">−60°</text>
+            <text transform="translate(312 588) rotate(0)" dominant-baseline="middle">−90°</text>
+            <text transform="translate(220.5 563.5) rotate(30)" dominant-baseline="middle">−120°</text>
+            <text transform="translate(153.5 496.5) rotate(60)" dominant-baseline="middle">−150°</text>
+            <text transform="translate(129 405) rotate(90)" dominant-baseline="middle">±180°</text>
+            <text transform="translate(153.5 313.5) rotate(-60)" dominant-baseline="middle">+150°</text>
+            <text transform="translate(220.5 246.5) rotate(-30)" dominant-baseline="middle">+120°</text>
+          </g>
+          <g id="danger_roll_art_roll_pose" style="transform: rotate(150deg); transform-origin: 312px 405px; transform-box: view-box;">
+            <g id="danger_roll_art_roll_yacht" transform="translate(150 179)">
+              <g id="danger_roll_art_roll_pointer" transform="translate(2 79) translate(162 226) scale(1.0075642965) translate(-162 -226)" fill="none" stroke="#ffbd16" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <g transform="rotate(90 160 147)" fill="#ffc66d" stroke="#ffc66d">
+                  <path id="danger_roll_art_roll_pointer_tip" d="M160 2 L146 160 L160 141 L174 160 Z" stroke="none" />
+                  <line id="danger_roll_art_roll_pointer_shaft" x1="160" y1="147" x2="160" y2="10" stroke-width="3" />
+                </g>
+              </g>
+              <g id="danger_roll_art_roll_sail_side" data-side="port" data-negative-side="port" data-zero-side="port" data-positive-side="starboard" data-starboard-transform="translate(324 0) scale(-1 1)">
+              <title>Segelstellwinkel: negativ = Backbord, positiv = Steuerbord, 0° oder fehlend = Backbord.</title>
+              <g fill="none" stroke="#f4f8fb" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M154 70.2 L106 198 L154 178 Z" />
+                <path d="M148 125.3 L127 182 L148 176 Z" />
+                <g transform="translate(32.4 0) scale(0.8 1)">
+                  <path d="M120 213 L127 200.5 Q131 197 142 196.5 H180 Q192 197 196 200.5 L204 213" />
+                  <path d="M77 213 H247" />
+                  <path d="M77 213 Q89 235 121 242 Q146 248 162 248 Q179 248 204 242 Q236 235 247 213" />
+                </g>
+              </g>
+              <path d="M150 248 L152 279.2 Q153 287.2 160 287.2 Q167 287.2 168 279.2 L170 248" fill="none" stroke="#f4f8fb" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+              </g>
+            </g>
+          </g>
+          <g id="danger_roll_art_roll_camera" transform="rotate(119 312 405)" class="camera">
+            <rect x="299" y="145" width="26" height="21" rx="4" />
+            <path d="M306 145 L309 140 L315 140 L318 145" />
+            <path d="M306 166 L312 175 L318 166 Z" />
+            <circle cx="312" cy="153" r="4.5" fill="none" />
+          </g>
+          <circle id="danger_roll_art_roll_pivot" cx="312" cy="405" r="7" fill="#f4f8fb" />
+          <text id="danger_roll_art_roll_value" x="312" y="347" text-anchor="middle" class="dial-value">−150°</text>
+          <text id="danger_roll_art_roll_label" x="312" y="491" text-anchor="middle" class="dial-code">KRÄNGUNG</text>
+        </g>
+      </g>
+    </svg>
+    <text x="375" y="4931" font-size="12px" fill="#e0eaf0">Steuerbordseite hebt sich; SVG-Posewinkel +150°. Boot und Zeiger</text>
+    <text x="375" y="4950" font-size="12px" fill="#e0eaf0">drehen gemeinsam.</text>
+    <text x="375" y="4976" font-size="12px" fill="#a9bdca">Referenzachsen und Skala bleiben fest; nur Boot und Zeiger bewegen</text>
+    <text x="375" y="4995" font-size="12px" fill="#a9bdca">sich gemeinsam.</text>
+  </g>
+  </g>
+  <g id="focus_panel" visibility="hidden" pointer-events="none">
+    <rect x="650" y="0" width="336" height="530" rx="16" fill="#0b1c2a" stroke="#ffc66d" stroke-width="2" opacity="0.98" />
+    <text x="668" y="28" font-size="12px" fill="#ffc66d" font-weight="True" id="focus_heading">AUSGEWÄHLTES ELEMENT</text>
+    <text x="668" y="51" font-size="14px" fill="#f4f8fb" font-weight="True" id="focus_id" />
+    <svg id="focus_panel_preview" x="668" y="64" width="300" height="300" viewBox="22 112 580 580" />
+    <text x="668" y="385" font-size="11px" fill="#8da9bb" font-weight="True" id="focus_description_title">BESCHREIBUNG</text>
+    <text x="668" y="404" font-size="11px" fill="#e0eaf0" id="focus_description" />
+    <text x="668" y="466" font-size="11px" fill="#8da9bb" font-weight="True" id="focus_input_title">INPUT</text>
+    <text x="668" y="485" font-size="11px" fill="#e0eaf0" id="focus_input" />
+  </g>
+  <script type="application/ecmascript">
+(function () {
+  const svg = document.documentElement;
+  const panel = document.getElementById('focus_panel');
+  const panelPreview = document.getElementById('focus_panel_preview');
+  let locked = null;
+
+  function clearPreview(preview) {
+    if (!preview) return;
+    preview.querySelectorAll('.spotlight-hidden').forEach(function (element) {
+      element.classList.remove('spotlight-hidden');
+    });
+    preview.querySelectorAll('[data-spotlight-original-fill-opacity]').forEach(function (element) {
+      element.style.fillOpacity = element.getAttribute('data-spotlight-original-fill-opacity');
+      element.removeAttribute('data-spotlight-original-fill-opacity');
+    });
+  }
+
+  function isDefinition(element) {
+    return ['defs', 'style', 'title', 'desc'].includes(element.localName);
+  }
+
+  function isolateBranch(container, target) {
+    Array.from(container.children).forEach(function (child) {
+      if (isDefinition(child)) return;
+      if (child === target) return;
+      if (child.contains(target)) {
+        isolateBranch(child, target);
+      } else {
+        child.classList.add('spotlight-hidden');
+      }
+    });
+  }
+
+  function showPanel(item, sourcePreview) {
+    panelPreview.replaceChildren();
+    Array.from(sourcePreview.children).forEach(function (child) {
+      const copy = child.cloneNode(true);
+      panelPreview.appendChild(copy);
+    });
+    const idMap = new Map();
+    panelPreview.querySelectorAll('[id]').forEach(function (element) {
+      const original = element.id;
+      const replacement = 'focus_copy_' + original;
+      idMap.set(original, replacement);
+      element.id = replacement;
+    });
+    panelPreview.querySelectorAll('*').forEach(function (element) {
+      Array.from(element.attributes).forEach(function (attribute) {
+        let value = attribute.value;
+        idMap.forEach(function (replacement, original) {
+          value = value.replaceAll('url(#' + original + ')', 'url(#' + replacement + ')');
+          if (attribute.name === 'href' || attribute.name === 'xlink:href') {
+            if (value === '#' + original) value = '#' + replacement;
+          }
+        });
+        if (value !== attribute.value) element.setAttribute(attribute.name, value);
+      });
+    });
+    document.getElementById('focus_id').textContent = item.textContent;
+    setLines(document.getElementById('focus_description'), item.getAttribute('data-description') || '?', 44);
+    setLines(document.getElementById('focus_input'), item.getAttribute('data-input') || '?', 44);
+    panel.setAttribute('visibility', 'visible');
+    positionPanel();
+  }
+
+  function setLines(node, value, limit) {
+    while (node.firstChild) node.removeChild(node.firstChild);
+    const words = value.split(/\s+/);
+    const lines = [];
+    let line = '';
+    words.forEach(function (word) {
+      if (line &amp;&amp; (line + ' ' + word).length &gt; limit) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = line ? line + ' ' + word : word;
+      }
+    });
+    if (line) lines.push(line);
+    lines.forEach(function (text, index) {
+      if (index) node.appendChild(document.createTextNode(' '));
+      const span = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+      span.setAttribute('x', node.getAttribute('x'));
+      span.setAttribute('dy', index ? '15' : '0');
+      span.textContent = text;
+      node.appendChild(span);
+    });
+  }
+
+  function positionPanel() {
+    if (panel.getAttribute('visibility') !== 'visible') return;
+    const bounds = svg.getBoundingClientRect();
+    const scale = bounds.width / 1000;
+    const panelBounds = panel.getBBox();
+    const minX = (12 - bounds.left) / scale - panelBounds.x;
+    const maxX = (window.innerWidth - 12 - bounds.left) / scale - panelBounds.x - panelBounds.width;
+    const x = Math.max(minX, Math.min(0, maxX));
+    const documentTop = bounds.top + window.scrollY;
+    const height = svg.viewBox.baseVal.height;
+    const desired = (window.scrollY - documentTop + 12) / scale;
+    const y = Math.max(12, Math.min(desired, height - 540));
+    panel.setAttribute('transform', 'translate(' + x + ' ' + y + ')');
+  }
+
+  function show(item) {
+    const preview = document.getElementById(item.getAttribute('data-preview-id'));
+    const target = document.getElementById(item.getAttribute('data-focus-id'));
+    if (!preview || !target || !preview.contains(target)) return;
+    svg.querySelectorAll('[data-preview-key]').forEach(function (candidate) {
+      clearPreview(candidate);
+      if (candidate === preview) {
+        isolateBranch(candidate, target);
+      } else {
+        Array.from(candidate.children).forEach(function (child) {
+          if (!isDefinition(child)) child.classList.add('spotlight-hidden');
+        });
+      }
+    });
+    if (target.id.endsWith('_dial_status')) {
+      target.setAttribute('data-spotlight-original-fill-opacity', target.style.fillOpacity || '');
+      target.style.fillOpacity = '0.65';
+    }
+    showPanel(item, preview);
+  }
+
+  function reset() {
+    svg.querySelectorAll('[data-preview-key]').forEach(clearPreview);
+    panel.setAttribute('visibility', 'hidden');
+    panelPreview.replaceChildren();
+  }
+
+  svg.addEventListener('pointerover', function (event) {
+    const item = event.target.closest('.element-id');
+    if (item &amp;&amp; !locked) show(item);
+  });
+  svg.addEventListener('pointerout', function (event) {
+    const item = event.target.closest('.element-id');
+    if (item &amp;&amp; !locked &amp;&amp; !item.contains(event.relatedTarget)) reset();
+  });
+  svg.addEventListener('click', function (event) {
+    const item = event.target.closest('.element-id');
+    if (!item) return;
+    event.preventDefault();
+    if (locked === item) {
+      locked = null;
+      item.classList.remove('spotlight-selected');
+      reset();
+    } else {
+      svg.querySelectorAll('.element-id.spotlight-selected').forEach(function (node) {
+        node.classList.remove('spotlight-selected');
+      });
+      locked = item;
+      item.classList.add('spotlight-selected');
+      show(item);
+    }
+  });
+  svg.addEventListener('keydown', function (event) {
+    const item = event.target.closest('.element-id');
+    if (item &amp;&amp; (event.key === 'Enter' || event.key === ' ')) {
+      event.preventDefault();
+      item.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    }
+    if (event.key === 'Escape') {
+      locked = null;
+      svg.querySelectorAll('.element-id.spotlight-selected').forEach(function (node) {
+        node.classList.remove('spotlight-selected');
+      });
+      reset();
+    }
+  });
+  window.addEventListener('scroll', positionPanel, { passive: true });
+  window.addEventListener('resize', positionPanel);
+}());
+</script>
 </svg>

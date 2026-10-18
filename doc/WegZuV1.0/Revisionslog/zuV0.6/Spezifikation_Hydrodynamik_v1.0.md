@@ -9,17 +9,17 @@ bei Verdrängungsfahrt.
 
 ## Kennzeichnung und Änderungsverfahren
 
-### Spec000 — Dauerhafte Spezifikationskennungen
+### Spec0109 — Projektweite Kennzeichnungs- und Änderungsregel
 
-Jeder normative Spezifikationspunkt besitzt eine eindeutige Kennung. `Spec000`
-bezeichnet diese übergreifende Kennzeichnungsregel; Einzelpunkte beginnen mit
-`Spec0001`. Kennungen werden bei Überarbeitungen nicht geändert oder
-wiederverwendet. Inhaltlich angepasste Punkte behalten ihre Kennung. Neue
-Punkte erhalten bisher unbenutzte Kennungen und werden an ihrer logisch
-passenden Stelle eingefügt; bestehende Punkte werden dafür nicht umnummeriert.
-Entfallene oder verworfene Punkte werden aus dem aktiven Teil entfernt und am
-Dokumentende unter ihrer bisherigen Kennung mit „Nicht umsetzen“ oder
-„So nicht umsetzen“ und einer Begründung dokumentiert.
+Jeder normative Spezifikationspunkt besitzt eine projektweit eindeutige
+Kennung im Format `SpecNNNN`; reguläre Einzelpunkte beginnen mit `Spec0001`.
+Kennungen werden bei Überarbeitungen nicht geändert oder wiederverwendet.
+Inhaltlich angepasste Punkte behalten ihre Kennung. Neue Punkte erhalten
+bisher unbenutzte Kennungen und werden an ihrer logisch passenden Stelle
+eingefügt; bestehende Punkte werden dafür nicht umnummeriert. Entfallene oder
+verworfene Punkte werden aus dem aktiven Teil entfernt und am Dokumentende
+unter ihrer bisherigen Kennung mit „Nicht umsetzen“ oder „So nicht umsetzen“
+und einer Begründung dokumentiert.
 
 ## 1. Zweck und Abgrenzung
 

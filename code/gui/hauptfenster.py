@@ -227,6 +227,11 @@ class HauptFenster(QMainWindow):
         self._statische_ergebnisse = {}
         self._statische_arbeitsdaten = {}
         self._statische_fremdkraft = None
+        self._navigationsfenster = None
+        self._navigations_timer = QTimer(self)
+        self._navigations_timer.setInterval(33)
+        self._navigations_timer.timeout.connect(
+            self._navigationsanzeigen_aktualisieren)
         for meldung in self._einstellungen.meldungen:
             self.protokoll_schreiben("Einstellungen: %s" % meldung)
 
@@ -243,6 +248,9 @@ class HauptFenster(QMainWindow):
             elif bereich == "modell":
                 dialog.geaendert.connect(
                     self._modellpfad_einstellung_geaendert)
+            elif bereich == "anzeigen":
+                dialog.geaendert.connect(
+                    self._navigationssichtbarkeit_aktualisieren)
             self._einstellungen_dialoge[bereich] = dialog
         dialog.neu_laden()
         dialog.show()
@@ -319,6 +327,10 @@ class HauptFenster(QMainWindow):
             "Anzeigeoptionen …",
             lambda: self._einstellungen_dialog("anzeigen"))
         self._kraftpfeil_menue_bauen(m_einst)
+        m_ansicht = self.menuBar().addMenu("&Ansicht")
+        m_ansicht.addAction(
+            "Navigationsanzeigen",
+            self._navigationsfenster_anzeigen)
         self._act_nur_aktives = m_einst.addAction(
             "Nur aktive Unterobjekte bedienbar")
         self._act_nur_aktives.setCheckable(True)
@@ -558,6 +570,13 @@ class HauptFenster(QMainWindow):
     def bruecke_setzen(self, bruecke):
         """Referenz auf die GrafikBruecke (G3-Kopplung der Docks)."""
         self._bruecke = bruecke
+        if self._navigationsfenster is None:
+            from .navigationswidgets import NavigationsWidgetFenster
+            self._navigationsfenster = NavigationsWidgetFenster(self)
+            self._navigationsfenster.sichtbarkeit_setzen(
+                self._einstellungen.bereich("anzeigen"))
+            self._navigationsfenster.show()
+            self._navigations_timer.start()
         for name, layer in (
                 ("Schwerpunkt", LAYER_SCHWERPUNKT),
                 ("Achsen", LAYER_HAUPTACHSEN),
@@ -622,6 +641,125 @@ class HauptFenster(QMainWindow):
             self._darstellung_aktion(
                 "Kamera-Preset",
                 lambda: bruecke.kamera_preset_setzen(preset))
+            self._navigationsanzeigen_aktualisieren()
+
+    def _navigationssichtbarkeit_aktualisieren(self):
+        if self._navigationsfenster is not None:
+            optionen = self._einstellungen.bereich("anzeigen")
+            self._navigationsfenster.sichtbarkeit_setzen(optionen)
+
+    def _navigationsfenster_anzeigen(self):
+        if self._navigationsfenster is not None:
+            self._navigationsfenster.show()
+            self._navigationsfenster.raise_()
+            self._navigationsfenster.activateWindow()
+
+    def _navigationspose_ermitteln(self):
+        bruecke = getattr(self, "_bruecke", None)
+        welt = getattr(getattr(self, "baum", None), "_welt", None)
+        if bruecke is None or welt is None:
+            return None
+        from .baum import summenkoerper
+        sichtbare = [knoten for knoten in summenkoerper(welt)
+                     if knoten.sichtbar]
+        if self._btn_statisch.isChecked():
+            knoten = next(iter(sichtbare), None)
+            name = knoten.name if knoten is not None else None
+            ergebnis = self._statische_ergebnisse.get(name)
+            koerper = self._laufzeit_koerper.get(name)
+            if koerper is None:
+                return None
+            from ..core.dynamik_6dof import (
+                Zustand6DOF, quaternion_aus_matrix)
+            if ergebnis is not None:
+                phi = float(ergebnis["phi"])
+                c, s = math.cos(phi), math.sin(phi)
+                rotation = np.array((
+                    (1.0, 0.0, 0.0),
+                    (0.0, c, -s),
+                    (0.0, s, c),
+                ))
+                basis = bruecke.physik_basis_position_ermitteln(name)
+                pose = Zustand6DOF(
+                    position=(float(basis[0]), float(basis[1]),
+                              float(ergebnis["z"])),
+                    quaternion=quaternion_aus_matrix(rotation))
+            elif koerper.zustand is not None:
+                pose = koerper.zustand
+            else:
+                rotation = koerper.orientierung
+                pose = Zustand6DOF(
+                    position=tuple(float(w) for w in koerper.position),
+                    quaternion=quaternion_aus_matrix(rotation))
+        else:
+            name = self._echtzeit_name
+            if name is None:
+                knoten = next(iter(sichtbare), None)
+                name = knoten.name if knoten is not None else None
+            koerper = self._laufzeit_koerper.get(name)
+            pose = self._echtzeit_zustand
+            if pose is None and koerper is not None:
+                pose = koerper.zustand
+                if pose is None:
+                    from ..core.dynamik_6dof import (
+                        Zustand6DOF, quaternion_aus_matrix)
+                    pose = Zustand6DOF(
+                        position=tuple(float(w) for w in koerper.position),
+                        quaternion=quaternion_aus_matrix(
+                            koerper.orientierung))
+        if name is None or pose is None:
+            return None
+        return name, pose
+
+    def _navigationsanzeigen_aktualisieren(self):
+        fenster = self._navigationsfenster
+        bruecke = getattr(self, "_bruecke", None)
+        if fenster is None:
+            return
+        if bruecke is None:
+            return
+        auswahl = self._navigationspose_ermitteln()
+        if auswahl is None:
+            from ..core.navigationsanzeigen import Navigationswerte
+            fenster.aktualisieren(
+                Navigationswerte(None, None, None, None, None, None),
+                self._einstellungen.bereich("anzeigen"))
+            return
+        name, pose = auswahl
+        from ..core.navigationsanzeigen import navigationswerte_ableiten
+        vorlaeufig = navigationswerte_ableiten(pose.quaternion)
+        offset, elevation = bruecke.navigationskamera_aktualisieren(
+            name, pose.position,
+            (None if vorlaeufig.heading_grad is None
+             else math.radians(vorlaeufig.heading_grad)))
+        werte = navigationswerte_ableiten(
+            pose.quaternion, offset, elevation,
+            self._segelwinkel_ermitteln(name))
+        fenster.aktualisieren(werte, self._einstellungen.bereich("anzeigen"))
+
+    def _segelwinkel_ermitteln(self, koerper_name):
+        knoten = getattr(self, "baum", None)
+        welt = getattr(knoten, "_welt", None)
+        if welt is None:
+            return None
+        from .baum import summenkoerper
+        koerper = next(
+            (k for k in summenkoerper(welt)
+             if k.name == koerper_name), None)
+        if koerper is None:
+            return None
+        werte = []
+
+        def sammeln(k):
+            if (getattr(k, "rolle", None) == "segel"
+                    and getattr(k, "gelenkdefinition", None) is not None
+                    and k.gelenkwinkel_rad is not None):
+                werte.append(float(k.gelenkwinkel_rad))
+            for kind, _pose in getattr(k, "teile", ()):
+                sammeln(kind)
+
+        sammeln(koerper)
+        return werte[0] if len(werte) == 1 else None
 
     def _hintergrund_geaendert(self, _index=None):
         bruecke = getattr(self, "_bruecke", None)
@@ -989,6 +1127,7 @@ class HauptFenster(QMainWindow):
             return
         self._statische_ergebnisse[name] = ergebnis
         self._statische_arbeitsdaten[name] = (kraftfunktion, physik)
+        self._navigationsanzeigen_aktualisieren()
         self._statusoverlay(statusanzeige.status_aus_ergebnis(
             ergebnis, form=formerkennung.klassifiziere_koerper(koerper)))
         gm = ergebnis["gm"]
@@ -1116,6 +1255,7 @@ class HauptFenster(QMainWindow):
             self._solver_status_aktualisieren(
                 {"Lösungstyp": "Körper in 3D-Ansicht fehlt"})
             return
+        self._navigationsanzeigen_aktualisieren()
         self._solver_status_aktualisieren({"Lösungstyp": "Echtzeit"})
         if auto_start:
             self._zeit_fortsetzen()
@@ -1482,6 +1622,7 @@ class HauptFenster(QMainWindow):
         vorherige_anzeige = (
             self._echtzeit_anzeige_ziel or self._echtzeit_zustand)
         self._echtzeit_zustand = koerper.zustand
+        self._navigationsanzeigen_aktualisieren()
         self._echtzeit_kraefteresultat = kraefteresultat
         self._echtzeit_anzeige_start = vorherige_anzeige
         self._echtzeit_anzeige_ziel = zustand
@@ -1621,6 +1762,9 @@ class HauptFenster(QMainWindow):
         self.protokoll.append(text)
 
     def closeEvent(self, ereignis):
+        self._navigations_timer.stop()
+        if self._navigationsfenster is not None:
+            self._navigationsfenster.close()
         if (self._echtzeit_timer.isActive()
                 or self._echtzeit_render_timer.isActive()
                 or self._echtzeit_schritte_laufend):

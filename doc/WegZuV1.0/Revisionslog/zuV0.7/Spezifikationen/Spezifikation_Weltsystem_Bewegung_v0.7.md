@@ -9,15 +9,12 @@ Schwertstellwerte.
 
 ## Kennzeichnungs- und Änderungsverfahren
 
-### Spec000 — Dauerhafte Spezifikationskennungen
+### Projektweite Kennzeichnungsregel
 
-Jeder normative Punkt hat eine eindeutige `SpecNNNN`-Kennung. Kennungen
-werden bei Aktualisierungen beibehalten und nie wiederverwendet. Neue Punkte
-erhalten neue Nummern an der logisch passenden Stelle; bestehende Punkte
-werden nicht umnummeriert. Entfallene oder verworfene Punkte werden aus dem
-aktiven Teil entfernt und am Dokumentende unter der bisherigen Kennung als
-„Nicht umsetzen“ oder „So nicht umsetzen“ mit Begründung dokumentiert.
-Dieses Dokument setzt die projektweite Nummerierung nach `Spec0066` fort.
+Die dauerhaften Kennungen dieser v0.7-Spezifikationen und ihre
+Rückverfolgbarkeit sind gemäß `Spec0094` und der zugehörigen
+Navigationswidgets-Spezifikation zu pflegen. Dieses Dokument setzt die
+Nummerierung innerhalb des v0.7-Umfangs nach `Spec0066` fort.
 
 ## 1. Zweck, Umfang und Grenzen
 
@@ -183,7 +180,13 @@ Die Anzeigen werden so definiert:
 - `ψ` (Gieren): signierter Euler-Gierwinkel um `+Z_W`, dessen Nullreferenz
   `HDG=0°` (Nord) ist. `ψ < 0` bedeutet Bugdrehung nach Backbord;
   `ψ > 0` bedeutet Drehung nach Steuerbord. Bei der festgelegten Zerlegung
-  und `|θ| < 90°` gilt `HDG_deg = wrap_360(rad2deg(ψ))`.
+  und `|θ| < 90°` gilt `HDG_deg = wrap_360(rad2deg(ψ))` und
+  `ψ_deg = wrap_180(HDG_deg)`.
+
+Der Stampfwinkel `θ` bezieht sich auf die körperfeste Querachse `+Y_B`.
+Positives `θ` ist das Negative der positiven rechtshändigen Rotation um
+`+Y_B`: Es hebt den Bug; negatives `θ` senkt ihn. Die Quaternion und ihre
+rechtshändigen Rotationskomponenten bleiben davon unberührt.
 
 Dabei ist `f` die normierte Körperlängsachse in Weltkoordinaten, `f_h` ihre
 horizontale Projektion und `u_W` die lokale Vertikale. Die Rollrichtung
@@ -476,8 +479,8 @@ Backbord negativ, Steuerbord positiv. `HDG`, `COG`, `CTW` und `TWD` sind
 unabhängige Weltazimute im Uhrzeigersinn ab Nord, keine seitlichen
 Plus-/Minus-Differenzwinkel.
 
-Eine feste Bildschirmkomposition stellt in den Ecken getrennte
-Instrumentenkarten dar:
+Die langfristig vorgesehene Bildschirmkomposition stellt in den Ecken
+getrennte Instrumentenkarten dar:
 
 - eine Welt-/Kompasskarte mit großem `HDG`, Nordreferenz und synchronisierter
   Kompassrose;
@@ -488,10 +491,17 @@ Instrumentenkarten dar:
   `AWS`, `AWA` und `TWA`. Ohne konfigurierten Windzustand werden dort keine
   Zahlen oder künstlichen Nullwerte gezeigt.
 
+Bis diese Zielkomposition umgesetzt wird, gilt für die drei Körper- und
+Richtungswidgets die Zwischenlösung aus
+[Spec0107](./Spezifikation_Navigationswidgets_v0.7.md):
+Kompass, Krängung und Stampfen werden in einem separaten frei schwebenden
+Fenster untereinander angezeigt.
+
 Jede Instrumentkarte muss als eigene, in Größe und Position verankerbare
 Qt-Widget-Klasse implementierbar sein. Der Entwurf ist in
 [Konzept_Navigationsanzeigen_v0.7.md](./Konzept_Navigationsanzeigen_v0.7.md)
-und [VergleichWidgets.svg](../Widgets/VergleichWidgets.svg)
+und in der
+[Spezifikation_Navigationswidgets_v0.7.md](./Spezifikation_Navigationswidgets_v0.7.md)
 dargestellt. Messwertlabels, Werte, Einheiten, Richtungsmarker und
 Nichtverfügbarkeitszustände sind getrennte Update-Elemente. Die
 GUI-Aktualisierung muss aus dem jeweils neuesten Physik-Snapshot erfolgen
@@ -576,7 +586,7 @@ Automatisierte Tests müssen mindestens nachweisen:
    Ein level liegender Körper mit Bug nach Nord ist achsenparallel zu `W`.
    Backbord-negativ/Steuerbord-positiv stimmt.
 4. Negative Krängung hebt Backbord; positive Krängung hebt Steuerbord;
-   positives Stampfen senkt den Bug; negatives Gieren dreht den Bug nach
+   positives Stampfen hebt den Bug; negatives Gieren dreht den Bug nach
    Backbord und positives Gieren nach Steuerbord.
 5. Aus Orientierung und Schwerkraft abgeleitete Winkel ändern sich korrekt,
    einschließlich `HDG_deg = wrap_360(rad2deg(ψ))` bei `|θ| < 90°`,
@@ -713,9 +723,10 @@ gekoppelten Lagezeiger. Die
 Kompass-Masterkarte einschließlich ihrer Geometrie, Farben und Schriftmaße.
 Die Einzelgrafiken für
 [Stampfen](../Widgets/Widget_Stampfen.svg) und
-[Krängung](../Widgets/Widget_Krängung.svg) sowie das separate
-[Vergleichsdokument](../Widgets/VergleichWidgets.svg) zeigen diese
-Instrumentgestaltung.
+[Krängung](../Widgets/Widget_Krängung.svg) zeigen diese
+Instrumentgestaltung; die Anforderungen sind in der
+[Widgetspezifikation](./Spezifikation_Navigationswidgets_v0.7.md)
+zusammengeführt.
 
 Beide analogen Anzeigen haben 36 gleichmäßig verteilte Teilstriche im Abstand
 von 10°. Die längeren Hauptstriche stehen im Abstand von 30°. Beide
@@ -762,12 +773,22 @@ negatives `θ` senkt ihn. Der Lagezeiger dreht jeweils mit dem Yacht-Icon:
 Krängung um `−φ`, Stampfen um `−θ`. Der Rumpf ist mit klar unterscheidbarem Bug
 und Heck gezeichnet.
 
-Beide Widgets erhalten ihren eigenen Lagewinkel und `KAM_AZ` aus demselben
-unveränderlichen Physik-Snapshot. Das Kamerasymbol bleibt identisch zum
-Kompass-Master: Es umläuft außen den Skalenring, zeigt mit der Linse nach
-innen und kodiert ausschließlich `KAM_AZ`; es wird nicht mit `φ` oder `θ`
-gedreht. Ungültige oder singuläre Lagewinkel werden explizit als nicht
-verfügbar dargestellt, niemals als Nullwinkel. Sichtbarkeit von Titel,
+Beide Widgets erhalten ihren eigenen Lagewinkel und die Kameradaten aus
+demselben unveränderlichen Physik-Snapshot. Das Kamerasymbol entspricht
+gestalterisch dem Kompass-Master, zeigt mit der Linse nach innen und umläuft
+außen den Skalenring. Anders als im Kompass wird in den Lageanzeigen nicht
+`KAM_AZ` direkt als Markerwinkel verwendet: Der Kamerastandpunkt wird nach
+[Spec0108](./Spezifikation_Navigationswidgets_v0.7.md) auf die jeweilige
+Ansichtsebene projiziert. Der Marker gehört nicht zur rotierenden Posegruppe.
+Bei ungültigem oder logisch fehlerhaftem Lagewinkel färbt sich die
+Zifferblattfläche innerhalb des Innenrings rot und das Winkelwertfeld zeigt
+„FEHLER“; das Ringband bleibt normal, weil aus diesem Winkel kein
+Kenterzustand bestimmbar ist. Ein gültiger Winkel außerhalb `−90° … +90°`
+färbt ausschließlich das Ringband rot und lässt Innenfläche sowie
+Winkelwert normal. Die Fehleranzeige bleibt auch dann sichtbar, wenn die
+normale numerische oder analoge Darstellung ausgeblendet ist. Ungültige oder
+singuläre Lagewinkel dürfen nicht durch einen Nullwinkel ersetzt werden.
+Sichtbarkeit von Titel,
 Titelbeschreibung, Analog- und Digitaldarstellung folgt dem gemeinsamen
 Widgetvertrag.
 
@@ -782,18 +803,21 @@ Für Stampfen (`θ`) und Krängung (`φ`) gilt dieselbe Umschaltregel: Bei
 `−90° ≤ Winkel ≤ +90°` bleibt die Normalanzeige aktiv. Sobald der Winkel
 `< −90°` oder `> +90°` beträgt, wechselt das betreffende Widget in die
 Gefahrenanzeige. Genau `−90°` und `+90°` gehören noch zur Normalanzeige.
-Die Umschaltung färbt den Ringbereich zwischen innerem und äußerem Kreis rot
-ein. Die Rotfärbung verwendet einen gedämpften Rotton aus derselben dunklen
-Farbwelt wie das Blau der Normalanzeige; sie kennzeichnet den Gefahrenzustand,
-ohne die Instrumentfarben insgesamt zu verändern.
+Die Umschaltung färbt ausschließlich den Ringbereich zwischen innerem und
+äußerem Kreis rot ein. Die Rotfärbung verwendet einen gedämpften Rotton aus
+derselben dunklen Farbwelt wie das Blau der Normalanzeige; sie kennzeichnet
+den gültig erkannten Kenter-/Gefahrenzustand, ohne die Instrumentfarben
+insgesamt zu verändern. Ist der maßgebliche Lagewinkel ungültig oder
+logisch fehlerhaft, lässt sich daraus kein Kenterzustand ableiten: In diesem
+Fehlerfall bleibt das Ringband normal, die Fläche innerhalb des Innenrings
+wird rot und das Winkelwertfeld zeigt „FEHLER“. Fehleranzeige und
+Kenter-/Gefahrenanzeige sind gegenseitig ausschließend.
 
 Die Winkel werden aus der Orientierung abgeleitet und auf `−180°` bis
 `+180°` begrenzt. Daher verwenden Normal- und Gefahrenanzeige dieselbe
 Winkelzuordnung und Skalenbeschriftung. Die rote Gefahrenfarbe ändert nicht
-die Skala. Die Vergleichsgrafik zeigt unten je eine rote Ringdarstellung als
-Gefahrenbeispiel; die unteren Karten übernehmen Yacht, Lagezeiger und
-Beschriftung der oberen Widgets. Die SVG ist eine statische Spezifikations-
-und Vergleichsdarstellung und implementiert selbst keine Laufzeit-Umschaltung.
+die Skala. Die Zustandsdarstellung in den Widgets folgt der
+[Spezifikation_Navigationswidgets_v0.7.md](./Spezifikation_Navigationswidgets_v0.7.md).
 
 ## Diagrammlegende
 
@@ -802,8 +826,9 @@ Messung der Yachtgeometrie. Achsenpfeile zeigen positive Richtungen; Winkel
 und Bewegungsvektoren sind nicht maßstäblich. Die Instrumentkarten sind zusätzlich im
 [Navigationsanzeigen-Konzept](./Konzept_Navigationsanzeigen_v0.7.md)
 beschrieben. Kompass, Stampfen und Krängung stehen als
-[Einzelgrafiken](../Widgets/Widget_Kompass.svg) und
-[Vergleichsdokument](../Widgets/VergleichWidgets.svg) bereit. Die
+[Kompass-Einzelgrafik](../Widgets/Widget_Kompass.svg),
+[Stampfen-Einzelgrafik](../Widgets/Widget_Stampfen.svg) und
+[Krängungs-Einzelgrafik](../Widgets/Widget_Kr%C3%A4ngung.svg) bereit. Die
 Kamerarahmen-Kopplung wird in
 [Kamerawinkel_Weltkompass_v0.7.svg](./Kamerawinkel_Weltkompass_v0.7.svg)
 schematisch erklärt.

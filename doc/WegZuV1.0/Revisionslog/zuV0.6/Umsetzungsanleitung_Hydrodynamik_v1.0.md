@@ -55,7 +55,8 @@ werden.
 
 ### HYD-0001 – Arbeitsbaum, Baseline und Schutz bestehender Modelle
 
-**Spec-Bezug:** Spec000–Spec0005, Spec0008, Spec0002, Spec0036, Spec0046–Spec0047.
+**Spec-Bezug:** Spec0109, Spec0001–Spec0005, Spec0008, Spec0002, Spec0036,
+Spec0046–Spec0047.
 
 1. Branch und `git status --short --untracked-files=all` prüfen.
 2. Bereits vorhandene uncommittete Änderungen sowie alle Modellpakete
@@ -610,7 +611,8 @@ Modelle.
 
 | Spec-IDs | Umsetzungsarbeit |
 |---|---|
-| Spec000–Spec0005 | HYD-0001, HYD-0016 |
+| Spec0001–Spec0005 | HYD-0001, HYD-0016 |
+| Spec0109 | HYD-0001 |
 | Spec0006–Spec0008 | HYD-0001–HYD-0002, HYD-0016 |
 | Spec0009–Spec0013 | HYD-0002, HYD-0011, HYD-0014 |
 | Spec0014 | HYD-0008 |
