@@ -1,7 +1,7 @@
 """Grafik-Optimierung V4 - Schritt 2 (Spec P7: K1 + K2 + K5).
 
 Wirkt VON AUSSEN auf die fertige Render-Pipeline:
-segelphysik/render/vista.py bleibt BYTEIDENTISCH (Additivprinzip).
+code/render/vista.py bleibt BYTEIDENTISCH (Additivprinzip).
 
 K1  Studio-Beleuchtung (Light Kit: Key/Fill/Head/Back) + Ambient Occlusion
 K2  Hintergrundverlauf (Himmelblau -> Dunstweiss), Fresnel-artiger

@@ -4,7 +4,7 @@ Versionierte Einstellungen für die Solver-Parameter
 (Menü *Einstellungen → Solver-Parameter → Statisch / Dynamisch*).
 Änderungen im Dialog werden sofort gespeichert und wirken sofort.
 
-- Code: `segelphysik/core/einstellungen.py`, Dialog: `segelphysik/gui/einstellungen_dialog.py`
+- Code: `code/core/einstellungen.py`, Dialog: `code/gui/einstellungen_dialog.py`
 - Vorlage mit Defaults, Einheiten und Grenzen: `settings_vorlage.json`
   (zusätzlich fest im Code als Rückfallebene). Der Button „Standardwerte“
   lädt die Defaults daraus – auch nach Jahren und bei altem Dateistand.
@@ -42,7 +42,7 @@ Dynamisch: `zeitgenau` (Checkbox „Echtzeitgenau“; Schlüsselname bleibt aus 
 ## Parameter (Version 1.1: Kraftpfeildarstellung)
 
 Menü: Einstellungen → Kraftpfeildarstellung. Registry der Paare und Pfeile:
-`segelphysik/core/pfeilstil.py` (neue Paare nur dort eintragen).
+`code/core/pfeilstil.py` (neue Paare nur dort eintragen).
 
 - `kraftpfeile_allgemein`: Vordergrund, Grunddicke, Kopfmaße, `kraftskala`
   (cm Pfeillänge je N, Default 0,05), `momentskala` (cm Bogenradius je Nm,

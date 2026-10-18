@@ -205,7 +205,7 @@ Weltvektoren in jeden Körperframe muss zur aktuellen Pose dieses Körpers
 erfolgen. Ein Körperwechsel darf weder Pose noch Umweltvektoren eines anderen
 Körpers übernehmen.
 
-![Körperlage und Rotationswinkel](./Grafik_Koerperlage_und_Winkel.svg)
+![Körperlage und Rotationswinkel](./Koerperlage_und_Winkel.svg)
 
 *Abbildung 2: Vereinfachte orthogonale Silhouetten auf Basis des Yacht-1-
 Rumpfes (Drauf-, Backbord- und Heckansicht) mit Körperachsen und positiven/
@@ -456,7 +456,7 @@ Physikzustand. Winkel und Hub dürfen
 nicht gleichzeitig als unabhängige Schwertzustände geführt werden, außer die
 reale Mechanik besitzt nachweislich beide Freiheitsgrade.
 
-![Bewegliche Teile und Stellwinkel](./Grafik_Bewegliche_Teile_und_Stellwinkel.svg)
+![Bewegliche Teile und Stellwinkel](./Bewegliche_Teile_und_Stellwinkel.svg)
 
 *Abbildung 3: Abstrakte Stellkoordinaten von Fock, Großsegel, Ruder und
 alternativer Schwertkinematik; tatsächliche Achsen und Grenzen sind
@@ -491,7 +491,7 @@ Instrumentenkarten dar:
 Jede Instrumentkarte muss als eigene, in Größe und Position verankerbare
 Qt-Widget-Klasse implementierbar sein. Der Entwurf ist in
 [Konzept_Navigationsanzeigen_v0.7.md](./Konzept_Navigationsanzeigen_v0.7.md)
-und [Grafik_Navigationsanzeigen_v0.7.svg](./Grafik_Navigationsanzeigen_v0.7.svg)
+und [VergleichWidgets.svg](../Widgets/VergleichWidgets.svg)
 dargestellt. Messwertlabels, Werte, Einheiten, Richtungsmarker und
 Nichtverfügbarkeitszustände sind getrennte Update-Elemente. Die
 GUI-Aktualisierung muss aus dem jeweils neuesten Physik-Snapshot erfolgen
@@ -502,7 +502,7 @@ und Kursanzeigen bleiben sekundär und behalten Einheiten beziehungsweise
 als Beispiele; sie sind keine Laufzeit- oder Fallbackwerte.
 
 Die nummerierte
-[Kompass-Master-Elementgrafik](./Grafik_Kompass_Master_Elemente_v0.7.svg)
+[Kompass-Master-Elementgrafik](../Widgets/BeschreibungElementeWidgets.svg)
 ist die zentrale, fortlaufende Elementbibliothek für Instrumentanzeigen.
 Neue gemeinsame oder spezifische Elemente werden dort mit stabiler Nummer,
 Name und kurzer Funktion ergänzt. Alle Anzeige-Klassen übernehmen die
@@ -674,7 +674,7 @@ r_Kamera,W = p_Ziel
 Wert ist rad, die Anzeige erfolgt in Grad. `KAM_EL` liegt im Bereich
 `0° ≤ KAM_EL < 90°`; der konkrete Blickwinkel wird bei der Kamera-
 Implementierung festgelegt. Die illustrativen Werte `HDG=074°` und
-`KAM_AZ=119°` im Dashboard entsprechen nur dort einem angenommenen
+`KAM_AZ=119°` in der Kompassgrafik entsprechen nur dort einem angenommenen
 `Δ_Kamera=+45°` und sind keine vorgeschriebenen Defaults.
 
 Die Kamera bleibt um ihre Blickachse ungerollt: ihre Obenrichtung ist die
@@ -689,7 +689,7 @@ statt stillschweigend auf Nord zurückzuspringen.
 Das Kompass-Mockup zeigt den `HDG`-Zeiger und den ungefüllten
 `KAM_AZ`-Konturzeiger getrennt. Die Schemadarstellung von Azimut, Höhenwinkel,
 Horizontstabilisierung sowie sichtbarem Stampfen und Krängung ist in
-[Grafik_Kamerawinkel_Weltkompass_v0.7.svg](./Grafik_Kamerawinkel_Weltkompass_v0.7.svg)
+[Kamerawinkel_Weltkompass_v0.7.svg](./Kamerawinkel_Weltkompass_v0.7.svg)
 dargestellt.
 
 Die Kameraimplementierung muss gezielt nachweisen, dass:
@@ -709,12 +709,12 @@ Qt-Widget-Klassen. Sie übernehmen die quadratische Karte, Typografie,
 Kreisanordnung und das außen umlaufende Kamerasymbol des Kompass-Masters. Die
 Lageanzeigen ergänzen je eine eigene Yachtansicht und einen an die Yacht
 gekoppelten Lagezeiger. Die
-[Kompass-Einzelgrafik](./Grafik_Kompass_Anzeige_v0.7.svg) übernimmt die
+[Kompass-Einzelgrafik](../Widgets/Widget_Kompass.svg) übernimmt die
 Kompass-Masterkarte einschließlich ihrer Geometrie, Farben und Schriftmaße.
 Die Einzelgrafiken für
-[Stampfen](./Grafik_Stampfen_Anzeige_v0.7.svg) und
-[Krängung](./Grafik_Kraengung_Anzeige_v0.7.svg) sowie das separate
-[Vergleichsdokument](./Grafik_Anzeigen_Vergleich_v0.7.svg) zeigen diese
+[Stampfen](../Widgets/Widget_Stampfen.svg) und
+[Krängung](../Widgets/Widget_Krängung.svg) sowie das separate
+[Vergleichsdokument](../Widgets/VergleichWidgets.svg) zeigen diese
 Instrumentgestaltung.
 
 Beide analogen Anzeigen haben 36 gleichmäßig verteilte Teilstriche im Abstand
@@ -799,12 +799,11 @@ und Vergleichsdarstellung und implementiert selbst keine Laufzeit-Umschaltung.
 
 Die nachfolgenden SVG-Grafiken sind erklärende Schemazeichnungen, keine
 Messung der Yachtgeometrie. Achsenpfeile zeigen positive Richtungen; Winkel
-und Bewegungsvektoren sind nicht maßstäblich. Das Dashboard-Mockup und seine Eckkarten sind zusätzlich im
+und Bewegungsvektoren sind nicht maßstäblich. Die Instrumentkarten sind zusätzlich im
 [Navigationsanzeigen-Konzept](./Konzept_Navigationsanzeigen_v0.7.md)
-beschrieben. Kompass und eine vorläufige, noch mastergleiche Stampfenkarte
-stehen als [Einzelgrafiken](./Grafik_Kompass_Anzeige_v0.7.svg) und
-[Vergleichsdokument](./Grafik_Anzeigen_Vergleich_v0.7.svg) bereit. Die
-ausgearbeitete Krängungs- und Stampfgestaltung wird in eigenen Grafiken
-festgelegt, bevor sie diese Platzhalter ersetzt. Die Kamerarahmen-Kopplung wird in
-[Grafik_Kamerawinkel_Weltkompass_v0.7.svg](./Grafik_Kamerawinkel_Weltkompass_v0.7.svg)
+beschrieben. Kompass, Stampfen und Krängung stehen als
+[Einzelgrafiken](../Widgets/Widget_Kompass.svg) und
+[Vergleichsdokument](../Widgets/VergleichWidgets.svg) bereit. Die
+Kamerarahmen-Kopplung wird in
+[Kamerawinkel_Weltkompass_v0.7.svg](./Kamerawinkel_Weltkompass_v0.7.svg)
 schematisch erklärt.

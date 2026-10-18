@@ -20,13 +20,13 @@ und [Raymarine i70s](https://www.raymarine.com/en-us/our-products/marine-instrum
 Die Quellen dienen als Inspiration für Informationshierarchie und
 Darstellungsformen, nicht als Vorlage zum Kopieren.
 
-## Aufbau der Grafik
+## Instrumentkarten im Vergleich
 
-![Navigationsanzeigen mit Kompass, Bewegungsdaten und vorbereitetem Windinstrument](./Grafik_Navigationsanzeigen_v0.7.svg)
+![Vergleich der Kompass-, Stampfen- und Krängungsanzeigen](../Widgets/VergleichWidgets.svg)
 
 ### Kompass-Master als gemeinsame Elementbibliothek
 
-![Nummerierter Kompass-Master mit benannten Anzeigeelementen](./Grafik_Kompass_Master_Elemente_v0.7.svg)
+![Kompass-Master mit benannten Anzeigeelementen](../Widgets/BeschreibungElementeWidgets.svg)
 
 Die nummerierte Mastergrafik ist die verbindliche visuelle Referenz für alle
 Instrumentkarten. Die Elementnummern und Legendentexte werden fortlaufend
@@ -95,20 +95,20 @@ Vektorlängen.
 
 ## Einzel- und Vergleichsgrafiken der Instrumente
 
-![Kompassanzeige aus dem Master](./Grafik_Kompass_Anzeige_v0.7.svg)
+![Kompassanzeige aus dem Master](../Widgets/Widget_Kompass.svg)
 
-![Stampfenanzeige als unveränderte Masterkopie mit angepasstem Titel](./Grafik_Stampfen_Anzeige_v0.7.svg)
+![Stampfenanzeige mit Yacht-Icon und feststehenden Referenzachsen](../Widgets/Widget_Stampfen.svg)
 
 Die Einzelgrafik übernimmt die Kompasskarte direkt aus der nummerierten
 Masterreferenz; Geometrie, Farben und Schriftmaße bleiben erhalten. Die
 Stampfen- und Krängungsanzeigen verwenden dieselbe Karten- und Skalenbasis,
 ergänzt um je ein mastloses Yacht-Icon, den gekoppelten Lagezeiger und feste
 gelbe Referenzachsen. Zahlenwerte erhalten eine dunkle Kontur zur besseren
-Abgrenzung vom Zifferblatt. Das separate
-[Vergleichsdokument](./Grafik_Anzeigen_Vergleich_v0.7.svg) enthält beide
-Einzelanzeigen direkt nebeneinander. Weitere Widgets erhalten jeweils zuerst
-eine eigene Einzelgrafik und werden anschließend in das Vergleichsdokument
-aufgenommen.
+Abgrenzung vom Zifferblatt. Das
+[Vergleichsdokument](../Widgets/VergleichWidgets.svg) enthält die drei
+Einzelanzeigen sowie Normal- und Gefahrenbeispiele für Stampfen und Krängung.
+Weitere Widgets erhalten jeweils zuerst eine eigene Einzelgrafik und werden
+anschließend in das Vergleichsdokument aufgenommen.
 
 ## Begriffe und Bezugsrahmen
 
@@ -172,8 +172,8 @@ Kamerasymbol für `KAM_AZ` sind getrennte analoge Elemente und werden gemeinsam
 mit der Kompassrose ein-/ausgeblendet. Das digitale Kompassfeld wird unabhängig
 davon geschaltet. Die Kamerakopplung
 und die Trennung zwischen Gieren und horizonthaltender Kamera sind in
-[Grafik_Kamerawinkel_Weltkompass_v0.7.svg](./Grafik_Kamerawinkel_Weltkompass_v0.7.svg)
-veranschaulicht und in `Spec0092` festgelegt. Im Dashboard-Beispiel sind
+[Kamerawinkel_Weltkompass_v0.7.svg](./Kamerawinkel_Weltkompass_v0.7.svg)
+veranschaulicht und in `Spec0092` festgelegt. In der Kompassgrafik sind
 `HDG=074°`, `KAM_AZ=119°` und damit der illustrative Offset
 `Δ_Kamera=+45°`; dieser Offset ist nur eine Grafikannahme, kein
 Simulations-Default.

@@ -23,7 +23,7 @@ def yacht_ruder():
     wurzel = Path(__file__).resolve().parents[1]
     konfiguration = lade_konfig(wurzel / "konfigurationen")
     paket = lade_modellpaket(
-        wurzel / "segelphysik" / "modelle" / "yacht1",
+        wurzel / "code" / "modelle" / "yacht1",
         konfiguration.materialien_blocks,
     )
     geometrie = RuderGeometrie.aus_mesh(paket.meshes["ruder"])

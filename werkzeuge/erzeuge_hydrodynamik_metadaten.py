@@ -28,7 +28,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "modell_id",
-        help="ID eines Pakets unter segelphysik/modelle/",
+        help="ID eines Pakets unter code/modelle/",
     )
     parser.add_argument(
         "--pruefen", action="store_true",
@@ -38,10 +38,10 @@ def main(argv=None):
     if not re.fullmatch(r"[a-z0-9][a-z0-9_-]*", args.modell_id):
         parser.error("Modell-ID muss ein einzelner gueltiger Paket-Slug sein.")
 
-    paket = (ROOT / "segelphysik" / "modelle" / args.modell_id).resolve()
-    modellwurzel = (ROOT / "segelphysik" / "modelle").resolve()
+    paket = (ROOT / "code" / "modelle" / args.modell_id).resolve()
+    modellwurzel = (ROOT / "code" / "modelle").resolve()
     if not paket.is_relative_to(modellwurzel):
-        parser.error("Modellpaket muss unter segelphysik/modelle/ liegen.")
+        parser.error("Modellpaket muss unter code/modelle/ liegen.")
     konfiguration = lade_konfig(ROOT / "konfigurationen")
     if args.pruefen:
         pruefe_geometriemetadaten(

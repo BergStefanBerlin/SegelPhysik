@@ -1,4 +1,4 @@
-"""Baut das Boot aus den Unity-OBJ-Teilen (segelphysik/modelle/).
+"""Baut das Boot aus den Unity-OBJ-Teilen (code/modelle/).
 
 Die Teile liegen im gemeinsamen Ursprung (Unity-Konvention: Y-up,
 Laenge entlang z). Transformation ins Welt-Koordinatensystem

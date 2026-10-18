@@ -42,7 +42,7 @@ def main():
     argumente = _argumente()
     konfiguration = lade_konfig(ROOT / "konfigurationen")
     katalog = lade_modellkatalog(
-        ROOT / "segelphysik" / "modelle",
+        ROOT / "code" / "modelle",
         konfiguration.materialien_blocks)
     manifest = next(
         (eintrag for eintrag in katalog

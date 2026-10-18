@@ -5,7 +5,7 @@ import os
 
 VERBOTEN = ("PySide6", "pyvistaqt", "PyQt5", "PyQt6")
 WURZELN = ("core", "render")
-BASIS = os.path.join(os.path.dirname(__file__), "..", "segelphysik")
+BASIS = os.path.join(os.path.dirname(__file__), "..", "code")
 
 
 def _py_dateien(rel):

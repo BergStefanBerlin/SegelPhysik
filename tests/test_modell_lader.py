@@ -67,7 +67,7 @@ def test_manifest_und_paket_laden_form_mesh_und_neutralrolle(tmp_path):
 def test_yachtpaket_hat_einen_mast_ohne_zusatzkomponenten():
     paketwurzel = (
         Path(__file__).resolve().parents[1]
-        / "segelphysik" / "modelle" / "yacht1"
+        / "code" / "modelle" / "yacht1"
     )
     konfig = lade_konfig(
         Path(__file__).resolve().parents[1] / "konfigurationen")
@@ -376,7 +376,7 @@ def test_vollstaendiger_bestandskatalog_und_formpakete_laden():
     wurzel = Path(__file__).resolve().parents[1]
     konfiguration = lade_konfig(wurzel / "konfigurationen")
     katalog = lade_modellkatalog(
-        wurzel / "segelphysik" / "modelle",
+        wurzel / "code" / "modelle",
         konfiguration.materialien_blocks,
     )
     ids = {manifest.id for manifest in katalog}
@@ -405,7 +405,7 @@ def test_bestandsmodelle_stimmen_mit_phase3_goldenwerten_ueberein():
     katalog = {
         manifest.id: manifest
         for manifest in lade_modellkatalog(
-            wurzel / "segelphysik" / "modelle", materialien)
+            wurzel / "code" / "modelle", materialien)
     }
 
     for modell_id, erwartung in golden["modelle"].items():

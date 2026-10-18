@@ -3,9 +3,9 @@ import os, re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..")
-NEU = ["segelphysik/demo_app.py", "segelphysik/steuerung.py",
-       "segelphysik/grafik_bruecke.py",
-       "segelphysik/core/bewegung.py", "segelphysik/core/koerper_formen.py"]
+NEU = ["code/demo_app.py", "code/steuerung.py",
+       "code/grafik_bruecke.py",
+       "code/core/bewegung.py", "code/core/koerper_formen.py"]
 VERBOTEN = ["forces", "solver", "bodies", "sph", "fluid"]
 
 
