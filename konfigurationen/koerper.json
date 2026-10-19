@@ -105,7 +105,7 @@
         "H_m": 2.0,
         "lage": "liegend"
       },
-      "dichte_kg_pro_m3": 2700,
+      "dichte_kg_pro_m3": 500,
       "farbe": "#1e90ff",
       "farbe_unter_wasser": "#125699"
     },
@@ -116,7 +116,7 @@
         "dy_m": 1.0,
         "dicke_m": 0.02
       },
-      "dichte_kg_pro_m3": 7850,
+      "dichte_kg_pro_m3": 500,
       "farbe": "#708090",
       "farbe_unter_wasser": "#434d56"
     },
@@ -179,9 +179,92 @@
           ]
         ]
       },
-      "dichte_kg_pro_m3": 2600,
+      "dichte_kg_pro_m3": 500,
       "farbe": "#6b8e23",
       "farbe_unter_wasser": "#405515"
+    }
+  },
+  "hydrodynamik": {
+    "_beschreibung": "Vorläufige Profile; generische Werte sind keine unabhängigen Messreferenzen.",
+    "yacht1": {
+      "modell": "rumpf_kiel_ruder",
+      "testkraft_N": [469.08, 0.0, 0.0],
+      "angriffspunkt_m": [0.0, 0.0, 1.5],
+      "referenzgeschwindigkeit_m_pro_s": 1.0,
+      "ruderwinkel_grad": 0.0,
+      "status": "auf geometrische LWL kalibriert; unabhängige Referenz ausstehend"
+    },
+    "kegel": {
+      "modell": "generischer_volumenkoerper",
+      "cd_volumenkoerper": 0.6,
+      "testkraft_N": [942.48, 0.0, 0.0],
+      "angriffspunkt_m": [0.0, 0.0, 0.0],
+      "referenzgeschwindigkeit_m_pro_s": 1.0,
+      "ruderwinkel_grad": 0.0,
+      "status": "vorläufig; angenommene Stirnfläche pi*R^2"
+    },
+    "quader": {
+      "modell": "generischer_volumenkoerper",
+      "cd_volumenkoerper": 1.05,
+      "testkraft_N": [2100.0, 0.0, 0.0],
+      "angriffspunkt_m": [0.0, 0.0, 0.0],
+      "referenzgeschwindigkeit_m_pro_s": 1.0,
+      "ruderwinkel_grad": 0.0,
+      "status": "vorläufig; angenommene Stirnfläche dx*dy"
+    },
+    "pyramide": {
+      "modell": "generischer_volumenkoerper",
+      "cd_volumenkoerper": 0.8,
+      "testkraft_N": [1600.0, 0.0, 0.0],
+      "angriffspunkt_m": [0.0, 0.0, 0.0],
+      "referenzgeschwindigkeit_m_pro_s": 1.0,
+      "ruderwinkel_grad": 0.0,
+      "status": "vorläufig; angenommene projizierte Grundfläche"
+    },
+    "kugel": {
+      "modell": "generischer_volumenkoerper",
+      "cd_volumenkoerper": 0.47,
+      "testkraft_N": [738.27, 0.0, 0.0],
+      "angriffspunkt_m": [0.0, 0.0, 0.0],
+      "referenzgeschwindigkeit_m_pro_s": 1.0,
+      "ruderwinkel_grad": 0.0,
+      "status": "vorläufig; angenommene Stirnfläche pi*R^2"
+    },
+    "rolle": {
+      "modell": "generischer_volumenkoerper",
+      "cd_volumenkoerper": 1.2,
+      "testkraft_N": [1200.0, 0.0, 0.0],
+      "angriffspunkt_m": [0.0, 0.0, 0.0],
+      "referenzgeschwindigkeit_m_pro_s": 1.0,
+      "ruderwinkel_grad": 0.0,
+      "status": "vorläufig; liegender Zylinder, angenommene Seitenprojektion"
+    },
+    "platte": {
+      "modell": "generischer_volumenkoerper",
+      "cd_volumenkoerper": 1.2,
+      "testkraft_N": [12.0, 0.0, 0.0],
+      "angriffspunkt_m": [0.0, 0.0, 0.0],
+      "referenzgeschwindigkeit_m_pro_s": 1.0,
+      "ruderwinkel_grad": 0.0,
+      "status": "vorläufig; Kante voraus, projizierte Fläche 0.02 m^2"
+    },
+    "bleistift": {
+      "modell": "generischer_volumenkoerper",
+      "cd_volumenkoerper": 1.1,
+      "testkraft_N": [0.75, 0.0, 0.0],
+      "angriffspunkt_m": [0.0, 0.0, 0.0],
+      "referenzgeschwindigkeit_m_pro_s": 1.0,
+      "ruderwinkel_grad": 0.0,
+      "status": "vorläufig; angenommene Schaftprojektion"
+    },
+    "unregelmaessig": {
+      "modell": "generischer_volumenkoerper",
+      "cd_volumenkoerper": 1.05,
+      "testkraft_N": [577.5, 0.0, 0.0],
+      "angriffspunkt_m": [0.0, 0.0, 0.0],
+      "referenzgeschwindigkeit_m_pro_s": 1.0,
+      "ruderwinkel_grad": 0.0,
+      "status": "vorläufig; angenommene Stirnfläche 1.1 m^2"
     }
   },
   "darstellung": {

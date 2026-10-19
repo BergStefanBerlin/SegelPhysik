@@ -35,9 +35,16 @@ Versionierte Einstellungen für die Solver-Parameter
 ## Parameter (Version 1.0)
 
 Statisch: `toleranz`, `max_iterationen`, `stagnation_anteil`.
-Dynamisch: `zeitgenau` (Checkbox „Echtzeitgenau“; Schlüsselname bleibt aus Kompatibilitätsgründen; aus: so schnell wie möglich, aber nie schneller als die reale Zeit, Zeitlupe statt Überlast-Stopp),
-`max_schritte_pro_aufgabe`, `max_schritte_nachholen`, `ueberlast_rueckstand_s`,
-`ueberlast_dauer_s`, `nachholen_ende_rueckstand_s`, `nachholrate_ziel`.
+Dynamisch: `zeitgenau` (Legacy-Checkbox, ohne Einfluss auf die aktuelle
+Zeitsteuerung), `max_schritte_pro_aufgabe`, `max_schritte_nachholen` und
+`ueberlast_rueckstand_s`.
+
+Die dynamische Simulation fordert Simulationszeit nur im Umfang der seit dem
+letzten Takt verstrichenen Echtzeit an. Rechenrückstand wird gesammelt und
+angezeigt; Zeit wird nicht übersprungen und auch bei anhaltender Überlast
+erfolgt keine automatische Pause. `ueberlast_dauer_s`,
+`nachholen_ende_rueckstand_s` und `nachholrate_ziel` bleiben aus Gründen der
+Settings-Kompatibilität gespeichert, haben aber keine Wirkung mehr.
 
 ## Parameter (Version 1.1: Kraftpfeildarstellung)
 
@@ -77,3 +84,14 @@ für alle Instrumentkarten; individuelle Werte pro Anzeige können bei der
 Umsetzung der jeweiligen Anzeige-Klassen ergänzt werden. Die Einstellungen
 stellen zunächst nur die Konfiguration bereit; sie ändern noch keine
 Darstellung, solange die jeweilige Anzeige-Klasse nicht implementiert ist.
+
+## Parameter (Version 1.4: Hydrodynamische Detailanzeigen)
+
+Die Detailanzeigen sind unabhängig voneinander und standardmäßig eingeschaltet:
+
+- `anzeigen.hydrodynamik_rumpf`
+- `anzeigen.hydrodynamik_kiel`
+- `anzeigen.hydrodynamik_ruder`
+
+Sie steuern ausschließlich die Sichtbarkeit der berechneten Kraftpfeile und
+ändern weder Kraftmodell noch Bewegung.

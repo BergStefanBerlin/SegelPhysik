@@ -207,3 +207,70 @@ def zusatz_pfeile(erg, r_s, masse, g, skala, schwelle_n=1e-6):
         else:
             ergebnis.append(pfeil_daten(r_s, vektor * skala))
     return tuple(ergebnis)
+
+
+def wirkungslinie_auf_geometrie(kraft, moment, bezugspunkt, punkte, dreiecke,
+                                rotation=None, toleranz=1e-9):
+    """Schnitt der Kraftwirkungslinie mit der benetzten Dreiecksgeometrie.
+
+    ``moment`` ist um ``bezugspunkt`` angegeben. Ohne geometrischen
+    Schnittpunkt wird der Linienanker samt Richtung zur expliziten
+    Wirkungslinienanzeige zurueckgegeben.
+    """
+    kraft = np.asarray(kraft, dtype=np.float64)
+    moment = np.asarray(moment, dtype=np.float64)
+    bezugspunkt = np.asarray(bezugspunkt, dtype=np.float64)
+    punkte = np.asarray(punkte, dtype=np.float64)
+    dreiecke = np.asarray(dreiecke)
+    if (kraft.shape != (3,) or moment.shape != (3,)
+            or bezugspunkt.shape != (3,) or not np.isfinite(kraft).all()
+            or not np.isfinite(moment).all()
+            or not np.isfinite(bezugspunkt).all()):
+        raise ValueError("Wirkungslinie benoetigt endliche 3D-Wrenchdaten")
+    if (punkte.ndim != 2 or punkte.shape[1] != 3
+            or not np.isfinite(punkte).all()
+            or not np.issubdtype(dreiecke.dtype, np.integer)
+            or dreiecke.ndim != 2 or dreiecke.shape[1] != 3
+            or np.any(dreiecke < 0) or np.any(dreiecke >= len(punkte))):
+        raise ValueError("Wirkungslinie benoetigt ein gueltiges Dreiecksmesh")
+    kraftquadrat = float(np.dot(kraft, kraft))
+    if kraftquadrat <= toleranz * toleranz:
+        raise ValueError("Kraftwirkungslinie ist fuer Nullkraft undefiniert")
+    norm = math.sqrt(kraftquadrat)
+    richtung = kraft / norm
+    anker = bezugspunkt + np.cross(kraft, moment) / kraftquadrat
+    R = np.eye(3) if rotation is None else np.asarray(rotation, dtype=float)
+    if (R.shape != (3, 3) or not np.isfinite(R).all()
+            or not np.allclose(R.T @ R, np.eye(3), atol=1e-8, rtol=0.0)
+            or not np.isclose(np.linalg.det(R), 1.0,
+                              atol=1e-8, rtol=0.0)):
+        raise ValueError("Wirkungslinie benoetigt eine gueltige Rotation")
+    weltpunkte = punkte @ R.T + bezugspunkt
+    ecken = weltpunkte[dreiecke]
+    e1 = ecken[:, 1] - ecken[:, 0]
+    e2 = ecken[:, 2] - ecken[:, 0]
+    pvec = np.cross(np.broadcast_to(richtung, e2.shape), e2)
+    det = np.einsum("ij,ij->i", e1, pvec)
+    gueltig = np.abs(det) > toleranz
+    inv_det = np.zeros_like(det)
+    inv_det[gueltig] = 1.0 / det[gueltig]
+    tvec = anker - ecken[:, 0]
+    u = np.einsum("ij,ij->i", tvec, pvec) * inv_det
+    qvec = np.cross(tvec, e1)
+    v = np.einsum("j,ij->i", richtung, qvec) * inv_det
+    t = np.einsum("ij,ij->i", e2, qvec) * inv_det
+    schnitt = (
+        gueltig & (u >= -toleranz) & (v >= -toleranz)
+        & (u + v <= 1.0 + toleranz))
+    positionen = anker + t[:, None] * richtung
+    schnitt &= positionen[:, 2] <= toleranz
+    indices = np.flatnonzero(schnitt)
+    punkt = None
+    if len(indices):
+        index = indices[int(np.argmin(np.abs(t[indices])))]
+        punkt = positionen[index]
+    return {
+        "schnittpunkt": None if punkt is None else punkt.copy(),
+        "anker": anker.copy(),
+        "richtung": richtung.copy(),
+    }

@@ -127,6 +127,30 @@ verschoben. Neue Ideen, die während der Umsetzung entstehen, erhalten direkt
 eine neue `I-BL-…`-Kennung und werden im Backlog erfasst; sie werden nicht
 ohne Spezifikationsaufnahme als Anforderungen behandelt.
 
+### 1a. Übergang von einem alten Nummerierungsschema
+
+Wenn eine bestehende Spezifikation von einem früheren Nummerierungsschema
+auf das aktuelle Schema umgestellt wird:
+
+- Die Anforderungen werden im aktiven Spezifikationstext ausschließlich
+  mit den neuen, versionsbezogenen `A-V<Version>-<laufende-nummer>`-IDs
+  bezeichnet.
+- Am Ende der Spezifikation wird ein Anhang mit einer eindeutigen Zuordnung
+  jeder alten Kennung zu ihrer neuen A-ID ergänzt.
+- Alte Kennungen bleiben als historische Verweise dauerhaft reserviert und
+  werden weder gelöscht noch für andere Inhalte wiederverwendet. Sie sind
+  nach der Umstellung keine aktiven Anforderungskennungen.
+- Neue Verweise in Spezifikation, Umsetzungsplan, Tests und Protokollen
+  verwenden die neue A-ID. Die alte Kennung darf dort nur im ausdrücklich
+  historischen Zuordnungskontext erscheinen.
+- Die Umstellung ändert keine Anforderung inhaltlich. Wird eine Anforderung
+  dabei geteilt, zusammengeführt oder fachlich geändert, ist dies gesondert
+  nachvollziehbar zu dokumentieren; eine alte ID darf nicht mehrdeutig auf
+  mehrere neue Anforderungen zeigen.
+
+Diese Übergangsregel gilt projektweit und unabhängig davon, in welchem
+Versions- oder Revisionsordner die Spezifikation liegt.
+
 ### 2. Umsetzung und zentrale Protokolle
 
 Nach erfolgreicher Umsetzung und Abnahme wird jede erfüllte Anforderung in

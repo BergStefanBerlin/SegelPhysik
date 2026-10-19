@@ -18,7 +18,7 @@ import os
 import shutil
 
 from . import pfeilstil
-SCHEMA_VERSION = "1.3"
+SCHEMA_VERSION = "1.4"
 DATEINAME = "settings.json"
 VORLAGE_DATEINAME = "settings_vorlage.json"
 
@@ -51,27 +51,28 @@ VORLAGE = {
     },
     "dynamisch": {
         "zeitgenau": _eintrag(
-            "bool", False, "Echtzeitgenau (Stopp bei Ueberlast). "
-            "Aus: so schnell wie moeglich, aber nie schneller als die "
-            "reale Zeit; bei Ueberlast Zeitlupe statt Stopp"),
+            "bool", False, "Legacy-Option; dynamisch wird nur angeforderte "
+            "Echtzeit berechnet. Rueckstand wird ohne automatische Pause "
+            "angezeigt."),
         "max_schritte_pro_aufgabe": _eintrag(
             "int", 16, "Maximale Physikschritte je Rechenauftrag",
             "Schritte", 1, 256),
         "max_schritte_nachholen": _eintrag(
-            "int", 64, "Maximale Physikschritte je Auftrag beim Nachholen",
-            "Schritte", 1, 1024),
+            "int", 64, "Maximale Physikschritte je Auftrag bei hohem "
+            "Echtzeit-Rueckstand", "Schritte", 1, 1024),
         "ueberlast_rueckstand_s": _eintrag(
-            "float", 1.0, "Rueckstand, ab dem die Ueberlast beobachtet wird",
+            "float", 1.0, "Rueckstand, ab dem groessere Rechenauftraege "
+            "verwendet werden",
             "s", 0.1, 60.0, 2),
         "ueberlast_dauer_s": _eintrag(
-            "float", 5.0, "Dauer des Rueckstands bis zur automatischen "
-            "Pause", "s", 0.5, 600.0, 1),
+            "float", 5.0, "Legacy-Parameter; Ueberlast loest keine "
+            "automatische Pause mehr aus", "s", 0.5, 600.0, 1),
         "nachholen_ende_rueckstand_s": _eintrag(
-            "float", 0.1, "Rueckstand, unter dem Nachholen endet bzw. "
-            "nicht beginnt", "s", 0.01, 5.0, 2),
+            "float", 0.1, "Legacy-Parameter; dynamische Zeit wird nicht "
+            "mehr durch schnelleres Nachholen vorgespult", "s", 0.01, 5.0, 2),
         "nachholrate_ziel": _eintrag(
-            "float", 1.25, "Ziel-Nachholrate (Simulationszeit je Wandzeit)",
-            "s/s", 1.0, 10.0, 2),
+            "float", 1.25, "Legacy-Parameter; die Simulation laeuft nicht "
+            "schneller als die angeforderte Echtzeit", "s/s", 1.0, 10.0, 2),
     },
     "modell": {
         "paketfabrik_aktiv": _eintrag(
@@ -92,6 +93,15 @@ VORLAGE = {
         "numerisch_sichtbar": _eintrag(
             "bool", True, "Numerische Instrumentwerte anzeigen",
             seit="1.3"),
+        "hydrodynamik_rumpf": _eintrag(
+            "bool", True, "Hydrodynamische Detailkraft am Rumpf anzeigen",
+            seit="1.4"),
+        "hydrodynamik_kiel": _eintrag(
+            "bool", True, "Hydrodynamische Detailkraft an Kiel/Schwert anzeigen",
+            seit="1.4"),
+        "hydrodynamik_ruder": _eintrag(
+            "bool", True, "Hydrodynamische Detailkraft am Ruder anzeigen",
+            seit="1.4"),
     },
 }
 # Seit 1.1: Darstellung der Kraft- und Momentenpfeile

@@ -37,6 +37,8 @@ PFEILE = (
     ("rest", "Resultierende Kraft", None, "kraft", "#dddddd", True, False),
     ("zusatz", "Widerstand / Added Mass", None, "kraft", "#e08214", True,
      False),
+    ("hydro_sum", "Hydrodynamik-Summe", None, "kraft", "#e08214", True,
+     False),
     ("mges_x", "Gesamtmoment M_x", None, "moment", "#762a83", True, False),
     ("mges_y", "Gesamtmoment M_y", None, "moment", "#1b7837", True, False),
     ("mges_z", "Gesamtmoment M_z", None, "moment", "#e08214", True, False),

@@ -5,7 +5,7 @@ from types import SimpleNamespace
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6.QtTest import QTest
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QThreadPool
 from PySide6.QtWidgets import QApplication
 
 from segelphysik.gui.hauptfenster import HauptFenster
@@ -163,7 +163,7 @@ def test_pause_bucht_inflight_schritte_genau_einmal_zurueck():
     app.processEvents()
 
 
-def test_fortsetzen_waehlt_nachholmodus_fuer_erhaltenen_rueckstand():
+def test_fortsetzen_haelt_echtzeitmodus_auch_mit_rueckstand_aktiv():
     app = QApplication.instance() or QApplication([])
     fenster = HauptFenster()
     fenster._echtzeit_kraftfunktion = object()
@@ -173,34 +173,51 @@ def test_fortsetzen_waehlt_nachholmodus_fuer_erhaltenen_rueckstand():
 
     fenster._zeit_fortsetzen()
 
-    assert fenster._echtzeit_modus == "nachholen"
+    assert fenster._echtzeit_modus == "normal"
     assert fenster._echtzeit_timer.isActive()
     fenster._zeit_pausieren()
     fenster.close()
     app.processEvents()
 
 
-def test_ueberlast_wird_nach_fuenf_sekunden_automatisch_pausiert(
+def test_ueberlast_bleibt_laufend_und_startet_begrenzten_rechenauftrag(
         monkeypatch):
     app = QApplication.instance() or QApplication([])
     fenster = HauptFenster()
+    gestartet = []
+    monkeypatch.setattr(
+        QThreadPool, "start",
+        lambda _pool, aufgabe: gestartet.append(aufgabe))
     fenster._einstellungen.setzen("dynamisch", "zeitgenau", True)
-    jetzt = 105.0
-    fenster._echtzeit_zustand = object()
+    jetzt = time.perf_counter()
+    fenster._echtzeit_zustand = SimpleNamespace()
     fenster._echtzeit_physik = SimpleNamespace(dt_s=0.01)
     fenster._echtzeit_angefordert_s = 1.0
     fenster._echtzeit_akkumulator = 1.0
     fenster._echtzeit_modus = "ueberlast_beobachtung"
-    fenster._echtzeit_ueberlast_seit = 100.0
+    fenster._echtzeit_kraftfunktion = lambda *args: None
+    fenster._echtzeit_name = "yacht"
+    fenster._laufzeit_koerper["yacht"] = SimpleNamespace(
+        zustand=fenster._echtzeit_zustand,
+        snapshot=lambda: SimpleNamespace(
+            zustand=fenster._echtzeit_zustand, version=0))
     fenster._echtzeit_letzte_wandzeit = jetzt
     fenster._echtzeit_timer.start()
     monkeypatch.setattr(time, "perf_counter", lambda: jetzt)
 
     fenster._echtzeit_takt()
 
-    assert fenster._echtzeit_modus == "automatisch_pausiert"
-    assert not fenster._echtzeit_timer.isActive()
-    assert fenster._echtzeit_rueckstand_s() == 1.0
+    assert fenster._echtzeit_modus == "ueberlast_beobachtung"
+    assert fenster._echtzeit_timer.isActive()
+    assert len(gestartet) == 1
+    assert fenster._echtzeit_schritte_laufend == 64
+    assert fenster._echtzeit_rueckstand_s() >= 1.0
+    fenster._echtzeit_aufgabe_abgeschlossen(
+        fenster._echtzeit_generation,
+        fenster._echtzeit_aufgabe_sequenz_laufend,
+        "yacht", SimpleNamespace(), None, None, 0.01)
+    assert fenster._echtzeit_berechnet_s <= fenster._echtzeit_angefordert_s
+    assert fenster._echtzeit_timer.isActive()
     fenster.close()
     app.processEvents()
 
@@ -255,7 +272,7 @@ def test_vor_koerperwechsel_uebernommener_schritt_wird_nicht_doppelt_gebucht():
     app.processEvents()
 
 
-def test_unterschreiten_der_ueberlastschwelle_setzt_frist_zurueck(
+def test_unterschreiten_der_ueberlastschwelle_setzt_normalmodus(
         monkeypatch):
     app = QApplication.instance() or QApplication([])
     fenster = HauptFenster()
@@ -265,7 +282,6 @@ def test_unterschreiten_der_ueberlastschwelle_setzt_frist_zurueck(
     fenster._echtzeit_angefordert_s = 0.989
     fenster._echtzeit_akkumulator = 0.989
     fenster._echtzeit_modus = "ueberlast_beobachtung"
-    fenster._echtzeit_ueberlast_seit = 94.0
     fenster._echtzeit_letzte_wandzeit = 99.99
     fenster._echtzeit_aufgabe_laeuft = True
     fenster._echtzeit_timer.start()
@@ -274,7 +290,6 @@ def test_unterschreiten_der_ueberlastschwelle_setzt_frist_zurueck(
     fenster._echtzeit_takt()
 
     assert fenster._echtzeit_modus == "normal"
-    assert fenster._echtzeit_ueberlast_seit is None
     assert fenster._echtzeit_timer.isActive()
     fenster._zeit_pausieren()
     fenster.close()

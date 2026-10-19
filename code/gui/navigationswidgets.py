@@ -73,6 +73,39 @@ _PFLICHT_IDS = {
         "pitch_ring_outer", "pitch_ring_inner",
     ),
 }
+_GESCHWINDIGKEIT_SVG = b"""\
+<svg xmlns="http://www.w3.org/2000/svg" width="580" height="190"
+     viewBox="22 0 580 190">
+  <defs>
+    <linearGradient id="card_gradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#193448"/>
+      <stop offset="1" stop-color="#11283a"/>
+    </linearGradient>
+    <style>
+      text { font-family: "Segoe UI", Arial, sans-serif; fill: #f4f8fb; }
+      .card { fill: url(#card_gradient); stroke: #315066; stroke-width: 1.5; }
+      .card-title { font-size: 19px; font-weight: 700; letter-spacing: 1.2px; fill: #b8cad5; }
+      .speed-value { font-size: 34px; font-weight: 700; }
+      .speed-unit { font-size: 14px; fill: #8da9bb; }
+      .divider { stroke: #315066; stroke-width: 1.5; }
+    </style>
+  </defs>
+  <g id="speed_widget">
+    <rect class="card" x="42" y="10" width="540" height="166" rx="24"/>
+    <text class="card-title" x="70" y="46">GESCHWINDIGKEIT</text>
+    <path class="divider" d="M222 64 V154 M402 64 V154"/>
+    <text id="speed_ms" class="speed-value" x="132" y="112"
+          text-anchor="middle">&#8212;</text>
+    <text class="speed-unit" x="132" y="142" text-anchor="middle">m/s</text>
+    <text id="speed_kmh" class="speed-value" x="312" y="112"
+          text-anchor="middle">&#8212;</text>
+    <text class="speed-unit" x="312" y="142" text-anchor="middle">km/h</text>
+    <text id="speed_kn" class="speed-value" x="492" y="112"
+          text-anchor="middle">&#8212;</text>
+    <text class="speed-unit" x="492" y="142" text-anchor="middle">kn</text>
+  </g>
+</svg>
+"""
 
 
 def _svg_tag(name):
@@ -312,6 +345,62 @@ class SVGInstrumentWidget(QWidget):
         self._renderer.render(painter, bounds)
 
 
+class GeschwindigkeitsWidget(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setMinimumSize(220, 90)
+        self._xml = ET.fromstring(_GESCHWINDIGKEIT_SVG)
+        self._elemente = {
+            element.attrib["id"]: element
+            for element in self._xml.iter() if "id" in element.attrib
+        }
+        self._renderer = QSvgRenderer()
+        self._rendered_bytes = b""
+        self.aktualisieren(None)
+
+    def sizeHint(self):
+        return QSize(380, 125)
+
+    def aktualisieren(self, geschwindigkeit_m_pro_s):
+        werte = ("\u2014", "\u2014", "\u2014")
+        if geschwindigkeit_m_pro_s is not None:
+            geschwindigkeit = float(geschwindigkeit_m_pro_s)
+            if math.isfinite(geschwindigkeit) and geschwindigkeit >= 0.0:
+                werte = (
+                    "%.2f" % geschwindigkeit,
+                    "%.2f" % (geschwindigkeit * 3.6),
+                    "%.2f" % (geschwindigkeit * 1.9438444924406),
+                )
+            else:
+                werte = ("FEHLER", "FEHLER", "FEHLER")
+        for element_id, wert in zip(
+                ("speed_ms", "speed_kmh", "speed_kn"), werte):
+            self._elemente[element_id].text = wert
+        self._rendered_bytes = ET.tostring(
+            self._xml, encoding="utf-8", xml_declaration=True)
+        if not self._renderer.load(QByteArray(self._rendered_bytes)):
+            raise RuntimeError("Geschwindigkeitsanzeige konnte nicht "
+                               "gerendert werden")
+        self.update()
+
+    def paintEvent(self, ereignis):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        svg_size = self._renderer.defaultSize()
+        scale = min(
+            self.width() / max(svg_size.width(), 1),
+            self.height() / max(svg_size.height(), 1))
+        width = svg_size.width() * scale
+        height = svg_size.height() * scale
+        bounds = QRectF(
+            (self.width() - width) / 2.0,
+            (self.height() - height) / 2.0,
+            width,
+            height,
+        )
+        self._renderer.render(painter, bounds)
+
+
 class NavigationsWidgetFenster(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent, Qt.WindowType.Window)
@@ -321,6 +410,7 @@ class NavigationsWidgetFenster(QWidget):
         self.resize(400, 1020)
         self._werte = Navigationswerte(None, None, None, None, None, None)
         self._optionen = {}
+        self._geschwindigkeit_m_pro_s = None
         inhalt = QWidget()
         layout = QVBoxLayout(inhalt)
         layout.setContentsMargins(4, 4, 4, 4)
@@ -330,6 +420,8 @@ class NavigationsWidgetFenster(QWidget):
             for typ in ("kompass", "kraengung", "stampfen"))
         for widget in self.widgets:
             layout.addWidget(widget, 1)
+        self.geschwindigkeit_widget = GeschwindigkeitsWidget(inhalt)
+        layout.addWidget(self.geschwindigkeit_widget)
         scroll = QScrollArea(self)
         scroll.setWidgetResizable(True)
         scroll.setWidget(inhalt)
@@ -337,15 +429,22 @@ class NavigationsWidgetFenster(QWidget):
         fenster_layout.setContentsMargins(0, 0, 0, 0)
         fenster_layout.addWidget(scroll)
 
-    def aktualisieren(self, werte, optionen):
+    def aktualisieren(self, werte, optionen, geschwindigkeit_m_pro_s=None):
         self._werte = werte
         self._optionen = dict(optionen)
+        self._geschwindigkeit_m_pro_s = geschwindigkeit_m_pro_s
         for widget in self.widgets:
             widget.aktualisieren(self._werte, self._optionen)
+        self.geschwindigkeit_widget.aktualisieren(
+            self._geschwindigkeit_m_pro_s)
 
     def sichtbarkeit_setzen(self, optionen):
         self._optionen = dict(optionen)
-        self.aktualisieren(self._werte, self._optionen)
+        self.aktualisieren(
+            self._werte, self._optionen, self._geschwindigkeit_m_pro_s)
 
 
-__all__ = ["NavigationsWidgetFenster", "SVGInstrumentWidget"]
+__all__ = [
+    "GeschwindigkeitsWidget", "NavigationsWidgetFenster",
+    "SVGInstrumentWidget",
+]

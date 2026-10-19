@@ -7,7 +7,9 @@ import os
 import time
 
 import numpy as np
-from PySide6.QtCore import Qt, QObject, QRunnable, QThreadPool, QTimer, Signal
+from PySide6.QtCore import (
+    Qt, QObject, QRunnable, QSignalBlocker, QThreadPool, QTimer, Signal,
+)
 from PySide6.QtWidgets import (
     QApplication, QButtonGroup, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
     QPushButton,
@@ -21,11 +23,44 @@ from ..core import formerkennung, statusanzeige
 # Netzrauschen (Facetten) bei Kugel/liegendem Rotationskoerper: dM/mg ~ 1e-4
 ROLL_NEUTRAL_TOLERANZ = 1e-2
 from ..core.overlays import (LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN,
-                             LAYER_KRAEFTE, LAYER_MOMENTE, LAYER_FREMDKRAFT)
+                             LAYER_KRAEFTE, LAYER_MOMENTE, LAYER_FREMDKRAFT,
+                             LAYER_HYDRO_RUMPF, LAYER_HYDRO_KIEL,
+                             LAYER_HYDRO_RUDER)
 
 
 _aktives_fenster = None
 _ECHTZEIT_HYDROSTATIK_PFAD = "exakt_union"
+
+
+def _stationaere_rotation(stufe):
+    phi = float(stufe.pose[3])
+    theta = float(stufe.pose[4])
+    psi = float(stufe.pose[5])
+    cphi, sphi = math.cos(phi), math.sin(phi)
+    ctheta, stheta = math.cos(theta), math.sin(theta)
+    cpsi, spsi = math.cos(psi), math.sin(psi)
+    rx = np.array([[1.0, 0.0, 0.0],
+                   [0.0, cphi, -sphi],
+                   [0.0, sphi, cphi]])
+    ry = np.array([[ctheta, 0.0, stheta],
+                   [0.0, 1.0, 0.0],
+                   [-stheta, 0.0, ctheta]])
+    rz = np.array([[cpsi, -spsi, 0.0],
+                   [spsi, cpsi, 0.0],
+                   [0.0, 0.0, 1.0]])
+    return rz @ ry @ rx
+
+
+def _stationaere_kraftlage(stufe):
+    from ..core.dynamik_6dof import quaternion_aus_matrix
+
+    rotation = _stationaere_rotation(stufe)
+    pose = ((0.0, 0.0, float(stufe.pose[2])),
+            quaternion_aus_matrix(rotation))
+    geschwindigkeit = np.asarray(stufe.geschwindigkeit_m_s, dtype=float)
+    winkelgeschwindigkeit = np.asarray(
+        stufe.winkelgeschwindigkeit_rad_s, dtype=float)
+    return pose, geschwindigkeit, winkelgeschwindigkeit, rotation
 
 
 class _EchtzeitAufgabeSignale(QObject):
@@ -35,9 +70,11 @@ class _EchtzeitAufgabeSignale(QObject):
 class _EchtzeitAufgabe(QRunnable):
     def __init__(self, generation, sequenz, koerper_name, zustand,
                  kraftfunktion, koerper, physik, dt, anzahl_schritte,
-                 signale, prozess_executor=None, fremdkraft=None):
+                 signale, prozess_executor=None, fremdkraft=None,
+                 ruderwinkel_rad=0.0):
         super().__init__()
         self.fremdkraft = fremdkraft
+        self.ruderwinkel_rad = float(ruderwinkel_rad)
         self.generation = generation
         self.sequenz = sequenz
         self.koerper_name = koerper_name
@@ -54,6 +91,15 @@ class _EchtzeitAufgabe(QRunnable):
     def run(self):
         if hasattr(self.kraftfunktion, "aktualisieren"):
             self.kraftfunktion.aktualisieren()
+        if hasattr(self.kraftfunktion, "ruderwinkel_setzen"):
+            try:
+                self.kraftfunktion.ruderwinkel_setzen(
+                    self.ruderwinkel_rad)
+            except ValueError as fehler:
+                self.signale.abgeschlossen.emit(
+                    self.generation, self.sequenz, self.koerper_name,
+                    None, None, fehler, 0.0)
+                return
         if self.prozess_executor is not None:
             from concurrent.futures import CancelledError
             from concurrent.futures.process import BrokenProcessPool
@@ -65,7 +111,8 @@ class _EchtzeitAufgabe(QRunnable):
                 zustand, ergebnis, fehler, dauer = (
                     self.prozess_executor.submit(
                         schritte_berechnen, self.zustand,
-                        self.anzahl_schritte, self.fremdkraft).result())
+                        self.anzahl_schritte, self.fremdkraft,
+                        self.ruderwinkel_rad).result())
             except (BrokenProcessPool, CancelledError, EOFError, OSError,
                     pickle.PickleError, RuntimeError, TypeError,
                     ValueError) as fehler:
@@ -86,6 +133,9 @@ class _EchtzeitAufgabe(QRunnable):
         try:
             if hasattr(self.kraftfunktion, "fremdkraft_setzen"):
                 self.kraftfunktion.fremdkraft_setzen(self.fremdkraft)
+            if hasattr(self.kraftfunktion, "ruderwinkel_setzen"):
+                self.kraftfunktion.ruderwinkel_setzen(
+                    self.ruderwinkel_rad)
             for _ in range(self.anzahl_schritte):
                 self.zustand, ergebnis = schritt(
                     self.zustand, self.kraftfunktion, self.koerper.masse,
@@ -105,11 +155,12 @@ class _EchtzeitAufgabe(QRunnable):
 
 class _StatischeAufgabeSignale(QObject):
     abgeschlossen = Signal(int, object, object, object, object)
+    fortschritt = Signal(int, str, object)
 
 
 class _StatischeAufgabe(QRunnable):
     def __init__(self, generation, name, koerper, ordner, rho_w, signale,
-                 parameter=None, fremdkraft=None):
+                 parameter=None, fremdkraft=None, ruderwinkel_rad=0.0):
         super().__init__()
         self.generation = generation
         self.name = name
@@ -119,6 +170,7 @@ class _StatischeAufgabe(QRunnable):
         self.rho_w = rho_w
         self.signale = signale
         self.fremdkraft = fremdkraft
+        self.ruderwinkel_rad = float(ruderwinkel_rad)
         p = parameter or {}
         self.parameter = {"tol": p.get("toleranz", 1e-8),
                           "max_iter": p.get("max_iterationen", 60),
@@ -128,20 +180,42 @@ class _StatischeAufgabe(QRunnable):
     def run(self):
         from ..core.statisch import SolverFehler
         from ..core.auftrieb import baue_kraftfunktion
-        from ..core.konfig_lader import lade_physik
+        from ..core.konfig_lader import lade_konfig, lade_physik
         from ..core.kraftmodell import baue_kraftmodell
+        from ..core.hydrodynamik import (
+            HydrodynamikModell,
+            hydrodynamik_testprofil,
+            wasserlinienlaenge_m,
+        )
         from ..core.statisch_robust import loese_robust
 
         try:
             physik = lade_physik(self.ordner)
+            konfiguration = lade_konfig(self.ordner)
+            profil_konfig = konfiguration.hydrodynamik_profile.get(
+                self.name)
+            profil = hydrodynamik_testprofil(self.name, profil_konfig)
+            cd_volumenkoerper = (
+                profil.cd_volumenkoerper
+                if profil is not None
+                and profil.modell == "generischer_volumenkoerper"
+                else None)
             kraftfunktion = baue_kraftfunktion(
                 self.koerper, rho_w=self.rho_w,
                 g=physik.g_m_pro_s2,
                 aufloesung=physik.voxel_aufloesung_m,
                 pfad="exakt_union")
+            hydromodell = HydrodynamikModell.aus_koerper(
+                self.koerper, rho_kg_m3=self.rho_w,
+                cd_volumenkoerper=cd_volumenkoerper,
+                fluidgeschwindigkeit=physik.fluidgeschwindigkeit,
+                fluidwinkelgeschwindigkeit=(
+                    physik.fluidwinkelgeschwindigkeit),
+                ruderwinkel_rad=self.ruderwinkel_rad)
             kraftfunktion = baue_kraftmodell(
                 kraftfunktion, physik, masse=self.koerper.masse,
-                g=physik.g_m_pro_s2)
+                g=physik.g_m_pro_s2,
+                hydrodynamik=hydromodell)
             kraftfunktion.fremdkraft_setzen(self.fremdkraft)
             problem = statusanzeige.schwimmpruefung(
                 kraftfunktion, self.koerper, self.koerper.masse,
@@ -157,7 +231,78 @@ class _StatischeAufgabe(QRunnable):
             ergebnis = loese_robust(
                 kraftfunktion, self.koerper.masse,
                 g=physik.g_m_pro_s2, **parameter)
-        except (ImportError, OSError, ValueError, SolverFehler) as fehler:
+            testkraft = (np.asarray(self.fremdkraft[0], dtype=float)
+                         if self.fremdkraft is not None
+                         else np.zeros(3))
+            if (hydromodell is not None
+                    and float(np.linalg.norm(testkraft)) > 1e-6):
+                from ..core.stationaer_hydrodynamik import (
+                    StationaeresErgebnis,
+                    StationaerSolverFehler,
+                    loese_stationaer,
+                    pruefe_stationaer_dynamisch,
+                )
+
+                rumpfteile = [
+                    teil for teil in hydromodell.teile
+                    if teil.rolle == "rumpf"]
+                if rumpfteile:
+                    laenge = wasserlinienlaenge_m(
+                        rumpfteile, z_m=ergebnis["z"],
+                        phi_rad=ergebnis["phi"])
+                else:
+                    meshes = getattr(self.koerper, "blatt_meshes", ())
+                    punkte = (np.concatenate(
+                        [np.asarray(mesh[0], dtype=float) for mesh in meshes])
+                        if meshes else np.empty((0, 3)))
+                    laenge = (float(np.max(np.ptp(punkte, axis=0)))
+                              if len(punkte) else 0.0)
+                if laenge <= 1e-6:
+                    raise ValueError(
+                        "Stationaerer Hydrodynamiksolver benoetigt eine "
+                        "positive charakteristische Koerperlaenge")
+                if profil is not None and profil.modell == (
+                        "generischer_volumenkoerper"):
+                    referenzgeschwindigkeit = (
+                        profil.referenzgeschwindigkeit_m_pro_s)
+                else:
+                    rumpfgeschwindigkeit = (
+                        1.34 * 0.514444 * math.sqrt(laenge / 0.3048))
+                    referenzgeschwindigkeit = 0.8 * rumpfgeschwindigkeit
+                start = np.array((
+                    referenzgeschwindigkeit, ergebnis["z"], 0.0, 0.0,
+                    ergebnis["phi"], 0.0))
+                startzeit = time.perf_counter()
+                try:
+                    stationaer = loese_stationaer(
+                        kraftfunktion,
+                        charakteristische_kraft_N=float(
+                            np.linalg.norm(testkraft)),
+                        charakteristische_laenge_m=laenge,
+                        referenzgeschwindigkeit_m_s=referenzgeschwindigkeit,
+                        start=start, ruderwinkel_rad=self.ruderwinkel_rad,
+                        fortschritt=lambda stufe:
+                            self.signale.fortschritt.emit(
+                                self.generation, self.name, stufe))
+                except StationaerSolverFehler as fehler:
+                    stationaer = StationaeresErgebnis(
+                        False, fehler.stufen,
+                        time.perf_counter() - startzeit,
+                        self.ruderwinkel_rad)
+                    ergebnis["stationaer_fehler"] = str(fehler)
+                else:
+                    ergebnis["stationaer_dynamikpruefung"] = (
+                        pruefe_stationaer_dynamisch(
+                            kraftfunktion, stationaer.stufen[-1],
+                            masse_kg=self.koerper.masse,
+                            traegheit_koerper=(
+                                self.koerper.traegheitstensor),
+                            charakteristische_laenge_m=laenge,
+                            dt_s=physik.dt_s,
+                            g_m_pro_s2=physik.g_m_pro_s2))
+                ergebnis["stationaer_hydrodynamik"] = stationaer
+        except (ImportError, OSError, ValueError, SolverFehler,
+                ArithmeticError, RuntimeError) as fehler:
             self.signale.abgeschlossen.emit(
                 self.generation, self.name, None, None, fehler)
             return
@@ -188,12 +333,6 @@ class HauptFenster(QMainWindow):
         self._echtzeit_angefordert_s = 0.0
         self._echtzeit_berechnet_s = 0.0
         self._echtzeit_modus = "pausiert"
-        self._echtzeit_ueberlast_seit = None
-        self._echtzeit_nachholen_start = None
-        self._echtzeit_nachholen_berechnet_start = 0.0
-        self._echtzeit_nachholen_fenster_start = None
-        self._echtzeit_nachholen_fenster_berechnet = 0.0
-        self._echtzeit_nachholen_raten = []
         self._echtzeit_letzte_wandzeit = None
         self._echtzeit_zustand = None
         self._echtzeit_kraftfunktion = None
@@ -209,6 +348,7 @@ class HauptFenster(QMainWindow):
         self._echtzeit_prozess_executor = None
         self._echtzeit_prozess_koerper = None
         self._echtzeit_prozess_pfad = None
+        self._echtzeit_prozess_cd = None
         self._echtzeit_aktiver_prozess_executor = None
         self._echtzeit_anzeige_start = None
         self._echtzeit_anzeige_ziel = None
@@ -224,6 +364,9 @@ class HauptFenster(QMainWindow):
         self._statisch_signale = _StatischeAufgabeSignale()
         self._statisch_signale.abgeschlossen.connect(
             self._statische_aufgabe_abgeschlossen)
+        self._hydrodynamik_profil_koerper = None
+        self._statisch_signale.fortschritt.connect(
+            self._statische_aufgabe_fortschritt)
         self._statische_ergebnisse = {}
         self._statische_arbeitsdaten = {}
         self._statische_fremdkraft = None
@@ -232,6 +375,8 @@ class HauptFenster(QMainWindow):
         self._navigations_timer.setInterval(33)
         self._navigations_timer.timeout.connect(
             self._navigationsanzeigen_aktualisieren)
+        from .steuer_api import GUIControlAPI
+        self.steuer_api = GUIControlAPI(self)
         for meldung in self._einstellungen.meldungen:
             self.protokoll_schreiben("Einstellungen: %s" % meldung)
 
@@ -430,17 +575,32 @@ class HauptFenster(QMainWindow):
         layer = QWidget()
         v = QVBoxLayout(layer)
         self._layer_checks = {}
+        self._layer_settings = {}
         layer_einstellungen = (
-            ("Schwerpunkt", LAYER_SCHWERPUNKT, True),
-            ("Achsen", LAYER_HAUPTACHSEN, False),
-            ("Kräfte", LAYER_KRAEFTE, True),
-            ("Fremdkraft", LAYER_FREMDKRAFT, False),
-            ("Momente", LAYER_MOMENTE, True),
+            ("Schwerpunkt", LAYER_SCHWERPUNKT, True, None),
+            ("Achsen", LAYER_HAUPTACHSEN, False, None),
+            ("Kräfte", LAYER_KRAEFTE, True, None),
+            ("Fremdkraft", LAYER_FREMDKRAFT, False, None),
+            ("Momente", LAYER_MOMENTE, True, None),
+            ("Hydrodynamik Rumpf", LAYER_HYDRO_RUMPF,
+             self._einstellungen.get("anzeigen", "hydrodynamik_rumpf"),
+             "hydrodynamik_rumpf"),
+            ("Hydrodynamik Kiel/Schwert", LAYER_HYDRO_KIEL,
+             self._einstellungen.get("anzeigen", "hydrodynamik_kiel"),
+             "hydrodynamik_kiel"),
+            ("Hydrodynamik Ruder", LAYER_HYDRO_RUDER,
+             self._einstellungen.get("anzeigen", "hydrodynamik_ruder"),
+             "hydrodynamik_ruder"),
         )
-        for name, layer_name, aktiviert in layer_einstellungen:
+        self._layer_namen = tuple(
+            (name, layer_name)
+            for name, layer_name, _aktiviert, _einstellung
+            in layer_einstellungen)
+        for name, layer_name, aktiviert, einstellung in layer_einstellungen:
             cb = QCheckBox(name)
             cb.setChecked(aktiviert)
             self._layer_checks[name] = cb
+            self._layer_settings[layer_name] = einstellung
             cb.toggled.connect(
                 lambda an, l=layer_name: self._layer_setzen(l, an))
             v.addWidget(cb)
@@ -452,14 +612,16 @@ class HauptFenster(QMainWindow):
         for schluessel, wert in (
                 ("z*", "-"), ("phi*", "-"), ("GM", "-"),
                 ("Restkraft", "-"), ("Restmoment", "-"),
+                ("Geschwindigkeit", "-"),
+                ("Normierte Restkraft", "-"),
+                ("Normiertes Restmoment", "-"),
+                ("Solver-Laufzeit", "-"),
+                ("Dynamikprüfung", "-"),
                 ("Iterationen", "-"), ("Bildrate", "-"),
                 ("Zeitfaktor", "-"),
                 ("Physik angefordert", "-"), ("Physik berechnet", "-"),
                 ("Physik-Rückstand", "-"),
-                ("Nachholrate letztes Fenster", "-"),
-                ("Nachholrate gesamt", "-"),
-                ("Nachholrate ≥1,25", "-"),
-                ("Nachholfenster s/s", "-"), ("Lösungstyp", "-")):
+                ("Lösungstyp", "-")):
             self._solver_werte[schluessel] = QTreeWidgetItem(
                 status, [schluessel, wert])
         status.setRootIsDecorated(False)
@@ -532,7 +694,10 @@ class HauptFenster(QMainWindow):
 
         fremd = QWidget()
         fremd_layout = QGridLayout(fremd)
-        self._fremd_check = QCheckBox("Fremdkraft aktiv")
+        self._fremd_check = QCheckBox("Test-/Fremdkraft aktiv")
+        self._fremd_check.setToolTip(
+            "Körperbezogene Testprofile sind Kalibrierhilfen, keine "
+            "realen Segelkräfte.")
         self._fremd_check.toggled.connect(self._fremdkraft_geaendert)
         fremd_layout.addWidget(self._fremd_check, 0, 0, 1, 2)
         self._fremd_felder = {}
@@ -553,8 +718,18 @@ class HauptFenster(QMainWindow):
             self._fremd_felder[schluessel] = feld
             fremd_layout.addWidget(QLabel(text), zeile, 0)
             fremd_layout.addWidget(feld, zeile, 1)
-        fremd_layout.setRowStretch(7, 1)
-        dock_fremd = QDockWidget("Fremdkraft", self)
+        self._ruderwinkel_feld = QDoubleSpinBox()
+        self._ruderwinkel_feld.setRange(-90.0, 90.0)
+        self._ruderwinkel_feld.setValue(0.0)
+        self._ruderwinkel_feld.setSingleStep(1.0)
+        self._ruderwinkel_feld.setDecimals(1)
+        self._ruderwinkel_feld.setSuffix("°")
+        self._ruderwinkel_feld.valueChanged.connect(
+            self._ruderwinkel_geaendert)
+        fremd_layout.addWidget(QLabel("Ruderwinkel"), 7, 0)
+        fremd_layout.addWidget(self._ruderwinkel_feld, 7, 1)
+        fremd_layout.setRowStretch(8, 1)
+        dock_fremd = QDockWidget("Testkraft / Fremdkraft", self)
         dock_fremd.setWidget(fremd)
         self.splitDockWidget(dock_darstellung, dock_fremd,
                              Qt.Orientation.Vertical)
@@ -577,12 +752,7 @@ class HauptFenster(QMainWindow):
                 self._einstellungen.bereich("anzeigen"))
             self._navigationsfenster.show()
             self._navigations_timer.start()
-        for name, layer in (
-                ("Schwerpunkt", LAYER_SCHWERPUNKT),
-                ("Achsen", LAYER_HAUPTACHSEN),
-                ("Kräfte", LAYER_KRAEFTE),
-                ("Fremdkraft", LAYER_FREMDKRAFT),
-                ("Momente", LAYER_MOMENTE)):
+        for name, layer in self._layer_namen:
             bruecke.layer_setzen(layer, self._layer_checks[name].isChecked())
         self._stil_anwenden()
         self._darstellung_auf_bruecke_anwenden()
@@ -601,10 +771,15 @@ class HauptFenster(QMainWindow):
 
     def _layer_setzen(self, layer, aktiviert):
         bruecke = getattr(self, "_bruecke", None)
+        setting = self._layer_settings.get(layer)
+        if setting is not None:
+            self._einstellungen.setzen("anzeigen", setting, bool(aktiviert))
         if bruecke is None:
             return
         if (aktiviert and layer in (LAYER_KRAEFTE, LAYER_MOMENTE,
-                                      LAYER_SCHWERPUNKT, LAYER_FREMDKRAFT)
+                                      LAYER_SCHWERPUNKT, LAYER_FREMDKRAFT,
+                                      LAYER_HYDRO_RUMPF, LAYER_HYDRO_KIEL,
+                                      LAYER_HYDRO_RUDER)
                 and self._btn_echtzeit.isChecked()):
             self._aktuelles_kraftbild_aktualisieren()
         bruecke.layer_setzen(layer, aktiviert)
@@ -723,7 +898,7 @@ class HauptFenster(QMainWindow):
             from ..core.navigationsanzeigen import Navigationswerte
             fenster.aktualisieren(
                 Navigationswerte(None, None, None, None, None, None),
-                self._einstellungen.bereich("anzeigen"))
+                self._einstellungen.bereich("anzeigen"), None)
             return
         name, pose = auswahl
         from ..core.navigationsanzeigen import navigationswerte_ableiten
@@ -735,7 +910,11 @@ class HauptFenster(QMainWindow):
         werte = navigationswerte_ableiten(
             pose.quaternion, offset, elevation,
             self._segelwinkel_ermitteln(name))
-        fenster.aktualisieren(werte, self._einstellungen.bereich("anzeigen"))
+        geschwindigkeit = float(np.linalg.norm(
+            np.asarray(pose.geschwindigkeit_koerper, dtype=float)))
+        fenster.aktualisieren(
+            werte, self._einstellungen.bereich("anzeigen"),
+            geschwindigkeit)
 
     def _segelwinkel_ermitteln(self, koerper_name):
         knoten = getattr(self, "baum", None)
@@ -907,6 +1086,70 @@ class HauptFenster(QMainWindow):
             specs = lade_specs()
             korrekturen += 1
 
+    def _hydrodynamik_testprofil_laden(self, koerper_name):
+        from ..core.hydrodynamik import hydrodynamik_testprofil
+
+        welt = getattr(getattr(self, "baum", None), "_welt", None)
+        konfiguration = getattr(welt, "konfiguration", None)
+        profile = getattr(konfiguration, "hydrodynamik_profile", {})
+        profil_konfig = profile.get(koerper_name)
+        profil = (None if koerper_name is None
+                  else hydrodynamik_testprofil(
+                      koerper_name, profil_konfig))
+        werte = {
+            "betrag": 0.0 if profil is None else profil.kraft_betrag_N,
+            "azimut": 0.0 if profil is None else profil.azimut_grad,
+            "elevation": 0.0 if profil is None else profil.elevation_grad,
+            "x": 0.0 if profil is None else profil.angriffspunkt_m[0],
+            "y": 0.0 if profil is None else profil.angriffspunkt_m[1],
+            "z": 0.0 if profil is None else profil.angriffspunkt_m[2],
+        }
+        widgets = [self._fremd_check, self._ruderwinkel_feld]
+        widgets.extend(self._fremd_felder.values())
+        blockers = [QSignalBlocker(widget) for widget in widgets]
+        self._fremd_check.setChecked(profil is not None)
+        for schluessel, wert in werte.items():
+            self._fremd_felder[schluessel].setValue(wert)
+        self._ruderwinkel_feld.setValue(
+            0.0 if profil is None else profil.ruderwinkel_grad)
+        del blockers
+
+    def _hydrodynamik_profil_auswahl_setzen(self, koerper_name):
+        if koerper_name == self._hydrodynamik_profil_koerper:
+            return
+        profil_name = koerper_name
+        if koerper_name is not None:
+            welt = getattr(getattr(self, "baum", None), "_welt", None)
+            konfiguration = getattr(welt, "konfiguration", None)
+            profile = getattr(
+                konfiguration, "hydrodynamik_profile", {})
+            koerper = self._laufzeit_koerper.get(koerper_name)
+            snapshot_erzeugen = getattr(koerper, "snapshot", None)
+            snapshot = (
+                snapshot_erzeugen() if callable(snapshot_erzeugen) else None)
+            hydrodynamik_teile = getattr(
+                snapshot, "hydrodynamik_teile", ())
+            if koerper_name in profile:
+                modell = profile[koerper_name]["modell"]
+                if modell == "generischer_volumenkoerper":
+                    unterstuetzt = bool(
+                        snapshot is not None
+                        and getattr(snapshot, "blatt_meshes", ()))
+                else:
+                    unterstuetzt = any(
+                        rolle in ("rumpf", "kiel", "ruder")
+                        for rolle, _name, _punkte, _faces
+                        in hydrodynamik_teile)
+            else:
+                unterstuetzt = any(
+                    rolle in ("rumpf", "kiel", "ruder")
+                    for rolle, _name, _punkte, _faces
+                    in hydrodynamik_teile)
+            if not unterstuetzt:
+                profil_name = None
+        self._hydrodynamik_testprofil_laden(profil_name)
+        self._hydrodynamik_profil_koerper = koerper_name
+
     def _laufzeit_objekte_aktualisieren(self, grund="auswahl"):
         self._statisch_generation += 1
         bruecke = getattr(self, "_bruecke", None)
@@ -954,6 +1197,12 @@ class HauptFenster(QMainWindow):
                 nachricht = ("Laufzeitkoerper %s konnte nicht aktualisiert "
                              "werden: %s" % (knoten.name, fehler))
                 self.protokoll_schreiben(nachricht)
+        if laufzeit_bereit:
+            auswahl = next(
+                (knoten for knoten in summenkoerper(welt)
+                 if knoten.sichtbar), None)
+            koerper_name = None if auswahl is None else auswahl.name
+            self._hydrodynamik_profil_auswahl_setzen(koerper_name)
         if not laufzeit_bereit:
             self._zeit_pausieren()
             self._echtzeit_name = None
@@ -1054,8 +1303,42 @@ class HauptFenster(QMainWindow):
             konfiguration.ordner, konfiguration.wasser_dichte(),
             self._statisch_signale,
             self._einstellungen.bereich("statisch"),
-            fremdkraft=fremdkraft)
+            fremdkraft=fremdkraft,
+            ruderwinkel_rad=math.radians(
+                self._ruderwinkel_feld.value()))
         QThreadPool.globalInstance().start(aufgabe)
+
+    def _statische_aufgabe_fortschritt(self, generation, name, stufe):
+        if (generation != self._statisch_generation
+                or not self._btn_statisch.isChecked()):
+            return
+        bruecke = getattr(self, "_bruecke", None)
+        if bruecke is None:
+            return
+        restkraft = float(np.linalg.norm(stufe.restkraft_N))
+        restmoment = float(np.linalg.norm(stufe.restmoment_Nm))
+        self._solver_status_aktualisieren({
+            "Geschwindigkeit": "%.3f m/s" % float(np.linalg.norm(
+                stufe.geschwindigkeit_m_s)),
+            "Restkraft": "%.3g N" % restkraft,
+            "Restmoment": "%.3g N·m" % restmoment,
+            "Normierte Restkraft": "%.3g" % stufe.normierte_restkraft,
+            "Normiertes Restmoment": "%.3g" % stufe.normiertes_restmoment,
+            "Solver-Laufzeit": "läuft …",
+            "Iterationen": str(stufe.iterationen),
+            "Lösungstyp": (
+                "Vorläufig: %s" % stufe.name if stufe.konvergiert
+                else "Nicht konvergiert: %s" % stufe.name),
+        })
+        if stufe.konvergiert:
+            R = _stationaere_rotation(stufe)
+            position = bruecke.physik_basis_position_ermitteln(name)
+            position[2] = float(stufe.pose[2])
+            bruecke.physik_pose_6dof_setzen(name, R, position)
+            self._statusoverlay(
+                ("Vorläufiges hydrodynamisches Teilgleichgewicht: "
+                 + stufe.name, "info"))
+
     def _statische_aufgabe_abgeschlossen(
             self, generation, name, ergebnis, arbeitsdaten, fehler):
         if (generation != self._statisch_generation
@@ -1116,22 +1399,46 @@ class HauptFenster(QMainWindow):
             return
 
         kraftfunktion, physik = arbeitsdaten
-        self._kraftbild_daten_setzen(
-            bruecke, name, koerper, kraftfunktion, physik,
-            ergebnis["z"], ergebnis["phi"])
-        if not bruecke.statische_pose_setzen(
-                name, ergebnis["z"], ergebnis["phi"]):
-            self._solver_status_aktualisieren(
-                {"Lösungstyp": "Körper in 3D-Ansicht fehlt"})
-            self._statusoverlay(statusanzeige.KOERPER_FEHLT)
-            return
+        stationaer = ergebnis.get("stationaer_hydrodynamik")
+        stufe = None
+        if stationaer is not None and stationaer.stufen:
+            stufe = next(
+                (teil for teil in reversed(stationaer.stufen)
+                 if teil.konvergiert),
+                None)
+        if stufe is not None:
+            pose, v, omega, rotation = _stationaere_kraftlage(stufe)
+            position = bruecke.physik_basis_position_ermitteln(name)
+            position[2] = float(stufe.pose[2])
+            if not bruecke.physik_pose_6dof_setzen(
+                    name, rotation, position):
+                self._solver_status_aktualisieren(
+                    {"Lösungstyp": "Körper in 3D-Ansicht fehlt"})
+                self._statusoverlay(statusanzeige.KOERPER_FEHLT)
+                return
+            kraft_ergebnis = kraftfunktion(pose, v=v, omega=omega)
+            self._kraftbild_daten_setzen(
+                bruecke, name, koerper, kraftfunktion, physik,
+                stufe.pose[2], stufe.pose[3], ergebnis=kraft_ergebnis)
+            ergebnis["z"], ergebnis["phi"] = (
+                float(stufe.pose[2]), float(stufe.pose[3]))
+        else:
+            self._kraftbild_daten_setzen(
+                bruecke, name, koerper, kraftfunktion, physik,
+                ergebnis["z"], ergebnis["phi"])
+            if not bruecke.statische_pose_setzen(
+                    name, ergebnis["z"], ergebnis["phi"]):
+                self._solver_status_aktualisieren(
+                    {"Lösungstyp": "Körper in 3D-Ansicht fehlt"})
+                self._statusoverlay(statusanzeige.KOERPER_FEHLT)
+                return
         self._statische_ergebnisse[name] = ergebnis
         self._statische_arbeitsdaten[name] = (kraftfunktion, physik)
         self._navigationsanzeigen_aktualisieren()
         self._statusoverlay(statusanzeige.status_aus_ergebnis(
             ergebnis, form=formerkennung.klassifiziere_koerper(koerper)))
         gm = ergebnis["gm"]
-        self._solver_status_aktualisieren({
+        werte = {
             "z*": "%.4f m" % ergebnis["z"],
             "phi*": "%.2f°" % math.degrees(ergebnis["phi"]),
             "GM": "-" if gm is None else "%.4f m" % gm,
@@ -1142,7 +1449,77 @@ class HauptFenster(QMainWindow):
                 "neutral" if ergebnis.get("neutral")
                 else "stabil (Stagnation)" if ergebnis.get("stagnation")
                 else "stabil"),
-        })
+        }
+        if stationaer is not None:
+            dynamik = ergebnis.get("stationaer_dynamikpruefung")
+            dynamik_bestanden = (
+                stationaer.konvergiert and dynamik is not None
+                and dynamik.bestanden)
+            restkraft = (
+                "-" if stufe is None
+                else "%.3g N" % np.linalg.norm(stufe.restkraft_N))
+            restmoment = (
+                "-" if stufe is None
+                else "%.3g N·m" % np.linalg.norm(stufe.restmoment_Nm))
+            if dynamik is None:
+                dynamik_text = (
+                    "Nicht ausgeführt: Solver nicht konvergiert"
+                    if not stationaer.konvergiert
+                    else "Nicht ausgeführt: kein Prüfergebnis")
+            else:
+                fehlergrund = getattr(dynamik, "fehlergrund", None)
+                dynamik_text = (
+                    "%s; Δu=%.3g%%; ΔWinkel=%.3g°; |ω|=%.3g rad/s%s"
+                    % ("Bestanden" if dynamik_bestanden
+                       else "Nicht bestanden",
+                       100.0 * dynamik.relative_vorwaertsabweichung,
+                       math.degrees(dynamik.orientierung_ende_rad),
+                       dynamik.winkelgeschwindigkeit_ende_rad_s,
+                       "; " + fehlergrund if fehlergrund else ""))
+            werte.update({
+                "Geschwindigkeit": (
+                    "-" if stufe is None else "%.3f m/s" % float(
+                        np.linalg.norm(stufe.geschwindigkeit_m_s))),
+                "Restkraft": restkraft,
+                "Restmoment": restmoment,
+                "Normierte Restkraft": (
+                    "-" if stufe is None
+                    else "%.3g" % stufe.normierte_restkraft),
+                "Normiertes Restmoment": (
+                    "-" if stufe is None
+                    else "%.3g" % stufe.normiertes_restmoment),
+                "Solver-Laufzeit": "%.3f s" % stationaer.laufzeit_s,
+                "Iterationen": str(sum(
+                    teil.iterationen for teil in stationaer.stufen)),
+                "Lösungstyp": (
+                    ("Hydrodynamisch stationär (konvergiert)"
+                     if dynamik_bestanden else
+                     "Hydrodynamisch stationär; Dynamikprüfung "
+                     "nicht bestanden")
+                    if stationaer.konvergiert else
+                    "Hydrodynamisch nicht vollständig konvergiert"),
+                "Dynamikprüfung": dynamik_text,
+            })
+            if not stationaer.konvergiert:
+                hinweis = ergebnis.get("stationaer_fehler", "")
+                text = ("Hydrodynamischer Solver nicht konvergiert; "
+                        "letzter gültiger Teilzustand bleibt sichtbar")
+                if hinweis:
+                    text += ": " + hinweis
+                self._statusoverlay((text, "problem"))
+            else:
+                status = (
+                    "Stationäres Gleichgewicht und 10-s-Dynamikprüfung "
+                    + ("bestanden" if dynamik_bestanden
+                       else "nicht bestanden"))
+                fehlergrund = (
+                    None if dynamik is None
+                    else getattr(dynamik, "fehlergrund", None))
+                if fehlergrund:
+                    status += ": " + fehlergrund
+                self._statusoverlay((
+                    status, "ok" if dynamik_bestanden else "problem"))
+        self._solver_status_aktualisieren(werte)
 
     def _echtzeit_starten(self, zustand=None, auto_start=True):
         if (self._echtzeit_timer.isActive()
@@ -1163,6 +1540,7 @@ class HauptFenster(QMainWindow):
             self._solver_status_aktualisieren(
                 {"Lösungstyp": "Kein Hauptkörper ausgewählt"})
             return
+        self._hydrodynamik_profil_auswahl_setzen(hauptkoerper.name)
         koerper = self._laufzeit_koerper.get(hauptkoerper.name)
         if koerper is None:
             self._solver_status_aktualisieren(
@@ -1177,6 +1555,30 @@ class HauptFenster(QMainWindow):
             KraftmodellMitHydroCache, baue_kraftmodell)
         try:
             physik = lade_physik(konfiguration.ordner)
+            from ..core.hydrodynamik import (
+                HydrodynamikModell,
+                hydrodynamik_testprofil,
+            )
+            profil_konfig = konfiguration.hydrodynamik_profile.get(
+                hauptkoerper.name)
+            profil = hydrodynamik_testprofil(
+                hauptkoerper.name, profil_konfig)
+            cd_volumenkoerper = (
+                profil.cd_volumenkoerper
+                if profil is not None
+                and profil.modell == "generischer_volumenkoerper"
+                else None)
+            hydrodynamik = HydrodynamikModell.aus_koerper(
+                koerper_snapshot, rho_kg_m3=konfiguration.wasser_dichte(),
+                cd_volumenkoerper=cd_volumenkoerper,
+                fluidgeschwindigkeit=physik.fluidgeschwindigkeit,
+                fluidwinkelgeschwindigkeit=(
+                    physik.fluidwinkelgeschwindigkeit),
+                ruderwinkel_rad=math.radians(
+                    self._ruderwinkel_feld.value()))
+            self._ruderwinkel_feld.setEnabled(
+                hydrodynamik is not None and any(
+                    teil.rolle == "ruder" for teil in hydrodynamik.teile))
             kraftfunktion = baue_kraftfunktion_6dof(
                 koerper_snapshot, rho_w=konfiguration.wasser_dichte(),
                 g=physik.g_m_pro_s2,
@@ -1184,14 +1586,15 @@ class HauptFenster(QMainWindow):
             kraftfunktion = KraftmodellMitHydroCache(
                 baue_kraftmodell(
                     kraftfunktion, physik, masse=koerper_snapshot.masse,
-                    g=physik.g_m_pro_s2),
+                    g=physik.g_m_pro_s2, hydrodynamik=hydrodynamik),
                 intervall=1)
             kraftfunktion.fremdkraft_setzen(self._fremdkraft_aktuell())
             basisposition = bruecke.physik_basis_position_ermitteln(
                 hauptkoerper.name)
             prozess_executor = self._echtzeit_prozess_pool_aktualisieren(
                 koerper_snapshot, konfiguration.wasser_dichte(), physik,
-                _ECHTZEIT_HYDROSTATIK_PFAD)
+                _ECHTZEIT_HYDROSTATIK_PFAD,
+                cd_volumenkoerper=cd_volumenkoerper)
         except (ImportError, OSError, RuntimeError, ValueError) as fehler:
             self._zeit_pausieren()
             self._solver_status_aktualisieren(
@@ -1261,14 +1664,16 @@ class HauptFenster(QMainWindow):
             self._zeit_fortsetzen()
 
     def _echtzeit_prozess_pool_aktualisieren(
-            self, koerper, rho_w, physik, hydrostatik_pfad):
+            self, koerper, rho_w, physik, hydrostatik_pfad,
+            cd_volumenkoerper=None):
         if (not hasattr(koerper, "blatt_meshes")
                 or QApplication.platformName().casefold()
                 in ("offscreen", "minimal")):
             return None
         if (self._echtzeit_prozess_executor is not None
                 and self._echtzeit_prozess_koerper is koerper
-                and self._echtzeit_prozess_pfad == hydrostatik_pfad):
+                and self._echtzeit_prozess_pfad == hydrostatik_pfad
+                and self._echtzeit_prozess_cd == cd_volumenkoerper):
             return self._echtzeit_prozess_executor
         from concurrent.futures import ProcessPoolExecutor
         from multiprocessing import get_context
@@ -1280,13 +1685,15 @@ class HauptFenster(QMainWindow):
         executor = ProcessPoolExecutor(
             max_workers=1, mp_context=get_context("spawn"),
             initializer=initialisieren,
-            initargs=(koerper, rho_w, physik, hydrostatik_pfad))
+            initargs=(koerper, rho_w, physik, hydrostatik_pfad,
+                      cd_volumenkoerper))
         self._echtzeit_prozess_executor = executor
         self._echtzeit_prozess_koerper = koerper
         self._echtzeit_prozess_pfad = hydrostatik_pfad
+        self._echtzeit_prozess_cd = cd_volumenkoerper
         return executor
 
-    def _zeit_pausieren(self, automatisch=False):
+    def _zeit_pausieren(self):
         war_laufend = self._echtzeit_timer.isActive()
         jetzt = time.perf_counter()
         if (self._echtzeit_letzte_wandzeit is not None
@@ -1306,9 +1713,7 @@ class HauptFenster(QMainWindow):
                 self._echtzeit_schritte_laufend * self._echtzeit_physik.dt_s)
             self._echtzeit_schritte_laufend = 0
         self._echtzeit_letzte_wandzeit = None
-        self._echtzeit_modus = (
-            "automatisch_pausiert" if automatisch else "pausiert")
-        self._echtzeit_ueberlast_seit = None
+        self._echtzeit_modus = "pausiert"
         self._zeittasten_setzen(False)
         if self._echtzeit_zustand is not None:
             self._echtzeit_anzeige_start = self._echtzeit_zustand
@@ -1332,19 +1737,10 @@ class HauptFenster(QMainWindow):
         self._echtzeit_fps_start = jetzt
         self._echtzeit_zf_berechnet = self._echtzeit_berechnet_s
         self._echtzeit_fps_zaehler = 0
-        if self._echtzeit_rueckstand_s() > self._dyn(
-                "nachholen_ende_rueckstand_s"):
-            self._echtzeit_modus = "nachholen"
-            self._echtzeit_nachholen_start = jetzt
-            self._echtzeit_nachholen_berechnet_start = (
-                self._echtzeit_berechnet_s)
-            self._echtzeit_nachholen_fenster_start = jetzt
-            self._echtzeit_nachholen_fenster_berechnet = (
-                self._echtzeit_berechnet_s)
-            self._echtzeit_nachholen_raten = []
-        else:
-            self._echtzeit_modus = "normal"
-            self._echtzeit_nachholen_start = None
+        self._echtzeit_modus = "normal"
+        if self._echtzeit_rueckstand_s() >= self._dyn(
+                "ueberlast_rueckstand_s"):
+            self._echtzeit_modus = "ueberlast_beobachtung"
         self._echtzeit_timer.start()
         self._echtzeit_render_timer.start()
         self._zeittasten_setzen(True)
@@ -1435,96 +1831,13 @@ class HauptFenster(QMainWindow):
             return
         jetzt = time.perf_counter()
         vergangen = max(0.0, jetzt - self._echtzeit_letzte_wandzeit)
-        schnell = not self._dyn("zeitgenau")
-        if schnell:
-            # So schnell wie moeglich, aber nie schneller als die reale
-            # Zeit: Wandzeit fuellt den Akkumulator, der auf einen Block
-            # begrenzt ist. Ueberschuss verfaellt (Zeitlupe), kein
-            # Rueckstand, keine Ueberlast-Pause, kein Nachholen.
-            if self._echtzeit_modus == "nachholen":
-                self._echtzeit_nachholen_start = None
-            self._echtzeit_modus = "normal"
-            self._echtzeit_ueberlast_seit = None
-            self._echtzeit_letzte_wandzeit = jetzt
-            block = (self._dyn("max_schritte_pro_aufgabe")
-                     * self._echtzeit_physik.dt_s)
-            self._echtzeit_akkumulator = min(
-                self._echtzeit_akkumulator + vergangen, block)
-            if self._echtzeit_aufgabe_laeuft:
-                return
-            self._echtzeit_angefordert_s = (
-                self._echtzeit_berechnet_s + self._echtzeit_akkumulator)
-        elif self._echtzeit_modus != "nachholen":
-            self._echtzeit_akkumulator += vergangen
-            self._echtzeit_angefordert_s += vergangen
+        self._echtzeit_akkumulator += vergangen
+        self._echtzeit_angefordert_s += vergangen
         self._echtzeit_letzte_wandzeit = jetzt
         rueckstand = self._echtzeit_rueckstand_s()
-        if self._echtzeit_modus == "nachholen":
-            if rueckstand <= self._dyn("nachholen_ende_rueckstand_s"):
-                gesamt_dauer = max(
-                    jetzt - (self._echtzeit_nachholen_start or jetzt),
-                    1e-12)
-                gesamt_rate = (
-                    self._echtzeit_berechnet_s
-                    - self._echtzeit_nachholen_berechnet_start
-                ) / gesamt_dauer
-                ziel_rate = self._dyn("nachholrate_ziel")
-                gesamt_gate = ("bestanden" if gesamt_rate >= ziel_rate
-                               else "nicht erreicht")
-                if gesamt_rate < ziel_rate:
-                    self.protokoll_schreiben(
-                        "Nachholrate %.3f s/s unterschreitet das Ziel "
-                        "von %.2f s/s." % (gesamt_rate, ziel_rate))
-                self._solver_status_aktualisieren({
-                    "Nachholrate gesamt": "%.3f s/s" % gesamt_rate,
-                    "Nachholrate ≥1,25": gesamt_gate,
-                    "Nachholfenster s/s": ", ".join(
-                        "%.3f" % rate
-                        for rate in self._echtzeit_nachholen_raten),
-                    **self._echtzeit_zeitbilanz_status(),
-                })
-                self._echtzeit_modus = "normal"
-                self._echtzeit_nachholen_start = None
-            elif (self._echtzeit_nachholen_fenster_start is not None
-                  and jetzt - self._echtzeit_nachholen_fenster_start >= 1.0):
-                fenster_dauer = (
-                    jetzt - self._echtzeit_nachholen_fenster_start)
-                rate = (
-                    self._echtzeit_berechnet_s
-                    - self._echtzeit_nachholen_fenster_berechnet
-                ) / fenster_dauer
-                self._echtzeit_nachholen_raten.append(rate)
-                if rate < self._dyn("nachholrate_ziel"):
-                    self.protokoll_schreiben(
-                        "Nachholrate im Messfenster %.3f s/s "
-                        "unterschreitet %.2f s/s."
-                        % (rate, self._dyn("nachholrate_ziel")))
-                self._echtzeit_nachholen_fenster_start = jetzt
-                self._echtzeit_nachholen_fenster_berechnet = (
-                    self._echtzeit_berechnet_s)
-                self._solver_status_aktualisieren({
-                    "Nachholrate letztes Fenster": "%.3f s/s" % rate,
-                    **self._echtzeit_zeitbilanz_status(),
-                })
-        elif not schnell and rueckstand >= self._dyn(
-                "ueberlast_rueckstand_s"):
-            if self._echtzeit_ueberlast_seit is None:
-                self._echtzeit_ueberlast_seit = jetzt
+        if rueckstand >= self._dyn("ueberlast_rueckstand_s"):
             self._echtzeit_modus = "ueberlast_beobachtung"
-            if jetzt - self._echtzeit_ueberlast_seit >= self._dyn(
-                    "ueberlast_dauer_s"):
-                self.protokoll_schreiben(
-                    "Echtzeit automatisch pausiert: Rückstand %.3f s "
-                    "bestand mindestens %.1f s."
-                    % (rueckstand, self._dyn("ueberlast_dauer_s")))
-                self._zeit_pausieren(automatisch=True)
-                self._solver_status_aktualisieren({
-                    "Lösungstyp": "Automatisch pausiert (Überlast)",
-                    **self._echtzeit_zeitbilanz_status(),
-                })
-                return
         else:
-            self._echtzeit_ueberlast_seit = None
             self._echtzeit_modus = "normal"
         dt = self._echtzeit_physik.dt_s
         if not math.isfinite(dt) or dt <= 0.0:
@@ -1540,7 +1853,7 @@ class HauptFenster(QMainWindow):
         anzahl_schritte = min(
             int((self._echtzeit_akkumulator + 1e-12) / dt),
             (self._dyn("max_schritte_nachholen")
-             if self._echtzeit_modus == "nachholen"
+             if self._echtzeit_modus == "ueberlast_beobachtung"
              else self._dyn("max_schritte_pro_aufgabe")))
         if anzahl_schritte == 0:
             return
@@ -1565,7 +1878,8 @@ class HauptFenster(QMainWindow):
             self._echtzeit_kraftfunktion, koerper, self._echtzeit_physik,
             dt, anzahl_schritte, self._echtzeit_signale,
             prozess_executor=self._echtzeit_aktiver_prozess_executor,
-            fremdkraft=self._fremdkraft_aktuell())
+            fremdkraft=self._fremdkraft_aktuell(),
+            ruderwinkel_rad=math.radians(self._ruderwinkel_feld.value()))
         self._echtzeit_aufgabe_laeuft = True
         self._echtzeit_aufgabe_sequenz_laufend = sequenz
         self._echtzeit_schritte_laufend = anzahl_schritte
@@ -1614,11 +1928,6 @@ class HauptFenster(QMainWindow):
                 % (koerper_name, state_error))
             return
         zustand = koerper.zustand
-        if (self._echtzeit_modus == "ueberlast_beobachtung"
-                and self._echtzeit_rueckstand_s() < self._dyn(
-                    "ueberlast_rueckstand_s")):
-            self._echtzeit_ueberlast_seit = None
-            self._echtzeit_modus = "normal"
         vorherige_anzeige = (
             self._echtzeit_anzeige_ziel or self._echtzeit_zustand)
         self._echtzeit_zustand = koerper.zustand
@@ -1661,6 +1970,23 @@ class HauptFenster(QMainWindow):
                  w["betrag"] * math.sin(el))
         return kraft, (w["x"], w["y"], w["z"])
 
+    def _ruderwinkel_geaendert(self, winkel_grad):
+        """Uebergibt den festen Ruderwinkel an das aktive Kraftmodell."""
+        winkel_rad = math.radians(float(winkel_grad))
+        kraftfunktion = self._echtzeit_kraftfunktion
+        if kraftfunktion is not None:
+            try:
+                kraftfunktion.ruderwinkel_setzen(winkel_rad)
+            except (AttributeError, ValueError) as fehler:
+                self.protokoll_schreiben(
+                    "Ruderwinkel konnte nicht gesetzt werden: %s" % fehler)
+                return
+        if self._btn_statisch.isChecked():
+            self._statische_simulation_ausfuehren()
+        elif not self._echtzeit_timer.isActive():
+            self._echtzeit_kraefteresultat = None
+            self._aktuelles_kraftbild_aktualisieren()
+
     def _fremdkraft_geaendert(self, *_):
         if self._btn_statisch.isChecked():
             fremdkraft = self._fremdkraft_aktuell()
@@ -1695,6 +2021,16 @@ class HauptFenster(QMainWindow):
             daten = self._statische_arbeitsdaten.get(name)
             koerper = self._laufzeit_koerper.get(name)
             if daten is None or koerper is None:
+                continue
+            stationaer = ergebnis.get("stationaer_hydrodynamik")
+            if stationaer is not None:
+                stufe = stationaer.stufen[-1]
+                pose, v, omega, _rotation = _stationaere_kraftlage(stufe)
+                kraefteresultat = daten[0](pose, v=v, omega=omega)
+                self._kraftbild_daten_setzen(
+                    bruecke, name, koerper, daten[0], daten[1],
+                    stufe.pose[2], stufe.pose[3],
+                    ergebnis=kraefteresultat)
                 continue
             self._kraftbild_daten_setzen(
                 bruecke, name, koerper, daten[0], daten[1],

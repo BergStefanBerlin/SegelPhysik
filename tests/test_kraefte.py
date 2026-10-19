@@ -4,7 +4,9 @@ import numpy as np
 from segelphysik.core import kraefte_bild as kb
 from segelphysik.core.overlays import (LayerRegistry, LAYER_KRAEFTE,
                                        LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN,
-                                       LAYER_MOMENTE, LAYER_FREMDKRAFT)
+                                       LAYER_MOMENTE, LAYER_FREMDKRAFT,
+                                       LAYER_HYDRO_RUMPF, LAYER_HYDRO_KIEL,
+                                       LAYER_HYDRO_RUDER)
 
 
 class _V:
@@ -35,7 +37,9 @@ def _wirft(funktion, *args):
 def test_r1_registry_kraefte_layer():
     reg = LayerRegistry()
     assert set(reg.zustand()) == {LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN,
-                                  LAYER_KRAEFTE, LAYER_MOMENTE, LAYER_FREMDKRAFT}
+                                  LAYER_KRAEFTE, LAYER_MOMENTE,
+                                  LAYER_FREMDKRAFT, LAYER_HYDRO_RUMPF,
+                                  LAYER_HYDRO_KIEL, LAYER_HYDRO_RUDER}
     assert not reg.ist_an(LAYER_KRAEFTE)
     assert reg.umschalten(LAYER_KRAEFTE) is True
     assert reg.ist_an(LAYER_KRAEFTE)
@@ -106,7 +110,7 @@ def test_r10_bridge_kraefte_api_ohne_pyvista():
     assert b._kraefte_namen("boot")[:4] == [
         "kraefte_boot_fg", "kraefte_boot_fa",
         "kraefte_boot_arm", "kraefte_boot_moment"]
-    assert len(b._kraefte_namen("boot")) == 17
+    assert len(b._kraefte_namen("boot")) == 19
     erg = _Erg(1.0, (0, 0, 0), 981.0, (0, 0, 0))
     b.kraefte_daten_setzen("boot", erg, 100.0, 9.81, 1e-3)
     assert "boot" in b._kraefte_daten
@@ -165,6 +169,75 @@ def test_zusatz_pfeile_zeigen_querkraefte_und_resultierende():
         F_gesamt=Vektor((0.0, 0.0, 981.0)), F_A=Vektor((0.0, 0.0, 981.0)))
     assert kb.zusatz_pfeile(gleichgewicht, (0, 0, 0), 100.0, 9.81, 0.01) == (
         None, None)
+
+
+def test_wirkungslinie_trifft_benetztes_mesh_und_beruecksichtigt_moment():
+    punkte = np.array([
+        (-1, -1, -1), (1, -1, -1), (1, 1, -1), (-1, 1, -1),
+        (-1, -1, 1), (1, -1, 1), (1, 1, 1), (-1, 1, 1),
+    ], dtype=float)
+    dreiecke = np.array([
+        (0, 2, 1), (0, 3, 2), (4, 5, 6), (4, 6, 7),
+        (0, 1, 5), (0, 5, 4), (1, 2, 6), (1, 6, 5),
+        (2, 3, 7), (2, 7, 6), (3, 0, 4), (3, 4, 7),
+    ])
+
+    wirkung = kb.wirkungslinie_auf_geometrie(
+        (1, 0, 0), (0, 0, 0.25), (0, 0, 0),
+        punkte, dreiecke)
+    assert np.allclose(wirkung["anker"], (0, -0.25, 0))
+    assert np.allclose(wirkung["richtung"], (1, 0, 0))
+    assert abs(abs(wirkung["schnittpunkt"][0]) - 1.0) < 1e-12
+    assert np.allclose(wirkung["schnittpunkt"][1:], (-0.25, 0.0))
+
+
+def test_wirkungslinie_ohne_meshschnitt_liefert_expliziten_anker():
+    wirkung = kb.wirkungslinie_auf_geometrie(
+        (1, 0, 0), (0, 0, 2), (0, 0, 0),
+        np.empty((0, 3)), np.empty((0, 3), dtype=np.int64))
+    assert wirkung["schnittpunkt"] is None
+    assert np.allclose(wirkung["anker"], (0, -2, 0))
+
+
+def test_hydrodynamikkraefte_liegen_auf_bauteilwirkungslinien():
+    from segelphysik.core.auftrieb import Auftriebsergebnis, Vektor
+    from segelphysik.core.kraftmodell import KraftErgebnis, Kraftbeitrag, Wrench
+    from segelphysik import grafik_bruecke as gb
+
+    punkte = np.array([
+        (-1, -1, -1), (1, -1, -1), (1, 1, -1), (-1, 1, -1),
+        (-1, -1, 1), (1, -1, 1), (1, 1, 1), (-1, 1, 1),
+    ], dtype=float)
+    dreiecke = np.array([
+        (0, 2, 1), (0, 3, 2), (4, 5, 6), (4, 6, 7),
+        (0, 1, 5), (0, 5, 4), (1, 2, 6), (1, 6, 5),
+        (2, 3, 7), (2, 7, 6), (3, 0, 4), (3, 4, 7),
+    ])
+    hydro = Auftriebsergebnis(1.0, (0, 0, 0), (0, 0, 1000), (0, 0, 0))
+    beitrag = Kraftbeitrag(
+        "hydrodynamik_rumpf",
+        Wrench("simulationsframe", (0, 0, -1), (10, 0, 0), (0, 0, 0.25)))
+    erg = KraftErgebnis(
+        hydro, Vektor((10, 0, 1000)), Vektor((0, -0.25, 0)),
+        (0.0,) * 6, (beitrag,), (0, 0, -1))
+    bruecke = gb.GrafikBruecke()
+    bruecke._koerper["boot"] = {
+        "aktiv": True, "position": np.array((0.0, 0.0, -1.0)),
+        "benetzte_geometrie": (punkte, dreiecke),
+    }
+    gezeichnet = {}
+    bruecke._kraftpfeil_zeichnen = (
+        lambda _store, name, _stil, pfeil: gezeichnet.__setitem__(
+            name, pfeil))
+    bruecke.kraefte_daten_setzen("boot", erg, 100.0, 9.81, 0.01)
+    bruecke._layer.setzen(LAYER_HYDRO_RUMPF, True)
+    bruecke._kraefte_actors("boot")
+
+    assert set(gezeichnet) == {"kraefte_boot_hydro_rumpf_0"}
+    assert np.allclose(
+        gezeichnet["kraefte_boot_hydro_rumpf_0"]["start"][1:],
+        (-0.025, -1.0))
+
 
 def test_fremdkraft_wirkt_als_kraft_und_moment_um_den_schwerpunkt():
     import numpy as np

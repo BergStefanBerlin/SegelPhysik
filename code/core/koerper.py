@@ -34,6 +34,7 @@ class KoerperSnapshot:
     version: int
     basis_pose: object = None
     gelenkzustaende: tuple = ()
+    hydrodynamik_teile: tuple = ()
 
     def __post_init__(self):
         traegheit = np.array(self.traegheitstensor, dtype=np.float64, copy=True)
@@ -45,8 +46,17 @@ class KoerperSnapshot:
             p.setflags(write=False)
             f.setflags(write=False)
             meshes.append((p, f))
+        hydrodynamik_teile = []
+        for rolle, name, punkte, dreiecke in self.hydrodynamik_teile:
+            p = np.array(punkte, dtype=np.float64, copy=True)
+            f = np.array(dreiecke, dtype=np.int64, copy=True)
+            p.setflags(write=False)
+            f.setflags(write=False)
+            hydrodynamik_teile.append((rolle, name, p, f))
         object.__setattr__(self, "traegheitstensor", traegheit)
         object.__setattr__(self, "blatt_meshes", tuple(meshes))
+        object.__setattr__(
+            self, "hydrodynamik_teile", tuple(hydrodynamik_teile))
 
 
 @dataclass(frozen=True, slots=True)
@@ -450,8 +460,9 @@ class Koerper:
         """Erzeugt einen unveränderlichen Snapshot für Solver und Worker."""
         blatt_meshes = []
         gelenke = []
+        hydrodynamik_teile = []
 
-        def sammle(knoten, rotation, translation):
+        def sammle(knoten, rotation, translation, rolle_default=None):
             if knoten.gelenkdefinition is not None:
                 gelenke.append(GelenkSnapshot(
                     knoten.knoten_id,
@@ -461,10 +472,22 @@ class Koerper:
                 ))
             if knoten.teile:
                 for kind, (R, t) in knoten.teile:
-                    sammle(kind, rotation @ R, translation + rotation @ t)
-            elif knoten.verdrangend:
+                    sammle(
+                        kind, rotation @ R, translation + rotation @ t,
+                        getattr(knoten, "rolle_default", None)
+                        or rolle_default)
+            else:
+                rolle = getattr(knoten, "rolle", None) or rolle_default
                 punkte = knoten.punkte @ rotation.T + translation
-                blatt_meshes.append((punkte, knoten.dreiecke))
+                if knoten.verdrangend:
+                    blatt_meshes.append((punkte, knoten.dreiecke))
+                if rolle in ("rumpf", "kiel", "ruder"):
+                    hydrodynamik_teile.append((
+                        rolle,
+                        str(knoten.name or knoten.knoten_id or knoten.rolle),
+                        punkte,
+                        knoten.dreiecke,
+                    ))
 
         sammle(self, np.eye(3), np.zeros(3))
         return KoerperSnapshot(
@@ -476,6 +499,7 @@ class Koerper:
             self._version,
             self.basis_pose,
             tuple(gelenke),
+            tuple(hydrodynamik_teile),
         )
 
     def gelenkwinkel_setzen(self, knoten_id, winkel_rad):

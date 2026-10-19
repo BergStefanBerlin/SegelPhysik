@@ -144,3 +144,43 @@ def test_h8_ungueltige_standardfarbe_fehler():
         _schreibe(od, _mat(), kor)
         with pytest.raises(KonfigFehler, match="farbe_standard"):
             lade_konfig(od)
+
+def _hydrodynamikprofil():
+    return {
+        "modell": "generischer_volumenkoerper",
+        "cd_volumenkoerper": 1.05,
+        "testkraft_N": [10.0, 0.0, 0.0],
+        "angriffspunkt_m": [0.0, 0.0, 0.0],
+        "referenzgeschwindigkeit_m_pro_s": 1.0,
+        "ruderwinkel_grad": 0.0,
+        "status": "vorläufig",
+    }
+
+def test_hydrodynamikprofil_laesst_sich_validiert_laden():
+    with tempfile.TemporaryDirectory() as od:
+        kor = _kor()
+        kor["hydrodynamik"] = {"quader": _hydrodynamikprofil()}
+        _schreibe(od, _mat(), kor)
+
+        konfiguration = lade_konfig(od)
+
+        assert konfiguration.hydrodynamik_profile["quader"][
+            "cd_volumenkoerper"] == 1.05
+
+@pytest.mark.parametrize(
+    ("aenderung", "meldung"),
+    (({"cd_volumenkoerper": float("nan")}, "cd_volumenkoerper"),
+     ({"referenzgeschwindigkeit_m_pro_s": 0.0},
+      "referenzgeschwindigkeit"),
+     ({"testkraft_N": [1.0, float("inf"), 0.0]}, "testkraft_N")))
+def test_hydrodynamikprofil_lehnt_ungueltige_parameter_ab(
+        aenderung, meldung):
+    with tempfile.TemporaryDirectory() as od:
+        profil = _hydrodynamikprofil()
+        profil.update(aenderung)
+        kor = _kor()
+        kor["hydrodynamik"] = {"quader": profil}
+        _schreibe(od, _mat(), kor)
+
+        with pytest.raises(KonfigFehler, match=meldung):
+            lade_konfig(od)

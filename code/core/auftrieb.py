@@ -80,31 +80,26 @@ class Auftriebsergebnis:
 
 
 def lage_pruefen(lage):
-    """Validiert die Lage (z, phi, theta); theta ist Wache (D6)."""
+    """Validiert Tauchung sowie Kraengungs- und Trimwinkel."""
     if len(lage) != 3:
         raise AuftriebFehler(
             "Lage muss (Tauchung z, Kraengung phi, Trim theta) sein, "
             "erhalten: %r" % (lage,))
     z, phi, theta = (float(x) for x in lage)
-    if theta != 0.0:
-        raise AuftriebFehler(
-            "Trim theta ist Platzhalter mit Wache (D6): theta=%g unzulaessig "
-            "(Rechnung erst in Schritt 3)" % theta)
+    if not np.isfinite((z, phi, theta)).all():
+        raise AuftriebFehler("Lagewerte muessen endlich sein")
     return z, phi, theta
 
 
 def pose_matrix(z, phi, theta=0.0):
-    """4x4 Pose-Matrix: Rotation um die Laengsachse (Welt-x, Rollwinkel phi)
-    + Translation z entlang Welt-z (D11: z = z-Position von r_S).
-
-    R_x(phi): positive phi dreht +y nach oben und -y (Steuerbord) nach
-    unten -> Kraengung nach Steuerbord (D11)."""
-    c, s = np.cos(phi), np.sin(phi)
+    """4x4 Pose: zuerst Roll um x, danach Trim um y, dann Weltz-Translation."""
+    cphi, sphi = np.cos(phi), np.sin(phi)
+    ctheta, stheta = np.cos(theta), np.sin(theta)
     T = np.eye(4)
     T[:3, :3] = np.array([
-        [1.0, 0.0, 0.0],
-        [0.0, c, -s],
-        [0.0, s, c],
+        [ctheta, stheta * sphi, stheta * cphi],
+        [0.0, cphi, -sphi],
+        [-stheta, ctheta * sphi, ctheta * cphi],
     ])
     T[2, 3] = z
     return T

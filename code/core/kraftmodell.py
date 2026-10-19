@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 
 import numpy as np
 
@@ -28,6 +29,21 @@ def _flussvektor(werte, name):
     if ergebnis.shape != (3,) or not np.isfinite(ergebnis).all():
         raise ValueError("%s muss drei endliche Zahlen enthalten" % name)
     return ergebnis
+
+
+def _hydrostatik_lage(lage):
+    if not isinstance(lage, (tuple, list)) or len(lage) != 2:
+        return lage
+    position = np.asarray(lage[0], dtype=np.float64)
+    quaternion = np.asarray(lage[1], dtype=np.float64)
+    if position.shape != (3,) or quaternion.shape != (4,):
+        return lage
+    from .dynamik_6dof import quaternion_matrix
+
+    rotation = quaternion_matrix(quaternion)
+    phi = math.atan2(rotation[2, 1], rotation[2, 2])
+    theta = math.asin(float(np.clip(-rotation[2, 0], -1.0, 1.0)))
+    return float(position[2]), phi, theta
 
 
 @dataclass(frozen=True)
@@ -107,6 +123,10 @@ class KraftErgebnis:
     beitraege: tuple[Kraftbeitrag, ...] = ()
     bezugspunkt_m: tuple[float, float, float] = (0.0, 0.0, 0.0)
     schwerkraft_beruecksichtigt: bool = False
+    linear_widerstand: tuple[float, ...] = (0.0,) * 6
+    quadratischer_widerstand: tuple[float, ...] = (0.0,) * 6
+    fluidgeschwindigkeit: tuple[float, ...] = (0.0,) * 3
+    fluidwinkelgeschwindigkeit: tuple[float, ...] = (0.0,) * 3
 
     @property
     def V_tauch(self):
@@ -162,7 +182,9 @@ class KraftErgebnis:
         return KraftErgebnis(
             self.hydrostatik, Vektor(kraft), Vektor(moment),
             self.added_mass_diagonal, beitraege,
-            self.bezugspunkt_m, self.schwerkraft_beruecksichtigt)
+            self.bezugspunkt_m, self.schwerkraft_beruecksichtigt,
+            self.linear_widerstand, self.quadratischer_widerstand,
+            self.fluidgeschwindigkeit, self.fluidwinkelgeschwindigkeit)
 
 
 class Kraftmodell:
@@ -177,7 +199,7 @@ class Kraftmodell:
                  fluidgeschwindigkeit=(0.0, 0.0, 0.0),
                  fluidwinkelgeschwindigkeit=(0.0, 0.0, 0.0),
                  added_mass_diagonal=(0.0,) * 6, masse=None,
-                 g=9.80665):
+                 g=9.80665, hydrodynamik=None):
         if not callable(hydrostatik):
             raise TypeError("Hydrostatik muss aufrufbar sein")
         self.hydrostatik = hydrostatik
@@ -194,6 +216,12 @@ class Kraftmodell:
             added_mass_diagonal, "Added Mass", nichtnegativ=True)
         self.masse = None if masse is None else float(masse)
         self.g = float(g)
+        if (hydrodynamik is not None
+                and not callable(getattr(
+                    hydrodynamik, "beitraege_erzeugen", None))):
+            raise TypeError(
+                "Hydrodynamik muss benannte Kraftbeitraege erzeugen")
+        self.hydrodynamik = hydrodynamik
         if self.masse is not None and (
                 not np.isfinite(self.masse) or self.masse <= 0.0):
             raise ValueError("Körpermasse muss endlich und positiv sein")
@@ -203,7 +231,8 @@ class Kraftmodell:
         self.fremdkraft = None
 
     def __call__(self, lage, v=None, omega=None):
-        hydro = self.hydrostatik(lage, v=v, omega=omega)
+        hydro = self.hydrostatik(
+            _hydrostatik_lage(lage), v=v, omega=omega)
         return self.mit_hydrostatik(hydro, v=v, omega=omega, lage=lage)
 
     def fremdkraft_setzen(self, fremdkraft):
@@ -215,6 +244,13 @@ class Kraftmodell:
         kraft, punkt = fremdkraft
         self.fremdkraft = (_flussvektor(kraft, "Fremdkraft"),
                            _flussvektor(punkt, "Fremdkraft-Angriffspunkt"))
+
+    def ruderwinkel_setzen(self, winkel_rad):
+        if self.hydrodynamik is None:
+            if float(winkel_rad) == 0.0:
+                return
+            raise ValueError("Dieses Kraftmodell hat kein Rudermodell")
+        self.hydrodynamik.ruderwinkel_setzen(winkel_rad)
 
     def mit_hydrostatik(self, hydro, v=None, omega=None, lage=None):
         """Wendet Kraftmodule auf ein bereits ausgewertetes Hydrostatikergebnis an."""
@@ -240,6 +276,9 @@ class Kraftmodell:
                 tuple(float(w) for w in widerstand[:3]),
                 tuple(float(w) for w in widerstand[3:]))),
         ]
+        if self.hydrodynamik is not None and lage is not None:
+            beitraege.extend(self.hydrodynamik.beitraege_erzeugen(
+                lage, v=geschwindigkeit, omega=winkelgeschwindigkeit))
         if self.fremdkraft is not None and lage is not None:
             kraft_f, punkt = self.fremdkraft
             q = np.asarray(lage[1], dtype=np.float64)
@@ -273,7 +312,11 @@ class Kraftmodell:
         return KraftErgebnis(
             hydro, Vektor(gesamt.kraft_N), Vektor(gesamt.moment_Nm),
             tuple(float(wert) for wert in self.added_mass_diagonal),
-            beitraege, position, schwerkraft_beruecksichtigt)
+            beitraege, position, schwerkraft_beruecksichtigt,
+            tuple(float(wert) for wert in self.linear_widerstand),
+            tuple(float(wert) for wert in self.quadratischer_widerstand),
+            tuple(float(wert) for wert in self.fluidgeschwindigkeit),
+            tuple(float(wert) for wert in self.fluidwinkelgeschwindigkeit))
 
 
 class KraftmodellMitHydroCache:
@@ -290,6 +333,9 @@ class KraftmodellMitHydroCache:
 
     def fremdkraft_setzen(self, fremdkraft):
         self.kraftmodell.fremdkraft_setzen(fremdkraft)
+
+    def ruderwinkel_setzen(self, winkel_rad):
+        self.kraftmodell.ruderwinkel_setzen(winkel_rad)
 
     def aktualisieren(self):
         self._hydrostatik = None
@@ -319,7 +365,8 @@ def _position_aus_lage(lage):
     return (0.0, 0.0, z) if np.isfinite(z) else (0.0, 0.0, 0.0)
 
 
-def baue_kraftmodell(hydrostatik, physik, *, masse=None, g=None):
+def baue_kraftmodell(hydrostatik, physik, *, masse=None, g=None,
+                     hydrodynamik=None):
     """Baut das konfigurierte Gesamtmodell; ungesetzte Module bleiben aus."""
     linear = list(physik.linear_widerstand)
     linear[2] += physik.daempfung_tauchung
@@ -332,4 +379,5 @@ def baue_kraftmodell(hydrostatik, physik, *, masse=None, g=None):
         fluidwinkelgeschwindigkeit=physik.fluidwinkelgeschwindigkeit,
         added_mass_diagonal=physik.added_mass_diagonal,
         masse=masse,
-        g=physik.g_m_pro_s2 if g is None else g)
+        g=physik.g_m_pro_s2 if g is None else g,
+        hydrodynamik=hydrodynamik)

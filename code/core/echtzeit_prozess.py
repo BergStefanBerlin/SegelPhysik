@@ -10,19 +10,26 @@ _dt = None
 _g = None
 
 
-def initialisieren(koerper, rho_w, physik, hydrostatik_pfad="exakt_union"):
+def initialisieren(koerper, rho_w, physik, hydrostatik_pfad="exakt_union",
+                   cd_volumenkoerper=None):
     """Bereitet das unveränderliche Kraftmodell einmal pro Worker vor."""
     global _kraftfunktion, _masse, _traegheit, _dt, _g
     from .auftrieb import baue_kraftfunktion_6dof
     from .kraftmodell import KraftmodellMitHydroCache, baue_kraftmodell
+    from .hydrodynamik import HydrodynamikModell
 
     hydrostatik = baue_kraftfunktion_6dof(
         koerper, rho_w=rho_w, g=physik.g_m_pro_s2,
         pfad=hydrostatik_pfad)
+    hydrodynamik = HydrodynamikModell.aus_koerper(
+        koerper, rho_kg_m3=rho_w,
+        cd_volumenkoerper=cd_volumenkoerper,
+        fluidgeschwindigkeit=physik.fluidgeschwindigkeit,
+        fluidwinkelgeschwindigkeit=physik.fluidwinkelgeschwindigkeit)
     _kraftfunktion = KraftmodellMitHydroCache(
         baue_kraftmodell(
             hydrostatik, physik, masse=koerper.masse,
-            g=physik.g_m_pro_s2),
+            g=physik.g_m_pro_s2, hydrodynamik=hydrodynamik),
         intervall=1)
     _masse = float(koerper.masse)
     _traegheit = koerper.traegheitstensor
@@ -30,7 +37,8 @@ def initialisieren(koerper, rho_w, physik, hydrostatik_pfad="exakt_union"):
     _g = float(physik.g_m_pro_s2)
 
 
-def schritte_berechnen(zustand, anzahl_schritte, fremdkraft=None):
+def schritte_berechnen(zustand, anzahl_schritte, fremdkraft=None,
+                       ruderwinkel_rad=0.0):
     """Berechnet einen Batch und gibt nur pickelbare Ergebnisdaten zurück."""
     from .dynamik_6dof import schritt
 
@@ -39,6 +47,7 @@ def schritte_berechnen(zustand, anzahl_schritte, fremdkraft=None):
     _kraftfunktion.aktualisieren()
     try:
         _kraftfunktion.fremdkraft_setzen(fremdkraft)
+        _kraftfunktion.ruderwinkel_setzen(ruderwinkel_rad)
         for _ in range(anzahl_schritte):
             zustand, ergebnis = schritt(
                 zustand, _kraftfunktion, _masse, _traegheit, _dt, _g)

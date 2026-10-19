@@ -193,16 +193,47 @@ def schritt(zustand, kraftfunktion, masse, traegheit_koerper, dt, g):
 
     if getattr(ergebnis, "schwerkraft_beruecksichtigt", False) is not True:
         kraft = kraft + np.array((0.0, 0.0, -masse * g))
-    kraft_koerper = rotation.T @ kraft
-    moment_koerper = rotation.T @ moment
-    a = np.linalg.solve(
-        mass_translation,
-        kraft_koerper - np.cross(omega, mass_translation @ v))
-    alpha = np.linalg.solve(
-        mass_rotation,
-        moment_koerper - np.cross(omega, mass_rotation @ omega))
-    v_neu = v + a * dt
-    omega_neu = omega + alpha * dt
+    linear_widerstand = _vektor(
+        getattr(ergebnis, "linear_widerstand", (0.0,) * 6),
+        "Linearer Widerstand", 6)
+    quadratischer_widerstand = _vektor(
+        getattr(ergebnis, "quadratischer_widerstand", (0.0,) * 6),
+        "Quadratischer Widerstand", 6)
+    fluidgeschwindigkeit = _vektor(
+        getattr(ergebnis, "fluidgeschwindigkeit", (0.0,) * 3),
+        "Fluidgeschwindigkeit", 3)
+    fluidwinkelgeschwindigkeit = _vektor(
+        getattr(ergebnis, "fluidwinkelgeschwindigkeit", (0.0,) * 3),
+        "Fluid-Winkelgeschwindigkeit", 3)
+    rel_v = rotation @ v - fluidgeschwindigkeit
+    rel_omega = rotation @ omega - fluidwinkelgeschwindigkeit
+    # Use the local drag slope implicitly so stiff configured damping cannot
+    # reverse velocity or angular velocity in a single integration step.
+    daempfungsrate = (
+        linear_widerstand + quadratischer_widerstand
+        * np.abs(np.concatenate((rel_v, rel_omega))))
+    kraft_daempfung = -daempfungsrate[:3] * rel_v
+    moment_daempfung = -daempfungsrate[3:] * rel_omega
+    matrix_translation = (
+        mass_translation
+        + dt * rotation.T @ np.diag(daempfungsrate[:3]) @ rotation)
+    matrix_rotation = (
+        mass_rotation
+        + dt * rotation.T @ np.diag(daempfungsrate[3:]) @ rotation)
+    v_neu = np.linalg.solve(
+        matrix_translation,
+        mass_translation @ v + dt * (
+            rotation.T @ (kraft[:3] - kraft_daempfung)
+            + rotation.T @ (daempfungsrate[:3] * fluidgeschwindigkeit)
+            - np.cross(omega, mass_translation @ v)))
+    omega_neu = np.linalg.solve(
+        matrix_rotation,
+        mass_rotation @ omega + dt * (
+            rotation.T @ (moment[:3] - moment_daempfung)
+            + rotation.T @ (daempfungsrate[3:] * fluidwinkelgeschwindigkeit)
+            - np.cross(omega, mass_rotation @ omega)))
+    a = (v_neu - v) / dt
+    alpha = (omega_neu - omega) / dt
     q_neu = _orientierung_schritt(q, omega_neu, dt)
     rotation_neu = quaternion_matrix(q_neu)
     position_neu = position + rotation_neu @ v_neu * dt

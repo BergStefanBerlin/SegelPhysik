@@ -79,6 +79,27 @@ def test_reine_rotation_nutzt_koerpertraegheit_und_normiertes_quaternion():
     assert ende.quaternion[1] == pytest.approx(np.sin(0.005))
 
 
+def test_starke_lineare_rotationsdaempfung_bleibt_implizit_stabil():
+    masse, g, dt = 1.0, 9.81, 0.004
+
+    def kraftfunktion(_lage, *, omega, **_kwargs):
+        return SimpleNamespace(
+            F_A=Vektor((0.0, 0.0, masse * g)),
+            M=Vektor((-8000.0 * omega[0], 0.0, 0.0)),
+            linear_widerstand=(0.0, 0.0, 0.0, 8000.0, 0.0, 0.0),
+        )
+
+    zustand = Zustand6DOF(winkelgeschwindigkeit_koerper=(1.0, 0.0, 0.0))
+    for _ in range(100):
+        zustand, _ = schritt(
+            zustand, kraftfunktion, masse, np.eye(3), dt, g)
+
+    assert np.isfinite(zustand.winkelgeschwindigkeit_koerper).all()
+    assert zustand.winkelgeschwindigkeit_koerper[0] == pytest.approx(
+        (1.0 / (1.0 + dt * 8000.0)) ** 100)
+    assert zustand.winkelgeschwindigkeit_koerper[0] >= 0.0
+
+
 def test_drehimpuls_aendert_sich_entsprechend_dem_aeusseren_drehmoment():
     masse, dt, g = 2.0, 1e-7, 9.81
     traegheit = np.diag((2.0, 3.0, 4.0))

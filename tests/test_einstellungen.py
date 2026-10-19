@@ -47,6 +47,9 @@ def test_alte_datei_1_0_bleibt_ladbar(tmp_path):
     assert e.get("anzeigen", "titel_beschreibung_sichtbar") is True
     assert e.get("anzeigen", "analog_sichtbar") is True
     assert e.get("anzeigen", "numerisch_sichtbar") is True
+    assert e.get("anzeigen", "hydrodynamik_rumpf") is True
+    assert e.get("anzeigen", "hydrodynamik_kiel") is True
+    assert e.get("anzeigen", "hydrodynamik_ruder") is True
     assert e.meldungen == []
 
 
@@ -177,7 +180,8 @@ def test_anzeigeoptionen_dialog_speichert_sichtbarkeit(tmp_path):
     assert e.get("anzeigen", "analog_sichtbar") is True
 
 
-def test_takt_schnellmodus_rechnet_ohne_rueckstand_und_pause(tmp_path, monkeypatch):
+def test_takt_schnellmodus_erhaelt_rueckstand_statt_zeit_zu_verwerfen(
+        tmp_path, monkeypatch):
     import time
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     from PySide6.QtWidgets import QApplication
@@ -190,22 +194,30 @@ def test_takt_schnellmodus_rechnet_ohne_rueckstand_und_pause(tmp_path, monkeypat
     f._einstellungen = Einstellungen.laden(str(tmp_path / "s.json"))
     f._einstellungen.setzen("dynamisch", "zeitgenau", False)
     f._einstellungen.setzen("dynamisch", "max_schritte_pro_aufgabe", 5)
+    f._einstellungen.setzen("dynamisch", "max_schritte_nachholen", 5)
     f._echtzeit_physik = type("P", (), {"dt_s": 0.01})()
     f._echtzeit_zustand = Zustand6DOF()
     f._echtzeit_kraftfunktion = lambda *a: None
+    f._btn_echtzeit.setChecked(True)
     f._laufzeit_koerper["k"] = SimpleNamespace(
         zustand=f._echtzeit_zustand,
         snapshot=lambda: SimpleNamespace(
             zustand=f._echtzeit_zustand, version=0))
     f._echtzeit_name = "k"
-    # lange "Wandzeit" seit dem letzten Takt darf keinen Rueckstand erzeugen
+    # Ueberlange Wandzeit bleibt als Rueckstand erhalten; nichts wird verworfen.
     f._echtzeit_letzte_wandzeit = time.perf_counter() - 100.0
     f._echtzeit_takt()
     assert len(gestartet) == 1 and f._echtzeit_schritte_laufend == 5
-    assert f._echtzeit_modus == "normal"
-    assert f._echtzeit_rueckstand_s() == pytest.approx(0.05)
-    f._echtzeit_takt()          # Auftrag laeuft noch: kein zweiter Start
+    assert f._echtzeit_modus == "ueberlast_beobachtung"
+    assert f._echtzeit_angefordert_s == pytest.approx(100.0, abs=0.01)
+    assert f._echtzeit_rueckstand_s() == pytest.approx(100.0, abs=0.01)
+    assert f._echtzeit_akkumulator == pytest.approx(99.95, abs=0.01)
+    assert f._btn_echtzeit.isChecked()
+    angefordert = f._echtzeit_angefordert_s
+    f._echtzeit_takt()          # Laufender Auftrag: Zeit trotzdem buchen.
     assert len(gestartet) == 1
+    assert f._echtzeit_angefordert_s >= angefordert
+    assert f._btn_echtzeit.isChecked()
 
 def test_takt_schnellmodus_nie_schneller_als_reale_zeit(tmp_path, monkeypatch):
     import time

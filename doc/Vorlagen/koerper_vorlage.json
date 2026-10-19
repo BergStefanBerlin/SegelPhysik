@@ -97,6 +97,35 @@
       "farbe_unter_wasser": "#1565b3"
     }
   },
+  "hydrodynamik": {
+    "_beschreibung": "Optional. Profile sind Testanregungen, keine gemessenen Realwerte.",
+    "yacht1": {
+      "modell": "rumpf_kiel_ruder",
+      "testkraft_N": [469.08, 0.0, 0.0],
+      "angriffspunkt_m": [0.0, 0.0, 1.5],
+      "referenzgeschwindigkeit_m_pro_s": 1.0,
+      "ruderwinkel_grad": 0.0,
+      "status": "vorläufig; unabhängige Referenz erforderlich"
+    },
+    "quader": {
+      "modell": "generischer_volumenkoerper",
+      "cd_volumenkoerper": 1.05,
+      "testkraft_N": [2100.0, 0.0, 0.0],
+      "angriffspunkt_m": [0.0, 0.0, 0.0],
+      "referenzgeschwindigkeit_m_pro_s": 1.0,
+      "ruderwinkel_grad": 0.0,
+      "status": "vorläufig; angenommene Stirnfläche"
+    },
+    "kugel": {
+      "modell": "generischer_volumenkoerper",
+      "cd_volumenkoerper": 0.47,
+      "testkraft_N": [738.27, 0.0, 0.0],
+      "angriffspunkt_m": [0.0, 0.0, 0.0],
+      "referenzgeschwindigkeit_m_pro_s": 1.0,
+      "ruderwinkel_grad": 0.0,
+      "status": "vorläufig; angenommene Stirnfläche"
+    }
+  },
   "darstellung": {
     "grundkoerper": {
       "cone": "#ff6a00",

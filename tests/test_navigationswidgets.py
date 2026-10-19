@@ -211,10 +211,36 @@ def test_fenster_zeigt_drei_widgets_stapelbar_und_settings_unabhaengig(qapp):
         assert oben + widget.height() <= window.height()
     values = navigationswerte_ableiten(_gieren_heading(0.0))
     window.aktualisieren(values, {})
+    speed_xml = ET.fromstring(
+        window.geschwindigkeit_widget._rendered_bytes)
+    speed_values = {
+        element.attrib.get("id"): element.text
+        for element in speed_xml.iter()
+    }
+    assert [speed_values[name] for name in (
+        "speed_ms", "speed_kmh", "speed_kn")] == ["—", "—", "—"]
+    window.aktualisieren(values, {}, 10.0)
+    speed_xml = ET.fromstring(
+        window.geschwindigkeit_widget._rendered_bytes)
+    speed_values = {
+        element.attrib.get("id"): element.text
+        for element in speed_xml.iter()
+    }
+    assert [speed_values[name] for name in (
+        "speed_ms", "speed_kmh", "speed_kn")] == [
+            "10.00", "36.00", "19.44"]
+    assert window.geschwindigkeit_widget._renderer.isValid()
     window.sichtbarkeit_setzen({"titel_sichtbar": False})
     assert all(
         "display: none" in widget._rendered_bytes.decode("utf-8")
         for widget in window.widgets)
+    speed_xml = ET.fromstring(
+        window.geschwindigkeit_widget._rendered_bytes)
+    speed_values = {
+        element.attrib.get("id"): element.text
+        for element in speed_xml.iter()
+    }
+    assert speed_values["speed_ms"] == "10.00"
     window.close()
 
 

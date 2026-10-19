@@ -35,7 +35,9 @@ except ImportError:
     from segelphysik import wasser_schnitt as ws
 from .core.overlays import (LayerRegistry, hauptachsen,
                             LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN,
-                            LAYER_KRAEFTE, LAYER_MOMENTE, LAYER_FREMDKRAFT)
+                            LAYER_KRAEFTE, LAYER_MOMENTE, LAYER_FREMDKRAFT,
+                            LAYER_HYDRO_RUMPF, LAYER_HYDRO_KIEL,
+                            LAYER_HYDRO_RUDER)
 from .core.frames import pose_mit_gelenkwinkel
 from .core import pfeilstil
 
@@ -192,6 +194,24 @@ def _farbgruppen(koerper):
                         "farbe_unten": kind.unterwasser_farbe(),
                         "glanz": kind.glanz})
     return gruppen
+
+
+def _benetzte_geometrie(koerper):
+    """Fasst nur verdrängende Blattmeshes im Schwerpunktframe zusammen."""
+    snapshot = koerper.snapshot()
+    meshes = snapshot.blatt_meshes
+    if not meshes:
+        return None
+    punkte = []
+    dreiecke = []
+    versatz = 0
+    for mesh_punkte, mesh_dreiecke in meshes:
+        mesh_punkte = np.asarray(mesh_punkte, dtype=np.float64)
+        mesh_dreiecke = np.asarray(mesh_dreiecke, dtype=np.int64)
+        punkte.append(mesh_punkte)
+        dreiecke.append(mesh_dreiecke + versatz)
+        versatz += len(mesh_punkte)
+    return np.concatenate(punkte), np.concatenate(dreiecke)
 
 
 class GrafikBruecke:
@@ -454,6 +474,7 @@ class GrafikBruecke:
             self._koerper[name]["phase"] = phase
         self._koerper[name]["koerper"] = koerper
         self._koerper[name]["overlay_skala"] = self._overlay_skala(koerper)
+        self._koerper[name]["benetzte_geometrie"] = _benetzte_geometrie(koerper)
         self._einhaengen(name)
 
     def gelenkwinkel_setzen(self, name, knoten_id, winkel_rad):
@@ -479,6 +500,7 @@ class GrafikBruecke:
             alt["punkte"] = neu["punkte"]
             alt["pd"]["referenz_punkte"] = np.array(
                 neu["punkte"], dtype=np.float64, copy=True)
+        koerperanzeige["benetzte_geometrie"] = _benetzte_geometrie(koerper)
         self._statisch_anwenden(name, koerperanzeige)
         return True
 
@@ -487,10 +509,10 @@ class GrafikBruecke:
         if alt is None:
             return
         if self._plotter is not None:
-            namen = (self._actor_namen(name) + self._overlay_namen(name)
-                     + self._kraefte_namen(name))
+            namen = self._actor_namen(name) + self._overlay_namen(name)
             for actor_name in namen:
                 self._actor_weg(actor_name)
+            self._kraefte_entfernen(name)
         self._koerper.pop(name)
         self._kraefte_daten.pop(name, None)
 
@@ -562,12 +584,12 @@ class GrafikBruecke:
             except Exception:
                 pass
         if not sichtbar:
-            for n in self._actor_namen(name) + self._overlay_namen(name) \
-                    + self._kraefte_namen(name):
+            for n in self._actor_namen(name) + self._overlay_namen(name):
                 try:
                     self._actor_weg(n)
                 except Exception:
                     pass
+            self._kraefte_entfernen(name)
             k["actors"] = {}
             k["overlay_actors"] = {}
             k["kraefte_actors"] = {}
@@ -866,6 +888,7 @@ class GrafikBruecke:
         "zusatz": "zusatz", "fremd": "fremd", "fremd_mx": "fremdm_x",
         "fremd_my": "fremdm_y", "fremd_mz": "fremdm_z",
         "mges_x": "mges_x", "mges_y": "mges_y", "mges_z": "mges_z",
+        "hydro_sum": "hydro_sum",
     }
 
     def _kraefte_namen(self, name):
@@ -877,7 +900,9 @@ class GrafikBruecke:
                 "kraefte_%s_fremdm_x" % name, "kraefte_%s_fremdm_y" % name,
                 "kraefte_%s_fremdm_z" % name, "kraefte_%s_mges_x" % name,
                 "kraefte_%s_mges_y" % name, "kraefte_%s_mges_z" % name,
-                "kraefte_%s_auftriebsp_kontur" % name]
+                "kraefte_%s_auftriebsp_kontur" % name,
+                "kraefte_%s_hydro_sum" % name,
+                "kraefte_%s_hydro_wirkungslinie" % name]
 
     def _pfeil_name(self, name, pfeil_id):
         return "kraefte_%s_%s" % (name, self._ACTOR_ENDUNG[pfeil_id])
@@ -1137,6 +1162,87 @@ class GrafikBruecke:
                 except Exception:
                     pass
 
+        hydro_layer = {
+            "rumpf": LAYER_HYDRO_RUMPF,
+            "kiel": LAYER_HYDRO_KIEL,
+            "ruder": LAYER_HYDRO_RUDER,
+        }
+        hydro_summe = "kraefte_%s_hydro_wirkungslinie" % name
+        hydro_gezeichnet = set()
+        for index, beitrag in enumerate(getattr(erg, "beitraege", ())):
+            if not beitrag.name.startswith("hydrodynamik_"):
+                continue
+            rolle = beitrag.name[len("hydrodynamik_"):].split("_", 1)[0]
+            layer = hydro_layer.get(rolle)
+            if layer is None or not self._layer.ist_an(layer):
+                continue
+            wrench = beitrag.wrench
+            vektor = np.asarray(wrench.kraft_N, dtype=float)
+            moment = np.asarray(wrench.moment_Nm, dtype=float)
+            betrag_quadrat = float(np.dot(vektor, vektor))
+            if betrag_quadrat <= 1e-18:
+                continue
+            start = cm + np.cross(vektor, moment) / betrag_quadrat
+            st = self._stil_pfeil("zusatz", k)
+            vektor = vektor * skala * st["skala"]
+            if not st["sichtbar"] or float(np.linalg.norm(vektor)) <= 1e-9:
+                continue
+            pfeil = kb.pfeil_fest(
+                start, vektor, st["durchmesser"], st["kopf_durchmesser"],
+                st["kopf_laenge"], st["mindestlaenge"])
+            actor_name = "kraefte_%s_hydro_%s_%d" % (
+                name, rolle, index)
+            self._kraftpfeil_zeichnen(store, actor_name, st, pfeil)
+            hydro_gezeichnet.add(actor_name)
+
+        for actor_name in tuple(store):
+            if (actor_name.startswith("kraefte_%s_hydro_" % name)
+                    and actor_name not in (
+                        "kraefte_%s_hydro_sum" % name, hydro_summe)
+                    and actor_name not in hydro_gezeichnet):
+                store.pop(actor_name, None)
+                self._actor_weg(actor_name)
+
+        hydro_beitraege = tuple(
+            beitrag for beitrag in getattr(erg, "beitraege", ())
+            if beitrag.name.startswith("hydrodynamik_"))
+        if self._layer.ist_an(LAYER_KRAEFTE) and hydro_beitraege:
+            from .core.kraftmodell import aggregiere_kraftbeitraege
+            wrench, _ = aggregiere_kraftbeitraege(hydro_beitraege, cm)
+            f_hydro = np.asarray(wrench.kraft_N, dtype=float)
+            m_hydro = np.asarray(wrench.moment_Nm, dtype=float)
+            if float(np.linalg.norm(f_hydro)) > 1e-9:
+                mesh = k.get("benetzte_geometrie")
+                if mesh is not None:
+                    punkte, dreiecke = mesh
+                    wirkung = kb.wirkungslinie_auf_geometrie(
+                        f_hydro, m_hydro, cm, punkte, dreiecke,
+                        rotation=k.get("statisch_R", np.eye(3)))
+                else:
+                    wirkung = None
+                if wirkung is not None and wirkung["schnittpunkt"] is not None:
+                    kraft("hydro_sum", wirkung["schnittpunkt"], f_hydro, 0.0)
+                    if store.pop(hydro_summe, None) is not None:
+                        self._actor_weg(hydro_summe)
+                else:
+                    st = self._stil_pfeil("hydro_sum", k)
+                    if st["sichtbar"]:
+                        anker = (cm + np.cross(f_hydro, m_hydro)
+                                 / float(np.dot(f_hydro, f_hydro))
+                                 if wirkung is None else wirkung["anker"])
+                        richtung = (f_hydro / np.linalg.norm(f_hydro)
+                                    if wirkung is None
+                                    else wirkung["richtung"])
+                        halbe_laenge = max(ausdehnung, 0.1)
+                        linie = pv.Line(
+                            tuple(anker - halbe_laenge * richtung),
+                            tuple(anker + halbe_laenge * richtung)).tube(
+                                radius=0.5 * st["durchmesser"], n_sides=8)
+                        self._mesh_setzen(
+                            store, hydro_summe, linie, st["vordergrund"],
+                            color=st["farbe"], opacity=st["deckkraft"])
+                        gezeichnet.add(hydro_summe)
+
         fremd_kraft = fremd_angriff = None
         if daten.get("fremd") is not None:
             kraft_f = np.asarray(daten["fremd"][0], float)
@@ -1181,7 +1287,10 @@ class GrafikBruecke:
 
     def _kraefte_entfernen(self, name):
         store = self._koerper.get(name, {}).get("kraefte_actors", {})
-        for n in self._kraefte_namen(name):
+        namen = self._kraefte_namen(name)
+        namen.extend(
+            n for n in store if n.startswith("kraefte_%s_hydro_" % name))
+        for n in namen:
             if store.pop(n, None) is None:
                 continue
             try:
@@ -1355,7 +1464,10 @@ class GrafikBruecke:
         if ((self._layer.ist_an(LAYER_KRAEFTE)
              or self._layer.ist_an(LAYER_MOMENTE)
              or self._layer.ist_an(LAYER_FREMDKRAFT)
-             or self._layer.ist_an(LAYER_SCHWERPUNKT))
+             or self._layer.ist_an(LAYER_SCHWERPUNKT)
+             or self._layer.ist_an(LAYER_HYDRO_RUMPF)
+             or self._layer.ist_an(LAYER_HYDRO_KIEL)
+             or self._layer.ist_an(LAYER_HYDRO_RUDER))
                 and name in self._kraefte_daten):
             self._kraefte_actors(name)
         else:

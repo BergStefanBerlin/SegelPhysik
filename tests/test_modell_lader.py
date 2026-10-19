@@ -407,8 +407,23 @@ def test_bestandsmodelle_stimmen_mit_phase3_goldenwerten_ueberein():
         for manifest in lade_modellkatalog(
             wurzel / "code" / "modelle", materialien)
     }
+    historische_dichten = {
+        "rolle": 2700.0,
+        "platte": 7850.0,
+        "unregelmaessig": 2600.0,
+    }
 
     for modell_id, erwartung in golden["modelle"].items():
+        erwartung = dict(erwartung)
+        if modell_id in historische_dichten:
+            # Keep the historical geometry baseline while scaling homogeneous
+            # mass properties to the current, explicitly buoyant test density.
+            faktor = (
+                konfiguration.summenkoerper[modell_id]["dichte_kg_pro_m3"]
+                / historische_dichten[modell_id])
+            erwartung["masse_kg"] *= faktor
+            erwartung["traegheit_kg_m2"] = (
+                np.asarray(erwartung["traegheit_kg_m2"]) * faktor)
         legacy, offset = baue_summenkoerper(
             konfiguration, modell_id,
             eintrag=konfiguration.summenkoerper[modell_id])

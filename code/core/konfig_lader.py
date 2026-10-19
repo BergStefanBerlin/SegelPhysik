@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # Lader fuer die Konfig-Dateien (Spec V4 J; J-1/J-2 13.10.: summenkoerper).
 # koerper.json: 'summenkoerper' (beliebig viele Hauptobjekte; 'teile'=Verband,
-# 'form'=einfache Figur cone/box/pyramid) + darstellung (standard_ansicht T-2).
+# 'form'=einfache Figur cone/box/pyramid), optionale Hydrodynamikprofile und
+# 'darstellung' (standard_ansicht T-2).
 # Kein stiller Fallback; der feste Schluessel 'boot' ist entfernt (klare
 # Meldung); unbekannte Top-Level-Abschnitte werden abgelehnt.
 # Massen-Regel P3 am Blatt: 'material' ODER Direkt-Tripel
@@ -105,7 +106,7 @@ def _val_teil(e,pfad,mats):
         _hex(e.get("farbe"),h+".farbe"); _hex(e.get("farbe_unter_wasser"),h+".farbe_unter_wasser")
     if "wanddicke_m" in e: _pos(e["wanddicke_m"],h+".wanddicke_m")
 
-_KOERPER_TOP=("summenkoerper","darstellung")
+_KOERPER_TOP=("summenkoerper","darstellung","hydrodynamik")
 
 from .koerper_formen import FORMEN as _FORMEN
 
@@ -156,6 +157,79 @@ def _val_form(e,h,mats):
         _hex(e.get("farbe"),h+".farbe"); _hex(e.get("farbe_unter_wasser"),h+".farbe_unter_wasser")
     if "wanddicke_m" in e: _pos(e["wanddicke_m"],h+".wanddicke_m")
 
+def _val_hydrodynamik(d, summenkoerper, pfad):
+    profile = d.get("hydrodynamik", {})
+    if not isinstance(profile, dict):
+        raise KonfigFehler("%s.hydrodynamik: Objekt erwartet" % pfad)
+    for koerper_id, eintrag in profile.items():
+        if koerper_id.startswith("_"):
+            continue
+        h = "%s.hydrodynamik.%s" % (pfad, koerper_id)
+        if koerper_id not in summenkoerper:
+            raise KonfigFehler(
+                "%s: Hydrodynamikprofil verweist auf unbekannten Körper"
+                % h)
+        koerper = summenkoerper[koerper_id]
+        if not isinstance(eintrag, dict):
+            raise KonfigFehler("%s: Objekt erwartet" % h)
+        modell = eintrag.get("modell")
+        if modell not in ("rumpf_kiel_ruder", "generischer_volumenkoerper"):
+            raise KonfigFehler(
+                "%s.modell: erwartet rumpf_kiel_ruder oder "
+                "generischer_volumenkoerper" % h)
+        if modell == "generischer_volumenkoerper" and "form" not in koerper:
+            raise KonfigFehler(
+                "%s: generischer_volumenkoerper benötigt einen einzelnen "
+                "form-Körper" % h)
+        if modell == "rumpf_kiel_ruder" and "teile" not in koerper:
+            raise KonfigFehler(
+                "%s: rumpf_kiel_ruder benötigt einen zusammengesetzten "
+                "teile-Körper" % h)
+        erlaubte = {
+            "modell", "cd_volumenkoerper", "testkraft_N",
+            "angriffspunkt_m", "referenzgeschwindigkeit_m_pro_s",
+            "ruderwinkel_grad", "status",
+        }
+        fremd = [key for key in eintrag if key not in erlaubte
+                 and not key.startswith("_")]
+        if fremd:
+            raise KonfigFehler("%s: unbekannte Schlüssel %s" % (h, fremd))
+        kraft = eintrag.get("testkraft_N")
+        punkt = eintrag.get("angriffspunkt_m")
+        for wert, name in ((kraft, "testkraft_N"),
+                           (punkt, "angriffspunkt_m")):
+            if (not isinstance(wert, list) or len(wert) != 3
+                    or any(isinstance(x, bool)
+                           or not isinstance(x, (int, float))
+                           or not math.isfinite(float(x)) for x in wert)):
+                raise KonfigFehler(
+                    "%s.%s: drei endliche SI-Werte erwartet" % (h, name))
+        referenz = eintrag.get("referenzgeschwindigkeit_m_pro_s")
+        if (isinstance(referenz, bool)
+                or not isinstance(referenz, (int, float))
+                or not math.isfinite(float(referenz))
+                or float(referenz) <= 0.0):
+            raise KonfigFehler(
+                "%s.referenzgeschwindigkeit_m_pro_s: positive endliche "
+                "Zahl erwartet" % h)
+        winkel = eintrag.get("ruderwinkel_grad")
+        if (isinstance(winkel, bool) or not isinstance(winkel, (int, float))
+                or not math.isfinite(float(winkel))
+                or abs(float(winkel)) > 90.0):
+            raise KonfigFehler(
+                "%s.ruderwinkel_grad: endliche Zahl im Bereich "
+                "[-90, 90] erwartet" % h)
+        status = eintrag.get("status")
+        if not isinstance(status, str) or not status.strip():
+            raise KonfigFehler("%s.status: nicht leerer Text erwartet" % h)
+        if modell == "generischer_volumenkoerper":
+            cd = eintrag.get("cd_volumenkoerper")
+            if (isinstance(cd, bool) or not isinstance(cd, (int, float))
+                    or not math.isfinite(float(cd)) or float(cd) <= 0.0):
+                raise KonfigFehler(
+                    "%s.cd_volumenkoerper: positive endliche Zahl "
+                    "erwartet" % h)
+
 def _val_koerper(d,mats,pfad):
     fr=[s for s in d if s not in _KOERPER_TOP and not s.startswith("_")]
     if fr: raise KonfigFehler("%s: unbekannte Abschnitte %s (erlaubt: %s; Unterstrich = Doku)"%(pfad,fr,", ".join(_KOERPER_TOP)))
@@ -176,6 +250,7 @@ def _val_koerper(d,mats,pfad):
             for i,x in enumerate(t): _val_teil(x,"%s.teile[%d]"%(h,i),mats)
         elif hf: _val_form(e,h,mats)
         else: raise KonfigFehler("%s: weder 'teile' noch 'form' (J-1)"%h)
+    _val_hydrodynamik(d, sk, pfad)
     da=d.get("darstellung")
     if not isinstance(da,dict): raise KonfigFehler("%s: Abschnitt 'darstellung' fehlt"%pfad)
     dl=da.get("delta_helligkeit_unterwasser")
@@ -217,6 +292,13 @@ class Konfiguration:
     def summenkoerper(self):
         # J-1: Dict aller Hauptobjekte {name: eintrag}
         return self._k["summenkoerper"]
+    @property
+    def hydrodynamik_profile(self):
+        return {
+            name: dict(profil)
+            for name, profil in self._k.get("hydrodynamik", {}).items()
+            if not name.startswith("_")
+        }
     @property
     def standard_ansicht(self):
         # T-2: Start-Hauptobjekt oder None

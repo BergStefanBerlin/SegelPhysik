@@ -73,6 +73,29 @@ def test_schwerkraft_ist_kraftbeitrag_und_wird_im_integrator_nicht_doppelt():
     assert ende.geschwindigkeit_koerper == pytest.approx((0.0, 0.0, 0.0))
 
 
+def test_6dof_pose_wird_fuer_hydrostatik_auf_z_roll_trim_abgebildet():
+    auswertung = []
+
+    def hydro(lage, **_kwargs):
+        auswertung.append(lage)
+        return _hydro()
+
+    from segelphysik.core.dynamik_6dof import quaternion_aus_matrix
+    phi, theta = 0.12, -0.08
+    cphi, sphi = np.cos(phi), np.sin(phi)
+    ctheta, stheta = np.cos(theta), np.sin(theta)
+    rotation = np.array([
+        [ctheta, stheta * sphi, stheta * cphi],
+        [0.0, cphi, -sphi],
+        [-stheta, ctheta * sphi, ctheta * cphi],
+    ])
+    modell = Kraftmodell(hydro)
+
+    modell(((2.0, 3.0, -0.4), quaternion_aus_matrix(rotation)))
+
+    assert auswertung[0] == pytest.approx((-0.4, phi, theta))
+
+
 def test_lineare_quadratische_widerstaende_nutzen_relativgeschwindigkeit():
     modell = Kraftmodell(
         lambda *_args, **_kwargs: _hydro(moment=(7.0, 0.0, 0.0)),

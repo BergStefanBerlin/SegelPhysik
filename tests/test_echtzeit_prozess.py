@@ -31,13 +31,46 @@ def test_worker_initialisierung_uebernimmt_feste_hydrostatikzuordnung(
         masse=3.0, traegheitstensor=((1.0, 0.0, 0.0),
                                      (0.0, 1.0, 0.0),
                                      (0.0, 0.0, 1.0)))
-    physik = SimpleNamespace(dt_s=0.01, g_m_pro_s2=9.81)
+    physik = SimpleNamespace(
+        dt_s=0.01, g_m_pro_s2=9.81,
+        fluidgeschwindigkeit=(0.0, 0.0, 0.0),
+        fluidwinkelgeschwindigkeit=(0.0, 0.0, 0.0))
     echtzeit_prozess.initialisieren(
         koerper, 1000.0, physik, hydrostatik_pfad="voxel_opencl")
 
     assert aufrufe == [{
         "rho_w": 1000.0, "g": 9.81, "pfad": "voxel_opencl"}]
-    assert kraftmodell_aufrufe == [{"masse": 3.0, "g": 9.81}]
+    assert kraftmodell_aufrufe == [{
+        "masse": 3.0, "g": 9.81, "hydrodynamik": None}]
+
+
+def test_worker_initialisierung_uebernimmt_generischen_cd(monkeypatch):
+    aufrufe = []
+    monkeypatch.setattr(
+        "segelphysik.core.auftrieb.baue_kraftfunktion_6dof",
+        lambda *_args, **_kwargs: lambda *_a, **_k: None)
+    monkeypatch.setattr(
+        "segelphysik.core.hydrodynamik.HydrodynamikModell.aus_koerper",
+        lambda _koerper, **kwargs: aufrufe.append(kwargs) or None)
+    monkeypatch.setattr(
+        "segelphysik.core.kraftmodell.baue_kraftmodell",
+        lambda funktion, _physik, **_kwargs: funktion)
+    monkeypatch.setattr(
+        "segelphysik.core.kraftmodell.KraftmodellMitHydroCache",
+        lambda funktion, intervall: funktion)
+
+    koerper = SimpleNamespace(
+        masse=3.0, traegheitstensor=((1.0, 0.0, 0.0),
+                                     (0.0, 1.0, 0.0),
+                                     (0.0, 0.0, 1.0)))
+    physik = SimpleNamespace(
+        dt_s=0.01, g_m_pro_s2=9.81,
+        fluidgeschwindigkeit=(0.0, 0.0, 0.0),
+        fluidwinkelgeschwindigkeit=(0.0, 0.0, 0.0))
+    echtzeit_prozess.initialisieren(
+        koerper, 1000.0, physik, cd_volumenkoerper=1.05)
+
+    assert aufrufe[0]["cd_volumenkoerper"] == 1.05
 
 
 def test_gui_erstellt_prozessworker_fuer_unveraenderlichen_koerpersnapshot(
@@ -77,11 +110,12 @@ def test_gui_erstellt_prozessworker_fuer_unveraenderlichen_koerpersnapshot(
         executor = fenster._echtzeit_prozess_pool_aktualisieren(
             snapshot, 1000.0,
             SimpleNamespace(g_m_pro_s2=9.81, dt_s=0.004),
-            "exakt_union")
+            "exakt_union", cd_volumenkoerper=1.05)
 
         assert executor is erstellte_executor[0]
         assert executor.kwargs["max_workers"] == 1
         assert executor.kwargs["initargs"][0] is snapshot
+        assert executor.kwargs["initargs"][-1] == 1.05
     finally:
         fenster.close()
         app.processEvents()

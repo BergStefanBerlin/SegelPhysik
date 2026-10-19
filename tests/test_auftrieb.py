@@ -164,13 +164,21 @@ def test_n8_ueberlappung_union():
     erg_x = au.kraftfunktion_berechne(gruppe, (0.0, 0.0, 0.0), pfad="exakt")
     assert abs(erg_x.V_tauch - 8.0) < 1e-9  # dokumentiert die Blatt-Doppelzaehlung
 
-def test_n9_theta_wache():
-    k = DummyKoerper([quader_mesh(1, 1, 1)])
-    try:
-        au.kraftfunktion_berechne(k, (0.0, 0.0, 0.05))
-        raise RuntimeError("haette werfen sollen")
-    except au.AuftriebFehler:
-        pass
+def test_n9_trim_rotation_is_supported_without_changing_zero_trim():
+    k = DummyKoerper([zentriere(quader_mesh(2, 4, 2))])
+    theta = np.radians(6.0)
+    z, phi, trim = au.lage_pruefen((0.0, 0.0, theta))
+    assert trim == pytest.approx(theta)
+    pose = au.pose_matrix(z, phi, trim)
+    assert pose[:3, :3].T @ pose[:3, :3] == pytest.approx(np.eye(3))
+    assert pose[:3, :3] == pytest.approx(np.array([
+        [np.cos(theta), 0.0, np.sin(theta)],
+        [0.0, 1.0, 0.0],
+        [-np.sin(theta), 0.0, np.cos(theta)],
+    ]))
+    erg = au.kraftfunktion_berechne(
+        k, (0.0, 0.0, theta), pfad="exakt")
+    assert np.isfinite(erg.F_A.as_array()).all()
 
 def test_n10_pfad_validierung():
     k = DummyKoerper([quader_mesh(1, 1, 1)])
