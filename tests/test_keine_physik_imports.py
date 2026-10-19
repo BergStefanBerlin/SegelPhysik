@@ -3,9 +3,10 @@ import os, re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..")
-NEU = ["code/demo_app.py", "code/steuerung.py",
-       "code/grafik_bruecke.py",
-       "code/core/bewegung.py", "code/core/koerper_formen.py"]
+QUELLEN = os.path.join("code", "python", "segelphysik")
+NEU = [os.path.join(QUELLEN, rel) for rel in (
+    "demo_app.py", "steuerung.py", "grafik_bruecke.py",
+    "core/bewegung.py", "core/koerper_formen.py")]
 VERBOTEN = ["forces", "solver", "bodies", "sph", "fluid"]
 
 

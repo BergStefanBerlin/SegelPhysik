@@ -169,7 +169,7 @@ class SVGInstrumentWidget(QWidget):
         self.typ = typ
         self._prefix = _WIDGET_ASSETS[typ][1]
         widget_dir = (
-            Path(__file__).resolve().parents[2]
+            Path(__file__).resolve().parents[4]
             / "doc" / "WegZuV1.0" / "Revisionslog" / "zuV0.7" / "Widgets"
         )
         self._source_path = widget_dir / _WIDGET_ASSETS[typ][0]

@@ -5,13 +5,13 @@ import os
 
 VERBOTEN = ("PySide6", "pyvistaqt", "PyQt5", "PyQt6")
 WURZELN = ("core", "render")
-BASIS = os.path.join(os.path.dirname(__file__), "..", "code")
+BASIS = os.path.join(
+    os.path.dirname(__file__), "..", "code", "python", "segelphysik")
 
 
 def _py_dateien(rel):
     ordner = os.path.join(BASIS, rel)
-    if not os.path.isdir(ordner):
-        return
+    assert os.path.isdir(ordner), "Quellordner fehlt: %s" % ordner
     for wurzel, _, dateien in os.walk(ordner):
         for name in dateien:
             if name.endswith(".py"):

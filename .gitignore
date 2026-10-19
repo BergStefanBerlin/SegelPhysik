@@ -6,3 +6,4 @@ tmp_*/
 .venv-py313/
 konfigurationen/segler.json
 konfigurationen/segler.json.*.tmp
+/build/

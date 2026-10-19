@@ -75,7 +75,7 @@ def _form_knoten(name,eintrag):
 def welt_aus_konfig(konfig):
     """T-4: baut den Welt-Knoten aus dem Konfiguration-Objekt (J-1)."""
     repo_konfigurationen = os.path.abspath(os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "..", "..",
+        os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..",
         "konfigurationen"))
     ordner = getattr(konfig, "ordner", None)
     if (ordner is not None

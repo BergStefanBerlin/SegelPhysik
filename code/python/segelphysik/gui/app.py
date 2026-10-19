@@ -28,7 +28,7 @@ def _log(msg):
 def _finde_koerper_json():
     ordner = os.path.dirname(os.path.abspath(__file__))
     kandidaten = [
-        os.path.abspath(os.path.join(ordner, "..", "..",
+        os.path.abspath(os.path.join(ordner, "..", "..", "..", "..",
                                      "konfigurationen", "koerper.json")),
         os.path.abspath(os.path.join(os.getcwd(), "konfigurationen",
                                      "koerper.json")),

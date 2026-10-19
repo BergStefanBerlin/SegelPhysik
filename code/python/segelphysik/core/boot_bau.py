@@ -17,7 +17,7 @@ import numpy as np
 from .massen import validiere_mesh_eingaben
 
 MODELL_ORDNER = os.path.normpath(os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "..", "modelle"))
+    os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "modelle"))
 TEILE = ("rumpf", "kiel", "bulb", "mast", "boom", "grosssegel", "fock", "ruder")
 SKALA = 0.25   # Modell ~16.9 lang -> ~4.2 m im 10-m-Becken
 

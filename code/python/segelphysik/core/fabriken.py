@@ -232,7 +232,7 @@ def _ist_repo_konfig(konfig):
     if ordner is None:
         return False
     repo_konfigurationen = os.path.abspath(os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "..", "..",
+        os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..",
         "konfigurationen"))
     return os.path.normcase(os.path.abspath(ordner)) == os.path.normcase(
         repo_konfigurationen)

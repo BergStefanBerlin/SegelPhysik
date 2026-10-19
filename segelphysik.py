@@ -1,4 +1,6 @@
-"""Expose the application package stored in the repository's ``code`` folder."""
+"""Expose the application package stored in ``code/python/segelphysik``."""
 from pathlib import Path
 
-__path__ = [str(Path(__file__).resolve().parent / "code")]
+__path__ = [
+    str(Path(__file__).resolve().parent / "code" / "python" / "segelphysik")
+]

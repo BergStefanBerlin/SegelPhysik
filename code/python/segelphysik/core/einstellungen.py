@@ -123,7 +123,7 @@ MIGRATIONEN = {}
 
 def standard_ordner():
     return os.path.abspath(os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "..", "..",
+        os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..",
         "konfigurationen"))
 
 
@@ -131,7 +131,7 @@ def vorlage_laden(pfad=None):
     """Vorlage aus der Dokumentation; bei Fehler die eingebaute."""
     if pfad is None:
         pfad = os.path.abspath(os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "..", "..", "doc",
+            os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "doc",
             "Vorlagen", VORLAGE_DATEINAME))
     try:
         with open(pfad, encoding="utf-8") as f:

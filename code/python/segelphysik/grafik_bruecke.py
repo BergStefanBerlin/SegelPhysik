@@ -1,5 +1,5 @@
 """Grafik-Bruecke V3 (Additivprinzip): verbindet die fertige v0.4-
-Render-Pipeline (code/render/vista.py - UNVERAENDERT) mit der
+Render-Pipeline (code/python/segelphysik/render/vista.py - UNVERAENDERT) mit der
 kinematischen Demo. Mehrkoerper-faehig.
 
 Wasserlinie (Verfahren B): Jeder Koerper wird pro Frame von
