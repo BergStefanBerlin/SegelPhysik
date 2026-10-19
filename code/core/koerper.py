@@ -109,7 +109,7 @@ class Koerper:
                  glanz=None, rel_pose=None, teile=(), knoten_id=None,
                  name=None, rolle=None, rolle_default=None,
                  verdrangend=None, strenge_topologie=False,
-                 basis_pose=None, gelenkdefinition=None,
+                 basis_pose=None, gelenkdefinition=None, punktmasse=False,
                  gelenkwinkel_rad=None, zustand=Zustand6DOF()):
         self.farbe = farbe
         self.farbe_unter_wasser = farbe_unter_wasser
@@ -140,10 +140,29 @@ class Koerper:
             self.zustand = zustand
         self.mesh = None
         self.massendefinition = None
+        self.punktmasse = punktmasse
         if rel_pose is not None:
             self.setze_rel_pose(rel_pose)
         teile = list(teile)
         anzahl = sum(x is not None for x in (masse, dichte, material, flaechenmasse))
+        if punktmasse:
+            if (form is not None or teile or anzahl != 1 or masse is None
+                    or gelenkdefinition is not None
+                    or verdrangend is not False or isinstance(masse, bool)):
+                raise KoerperFehler(
+                    "Punktmasse benötigt ausschließlich Masse, keine Form, "
+                    "Teile, Gelenke oder Verdrängung")
+            self.masse = float(masse)
+            if not np.isfinite(self.masse) or self.masse <= 0.0:
+                raise KoerperFehler("Punktmasse muss endlich und positiv sein")
+            self.punkte = np.empty((0, 3), dtype=np.float64)
+            self.dreiecke = np.empty((0, 3), dtype=np.int64)
+            self.traegheitstensor = np.zeros((3, 3))
+            self.teile = []
+            self._r_eingabe = np.zeros(3)
+            self._volumen = self._flaeche = 0.0
+            self.verdrangend = False
+            return
         if form is None:
             if anzahl:
                 raise KoerperFehler("P2.5: reine Gruppe ohne eigene Form darf keine Massengroesse tragen")
@@ -302,7 +321,8 @@ class Koerper:
             else:
                 try:
                     kind = cls(
-                        form=spec["form"],
+                        form=spec.get("form"),
+                        punktmasse=spec.get("punktmasse", False),
                         masse=spec.get("masse"), dichte=spec.get("dichte"),
                         material=spec.get("material"),
                         flaechenmasse=spec.get("flaechenmasse"),

@@ -59,6 +59,8 @@ class ModellKnoten:
     verdraengend: bool | None = None
     pose: ModellPose | None = None
     gelenk: ModellGelenk | None = None
+    masse_kg: float | None = None
+    position_rumpf_m: tuple[float, float, float] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -75,6 +77,7 @@ class ModellManifest:
         tuple[float, float, float],
     ]
     koerper: ModellKnoten
+    rumpfreferenz_m: tuple[float, float, float] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -137,6 +140,12 @@ def _zahl(wert, kontext, positiv=False):
         eigenschaft = "positive endliche Zahl" if positiv else "endliche Zahl"
         raise ModellFehler("%s: %s erwartet" % (kontext, eigenschaft))
     return wert
+
+
+def _vektor3(wert, kontext):
+    if not isinstance(wert, list) or len(wert) != 3:
+        raise ModellFehler("%s: drei Koordinaten erwartet" % kontext)
+    return tuple(_zahl(x, kontext) for x in wert)
 
 
 def _farbe(wert, kontext):
@@ -327,6 +336,21 @@ def _knoten_laden(
         wert, kontext, paketwurzel, materialien, ids, geerbte_rolle,
         pruefe_dateipfade, eltern_id=None):
     _mapping(wert, kontext)
+    if "masse_kg" in wert:
+        _felder(wert, {"id", "name", "masse_kg", "position_rumpf_m"},
+                set(), kontext)
+        if wert["id"] != "segler" or eltern_id is None:
+            raise ModellFehler(
+                "%s: Massenblatt muss 'segler' in einer Gruppe sein" % kontext)
+        if "segler" in ids:
+            raise ModellFehler("%s: doppelte Knoten-ID 'segler'" % kontext)
+        ids.add("segler")
+        return ModellKnoten(
+            "segler", _text(wert["name"], kontext + ".name"),
+            rolle="allgemein", verdraengend=False,
+            masse_kg=_zahl(wert["masse_kg"], kontext + ".masse_kg", positiv=True),
+            position_rumpf_m=_vektor3(
+                wert["position_rumpf_m"], kontext + ".position_rumpf_m"))
     if "teile" in wert:
         _felder(
             wert, {"id", "name", "teile"},
@@ -488,7 +512,7 @@ def lade_modellmanifest(
     _felder(
         daten,
         {"schema_version", "modell", "geometrie_einheiten", "koerper"},
-        set(),
+        {"rumpfreferenz_m"},
         kontext,
     )
     if daten["schema_version"] != _SCHEMA_VERSION:
@@ -552,6 +576,17 @@ def lade_modellmanifest(
         None,
         _pruefe_geometriepfade,
     )
+    referenz = (
+        _vektor3(daten["rumpfreferenz_m"], kontext + ".rumpfreferenz_m")
+        if "rumpfreferenz_m" in daten else None)
+    if "segler" in ids:
+        if referenz is None:
+            raise ModellFehler("%s: Segler benötigt rumpfreferenz_m" % kontext)
+        if not any(k.id == "segler" and k.masse_kg is not None
+                   for k in koerper.teile):
+            raise ModellFehler(
+                "%s: Segler muss direkt im rumpffesten Wurzelframe liegen"
+                % kontext)
     return ModellManifest(
         _SCHEMA_VERSION,
         modell_id,
@@ -561,6 +596,7 @@ def lade_modellmanifest(
         obj_zu_m,
         matrix_tupel,
         koerper,
+        referenz,
     )
 
 
@@ -579,6 +615,8 @@ def lade_modellpaket(paketwurzel, materialien):
         paketwurzel, materialien, _pruefe_geometriepfade=False)
     meshes = {}
     for knoten, knotenpfad in _blaetter(manifest.koerper):
+        if knoten.masse_kg is not None:
+            continue
         kontext = "%s/%s" % (manifest.id, knotenpfad)
         try:
             mesh = mesh_aus_quelle(

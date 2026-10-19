@@ -1,0 +1,166 @@
+{
+  "schema_version": "1.0",
+  "modell": {
+    "id": "optimist",
+    "name": "Optimist (Näherungsmodell)",
+    "beschreibung": "Aus den bereitgestellten Optimist-OBJ-Meshes abgeleitet; Rumpf und Schwert sind geschlossene konvexe Näherungsgeometrien."
+  },
+  "geometrie_einheiten": {
+    "obj_zu_m": 1.0,
+    "obj_achsenmatrix_zu_blatt": [
+      [0, 0, 1],
+      [1, 0, 0],
+      [0, 1, 0]
+    ]
+  },
+  "rumpfreferenz_m": [0, 0, -1.435812],
+  "koerper": {
+    "id": "root",
+    "name": "Optimist",
+    "teile": [
+      {
+        "id": "segler",
+        "name": "Segler (Punktmasse)",
+        "masse_kg": 50,
+        "position_rumpf_m": [0, 0, 0.45]
+      },
+      {
+        "id": "rumpf",
+        "name": "Rumpf",
+        "geometrie": {
+          "quelle": "obj",
+          "datei": "rumpf.obj"
+        },
+        "dichte_kg_pro_m3": 1900,
+        "wanddicke_m": 0.003,
+        "farbe": "#f28c28",
+        "farbe_unter_wasser": "#a95018",
+        "rolle": "rumpf",
+        "verdrängend": true
+      },
+      {
+        "id": "schwert",
+        "name": "Schwert",
+        "geometrie": {
+          "quelle": "obj",
+          "datei": "schwert.obj"
+        },
+        "dichte_kg_pro_m3": 600,
+        "wanddicke_m": 0.004,
+        "farbe": "#6c5543",
+        "farbe_unter_wasser": "#493a2e",
+        "rolle": "kiel",
+        "verdrängend": true
+      },
+      {
+        "id": "ruderanlage",
+        "name": "Ruder",
+        "teile": [
+          {
+            "id": "ruder",
+            "name": "Ruderblatt",
+            "geometrie": {
+              "quelle": "obj",
+              "datei": "ruder.obj"
+            },
+            "dichte_kg_pro_m3": 700,
+            "wanddicke_m": 0.003,
+            "farbe": "#d8d4cc",
+            "farbe_unter_wasser": "#99958e",
+            "rolle": "ruder",
+            "verdrängend": true
+          },
+          {
+            "id": "pinne",
+            "name": "Pinne",
+            "geometrie": {
+              "quelle": "obj",
+              "datei": "pinne.obj"
+            },
+            "dichte_kg_pro_m3": 700,
+            "farbe": "#8a6748",
+            "farbe_unter_wasser": "#624a34",
+            "rolle": "allgemein",
+            "verdrängend": true
+          },
+          {
+            "id": "pinneverlaengerung",
+            "name": "Pinnenausleger",
+            "geometrie": {
+              "quelle": "obj",
+              "datei": "pinneverlaengerung.obj"
+            },
+            "dichte_kg_pro_m3": 700,
+            "farbe": "#8a6748",
+            "farbe_unter_wasser": "#624a34",
+            "rolle": "allgemein",
+            "verdrängend": true
+          },
+          {
+            "id": "gummigelenk",
+            "name": "Gummigelenk",
+            "geometrie": {
+              "quelle": "obj",
+              "datei": "gummigelenk.obj"
+            },
+            "dichte_kg_pro_m3": 1100,
+            "farbe": "#292929",
+            "farbe_unter_wasser": "#1c1c1c",
+            "rolle": "allgemein",
+            "verdrängend": true
+          }
+        ]
+      },
+      {
+        "id": "mast",
+        "name": "Mast",
+        "geometrie": {
+          "quelle": "obj",
+          "datei": "mast.obj"
+        },
+        "material": "Aluminium",
+        "wanddicke_m": 0.001,
+        "rolle": "stehendes_gut",
+        "verdrängend": true
+      },
+      {
+        "id": "baum",
+        "name": "Baum",
+        "geometrie": {
+          "quelle": "obj",
+          "datei": "baum.obj"
+        },
+        "material": "Aluminium",
+        "wanddicke_m": 0.001,
+        "rolle": "stehendes_gut",
+        "verdrängend": true
+      },
+      {
+        "id": "spriet",
+        "name": "Spriet",
+        "geometrie": {
+          "quelle": "obj",
+          "datei": "spriet.obj"
+        },
+        "material": "Aluminium",
+        "wanddicke_m": 0.0008,
+        "rolle": "stehendes_gut",
+        "verdrängend": true
+      },
+      {
+        "id": "segel",
+        "name": "Optimistsegel",
+        "geometrie": {
+          "quelle": "obj",
+          "datei": "segel.obj"
+        },
+        "dichte_kg_pro_m3": 1250,
+        "wanddicke_m": 0.00008,
+        "farbe": "#f8f6ef",
+        "farbe_unter_wasser": "#d3d0c7",
+        "rolle": "segel",
+        "verdrängend": false
+      }
+    ]
+  }
+}

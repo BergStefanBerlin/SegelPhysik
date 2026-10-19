@@ -150,6 +150,8 @@ def _farbgruppen(koerper):
                 if kind.teile:
                     sammle(kind, kind_rotation, kind_translation)
                     continue
+                if not len(kind.dreiecke):
+                    continue
                 schwerpunkt = (
                     kind_translation
                     + kind_rotation @ np.asarray(kind._r_eingabe, float))
@@ -170,6 +172,8 @@ def _farbgruppen(koerper):
         return gruppen
 
     if not getattr(koerper, "teile", None):
+        if not len(koerper.dreiecke):
+            return []
         return [{"punkte": np.asarray(koerper.punkte, float),
                  "dreiecke": np.asarray(koerper.dreiecke, np.int64),
                  "farbe_oben": koerper.farbe,
@@ -183,7 +187,8 @@ def _farbgruppen(koerper):
                 sammle(kind, R @ np.asarray(R2, float),
                        t + R @ np.asarray(t2, float))
         else:
-            blaetter.append((k, R, t))
+            if len(k.dreiecke):
+                blaetter.append((k, R, t))
 
     sammle(koerper, np.eye(3), np.zeros(3))
     gruppen = []
@@ -376,6 +381,12 @@ class GrafikBruecke:
             farbe[:, 3] = np.clip(a * 255.0, 0, 255).astype(np.uint8)
             return farbe
 
+        alt = self._wasserpunkte_meshes.get("wasser_spuren")
+        if (alt is not None and alt.n_points == n * s
+                and alt.n_lines == n * (s - 1)):
+            alt.points = spuren.reshape(-1, 3)
+            alt["rgba"] = rgba(alpha.ravel())
+            return
         linien = np.empty((n * (s - 1), 3), dtype=np.int64)
         basis = (np.arange(n)[:, None] * s + np.arange(s - 1)[None, :]).ravel()
         linien[:, 0] = 2
@@ -839,7 +850,27 @@ class GrafikBruecke:
         if self._plotter is None:
             return False
         self._vordergrund_kamera_abgleichen()
-        self._plotter.render()
+        # QtInteractor.paintGL rendert selbst. Ein synchroner Render davor
+        # zeichnet dieselbe Szene doppelt; update koalesziert nur GUI-Anfragen.
+        from PySide6.QtOpenGLWidgets import QOpenGLWidget
+        if isinstance(self._plotter, QOpenGLWidget):
+            if not getattr(self, "_render_swap_verbunden", False):
+                self._plotter.frameSwapped.connect(self._render_swap_fertig)
+                self._render_swap_verbunden = True
+            self._render_ausstehend = True
+            QOpenGLWidget.update(self._plotter)
+        else:
+            self._plotter.render()
+        return True
+
+    def _render_swap_fertig(self):
+        self._render_ausstehend = False
+
+    def kantenglaettung_setzen(self, samples):
+        if self._plotter is None:
+            return False
+        self._plotter.render_window.SetMultiSamples(int(samples))
+        self.render()
         return True
 
     def layer_umschalten(self, layer):
@@ -956,6 +987,9 @@ class GrafikBruecke:
                 self._vg_renderer.SetActiveCamera(kamera)
 
     def _actor_weg(self, name):
+        getattr(self, "_kugel_cache", {}).pop(name, None)
+        getattr(self, "_overlay_mesh_cache", {}).pop(name, None)
+        getattr(self, "_achsen_mesh_cache", {}).pop(name, None)
         actor = self._vg_actors.pop(name, None)
         if actor is not None:
             if self._vg_renderer is not None:
@@ -1006,8 +1040,41 @@ class GrafikBruecke:
     def _stil_pfeil(self, pfeil_id, k):
         return self._stil.pfeil(pfeil_id, self._ausdehnung(k))
 
+    def _overlay_translation_aus_cache(self, store, name, signatur, anker):
+        eintrag = getattr(self, "_overlay_mesh_cache", {}).get(name)
+        actor = store.get(name)
+        if (eintrag is None or eintrag[0] is not actor
+                or eintrag[1] != signatur):
+            return False
+        actor.SetPosition(*(np.asarray(anker) - eintrag[2]))
+        actor.SetVisibility(True)
+        return True
+
+    def _overlay_translation_merke(self, store, name, signatur, anker):
+        actor = store.get(name)
+        if actor is None:
+            return
+        if not hasattr(self, "_overlay_mesh_cache"):
+            self._overlay_mesh_cache = {}
+        actor.SetPosition(0.0, 0.0, 0.0)
+        self._overlay_mesh_cache[name] = (
+            actor, signatur, np.asarray(anker, dtype=float).copy())
+
+    def _overlay_signatur(self, st, *form):
+        return (
+            repr(sorted(st.items())),
+            bool(getattr(self, "_vg_unmoeglich", False)),
+            tuple(np.asarray(w, dtype=np.float64).tobytes() for w in form),
+        )
+
     def _kraftpfeil_zeichnen(self, store, name, st, pfeil):
         import pyvista as pv
+        signatur = self._overlay_signatur(
+            st, pfeil["richtung"], pfeil["laenge"], pfeil["kopf_laenge"],
+            pfeil["kopf_radius"], pfeil["schaft_radius"])
+        if self._overlay_translation_aus_cache(
+                store, name, signatur, pfeil["start"]):
+            return
         kw = {"color": st["farbe"], "opacity": st["deckkraft"],
               "smooth_shading": True}
         try:
@@ -1026,7 +1093,7 @@ class GrafikBruecke:
                 direction=tuple(pfeil["richtung"]),
                 height=pfeil["kopf_laenge"], radius=pfeil["kopf_radius"],
                 resolution=16)
-            self._mesh_setzen(store, name, schaft + kopf,
+            self._mesh_setzen(store, name, schaft.append_polydata(kopf),
                               st["vordergrund"], **kw)
         except Exception:
             linie = pv.line_segments_from_points(
@@ -1034,12 +1101,18 @@ class GrafikBruecke:
             self._mesh_setzen(
                 store, name, linie, st["vordergrund"], color=st["farbe"],
                 opacity=st["deckkraft"], line_width=5)
+        self._overlay_translation_merke(
+            store, name, signatur, pfeil["start"])
 
     def _momentbogen_zeichnen(self, store, name, st, moment, mitte, radius,
                               achse):
         """Zeichnet den Bogen; False, wenn das Moment verschwindet."""
         import pyvista as pv
         from .core import kraefte_bild as kb
+        signatur = self._overlay_signatur(st, moment, radius, achse)
+        if self._overlay_translation_aus_cache(
+                store, name, signatur, mitte):
+            return True
         bogen = kb.moment_bogen_achse(moment, mitte, radius, achse)
         if bogen is None:
             return False
@@ -1062,35 +1135,61 @@ class GrafikBruecke:
             kopf = pv.Cone(center=tuple(0.5 * (punkte[-1] + spitze)),
                            direction=tuple(bogen["richtung"]),
                            height=kopf_l, radius=kopf_r, resolution=16)
-            self._mesh_setzen(store, name, kurve + kopf,
+            self._mesh_setzen(store, name, kurve.append_polydata(kopf),
                               st["vordergrund"], **kw)
         except Exception:
             seg = pv.line_segments_from_points(punkte)
             self._mesh_setzen(store, name, seg, st["vordergrund"],
                               color=st["farbe"], line_width=4)
+        self._overlay_translation_merke(store, name, signatur, mitte)
         return True
 
     def _kugel_zeichnen(self, store, name, mitte, radius, farbe, kontur,
                         kontur_breite, vordergrund):
         """Schwerpunktkugel; die Kontur ist eine groessere Hohlkugel
         (Vorderseiten ausgeblendet), die nur den Rand zeigt."""
-        import pyvista as pv
-        kugel = pv.Sphere(center=tuple(mitte), radius=radius,
-                          theta_resolution=24, phi_resolution=24)
-        self._mesh_setzen(store, name, kugel, vordergrund, color=farbe)
+        self._kugel_mesh_setzen(
+            store, name, mitte, radius, farbe, vordergrund)
         n_kontur = name + "_kontur"
         if not kontur:
             self._actor_weg(n_kontur)
             store.pop(n_kontur, None)
             return
-        huelle = pv.Sphere(center=tuple(mitte),
-                           radius=radius * (1.0 + kontur_breite),
-                           theta_resolution=24, phi_resolution=24)
-        self._mesh_setzen(store, n_kontur, huelle, vordergrund,
-                          color=kontur, lighting=False)
+        self._kugel_mesh_setzen(
+            store, n_kontur, mitte, radius * (1.0 + kontur_breite),
+            kontur, vordergrund, lighting=False)
         actor = store.get(n_kontur)
         if actor is not None and hasattr(actor, "GetProperty"):
             actor.GetProperty().SetFrontfaceCulling(True)
+
+    def _kugel_mesh_setzen(self, store, name, mitte, radius, farbe,
+                           vordergrund, lighting=True):
+        import pyvista as pv
+
+        cache = getattr(self, "_kugel_cache", None)
+        if cache is None:
+            cache = self._kugel_cache = {}
+        key = (
+            float(radius), repr(farbe), bool(vordergrund), bool(lighting),
+            bool(vordergrund and not getattr(self, "_vg_unmoeglich", False)),
+        )
+        eintrag = cache.get(name)
+        actor = store.get(name)
+        if (eintrag is not None and eintrag[0] is actor
+                and eintrag[1] == key):
+            # Nur die starre Translation ändert sich; Kugelnetz und Normale
+            # bleiben unverändert. Keine Physik- oder Overlaydaten werden gehalten.
+            actor.SetPosition(*(np.asarray(mitte) - eintrag[2]))
+            actor.SetVisibility(True)
+            return
+        kugel = pv.Sphere(center=tuple(mitte), radius=radius,
+                          theta_resolution=24, phi_resolution=24)
+        self._mesh_setzen(
+            store, name, kugel, vordergrund, color=farbe, lighting=lighting)
+        actor = store.get(name)
+        if actor is not None:
+            actor.SetPosition(0.0, 0.0, 0.0)
+            cache[name] = (actor, key, np.asarray(mitte, dtype=float).copy())
 
     def _kraefte_actors(self, name):
         """Baut die Kraefte-Actors aus den gesetzten Daten (Kraeftepaare,
@@ -1492,23 +1591,45 @@ class GrafikBruecke:
 
     def _overlay_hauptachsen_setzen(self, name, cm, richtungen, laengen):
         import pyvista as pv
+        from vtkmodules.vtkCommonMath import vtkMatrix4x4
         namen = self._overlay_namen(name)
         k = self._koerper[name]
         store = k.setdefault("overlay_actors", {})
         ha = self._stil.hauptachsen(self._ausdehnung(k))
         rr = 0.5 * ha["durchmesser"]
+        if not hasattr(self, "_achsen_mesh_cache"):
+            self._achsen_mesh_cache = {}
         for i in range(3):
             l = laengen[i] if hasattr(laengen, "__len__") else laengen
-            start = cm - l * richtungen[i]
-            ende = cm + l * richtungen[i]
-            try:
-                mesh = pv.Line(start, ende).tube(radius=rr, n_sides=12)
-                kw = {"color": ha["farben"][i], "smooth_shading": True}
-            except Exception:
-                mesh = pv.Line(start, ende)
-                kw = {"color": ha["farben"][i], "line_width": 4}
-            self._mesh_setzen(store, namen[i + 1], mesh, ha["vordergrund"],
-                              **kw)
+            n = namen[i + 1]
+            key = (rr, repr(ha["farben"][i]), ha["vordergrund"],
+                   bool(getattr(self, "_vg_unmoeglich", False)))
+            actor = store.get(n)
+            eintrag = self._achsen_mesh_cache.get(n)
+            if (eintrag is None or eintrag[0] is not actor
+                    or eintrag[1] != key):
+                try:
+                    mesh = pv.Line((-1., 0., 0.), (1., 0., 0.)).tube(
+                        radius=rr, n_sides=12)
+                    kw = {"color": ha["farben"][i], "smooth_shading": True}
+                except Exception:
+                    mesh = pv.Line((-1., 0., 0.), (1., 0., 0.))
+                    kw = {"color": ha["farben"][i], "line_width": 4}
+                self._mesh_setzen(store, n, mesh, ha["vordergrund"], **kw)
+                actor = store[n]
+                self._achsen_mesh_cache[n] = (actor, key)
+            x = np.asarray(richtungen[i], dtype=float)
+            x = x / np.linalg.norm(x)
+            hilfe = np.eye(3)[int(np.argmin(np.abs(x)))]
+            y = np.cross(x, hilfe)
+            y /= np.linalg.norm(y)
+            z = np.cross(x, y)
+            matrix = vtkMatrix4x4()
+            for zeile in range(3):
+                for spalte, vektor in enumerate((l * x, y, z, cm)):
+                    matrix.SetElement(zeile, spalte, float(vektor[zeile]))
+            actor.SetUserMatrix(matrix)
+            actor.SetVisibility(True)
 
     def _overlay_hauptachsen_entfernen(self, name):
         namen = self._overlay_namen(name)

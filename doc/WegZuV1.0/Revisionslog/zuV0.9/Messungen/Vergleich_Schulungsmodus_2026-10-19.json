@@ -1,0 +1,254 @@
+{
+  "status": "Zwei unabhaengige vollstaendige 300-s-Laeufe des ausdruecklichen optischen Schulungsmodus; beide Softwareproxy-Zielpruefungen bestanden; keine Monitor-Scanout-Abnahme",
+  "vorherdatei": "Baseline_QtSwap_2026-10-19.json",
+  "nachherdatei": "Schulungsmodus_final_2026-10-19.json",
+  "eingabe_sha256_gleich": true,
+  "eingabe_sha256": "069e175c50bee9d3f9831599ff7bc53c9e76295ccd8204798cb8ead86cda4073",
+  "alle_lernlayer_aktiv": true,
+  "messgroessen": {
+    "abgeschlossene_frame_fps": {
+      "vorher": 10.56,
+      "schulungsmodus": 33.64
+    },
+    "frameabstand_p95_ms": {
+      "vorher": 131.448,
+      "schulungsmodus": 47.343
+    },
+    "eingabe_bis_praesentierter_frame_ms": {
+      "vorher": 83.575,
+      "schulungsmodus": 39.896
+    },
+    "pose_median_ms": {
+      "vorher": 28.232,
+      "schulungsmodus": 12.211
+    },
+    "pose_p95_ms": {
+      "vorher": 36.503,
+      "schulungsmodus": 19.955
+    },
+    "physik_durchsatz_sim_s_pro_wand_s": {
+      "vorher": 0.9963386238441857,
+      "schulungsmodus": 0.9995320269465127
+    },
+    "rueckstand_p95_s": {
+      "vorher": 1.148480400006286,
+      "schulungsmodus": 0.14401270002304045
+    },
+    "rueckstand_trend_s_pro_s": {
+      "vorher": -5.138587074166732e-06,
+      "schulungsmodus": -1.2955177801420253e-05
+    }
+  },
+  "ziele": {
+    "qt_swap_proxy_mindestens_30": true,
+    "frameabstand_p95_hoechstens_67ms": true,
+    "eingabe_proxy_p95_hoechstens_100ms": true,
+    "rueckstandtrend_nicht_positiv": true,
+    "worker_fehlerfrei": true,
+    "scanout_nachgewiesen": false
+  },
+  "renderoptionen": {
+    "fenstergroesse_px": [
+      491,
+      828
+    ],
+    "device_pixel_ratio": 1.0,
+    "renderpass": null,
+    "lichtanzahl": 5,
+    "multisamples": 0,
+    "offscreen": false,
+    "beckenwasser_sichtbar": false,
+    "ozean_sichtbar": true,
+    "wasser_glanz": 0.8,
+    "autoupdate_ms": 200
+  },
+  "komponenten": {
+    "initialisierung": [
+      {
+        "typ": "initialisierung",
+        "dauer_s": 0.019918299978598952,
+        "eingabe_sha256": "069e175c50bee9d3f9831599ff7bc53c9e76295ccd8204798cb8ead86cda4073",
+        "masse_kg": 1661.6066803973465,
+        "dt_s": 0.004,
+        "schwerpunkt": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "hydrostatik_backend": "exakt_union",
+        "pid": 13720,
+        "instrumentierung_version": 2,
+        "physikparameter": {
+          "dt_s": 0.004,
+          "g_m_pro_s2": 9.80665,
+          "daempfung_tauchung": 8000.0,
+          "daempfung_kraengung": 8000.0,
+          "voxel_aufloesung_m": 0.05,
+          "schranke_volumen_m3": 0.0005,
+          "schranke_punkt_m": 0.005,
+          "fluidgeschwindigkeit": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "fluidwinkelgeschwindigkeit": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "linear_widerstand": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "quadratischer_widerstand": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "added_mass_diagonal": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      }
+    ],
+    "batchkomponenten": {
+      "hydrostatik_geometrie": {
+        "anzahl": 5348,
+        "summe_s": 28.289708909753244,
+        "median_ms": 4.91320010041818,
+        "p95_ms": 7.494180058711208
+      },
+      "hydrodynamik": {
+        "anzahl": 5348,
+        "summe_s": 40.07712039875332,
+        "median_ms": 6.936699879588559,
+        "p95_ms": 10.688030123128556
+      },
+      "kraftaggregation_exklusiv": {
+        "anzahl": 5348,
+        "summe_s": 25.054679599998053,
+        "median_ms": 4.178250004770234,
+        "p95_ms": 6.939729803707451
+      },
+      "integrator_exklusiv": {
+        "anzahl": 5348,
+        "summe_s": 22.951817185094114,
+        "median_ms": 4.088549991138279,
+        "p95_ms": 5.949115008115768
+      },
+      "worker_rest": {
+        "anzahl": 5348,
+        "summe_s": 0.3641240076976828,
+        "median_ms": 0.06459976430051029,
+        "p95_ms": 0.10016487212851641
+      },
+      "kraftaufruf_rest": {
+        "anzahl": 5348,
+        "summe_s": 0.49419789877720177,
+        "median_ms": 0.0907001958694309,
+        "p95_ms": 0.12789998145308346
+      }
+    },
+    "schrittmessungen": {
+      "hydrostatik_geometrie": {
+        "anzahl": 74992,
+        "summe_s": 28.289708909753244,
+        "median_ms": 0.41579996468499303,
+        "p95_ms": 0.5550000350922346
+      },
+      "hydrodynamik": {
+        "anzahl": 74992,
+        "summe_s": 40.07712039875332,
+        "median_ms": 0.5982000147923827,
+        "p95_ms": 0.753745008842088
+      },
+      "kraftaggregation_inkl_hydrodynamik": {
+        "anzahl": 74992,
+        "summe_s": 65.13179999875138,
+        "median_ms": 1.0003999923355877,
+        "p95_ms": 1.2085450056474651
+      },
+      "integrator_inkl_kraefte": {
+        "anzahl": 74992,
+        "summe_s": 116.86752399237594,
+        "median_ms": 1.743100001476705,
+        "p95_ms": 2.2146000090288
+      },
+      "kraefte_gesamt": {
+        "anzahl": 74992,
+        "summe_s": 93.91570680728182,
+        "median_ms": 1.4252999681048095,
+        "p95_ms": 1.7599000129848719
+      }
+    },
+    "worker_queue_ipc_protokoll_rest": {
+      "anzahl": 5348,
+      "summe_s": 42.28397579770535,
+      "median_ms": 7.422499998938292,
+      "p95_ms": 13.957394973840563
+    },
+    "roundtrip_zugeordnet": 5348,
+    "roundtrip_nicht_zugeordnet": 0,
+    "cache_pruefung": {
+      "cache_pose_aufrufe": 74992,
+      "cache_pose_direkte_treffer": 0,
+      "cache_pose_eindeutig": 74992
+    },
+    "cpu_hotspots": [],
+    "rohdatei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\doc\\WegZuV1.0\\Revisionslog\\zuV0.9\\Messungen\\Schulungsmodus_final_worker_2026-10-19.jsonl",
+    "batchanzahl": 5348,
+    "messhinweis": "Opt-in-Timer; Integrator exklusiv = Schritt minus Hydrostatik und Kraftaggregation im Schema 1 (inkl. Kraftaufrufverwaltung); Schema 2 trennt gesamten Kraftaufruf und dessen Rest zusätzlich ab. Worker-Rest separat. CPU-Profilbatches markiert. Cachetreffer sind nur beobachtet, kein Ergebniscache eingebaut."
+  },
+  "wiederholung": {
+    "datei": "Schulungsmodus_wiederholung_2026-10-19.json",
+    "rohdatei": "Schulungsmodus_wiederholung_worker_2026-10-19.jsonl",
+    "messdauer_s": 300.034,
+    "warmup_s": 5.0,
+    "eingabe_sha256_gleich": true,
+    "renderinventar_identisch": true,
+    "alle_lernlayer_aktiv": true,
+    "abgeschlossene_frame_fps": 33.68,
+    "frameabstand_p95_ms": 47.242,
+    "frameabstand_max_ms": 61.873,
+    "eingabe_bis_praesentierter_frame_ms": 41.277,
+    "eingaben_gesendet": 299,
+    "eingaben_mit_reaktion": 299,
+    "physik_durchsatz_sim_s_pro_wand_s": 0.9998319999337606,
+    "rueckstand_p95_s": 0.18827219997754696,
+    "rueckstand_max_s": 0.26380989994959947,
+    "rueckstand_trend_s_pro_s": -9.090130975881177e-05,
+    "worker_fehler": 0,
+    "ziele": {
+      "qt_swap_proxy_mindestens_30": true,
+      "frameabstand_p95_hoechstens_67ms": true,
+      "eingabe_proxy_p95_hoechstens_100ms": true,
+      "rueckstandtrend_nicht_positiv": true,
+      "worker_fehlerfrei": true,
+      "scanout_nachgewiesen": false
+    },
+    "spannweite_zweier_laeufe": {
+      "qt_swaps_pro_s": [33.64, 33.68],
+      "frameabstand_p95_ms": [47.242, 47.343],
+      "eingabeproxy_p95_ms": [39.896, 41.277],
+      "rueckstand_p95_s": [0.14401270002304045, 0.18827219997754696]
+    }
+  },
+  "gueltigkeitsgrenzen": [
+    "Zwei unabhaengige 300-s-Laeufe; beobachtete Spannweite, keine statistisch belastbare Streuungsverteilung oder universelle Hardwaregarantie.",
+    "Vollstaendige Renderinventardaten wurden erst ab Lifecycle gespeichert. Neues GUI-Dock aendert Viewport auf491x828; baseline-Abmessung nicht gesondert aufgezeichnet.",
+    "Optische Reduktion ist explizite freigegebene Moduswahl, keine gleiche Renderqualitaet behauptet.",
+    "Modell, Physikparameter, exakte Hydrostatik,dt0.004s,und gewaehlte Lernlayer unveraendert."
+  ]
+}

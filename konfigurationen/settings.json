@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.4",
+  "schema_version": "1.5",
   "statisch": {
     "toleranz": 0.001,
     "max_iterationen": 60,
@@ -205,7 +205,8 @@
     "numerisch_sichtbar": true,
     "hydrodynamik_rumpf": true,
     "hydrodynamik_kiel": true,
-    "hydrodynamik_ruder": true
+    "hydrodynamik_ruder": true,
+    "schulungs_darstellung": false
   },
   "pfeil_hydro_sum": {
     "sichtbar": true,

@@ -1,0 +1,124 @@
+{
+  "schema_version": "1.0",
+  "modell": {
+    "id": "folkeboot",
+    "name": "Nordisches Folkeboot (Näherung)",
+    "beschreibung": "Vorläufiges Modell mit geschätzten Rumpf- und Rigglinien; keine offiziellen Konstruktionsdaten."
+  },
+  "geometrie_einheiten": {
+    "obj_zu_m": 1.0,
+    "obj_achsenmatrix_zu_blatt": [
+      [0, 0, 1],
+      [1, 0, 0],
+      [0, 1, 0]
+    ]
+  },
+  "rumpfreferenz_m": [0, 0, -0.47],
+  "koerper": {
+    "id": "root",
+    "name": "Nordisches Folkeboot",
+    "teile": [
+      {
+        "id": "segler",
+        "name": "Besatzung (Punktmasse)",
+        "masse_kg": 150,
+        "position_rumpf_m": [0, 0, 0.85]
+      },
+      {
+        "id": "rumpf",
+        "name": "Rumpf",
+        "geometrie": {
+          "quelle": "obj",
+          "datei": "rumpf.obj"
+        },
+        "dichte_kg_pro_m3": 1900,
+        "wanddicke_m": 0.008,
+        "farbe": "#eeeeea",
+        "farbe_unter_wasser": "#9da8ad",
+        "rolle": "rumpf",
+        "verdrängend": true
+      },
+      {
+        "id": "kiel",
+        "name": "Ballastkiel (geschätzt)",
+        "geometrie": {
+          "quelle": "obj",
+          "datei": "kiel.obj"
+        },
+        "dichte_kg_pro_m3": 11340,
+        "farbe": "#55585a",
+        "farbe_unter_wasser": "#393b3d",
+        "rolle": "kiel",
+        "verdrängend": true
+      },
+      {
+        "id": "ruder",
+        "name": "Ruder (geschätzt)",
+        "geometrie": {
+          "quelle": "obj",
+          "datei": "ruder.obj"
+        },
+        "dichte_kg_pro_m3": 700,
+        "wanddicke_m": 0.008,
+        "farbe": "#eeeeea",
+        "farbe_unter_wasser": "#9da8ad",
+        "rolle": "ruder",
+        "verdrängend": true
+      },
+      {
+        "id": "mast",
+        "name": "Mast (geschätzt)",
+        "geometrie": {
+          "quelle": "obj",
+          "datei": "mast.obj"
+        },
+        "dichte_kg_pro_m3": 2700,
+        "wanddicke_m": 0.0025,
+        "farbe": "#b8bdc1",
+        "rolle": "stehendes_gut",
+        "verdrängend": true
+      },
+      {
+        "id": "grossbaum",
+        "name": "Großbaum (geschätzt)",
+        "geometrie": {
+          "quelle": "obj",
+          "datei": "grossbaum.obj"
+        },
+        "dichte_kg_pro_m3": 2700,
+        "wanddicke_m": 0.002,
+        "farbe": "#b8bdc1",
+        "rolle": "stehendes_gut",
+        "verdrängend": true
+      },
+      {
+        "id": "grosssegel",
+        "name": "Großsegel (geschätzt)",
+        "geometrie": {
+          "quelle": "obj",
+          "datei": "grosssegel.obj"
+        },
+        "dichte_kg_pro_m3": 1250,
+        "wanddicke_m": 0.00015,
+        "farbe": "#f7f5ef",
+        "farbe_unter_wasser": "#d2d0ca",
+        "rolle": "segel",
+        "verdrängend": false
+      },
+      {
+        "id": "fock",
+        "name": "Fock (geschätzt)",
+        "geometrie": {
+          "quelle": "obj",
+          "datei": "fock.obj"
+        },
+        "dichte_kg_pro_m3": 1250,
+        "wanddicke_m": 0.00015,
+        "farbe": "#f7f5ef",
+        "farbe_unter_wasser": "#d2d0ca",
+        "rolle": "segel",
+        "verdrängend": false
+      }
+    ]
+  }
+}

@@ -415,13 +415,186 @@ def test_echtzeit_gui_integriert_feste_physikschritte(monkeypatch, tmp_path):
     monkeypatch.setattr(time, "perf_counter", lambda: 10.03)
     fenster._echtzeit_render_takt()
     assert bruecke.poses[-1][0] == "yacht1"
-    assert bruecke.poses[-1][2] == pytest.approx(
-        (0.0, 0.0, -9.81 * 0.004 ** 2))
+    assert bruecke.poses[-1][2] == pytest.approx((0.0, 0.0, 0.0))
     assert bruecke.renders == 2
     assert bruecke.pose_thread == bruecke.gui_thread
     assert bruecke.render_thread == bruecke.gui_thread
     assert fenster._echtzeit_akkumulator == pytest.approx(0.002)
     fenster._zeit_pausieren()
+    fenster.close()
+
+
+def test_echtzeit_render_interpoliert_nach_simulationszeit(monkeypatch):
+    from segelphysik.core.dynamik_6dof import (
+        Zustand6DOF,
+        quaternion_matrix,
+        quaternion_slerp,
+    )
+
+    _qt_app()
+    fenster = HauptFenster()
+
+    class Bruecke:
+        def __init__(self):
+            self.pose = None
+
+        def physik_pose_6dof_setzen(self, _name, rotation, position):
+            self.pose = (rotation, position)
+            return True
+
+        def render(self):
+            pass
+
+    anfang = Zustand6DOF(position=(0.0, 0.0, 0.0))
+    ende = Zustand6DOF(
+        position=(10.0, 0.0, 0.0),
+        quaternion=(np.sqrt(0.5), 0.0, 0.0, np.sqrt(0.5)),
+    )
+    fenster._bruecke = Bruecke()
+    fenster._echtzeit_name = "yacht1"
+    fenster._echtzeit_angefordert_s = 0.08
+    fenster._echtzeit_berechnet_s = 0.1
+    fenster._echtzeit_zustand = ende
+    fenster._echtzeit_anzeige_verzoegerung_s = 0.02
+    fenster._echtzeit_anzeige_verlauf = [(0.0, anfang), (0.1, ende)]
+    fenster._echtzeit_anzeige_wandzeit = 0.94
+
+    monkeypatch.setattr(time, "perf_counter", lambda: 1.0)
+    fenster._echtzeit_render_takt()
+
+    erwartetes_quaternion = quaternion_slerp(
+        anfang.quaternion, ende.quaternion, 0.6)
+    np.testing.assert_allclose(
+        fenster._bruecke.pose[1], (6.0, 0.0, 0.0))
+    np.testing.assert_allclose(
+        fenster._bruecke.pose[0],
+        quaternion_matrix(erwartetes_quaternion),
+    )
+    assert len(fenster._echtzeit_anzeige_verlauf) == 2
+
+    fenster._echtzeit_angefordert_s = 1.0
+    fenster._echtzeit_render_takt()
+    np.testing.assert_allclose(fenster._bruecke.pose[1], (6.0, 0.0, 0.0))
+
+    monkeypatch.setattr(time, "perf_counter", lambda: 1.01)
+    fenster._echtzeit_render_takt()
+    np.testing.assert_allclose(fenster._bruecke.pose[1], (7.0, 0.0, 0.0))
+
+    monkeypatch.setattr(time, "perf_counter", lambda: 1.5)
+    fenster._echtzeit_render_takt()
+    np.testing.assert_allclose(fenster._bruecke.pose[1], (8.0, 0.0, 0.0))
+    assert fenster._echtzeit_zustand is ende
+    assert fenster._echtzeit_berechnet_s == 0.1
+    fenster.close()
+
+
+def test_echtzeit_anzeigeuhr_bleibt_bei_batchwechsel_und_pufferwachstum_monoton(
+        monkeypatch):
+    from segelphysik.core.dynamik_6dof import Zustand6DOF
+
+    _qt_app()
+    fenster = HauptFenster()
+    posen = []
+    monkeypatch.setattr(
+        fenster, "_echtzeit_pose_anzeigen",
+        lambda pose, render=False: posen.append(pose) or True)
+    jetzt = [10.0]
+    monkeypatch.setattr(time, "perf_counter", lambda: jetzt[0])
+    fenster._echtzeit_anzeige_verzoegerung_s = 0.1
+    fenster._echtzeit_anzeige_verlauf = [
+        (0.0, Zustand6DOF()),
+        (0.3, Zustand6DOF(position=(0.3, 0.0, 0.0))),
+    ]
+    fenster._echtzeit_angefordert_s = 1.3
+    fenster._echtzeit_anzeige_wandzeit = 9.85
+    fenster._echtzeit_render_takt()
+    assert posen[-1].position[0] == pytest.approx(0.15)
+
+    fenster._echtzeit_anzeige_verlauf.append(
+        (0.5, Zustand6DOF(position=(0.5, 0.0, 0.0))))
+    jetzt[0] += 0.01
+    fenster._echtzeit_render_takt()
+    assert posen[-1].position[0] == pytest.approx(0.16)
+
+    fenster._echtzeit_anzeige_verzoegerung_s = 0.4
+    jetzt[0] += 0.01
+    fenster._echtzeit_render_takt()
+    assert posen[-1].position[0] == pytest.approx(0.16)
+
+    fenster._echtzeit_anzeige_verlauf.append(
+        (0.6, Zustand6DOF(position=(0.6, 0.0, 0.0))))
+    jetzt[0] += 0.01
+    fenster._echtzeit_render_takt()
+    assert posen[-1].position[0] == pytest.approx(0.17)
+    assert fenster._echtzeit_berechnet_s == 0.0
+    assert fenster._echtzeit_zustand is None
+    fenster.close()
+
+
+def test_echtzeit_anzeigeuhr_startet_nach_pause_ohne_wandzeitsprung(monkeypatch):
+    from segelphysik.core.dynamik_6dof import Zustand6DOF
+
+    _qt_app()
+    fenster = HauptFenster()
+    jetzt = [10.0]
+    monkeypatch.setattr(time, "perf_counter", lambda: jetzt[0])
+    monkeypatch.setattr(
+        fenster, "_echtzeit_pose_anzeigen", lambda *_args, **_kwargs: True)
+    fenster._echtzeit_berechnet_s = 5.0
+    fenster._echtzeit_zustand = Zustand6DOF()
+    fenster._zeit_pausieren()
+    assert fenster._echtzeit_anzeigezeit_s == 5.0
+    assert fenster._echtzeit_anzeige_wandzeit is None
+
+    fenster._btn_echtzeit.setChecked(True)
+    fenster._echtzeit_kraftfunktion = object()
+    jetzt[0] = 100.0
+    fenster._zeit_fortsetzen()
+    fenster._echtzeit_timer.stop()
+    fenster._echtzeit_render_timer.stop()
+    fenster._echtzeit_anzeige_verzoegerung_s = 0.1
+    fenster._echtzeit_anzeige_verlauf.append((5.2, Zustand6DOF()))
+    jetzt[0] += 0.01
+    fenster._echtzeit_render_takt()
+    assert fenster._echtzeit_anzeigezeit_s == pytest.approx(5.01)
+    fenster.close()
+
+
+@pytest.mark.parametrize("rueckstand_s", [0.0, 1.0, 10.0])
+def test_echtzeit_anzeige_bleibt_bei_unregelmaessigen_batches_gleichfoermig(
+        monkeypatch, rueckstand_s):
+    from segelphysik.core.dynamik_6dof import Zustand6DOF
+
+    _qt_app()
+    fenster = HauptFenster()
+    jetzt = [0.0]
+    positionen = []
+    monkeypatch.setattr(time, "perf_counter", lambda: jetzt[0])
+    monkeypatch.setattr(
+        fenster, "_echtzeit_pose_anzeigen",
+        lambda pose, render=False: positionen.append(pose.position[0]) or True)
+    fenster._echtzeit_anzeige_wandzeit = 0.0
+    fenster._echtzeit_anzeige_verzoegerung_s = 0.25
+    fenster._echtzeit_anzeige_verlauf = [(0.0, Zustand6DOF())]
+
+    for frame in range(1, 91):
+        jetzt[0] = frame / 30.0
+        fenster._echtzeit_angefordert_s = jetzt[0] + rueckstand_s
+        if frame % 12 in (0, 4, 7):
+            fenster._echtzeit_berechnet_s = jetzt[0]
+            fenster._echtzeit_zustand = Zustand6DOF(
+                position=(jetzt[0], 0.0, 0.0))
+            fenster._echtzeit_anzeige_verlauf.append(
+                (jetzt[0], fenster._echtzeit_zustand))
+        fenster._echtzeit_render_takt()
+
+    assert len(positionen) == 90
+    schritte = np.diff(positionen)
+    assert np.min(schritte) >= 0.0
+    assert np.max(schritte) <= 1.0 / 30.0 + 1e-12
+    # Nach dem Einpuffern muss auch die längste Batchlücke durchlaufen sein.
+    np.testing.assert_allclose(schritte[30:], 1.0 / 30.0, atol=1e-12)
+    assert positionen[-1] <= fenster._echtzeit_berechnet_s
     fenster.close()
 
 
@@ -446,8 +619,7 @@ def test_echtzeit_render_timer_misst_erfolgreiche_frames():
     fenster._bruecke = bruecke
     fenster._echtzeit_name = "yacht1"
     pose = Zustand6DOF()
-    fenster._echtzeit_anzeige_start = pose
-    fenster._echtzeit_anzeige_ziel = pose
+    fenster._echtzeit_anzeige_verlauf = [(0.0, pose)]
     schleife = QEventLoop()
     QTimer.singleShot(1150, schleife.quit)
     fenster._echtzeit_render_timer.start()
@@ -771,6 +943,22 @@ def test_statusliste_kennt_alle_echtzeit_schluessel():
         "Physik angefordert": "1.000 s", "Unbekannt": "x"})
     assert fenster._solver_werte["Zeitfaktor"].text(1) == "1.00 ×"
     assert fenster._solver_werte["Bildrate"].text(1) == "60.0 FPS"
+
+
+def test_anzeigeverzug_und_eingeschraenkter_zustand_werden_ausgewiesen():
+    _qt_app()
+    fenster = HauptFenster()
+    fenster._echtzeit_angefordert_s = 10.0
+    fenster._echtzeit_berechnet_s = 8.5
+    fenster._echtzeit_anzeigezeit_s = 8.0
+    fenster._echtzeit_angeforderte_fps = 20.0
+    status = fenster._echtzeit_zeitbilanz_status()
+    assert status["Anzeigezeit"] == "8.000 s"
+    assert status["Anzeigeverzug"] == "2.000 s"
+    assert status["Physik-Rückstand"] == "1.500 s"
+    assert status["Darstellungszustand"] == (
+        "Eingeschränkt: Physikrückstand, Renderaufrufrate unter 30/s")
+    fenster.close()
 
 
 def test_fremdkraftaenderung_startet_statische_neuberechnung(monkeypatch):

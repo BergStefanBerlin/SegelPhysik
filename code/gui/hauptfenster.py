@@ -30,6 +30,7 @@ from ..core.overlays import (LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN,
 
 _aktives_fenster = None
 _ECHTZEIT_HYDROSTATIK_PFAD = "exakt_union"
+_ECHTZEIT_ANZEIGE_PUFFER_MAX_S = 0.25
 
 
 def _stationaere_rotation(stufe):
@@ -350,10 +351,10 @@ class HauptFenster(QMainWindow):
         self._echtzeit_prozess_pfad = None
         self._echtzeit_prozess_cd = None
         self._echtzeit_aktiver_prozess_executor = None
-        self._echtzeit_anzeige_start = None
-        self._echtzeit_anzeige_ziel = None
-        self._echtzeit_anzeige_startzeit = None
-        self._echtzeit_anzeige_dauer = 0.0
+        self._echtzeit_anzeige_verlauf = []
+        self._echtzeit_anzeige_verzoegerung_s = 0.0
+        self._echtzeit_anzeigezeit_s = 0.0
+        self._echtzeit_anzeige_wandzeit = None
         self._echtzeit_fps_start = time.perf_counter()
         self._echtzeit_fps_zaehler = 0
         self._echtzeit_angeforderte_fps = 0.0
@@ -621,6 +622,10 @@ class HauptFenster(QMainWindow):
                 ("Zeitfaktor", "-"),
                 ("Physik angefordert", "-"), ("Physik berechnet", "-"),
                 ("Physik-Rückstand", "-"),
+                ("Anzeigezeit", "-"), ("Anzeigeverzug", "-"),
+                ("Darstellungszustand", "-"),
+                ("Modellhinweis", "-"),
+                ("Verfahren", "Keine zusätzliche v0.9-Schulungsnäherung freigegeben"),
                 ("Lösungstyp", "-")):
             self._solver_werte[schluessel] = QTreeWidgetItem(
                 status, [schluessel, wert])
@@ -684,6 +689,16 @@ class HauptFenster(QMainWindow):
         self._ssao_check.setChecked(True)
         self._ssao_check.toggled.connect(self._ssao_geaendert)
         darstellung_layout.addWidget(self._ssao_check)
+        self._schulungsdarstellung_check = QCheckBox(
+            "Schulungs-Darstellung (reduzierte Optik)")
+        self._schulungsdarstellung_check.setToolTip(
+            "Ohne SSAO und Kantenglättung, reduzierte Wasseroptik. Alle Lernanzeigen "
+            "und die exakte Physik bleiben unverändert.")
+        self._schulungsdarstellung_check.setChecked(
+            self._einstellungen.get("anzeigen", "schulungs_darstellung"))
+        self._schulungsdarstellung_check.toggled.connect(
+            self._schulungsdarstellung_geaendert)
+        darstellung_layout.addWidget(self._schulungsdarstellung_check)
         darstellung_layout.addStretch(1)
         dock_darstellung = QDockWidget("Darstellung", self)
         dock_darstellung.setWidget(darstellung)
@@ -745,6 +760,10 @@ class HauptFenster(QMainWindow):
     def bruecke_setzen(self, bruecke):
         """Referenz auf die GrafikBruecke (G3-Kopplung der Docks)."""
         self._bruecke = bruecke
+        if (getattr(bruecke, "_plotter", None) is not None
+                and hasattr(bruecke._plotter, "frameSwapped")):
+            bruecke._plotter.frameSwapped.connect(
+                self._schulungsframe_fertig)
         if self._navigationsfenster is None:
             from .navigationswidgets import NavigationsWidgetFenster
             self._navigationsfenster = NavigationsWidgetFenster(self)
@@ -794,6 +813,8 @@ class HauptFenster(QMainWindow):
         self._wasserbewegung_aktivieren()
         if self._ssao_check.isChecked():
             self._ssao_geaendert(True)
+        if self._schulungsdarstellung_check.isChecked():
+            self._schulungsdarstellung_geaendert(True, persistieren=False)
 
     def _darstellung_aktion(self, beschreibung, funktion):
         try:
@@ -819,6 +840,12 @@ class HauptFenster(QMainWindow):
             self._navigationsanzeigen_aktualisieren()
 
     def _navigationssichtbarkeit_aktualisieren(self):
+        aktiv = self._einstellungen.get("anzeigen", "schulungs_darstellung")
+        if aktiv != self._schulungsdarstellung_check.isChecked():
+            self._schulungsdarstellung_check.blockSignals(True)
+            self._schulungsdarstellung_check.setChecked(aktiv)
+            self._schulungsdarstellung_check.blockSignals(False)
+            self._schulungsdarstellung_geaendert(aktiv, persistieren=False)
         if self._navigationsfenster is not None:
             optionen = self._einstellungen.bereich("anzeigen")
             self._navigationsfenster.sichtbarkeit_setzen(optionen)
@@ -968,6 +995,47 @@ class HauptFenster(QMainWindow):
             self._darstellung_aktion(
                 "Wasseroptik",
                 lambda: bruecke.wasseroptik_setzen(aktiviert))
+
+    def _schulungsdarstellung_geaendert(self, aktiviert, persistieren=True):
+        bruecke = getattr(self, "_bruecke", None)
+        if bruecke is None:
+            if persistieren:
+                self._einstellungen.setzen(
+                    "anzeigen", "schulungs_darstellung", bool(aktiviert))
+            return
+        if aktiviert:
+            if not hasattr(self, "_schulungsdarstellung_vorher"):
+                self._schulungsdarstellung_vorher = (
+                    self._ssao_check.isChecked(),
+                    self._wasseroptik_check.isChecked(),
+                    bruecke._plotter.render_window.GetMultiSamples())
+            ssao, wasseroptik, samples = False, False, 0
+        else:
+            ssao, wasseroptik, samples = self._schulungsdarstellung_vorher
+        for check, wert in (
+            (self._ssao_check, ssao), (self._wasseroptik_check, wasseroptik),
+        ):
+            check.setEnabled(not aktiviert)
+            check.setChecked(wert)
+        self._ssao_geaendert(ssao)
+        self._wasseroptik_geaendert(wasseroptik)
+        self._darstellung_aktion(
+            "Kantenglättung", lambda: bruecke.kantenglaettung_setzen(samples))
+        self._echtzeit_render_timer.setInterval(20 if aktiviert else 33)
+        if not aktiviert:
+            del self._schulungsdarstellung_vorher
+        if persistieren:
+            self._einstellungen.setzen(
+                "anzeigen", "schulungs_darstellung", bool(aktiviert))
+        self.protokoll_schreiben(
+            "Schulungs-Darstellung aktiv: reduzierte Optik, unveränderte "
+            "Physik und Lernanzeigen." if aktiviert else
+            "Standarddarstellung wiederhergestellt.")
+
+    def _schulungsframe_fertig(self):
+        if (self._schulungsdarstellung_check.isChecked()
+                and self._echtzeit_render_timer.isActive()):
+            QTimer.singleShot(0, self._echtzeit_render_takt)
 
     def _wasserbewegung_aktivieren(self):
         bruecke = getattr(self, "_bruecke", None)
@@ -1202,6 +1270,15 @@ class HauptFenster(QMainWindow):
                 (knoten for knoten in summenkoerper(welt)
                  if knoten.sichtbar), None)
             koerper_name = None if auswahl is None else auswahl.name
+            modellhinweis = next(
+                (text for label, text in auswahl.eigenschaften
+                 if label == "Modellhinweis"), "") if auswahl else ""
+            hinweis = (
+                "Schulungstool – kein Engineering-/Sicherheitsnachweis "
+                "und kein Race-Optimizer."
+                + (" " + modellhinweis if modellhinweis else ""))
+            self._solver_werte["Modellhinweis"].setToolTip(1, hinweis)
+            self._solver_status_aktualisieren({"Modellhinweis": hinweis})
             self._hydrodynamik_profil_auswahl_setzen(koerper_name)
         if not laufzeit_bereit:
             self._zeit_pausieren()
@@ -1253,6 +1330,10 @@ class HauptFenster(QMainWindow):
         if statisch:
             self._statisch_generation += 1
             self._zeit_pausieren()
+            self._solver_status_aktualisieren({
+                "Anzeigezeit": "-", "Anzeigeverzug": "-",
+                "Darstellungszustand": "Statische Ansicht",
+            })
             self._echtzeit_name = None
             self._statische_simulation_ausfuehren()
         else:
@@ -1632,10 +1713,13 @@ class HauptFenster(QMainWindow):
             return
         zustand = koerper.zustand
         self._echtzeit_zustand = zustand
-        self._echtzeit_anzeige_start = zustand
-        self._echtzeit_anzeige_ziel = zustand
-        self._echtzeit_anzeige_startzeit = None
-        self._echtzeit_anzeige_dauer = 0.0
+        self._echtzeit_anzeige_verlauf = [
+            (self._echtzeit_berechnet_s, zustand)]
+        self._echtzeit_anzeigezeit_s = self._echtzeit_berechnet_s
+        self._echtzeit_anzeige_wandzeit = None
+        self._echtzeit_anzeige_verzoegerung_s = min(
+            _ECHTZEIT_ANZEIGE_PUFFER_MAX_S,
+            physik.dt_s * self._dyn("max_schritte_pro_aufgabe"))
         self._echtzeit_physik = physik
         self._echtzeit_kraftfunktion = kraftfunktion
         self._echtzeit_koerper_version = koerper_snapshot.version
@@ -1713,13 +1797,13 @@ class HauptFenster(QMainWindow):
                 self._echtzeit_schritte_laufend * self._echtzeit_physik.dt_s)
             self._echtzeit_schritte_laufend = 0
         self._echtzeit_letzte_wandzeit = None
+        self._echtzeit_anzeige_wandzeit = None
+        self._echtzeit_anzeigezeit_s = self._echtzeit_berechnet_s
         self._echtzeit_modus = "pausiert"
         self._zeittasten_setzen(False)
         if self._echtzeit_zustand is not None:
-            self._echtzeit_anzeige_start = self._echtzeit_zustand
-            self._echtzeit_anzeige_ziel = self._echtzeit_zustand
-            self._echtzeit_anzeige_startzeit = None
-            self._echtzeit_anzeige_dauer = 0.0
+            self._echtzeit_anzeige_verlauf = [
+                (self._echtzeit_berechnet_s, self._echtzeit_zustand)]
         if war_laufend:
             self._solver_status_aktualisieren({
                 "Lösungstyp": "Pausiert",
@@ -1734,6 +1818,7 @@ class HauptFenster(QMainWindow):
             return
         jetzt = time.perf_counter()
         self._echtzeit_letzte_wandzeit = jetzt
+        self._echtzeit_anzeige_wandzeit = jetzt
         self._echtzeit_fps_start = jetzt
         self._echtzeit_zf_berechnet = self._echtzeit_berechnet_s
         self._echtzeit_fps_zaehler = 0
@@ -1753,10 +1838,21 @@ class HauptFenster(QMainWindow):
         return "%.3f s" % self._echtzeit_rueckstand_s()
 
     def _echtzeit_zeitbilanz_status(self):
+        einschraenkungen = []
+        if self._echtzeit_rueckstand_s() >= self._dyn("ueberlast_rueckstand_s"):
+            einschraenkungen.append("Physikrückstand")
+        if 0 < self._echtzeit_angeforderte_fps < 30:
+            einschraenkungen.append("Renderaufrufrate unter 30/s")
         return {
             "Physik angefordert": "%.3f s" % self._echtzeit_angefordert_s,
             "Physik berechnet": "%.3f s" % self._echtzeit_berechnet_s,
             "Physik-Rückstand": self._rueckstand_text(),
+            "Anzeigezeit": "%.3f s" % self._echtzeit_anzeigezeit_s,
+            "Anzeigeverzug": "%.3f s" % max(
+                0.0, self._echtzeit_angefordert_s - self._echtzeit_anzeigezeit_s),
+            "Darstellungszustand": (
+                "Eingeschränkt: " + ", ".join(einschraenkungen)
+                if einschraenkungen else "Gepufferte Anzeige"),
         }
 
     def _echtzeit_rueckstand_s(self):
@@ -1779,30 +1875,51 @@ class HauptFenster(QMainWindow):
         return True
 
     def _echtzeit_render_takt(self):
-        start = self._echtzeit_anzeige_start
-        ziel = self._echtzeit_anzeige_ziel
-        if start is None or ziel is None:
+        if (self._schulungsdarstellung_check.isChecked()
+                and getattr(getattr(self, "_bruecke", None),
+                            "_render_ausstehend", False)):
+            return
+        verlauf = self._echtzeit_anzeige_verlauf
+        if not verlauf:
             return
         jetzt = time.perf_counter()
-        if self._echtzeit_anzeige_startzeit is None:
-            anteil = 1.0
-        elif self._echtzeit_anzeige_dauer <= 0.0:
-            anteil = 1.0
+        vergangen = (
+            0.0 if self._echtzeit_anzeige_wandzeit is None else
+            max(0.0, jetzt - self._echtzeit_anzeige_wandzeit))
+        self._echtzeit_anzeige_wandzeit = jetzt
+        zielzeit = max(verlauf[0][0], self._echtzeit_anzeigezeit_s)
+        # Rückstand darf den Puffer nicht abschalten; neue Batches dürfen die
+        # Anzeige weder vorspulen noch bei wachsendem Puffer zurücksetzen.
+        puffergrenze = max(
+            zielzeit,
+            verlauf[-1][0] - self._echtzeit_anzeige_verzoegerung_s)
+        zielzeit = min(verlauf[-1][0], puffergrenze, zielzeit + vergangen)
+        self._echtzeit_anzeigezeit_s = zielzeit
+        if zielzeit <= verlauf[0][0] or len(verlauf) == 1:
+            pose = verlauf[0][1]
         else:
-            anteil = min(
-                1.0, max(0.0, (jetzt - self._echtzeit_anzeige_startzeit)
-                         / self._echtzeit_anzeige_dauer))
-        from ..core.dynamik_6dof import quaternion_slerp
-        position = (
-            np.asarray(start.position)
-            + anteil * (np.asarray(ziel.position) - start.position))
-        pose = type(ziel)(
-            position=tuple(position),
-            quaternion=tuple(quaternion_slerp(
-                start.quaternion, ziel.quaternion, anteil)),
-            geschwindigkeit_koerper=ziel.geschwindigkeit_koerper,
-            winkelgeschwindigkeit_koerper=(
-                ziel.winkelgeschwindigkeit_koerper))
+            index = 1
+            while index < len(verlauf) and verlauf[index][0] < zielzeit:
+                index += 1
+            startzeit, start = verlauf[index - 1]
+            endzeit, ende = verlauf[min(index, len(verlauf) - 1)]
+            dauer = endzeit - startzeit
+            anteil = (
+                1.0 if dauer <= 0.0 else
+                min(1.0, max(0.0, (zielzeit - startzeit) / dauer)))
+            from ..core.dynamik_6dof import quaternion_slerp
+            position = (
+                np.asarray(start.position)
+                + anteil * (np.asarray(ende.position)
+                            - np.asarray(start.position)))
+            pose = type(ende)(
+                position=tuple(position),
+                quaternion=tuple(quaternion_slerp(
+                    start.quaternion, ende.quaternion, anteil)),
+                geschwindigkeit_koerper=ende.geschwindigkeit_koerper,
+                winkelgeschwindigkeit_koerper=(
+                    ende.winkelgeschwindigkeit_koerper))
+            self._echtzeit_anzeige_verlauf = verlauf[index - 1:]
         if not self._echtzeit_pose_anzeigen(pose, render=True):
             return
         self._echtzeit_fps_zaehler += 1
@@ -1818,7 +1935,7 @@ class HauptFenster(QMainWindow):
                 if zf_start is not None else 0.0)
             self._echtzeit_zf_berechnet = self._echtzeit_berechnet_s
             self._solver_status_aktualisieren({
-                "Bildrate": "%.1f FPS" % self._echtzeit_angeforderte_fps,
+                "Bildrate": "%.1f Render/s" % self._echtzeit_angeforderte_fps,
                 "Zeitfaktor": "%.2f ×" % zeitfaktor,
                 **self._echtzeit_zeitbilanz_status(),
             })
@@ -1857,6 +1974,10 @@ class HauptFenster(QMainWindow):
              else self._dyn("max_schritte_pro_aufgabe")))
         if anzahl_schritte == 0:
             return
+        self._echtzeit_anzeige_verzoegerung_s = min(
+            _ECHTZEIT_ANZEIGE_PUFFER_MAX_S,
+            max(self._echtzeit_anzeige_verzoegerung_s,
+                anzahl_schritte * dt))
         self._echtzeit_akkumulator -= anzahl_schritte * dt
         koerper = self._laufzeit_koerper.get(self._echtzeit_name)
         if koerper is None:
@@ -1887,7 +2008,7 @@ class HauptFenster(QMainWindow):
 
     def _echtzeit_aufgabe_abgeschlossen(
             self, generation, sequenz, koerper_name, zustand,
-            kraefteresultat, fehler, dauer_s):
+            kraefteresultat, fehler, _dauer_s):
         if sequenz != self._echtzeit_aufgabe_sequenz_laufend:
             return
         self._echtzeit_aufgabe_laeuft = False
@@ -1928,16 +2049,11 @@ class HauptFenster(QMainWindow):
                 % (koerper_name, state_error))
             return
         zustand = koerper.zustand
-        vorherige_anzeige = (
-            self._echtzeit_anzeige_ziel or self._echtzeit_zustand)
         self._echtzeit_zustand = koerper.zustand
         self._navigationsanzeigen_aktualisieren()
         self._echtzeit_kraefteresultat = kraefteresultat
-        self._echtzeit_anzeige_start = vorherige_anzeige
-        self._echtzeit_anzeige_ziel = zustand
-        self._echtzeit_anzeige_startzeit = time.perf_counter()
-        self._echtzeit_anzeige_dauer = max(
-            float(dauer_s), 1.0 / 60.0)
+        self._echtzeit_anzeige_verlauf.append(
+            (self._echtzeit_berechnet_s, zustand))
         bruecke = getattr(self, "_bruecke", None)
         if bruecke is not None:
             pose = zustand

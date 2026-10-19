@@ -1,0 +1,20 @@
+{
+  "status": "abgebrochene Instrumentierungsdiagnosen, keine gültigen Messwerte",
+  "modell": "folkeboot",
+  "plattform": "windows, nicht offscreen",
+  "versuche": [
+    {
+      "warmup_s": 5,
+      "angeforderte_dauer_s": 10,
+      "fehler": "Worker-Initialisierung: TypeError bei vars(PhysikParameter); Klasse verwendet __slots__.",
+      "behebung": "Serialisierung aller expliziten Physikparameter-Slots."
+    },
+    {
+      "warmup_s": 5,
+      "angeforderte_dauer_s": 12,
+      "fehler": "Worker-Initialisierung: TypeError bei asdict(PhysikParameter); Klasse ist keine dataclass.",
+      "behebung": "Serialisierung aller expliziten Physikparameter-Slots."
+    }
+  ],
+  "auswertung": "Nicht mit erfolgreichen Vorher-/Nachher-Läufen zusammenfassen. Anschließende 12-s-Diagnose und beide 300-s-Läufe verwenden korrigierte Instrumentierung."
+}

@@ -4,3 +4,5 @@ __pycache__/
 tmp_*/
 .venv/
 .venv-py313/
+konfigurationen/segler.json
+konfigurationen/segler.json.*.tmp

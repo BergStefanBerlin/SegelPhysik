@@ -95,3 +95,23 @@ Die Detailanzeigen sind unabhängig voneinander und standardmäßig eingeschalte
 
 Sie steuern ausschließlich die Sichtbarkeit der berechneten Kraftpfeile und
 ändern weder Kraftmodell noch Bewegung.
+
+## Parameter (Version 1.5: expliziter Schulungs-Darstellungsmodus)
+
+`anzeigen.schulungs_darstellung` ist standardmäßig **ausgeschaltet**.
+Der gleichnamige Schalter im Darstellungsdock ist sofort wirksam und
+persistent; der Modus kann auch über Anzeigeoptionen gewählt werden.
+Er reduziert ausschließlich die Optik (SSAO und MSAA aus; der bestehende
+Wasseroptik-Helfer reduziert Glanz/Transparenz auf seine Basiswerte).
+Körperlage, Wasserlinie, Wasserbewegung sowie alle gewählten Kraft-/Moment-,
+Hydrodynamik-, Schwerpunkt- und Achsenanzeigen bleiben erhalten.
+Physikverfahren, Physikzeitschritt und Genauigkeitsgrenzen ändern sich nicht.
+
+Im Modus folgt die Vorbereitung des nächsten Anzeigebildes dem abgeschlossenen
+Qt-Swap. Eine bereits zum Swap anstehende Pose wird nicht vor ihrem Bild erneut
+aufbereitet; es gibt keinen eigenen selteneren Kraft-/Momentdetailtakt.
+Der 20-ms-Timer bleibt als Anstoß/Rückfall aktiv. Beim Ausschalten werden
+vorherige SSAO-/Wasseroptik-/MSAA-Werte und der normale 33-ms-Timer wiederhergestellt.
+Der Modus garantiert keine feste FPS-Zahl; Live-Messungen und eingeschränkter
+Darstellungsstatus bleiben maßgeblich. `frameSwapped` ist kein
+Monitor-Scanout-Nachweis.

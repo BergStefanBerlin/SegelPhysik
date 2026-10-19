@@ -1,0 +1,24 @@
+{
+    "messdatum":  "2026-10-19T13:16:21.8450952+02:00",
+    "gpu":  {
+                "Name":  "AMD Radeon 760M Graphics",
+                "DriverVersion":  "32.0.31041.1004"
+            },
+    "identifikatoren":  "Keine Seriennummern, Geräte-IDs, Benutzerpfade erfasst",
+    "ram":  {
+                "TotalPhysicalMemory":  33413279744
+            },
+    "npu":  [
+                {
+                    "DeviceName":  "NPU Compute Accelerator Device",
+                    "DriverProviderName":  "AMD",
+                    "DriverVersion":  "32.0.20102.3930",
+                    "DriverDate":  "2026-07-05"
+                }
+            ],
+    "cpu":  {
+                "Name":  "AMD Ryzen 5 8600G w/ Radeon 760M Graphics      ",
+                "NumberOfCores":  6,
+                "NumberOfLogicalProcessors":  12
+            }
+}

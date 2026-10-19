@@ -107,12 +107,11 @@ def _welt_aus_repo_paketen(konfig):
     modell_ids = {
         name for name in konfig.summenkoerper if not name.startswith("_")
     }
-    if manifest_ids != modell_ids:
+    fehlende_pakete = modell_ids - manifest_ids
+    if fehlende_pakete:
         raise ValueError(
-            "Paketkatalog und Körperkonfiguration stimmen nicht überein: "
-            "fehlende Pakete %s; unbekannte Pakete %s"
-            % (sorted(modell_ids - manifest_ids),
-               sorted(manifest_ids - modell_ids)))
+            "Körperkonfiguration verweist auf fehlende Modellpakete: %s"
+            % sorted(fehlende_pakete))
 
     welt = Knoten("Welt", ART_WELT, ICON_GLOBUS)
     welt.konfiguration = konfig
@@ -120,7 +119,7 @@ def _welt_aus_repo_paketen(konfig):
     paket_ueberschreibungen = getattr(
         konfig, "paket_ueberschreibungen", {})
     for manifest in katalog:
-        legacy_root = konfig.summenkoerper[manifest.id]
+        legacy_root = konfig.summenkoerper.get(manifest.id, {})
         legacy_by_name = {}
 
         def indexiere(eintrag):
@@ -147,6 +146,13 @@ def _welt_aus_repo_paketen(konfig):
             return None
 
         def eigenschaften(knoten):
+            if knoten.masse_kg is not None:
+                werte = konfig.segler_einstellungen.werte(
+                    manifest.id, knoten.masse_kg, knoten.position_rumpf_m)
+                return [("Masse", "%g kg" % werte["masse_kg"])] + [
+                    ("Position %s" % achse, "%g m" % x)
+                    for achse, x in zip("xyz", werte["position_rumpf_m"])
+                ]
             quelle = paket_ueberschreibungen.get(
                 manifest.id, {}).get(knoten.id, {})
             werte = []
@@ -190,7 +196,16 @@ def _welt_aus_repo_paketen(konfig):
             knoten.eintrag = (
                 legacy_root if ist_wurzel
                 else legacy_fuer(modellknoten.id))
+            if modellknoten.masse_kg is not None:
+                knoten.eintrag = konfig.segler_einstellungen.werte(
+                    manifest.id, modellknoten.masse_kg,
+                    modellknoten.position_rumpf_m)
+            elif knoten.eintrag is None and not modellknoten.teile:
+                knoten.eintrag = {}
             knoten.eigenschaften = eigenschaften(modellknoten)
+            if ist_wurzel and manifest.beschreibung:
+                knoten.eigenschaften.append((
+                    "Modellhinweis", manifest.beschreibung))
             if ist_wurzel and "form" in legacy_root:
                 form = legacy_root.get("form", {})
                 try:

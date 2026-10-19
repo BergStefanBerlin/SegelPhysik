@@ -18,7 +18,7 @@ import os
 import shutil
 
 from . import pfeilstil
-SCHEMA_VERSION = "1.4"
+SCHEMA_VERSION = "1.5"
 DATEINAME = "settings.json"
 VORLAGE_DATEINAME = "settings_vorlage.json"
 
@@ -82,6 +82,10 @@ VORLAGE = {
             seit="1.2"),
     },
     "anzeigen": {
+        "schulungs_darstellung": _eintrag(
+            "bool", False, "Expliziter Schulungs-Darstellungsmodus: ohne SSAO "
+            "und MSAA, reduzierte Wasseroptik; Physik und Lernanzeigen unverändert",
+            seit="1.5"),
         "titel_sichtbar": _eintrag(
             "bool", True, "Titel der Instrumentkarten anzeigen", seit="1.3"),
         "titel_beschreibung_sichtbar": _eintrag(

@@ -385,13 +385,18 @@ def test_vollstaendiger_bestandskatalog_und_formpakete_laden():
         if not name.startswith("_")
     }
 
-    assert ids == bestand
+    assert bestand <= ids
     for manifest in katalog:
         paket = lade_modellpaket(
             manifest.paketwurzel,
             konfiguration.materialien_blocks,
         )
-        assert len(paket.meshes) == (8 if manifest.id == "yacht1" else 1)
+        erwartete_meshanzahl = {
+            "yacht1": 8,
+            "optimist": 10,
+            "folkeboot": 7,
+        }.get(manifest.id, 1)
+        assert len(paket.meshes) == erwartete_meshanzahl
 
 
 def test_bestandsmodelle_stimmen_mit_phase3_goldenwerten_ueberein():

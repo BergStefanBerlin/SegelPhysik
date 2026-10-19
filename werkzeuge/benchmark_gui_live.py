@@ -11,6 +11,8 @@ unbestimmt.
 from __future__ import annotations
 
 import argparse
+import cProfile
+from functools import partial
 import json
 import math
 import os
@@ -35,11 +37,25 @@ def _perzentil(werte, anteil):
     return sortiert[index]
 
 
+def _kugelcache_deaktivieren(bruecke):
+    original = bruecke._kugel_mesh_setzen
+
+    def neu_erzeugen(store, name, *args, **kwargs):
+        getattr(bruecke, "_kugel_cache", {}).pop(name, None)
+        return original(store, name, *args, **kwargs)
+
+    bruecke._kugel_mesh_setzen = neu_erzeugen
+
+
 def _warte(app, dauer_ms):
-    from PySide6.QtCore import QEventLoop, QTimer
+    from PySide6.QtCore import QEventLoop, QTimer, Qt
 
     schleife = QEventLoop()
-    QTimer.singleShot(dauer_ms, schleife.quit)
+    timer = QTimer()
+    timer.setTimerType(Qt.TimerType.PreciseTimer)
+    timer.setSingleShot(True)
+    timer.timeout.connect(schleife.quit)
+    timer.start(dauer_ms)
     schleife.exec()
     app.processEvents()
 
@@ -66,7 +82,9 @@ def _fenster_schliessen(app, fenster, hauptfenster_mod):
 
 
 def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
-              measure_parameter_change=False):
+              measure_parameter_change=False, worker_profile=None,
+              cpu_profile_batches=0, cpu_profile=False,
+              render_options=None, measure_lifecycle=False, screenshot=None):
     from PySide6.QtCore import QObject, Qt, QTimer, Signal
     from PySide6.QtWidgets import QApplication
 
@@ -80,12 +98,27 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
     from segelphysik.gui.baum import sichtbarkeit_setzen
     from segelphysik.gui import hauptfenster as hauptfenster_mod
     from segelphysik.gui.hauptfenster import HauptFenster
+    from werkzeuge.benchmark_profil import (
+        cpu_statistik, profil_initialisieren, profil_schritte_berechnen,
+        umgebung, worker_bericht,
+    )
+    from segelphysik.core import echtzeit_prozess
     from segelphysik.core.overlays import (
         LAYER_HAUPTACHSEN, LAYER_KRAEFTE, LAYER_MOMENTE,
         LAYER_SCHWERPUNKT,
     )
 
     hauptfenster_mod._ECHTZEIT_HYDROSTATIK_PFAD = backend
+    original_initializer = echtzeit_prozess.initialisieren
+    original_worker = echtzeit_prozess.schritte_berechnen
+    if worker_profile:
+        worker_profile = os.path.abspath(worker_profile)
+        if os.path.exists(worker_profile):
+            raise FileExistsError("Profil-Rohdatei existiert bereits: " + worker_profile)
+        echtzeit_prozess.initialisieren = partial(
+            profil_initialisieren, datei=worker_profile,
+            cpu_batches=cpu_profile_batches)
+        echtzeit_prozess.schritte_berechnen = profil_schritte_berechnen
     welt = welt_laden()
     sichtbarkeit_setzen(welt, scene)
     fenster = HauptFenster()
@@ -95,14 +128,12 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
     first_scene_presented_s = [None]
     render_fenster = bridge._plotter.render_window
 
-    def first_scene_presented(_obj, _ereignis):
+    def first_scene_presented():
         if first_scene_presented_s[0] is not None:
             return
-        if hasattr(render_fenster, "WaitForCompletion"):
-            render_fenster.WaitForCompletion()
         first_scene_presented_s[0] = time.perf_counter() - startup_start
 
-    render_fenster.AddObserver("EndEvent", first_scene_presented)
+    bridge._plotter.frameSwapped.connect(first_scene_presented)
     fenster.show()
     app.processEvents()
     gui_bedienbar_s = time.perf_counter() - startup_start
@@ -115,9 +146,13 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
     }
     for layer in pflicht_layer.values():
         bridge.layer_setzen(layer, True)
+    for name, layer in fenster._layer_namen:
+        if layer in pflicht_layer.values():
+            fenster._layer_checks[name].setChecked(True)
     renderzeiten = []
     posezeiten = []
     batchzeiten = []
+    batchzeitpunkte = []
     fehler = []
     render_alt = bridge.render
     pose_alt = bridge.physik_pose_6dof_setzen
@@ -138,21 +173,37 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
 
     bridge.render = render_messen
     bridge.physik_pose_6dof_setzen = pose_messen
+    render_options = render_options or {}
+    if render_options.get("schulungsdarstellung"):
+        fenster._schulungsdarstellung_check.blockSignals(True)
+        fenster._schulungsdarstellung_check.setChecked(True)
+        fenster._schulungsdarstellung_check.blockSignals(False)
+        fenster._schulungsdarstellung_geaendert(True, persistieren=False)
+    for name, setzen in (
+        ("ssao", bridge.ssao_setzen),
+        ("wasseroptik", bridge.wasseroptik_setzen),
+        ("wasser", bridge.wasser_sichtbar_setzen),
+    ):
+        if render_options.get(name) is not None:
+            if not setzen(render_options[name]):
+                raise RuntimeError("Renderoption konnte nicht gesetzt werden: " + name)
+    if render_options.get("kugelcache") is False:
+        _kugelcache_deaktivieren(bridge)
 
-    # Präsentationszeitpunkt: VTK-EndEvent liegt nach SwapBuffers; mit
-    # WaitForCompletion (glFinish) ist der Frame vom Treiber abgeschlossen.
+    # WindowFrameEvent gehört zur Frame-/Swap-Grenze, EndEvent kann zusätzlich
+    # aus verschachtelten Render-/Picking-Pässen kommen. Keines beweist Scanout.
     plotter = bridge._plotter
     render_fenster = plotter.render_window
     praesentiert = []
+    vtk_frames = []
+    end_events = []
     reaktionen = []
     stimulus = {"zeit": None, "kamera": None}
 
     def kamera_zustand():
         return tuple(np.round(plotter.camera.position, 6))
 
-    def frame_beendet(_obj, _ereignis):
-        if hasattr(render_fenster, "WaitForCompletion"):
-            render_fenster.WaitForCompletion()
+    def frame_beendet():
         jetzt = time.perf_counter()
         praesentiert.append(jetzt)
         if (stimulus["zeit"] is not None
@@ -160,7 +211,11 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
             reaktionen.append(jetzt - stimulus["zeit"])
             stimulus["zeit"] = None
 
-    render_fenster.AddObserver("EndEvent", frame_beendet)
+    plotter.frameSwapped.connect(frame_beendet)
+    render_fenster.AddObserver(
+        "WindowFrameEvent", lambda _obj, _event: vtk_frames.append(time.perf_counter()))
+    render_fenster.AddObserver(
+        "EndEvent", lambda _obj, _event: end_events.append(time.perf_counter()))
     _warte(app, round(warmup_s * 1000))
     if measure_parameter_change:
         from segelphysik.gui.baum import finde
@@ -274,6 +329,8 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
                 else "Parameteränderung, Solver oder sichtbare Aktualisierung "
                      "nicht innerhalb von 60 s abgeschlossen."),
         }
+        echtzeit_prozess.initialisieren = original_initializer
+        echtzeit_prozess.schritte_berechnen = original_worker
         return {"parameter_change": result}
 
     verspaetungen = []
@@ -296,12 +353,33 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
             batch_fehler, dauer):
         if batch_fehler is None:
             batchzeiten.append(float(dauer))
+            batchzeitpunkte.append(time.perf_counter() - laufzeit_start)
         else:
             fehler.append(str(batch_fehler))
 
     fenster._echtzeit_signale.abgeschlossen.connect(batch_abgeschlossen)
+    worker_roundtrips = []
+    run_alt = hauptfenster_mod._EchtzeitAufgabe.run
+
+    def run_messen(aufgabe):
+        start = time.perf_counter()
+        try:
+            return run_alt(aufgabe)
+        finally:
+            worker_roundtrips.append(time.perf_counter() - start)
+
+    hauptfenster_mod._EchtzeitAufgabe.run = run_messen
+    renderzeiten.clear()
+    posezeiten.clear()
+    praesentiert.clear()
+    end_events.clear()
+    vtk_frames.clear()
+    gui_profil = cProfile.Profile() if cpu_profile else None
+    if gui_profil is not None:
+        gui_profil.enable()
     angefordert_start = fenster._echtzeit_angefordert_s
     berechnet_start = fenster._echtzeit_berechnet_s
+    start_angefordert = time.perf_counter()
     fenster._btn_echtzeit.click()
     laufzeit_start = time.perf_counter()
     rueckstand_zeitreihe = []
@@ -319,6 +397,28 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
     rueckstand_timer.start()
     ereignis_thread.start()
     praesentiert_start = len(praesentiert)
+    lebenszyklus = []
+
+    def phase(name, aktion):
+        start = time.perf_counter()
+        aktion()
+        lebenszyklus.append({
+            "phase": name, "wandzeit_s": start - laufzeit_start,
+            "aufrufdauer_s": time.perf_counter() - start,
+            "modus": fenster._echtzeit_modus,
+            "angefordert_s": fenster._echtzeit_angefordert_s,
+            "berechnet_s": fenster._echtzeit_berechnet_s,
+        })
+
+    if measure_lifecycle:
+        for verzoegerung, name, aktion in (
+            (2000, "pause", fenster._zeit_pausieren),
+            (3000, "fortsetzung", fenster._zeit_fortsetzen),
+            (5000, "wechsel_statisch", fenster._btn_statisch.click),
+            (7000, "wechsel_echtzeit", fenster._btn_echtzeit.click),
+        ):
+            QTimer.singleShot(
+                verzoegerung, lambda n=name, a=aktion: phase(n, a))
 
     from PySide6.QtCore import QPoint
     from PySide6.QtTest import QTest
@@ -344,6 +444,8 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
     eingabe_timer.timeout.connect(eingabe_senden)
     eingabe_timer.start()
     _warte(app, round(duration_s * 1000))
+    if gui_profil is not None:
+        gui_profil.disable()
     eingabe_timer.stop()
     laufzeit = time.perf_counter() - laufzeit_start
     frames = praesentiert[praesentiert_start:]
@@ -365,11 +467,36 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
             [punkt[1] for punkt in trend_messfenster], 1)[0])
     angefordert_s = fenster._echtzeit_angefordert_s - angefordert_start
     berechnet_s = fenster._echtzeit_berechnet_s - berechnet_start
+    punktmassen = []
+
+    def punktmassen_aufnehmen(koerper):
+        if (not koerper.teile and not len(koerper.punkte)
+                and not len(koerper.dreiecke) and koerper.masse > 0):
+            punktmassen.append({
+                "knoten_id": koerper.knoten_id,
+                "name": koerper.name,
+                "masse_kg": float(koerper.masse),
+                "punkte": len(koerper.punkte), "dreiecke": len(koerper.dreiecke),
+                "verdraengend": bool(koerper.verdrangend),
+            })
+        for kind, _pose in koerper.teile:
+            punktmassen_aufnehmen(kind)
+
+    laufzeitkoerper = fenster._laufzeit_koerper.get(scene)
+    if laufzeitkoerper is not None:
+        punktmassen_aufnehmen(laufzeitkoerper)
+    oberflaeche = getattr(bridge._renderer, "_surf_actor", None)
+    renderpass = plotter.renderer.GetPass()
     status = {
         "szene": scene,
         "hydrostatik_backend": backend,
         "startup_gui_bedienbar_s": round(gui_bedienbar_s, 3),
-        "startup_erste_3d_szene_praesentiert_s": (
+        "echtzeit_startaufruf_s": laufzeit_start - start_angefordert,
+        "start_bis_erster_physikbatch_s": (
+            laufzeit_start - start_angefordert + batchzeitpunkte[0]
+            if batchzeitpunkte else None),
+        "startup_erste_3d_szene_praesentiert_s": None,
+        "startup_erster_qt_swap_s": (
             round(first_scene_presented_s[0], 3)
             if first_scene_presented_s[0] is not None else None),
         "python": platform.python_version(),
@@ -384,8 +511,13 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
         "prozess_worker": fenster._echtzeit_prozess_executor is not None,
         "renderaufrufe_pro_s": round(renderaufrufe_pro_s, 2),
         "qpa_plattform": app.platformName(),
-        "tatsaechlich_praesentierte_fps": (
+        "tatsaechlich_praesentierte_fps": None,
+        "abgeschlossene_frame_fps": (
             round(praesentiert_fps, 2) if praesentiert_fps else None),
+        "vtk_end_events": len(end_events),
+        "vtk_window_frame_events": len(vtk_frames),
+        "qt_frame_swapped": len(frames),
+        "scanout_nachgewiesen": False,
         "frameabstand_p95_ms": (
             round(1000 * _perzentil(frame_abstaende, 0.95), 3)
             if frame_abstaende else None),
@@ -400,14 +532,16 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
         "eingabe_bis_praesentierter_frame_median_ms": (
             round(1000 * statistics.median(reaktionen), 3)
             if reaktionen else None),
-        "praesentierungszeitpunkt_verfuegbar": bool(frames),
+        "praesentierungszeitpunkt_verfuegbar": False,
+        "qt_swapzeitpunkt_verfuegbar": bool(frames),
         # Nur auf einer echten Plattform (nicht offscreen) gültig.
         "eingabelatenz_abnahme_gueltig": bool(
             reaktionen and app.platformName() != "offscreen"),
         "eingabelatenz_messhinweis": (
-            "Präsentierung = VTK-EndEvent nach SwapBuffers plus "
-            "WaitForCompletion; Latenz = simulierte Mausdrehung bis erster "
-            "Frame mit geänderter Kameraposition. Offscreen ungültig."),
+            "QOpenGLWidget.frameSwapped nach Qt-Komposition/Swap; kein "
+            "Monitor-Scanout-Nachweis. VTK EndEvent/WindowFrameEvent separat "
+            "und nicht als FPS gezählt (paintGL rendert erneut). Latenz = "
+            "Mausdrehung bis Qt-Swap mit geänderter Kamera. Offscreen ungültig."),
         "erfolgreiche_renderaufrufe": len(renderzeiten),
         "pose_median_ms": round(
             1000 * statistics.median(posezeiten), 3) if posezeiten else None,
@@ -462,8 +596,61 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
         "trendfenster_s": 300,
         "rueckstand_trend_s_pro_s": trend_s_pro_s,
         "fehler": fehler,
+        "messlauf_gueltig": bool(
+            not fehler and frames and app.platformName() != "offscreen"),
+        "gui_lerninformationen": {
+            "solver_status": {
+                name: eintrag.text(1)
+                for name, eintrag in fenster._solver_werte.items()
+            },
+            "punktmassen": punktmassen,
+            "pruefung": "API-Nachweis; kein Ersatz für pädagogische Sichtprüfung.",
+        },
+        "umgebung": umgebung(),
+        "render_optionen_override": render_options,
+        "renderzustand": {
+            "fenstergroesse_px": list(render_fenster.GetSize()),
+            "device_pixel_ratio": plotter.devicePixelRatioF(),
+            "renderpass": renderpass.GetClassName() if renderpass is not None else None,
+            "lichtanzahl": plotter.renderer.GetLights().GetNumberOfItems(),
+            "multisamples": render_fenster.GetMultiSamples(),
+            "offscreen": bool(render_fenster.GetOffScreenRendering()),
+            "beckenwasser_sichtbar": bool(oberflaeche.GetVisibility()) if oberflaeche else None,
+            "ozean_sichtbar": bool(
+                bridge._ozean_actor.GetVisibility()) if bridge._ozean_actor else None,
+            "wasser_glanz": oberflaeche.GetProperty().GetSpecular() if oberflaeche else None,
+            "autoupdate_ms": plotter.render_timer.interval(),
+        },
+        "wiederholung": 1,
+        "messfall": "lebenszyklus" if measure_lifecycle else "echtzeit_1x",
+        "lebenszyklus": lebenszyklus,
+        "rohwerte": {
+            "framezeitpunkte_relativ_s": [t - laufzeit_start for t in frames],
+            "render_s": renderzeiten.copy(), "pose_s": posezeiten.copy(),
+            "batch_s": batchzeiten.copy(),
+            "batchzeitpunkte_relativ_s": batchzeitpunkte.copy(),
+            "worker_roundtrip_s": worker_roundtrips.copy(),
+            "eingabelatenz_s": reaktionen.copy(),
+            "event_dispatch_s": verspaetungen.copy(),
+        },
+        "worker_ipc_hinweis": (
+            "Roundtrip umfasst Qt-Worker, Prozess-Queue, Pickle/IPC und "
+            "Workerberechnung. Differenz zu Workerzeit ist nicht reine IPC; "
+            "Dateiprotokollierung/Profiloverhead und Queue sind enthalten."),
     }
+    if screenshot:
+        if not fenster.grab().save(screenshot):
+            raise RuntimeError("Fensteraufnahme konnte nicht gespeichert werden.")
+        status["fensteraufnahme"] = screenshot
     _fenster_schliessen(app, fenster, hauptfenster_mod)
+    hauptfenster_mod._EchtzeitAufgabe.run = run_alt
+    echtzeit_prozess.initialisieren = original_initializer
+    echtzeit_prozess.schritte_berechnen = original_worker
+    if gui_profil is not None:
+        status["gui_cpu_hotspots"] = cpu_statistik(gui_profil, limit=50)
+    if worker_profile:
+        status["worker_profil"] = worker_bericht(
+            worker_profile, status["rohwerte"]["worker_roundtrip_s"])
     return status
 
 
@@ -480,17 +667,52 @@ def main(argv=None):
     parser.add_argument(
         "--measure-parameter-change", action="store_true",
         help="Misst Material-/Masseneigenschaft bis zum konsistenten 3D-Frame")
+    parser.add_argument("--output", help="UTF-8-JSON ohne stdout/Windows-Umkodierung")
+    parser.add_argument("--screenshot", help="PNG des Anwendungsfensters nach dem Messfenster")
+    parser.add_argument("--worker-profile", help="Neue JSONL-Rohdatei für Komponentenprofil")
+    parser.add_argument("--cpu-profile-batches", type=int, default=0)
+    parser.add_argument("--cpu-profile", action="store_true", help="GUI-cProfile, nur Diagnoselauf")
+    parser.add_argument("--ohne-ssao", action="store_true")
+    parser.add_argument("--ohne-wasseroptik", action="store_true")
+    parser.add_argument("--ohne-wasser", action="store_true")
+    parser.add_argument("--ohne-kugelcache", action="store_true",
+                        help="Benchmark-Referenz: Marker-Netze jedes Mal neu erzeugen")
+    parser.add_argument("--schulungsdarstellung", action="store_true",
+                        help="Expliziter GUI-Schulungsmodus ohne persistente Änderung")
+    parser.add_argument("--measure-lifecycle", action="store_true",
+                        help="Separater Fall: Pause/Fortsetzung/Statik/Echtzeit bei 2/3/5/7 s")
     args = parser.parse_args(argv)
     if (not all(math.isfinite(wert) for wert in (args.warmup, args.duration))
             or args.warmup < 0.0
-            or args.duration <= 0.0):
+            or args.duration <= 0.0 or args.cpu_profile_batches < 0):
         parser.error("Warmup muss nicht-negativ und Dauer positiv sein.")
+    if args.cpu_profile_batches and not args.worker_profile:
+        parser.error("--cpu-profile-batches benötigt --worker-profile.")
+    if args.measure_lifecycle and args.duration < 9:
+        parser.error("--measure-lifecycle benötigt mindestens 9 s Dauer.")
     ergebnis = benchmark(
         args.scene, args.warmup, args.duration, backend=args.backend,
-        measure_parameter_change=args.measure_parameter_change)
+        measure_parameter_change=args.measure_parameter_change,
+        worker_profile=args.worker_profile,
+        cpu_profile_batches=args.cpu_profile_batches,
+        cpu_profile=args.cpu_profile,
+        measure_lifecycle=args.measure_lifecycle,
+        screenshot=args.screenshot,
+        render_options={
+            **{name: False for name, gesetzt in (
+                ("ssao", args.ohne_ssao), ("wasseroptik", args.ohne_wasseroptik),
+                ("wasser", args.ohne_wasser), ("kugelcache", args.ohne_kugelcache))
+            if gesetzt},
+            "schulungsdarstellung": args.schulungsdarstellung,
+        })
     import gc
     gc.collect()
-    print(json.dumps(ergebnis, ensure_ascii=False, indent=2))
+    if args.output:
+        with open(args.output, "w", encoding="utf-8") as stream:
+            json.dump(ergebnis, stream, ensure_ascii=False, indent=2)
+        print("Messbericht: " + args.output)
+    else:
+        print(json.dumps(ergebnis, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":

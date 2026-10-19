@@ -1,0 +1,382 @@
+{
+  "quelldateien": [
+    "Baseline_QtSwap_2026-10-19.json",
+    "Kugelcache_QtSwap_2026-10-19.json"
+  ],
+  "anzahl_paare": 1,
+  "eingabe_sha256_gleich": true,
+  "aktive_layer_gleich": true,
+  "bibliotheken_gleich": true,
+  "beide_windows": true,
+  "beide_mindestens_300s": true,
+  "messgroessen": {
+    "abgeschlossene_frame_fps": {
+      "vorher": 10.56,
+      "nachher": 12.15,
+      "aenderung_prozent": 15.056818181818187
+    },
+    "frameabstand_p95_ms": {
+      "vorher": 131.448,
+      "nachher": 116.394,
+      "aenderung_prozent": -11.45243746576593
+    },
+    "eingabe_bis_praesentierter_frame_ms": {
+      "vorher": 83.575,
+      "nachher": 75.935,
+      "aenderung_prozent": -9.141489679928206
+    },
+    "pose_median_ms": {
+      "vorher": 28.232,
+      "nachher": 21.457,
+      "aenderung_prozent": -23.997591385661654
+    },
+    "pose_p95_ms": {
+      "vorher": 36.503,
+      "nachher": 28.844,
+      "aenderung_prozent": -20.98183710927869
+    },
+    "render_median_ms": {
+      "vorher": 6.026,
+      "nachher": 5.189,
+      "aenderung_prozent": -13.889810819780946
+    },
+    "physik_durchsatz_sim_s_pro_wand_s": {
+      "vorher": 0.9963386238441857,
+      "nachher": 0.9966019068326347,
+      "aenderung_prozent": 0.02642505089616165
+    },
+    "rueckstand_p95_s": {
+      "vorher": 1.148480400006286,
+      "nachher": 1.1264833000418548,
+      "aenderung_prozent": -1.9153221913330687
+    },
+    "rueckstand_trend_s_pro_s": {
+      "vorher": -5.138587074166732e-06,
+      "nachher": 1.1707200384831514e-05,
+      "aenderung_prozent": -327.82917202448965
+    }
+  },
+  "komponenten": {
+    "vorher": {
+      "initialisierung": [
+        {
+          "typ": "initialisierung",
+          "dauer_s": 0.021882499975617975,
+          "eingabe_sha256": "069e175c50bee9d3f9831599ff7bc53c9e76295ccd8204798cb8ead86cda4073",
+          "masse_kg": 1661.6066803973465,
+          "dt_s": 0.004,
+          "schwerpunkt": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "hydrostatik_backend": "exakt_union",
+          "pid": 11192,
+          "physikparameter": {
+            "dt_s": 0.004,
+            "g_m_pro_s2": 9.80665,
+            "daempfung_tauchung": 8000.0,
+            "daempfung_kraengung": 8000.0,
+            "voxel_aufloesung_m": 0.05,
+            "schranke_volumen_m3": 0.0005,
+            "schranke_punkt_m": 0.005,
+            "fluidgeschwindigkeit": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "fluidwinkelgeschwindigkeit": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "linear_widerstand": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "quadratischer_widerstand": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "added_mass_diagonal": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          }
+        }
+      ],
+      "batchkomponenten": {
+        "hydrostatik_geometrie": {
+          "anzahl": 1853,
+          "summe_s": 27.629027397022583,
+          "median_ms": 17.283199937082827,
+          "p95_ms": 28.961940063163635
+        },
+        "hydrodynamik": {
+          "anzahl": 1853,
+          "summe_s": 39.397384797688574,
+          "median_ms": 24.494499899446964,
+          "p95_ms": 41.41031983308494
+        },
+        "kraftaggregation_exklusiv": {
+          "anzahl": 1853,
+          "summe_s": 24.801029594731517,
+          "median_ms": 14.755300246179104,
+          "p95_ms": 27.092540205921974
+        },
+        "worker_rest": {
+          "anzahl": 1853,
+          "summe_s": 0.2945590965100564,
+          "median_ms": 0.17139996634796262,
+          "p95_ms": 0.30857991660013795
+        },
+        "integration_inkl_kraftaufruf_rest": {
+          "anzahl": 1853,
+          "summe_s": 22.686046214366797,
+          "median_ms": 14.750299858860672,
+          "p95_ms": 23.037019779440016
+        }
+      },
+      "schrittmessungen": {
+        "hydrostatik_geometrie": {
+          "anzahl": 74810,
+          "summe_s": 27.629027397022583,
+          "median_ms": 0.4113999893888831,
+          "p95_ms": 0.5319550022250045
+        },
+        "hydrodynamik": {
+          "anzahl": 74810,
+          "summe_s": 39.397384797688574,
+          "median_ms": 0.5755999882239848,
+          "p95_ms": 0.74445499049034
+        },
+        "kraftaggregation_inkl_hydrodynamik": {
+          "anzahl": 74810,
+          "summe_s": 64.19841439242009,
+          "median_ms": 0.9073500114027411,
+          "p95_ms": 1.1894999770447612
+        },
+        "integrator_inkl_kraefte": {
+          "anzahl": 74810,
+          "summe_s": 114.51348800380947,
+          "median_ms": 1.6723499866202474,
+          "p95_ms": 2.138355010538362
+        },
+        "kraefte_gesamt": {
+          "anzahl": 0,
+          "summe_s": 0.0,
+          "median_ms": null,
+          "p95_ms": null
+        }
+      },
+      "worker_queue_ipc_protokoll_rest": {
+        "anzahl": 1853,
+        "summe_s": 19.62405519996537,
+        "median_ms": 10.230500076431781,
+        "p95_ms": 18.98544003488496
+      },
+      "roundtrip_zugeordnet": 1853,
+      "roundtrip_nicht_zugeordnet": 0,
+      "cache_pruefung": {
+        "cache_pose_aufrufe": 74810,
+        "cache_pose_direkte_treffer": 0,
+        "cache_pose_eindeutig": 74810
+      },
+      "cpu_hotspots": [],
+      "rohdatei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\doc\\WegZuV1.0\\Revisionslog\\zuV0.9\\Messungen\\Baseline_worker_2026-10-19.jsonl",
+      "batchanzahl": 1853,
+      "messhinweis": "Opt-in-Timer; Integrator exklusiv = Schritt minus Hydrostatik und Kraftaggregation im Schema 1 (inkl. Kraftaufrufverwaltung); Schema 2 trennt gesamten Kraftaufruf und dessen Rest zusätzlich ab. Worker-Rest separat. CPU-Profilbatches markiert. Cachetreffer sind nur beobachtet, kein Ergebniscache eingebaut.",
+      "gui_render": {
+        "anzahl": 5319,
+        "summe_s": 32.87157790217316,
+        "median_ms": 6.0279000317677855,
+        "p95_ms": 8.640209963778032
+      },
+      "gui_pose": {
+        "anzahl": 5318,
+        "summe_s": 153.39774599898374,
+        "median_ms": 28.240400017239153,
+        "p95_ms": 36.50316500279587
+      }
+    },
+    "nachher": {
+      "initialisierung": [
+        {
+          "typ": "initialisierung",
+          "dauer_s": 0.02136889996472746,
+          "eingabe_sha256": "069e175c50bee9d3f9831599ff7bc53c9e76295ccd8204798cb8ead86cda4073",
+          "masse_kg": 1661.6066803973465,
+          "dt_s": 0.004,
+          "schwerpunkt": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "hydrostatik_backend": "exakt_union",
+          "pid": 15032,
+          "physikparameter": {
+            "dt_s": 0.004,
+            "g_m_pro_s2": 9.80665,
+            "daempfung_tauchung": 8000.0,
+            "daempfung_kraengung": 8000.0,
+            "voxel_aufloesung_m": 0.05,
+            "schranke_volumen_m3": 0.0005,
+            "schranke_punkt_m": 0.005,
+            "fluidgeschwindigkeit": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "fluidwinkelgeschwindigkeit": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "linear_widerstand": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "quadratischer_widerstand": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "added_mass_diagonal": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          }
+        }
+      ],
+      "batchkomponenten": {
+        "hydrostatik_geometrie": {
+          "anzahl": 2227,
+          "summe_s": 27.110032701224554,
+          "median_ms": 7.1897999732755125,
+          "p95_ms": 28.399719728622582
+        },
+        "hydrodynamik": {
+          "anzahl": 2227,
+          "summe_s": 38.62072420096956,
+          "median_ms": 10.208900028374046,
+          "p95_ms": 40.628109814133495
+        },
+        "kraftaggregation_exklusiv": {
+          "anzahl": 2227,
+          "summe_s": 24.251383194583468,
+          "median_ms": 6.70769956195727,
+          "p95_ms": 26.85724002076313
+        },
+        "worker_rest": {
+          "anzahl": 2227,
+          "summe_s": 0.2890250886557624,
+          "median_ms": 0.0808002077974379,
+          "p95_ms": 0.2839398686774075
+        },
+        "integration_inkl_kraftaufruf_rest": {
+          "anzahl": 2227,
+          "summe_s": 22.106251713761594,
+          "median_ms": 5.675099964719266,
+          "p95_ms": 22.16850000550039
+        }
+      },
+      "schrittmessungen": {
+        "hydrostatik_geometrie": {
+          "anzahl": 74840,
+          "summe_s": 27.110032701224554,
+          "median_ms": 0.3291000030003488,
+          "p95_ms": 0.5184999899938703
+        },
+        "hydrodynamik": {
+          "anzahl": 74840,
+          "summe_s": 38.62072420096956,
+          "median_ms": 0.46579999616369605,
+          "p95_ms": 0.7307000341825187
+        },
+        "kraftaggregation_inkl_hydrodynamik": {
+          "anzahl": 74840,
+          "summe_s": 62.87210739555303,
+          "median_ms": 0.7251000497490168,
+          "p95_ms": 1.1699000024236739
+        },
+        "integrator_inkl_kraefte": {
+          "anzahl": 74840,
+          "summe_s": 112.08839181053918,
+          "median_ms": 1.3633999915327877,
+          "p95_ms": 2.096200012601912
+        },
+        "kraefte_gesamt": {
+          "anzahl": 0,
+          "summe_s": 0.0,
+          "median_ms": null,
+          "p95_ms": null
+        }
+      },
+      "worker_queue_ipc_protokoll_rest": {
+        "anzahl": 2226,
+        "summe_s": 20.133279701054562,
+        "median_ms": 8.46300000557676,
+        "p95_ms": 16.370649987948127
+      },
+      "roundtrip_zugeordnet": 2226,
+      "roundtrip_nicht_zugeordnet": 1,
+      "cache_pruefung": {
+        "cache_pose_aufrufe": 74840,
+        "cache_pose_direkte_treffer": 0,
+        "cache_pose_eindeutig": 74840
+      },
+      "cpu_hotspots": [],
+      "rohdatei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\doc\\WegZuV1.0\\Revisionslog\\zuV0.9\\Messungen\\Kugelcache_worker_2026-10-19.jsonl",
+      "batchanzahl": 2227,
+      "messhinweis": "Opt-in-Timer; Integrator exklusiv = Schritt minus Hydrostatik und Kraftaggregation im Schema 1 (inkl. Kraftaufrufverwaltung); Schema 2 trennt gesamten Kraftaufruf und dessen Rest zusätzlich ab. Worker-Rest separat. CPU-Profilbatches markiert. Cachetreffer sind nur beobachtet, kein Ergebniscache eingebaut.",
+      "gui_render": {
+        "anzahl": 6189,
+        "summe_s": 34.12520379712805,
+        "median_ms": 5.189199990127236,
+        "p95_ms": 7.754320022650062
+      },
+      "gui_pose": {
+        "anzahl": 6188,
+        "summe_s": 138.87597579642897,
+        "median_ms": 21.45680002286099,
+        "p95_ms": 28.843020007479932
+      }
+    }
+  },
+  "zielerreichung": {
+    "qt_swaprate_mindestens_30": false,
+    "frame_p95_hoechstens_67ms": false,
+    "eingabelatenz_proxy_p95_hoechstens_100ms": true,
+    "monitor_scanout_nachgewiesen": false,
+    "dauerhaft_wachsender_rueckstand_ausgeschlossen": "Nicht abschliessend; Trend in beiden 300-s-Fenstern nahe null, Wiederholungen offen."
+  },
+  "hinweise": [
+    "Nachauswertung unveraenderter Rohdateien, keine Messwerte ersetzt.",
+    "Schema-1-Rest umfasst Integration und Kraftaufrufverwaltung. Lifecycle separat mit Schema 2.",
+    "Erster Lauf vor produktivem Kugelcache; Wiederholung mit --ohne-kugelcache moeglich.",
+    "renderzustand wurde erst im separaten Lifecycle direkt abgefragt, nicht rueckwirkend fuer das Vergleichspaar gemessen."
+  ]
+}

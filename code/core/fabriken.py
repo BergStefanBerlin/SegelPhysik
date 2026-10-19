@@ -86,18 +86,24 @@ def baue_summenkoerper(konfig, name, eintrag=None, aktive_blaetter=None):
     Koerpern der Masseschwerpunkt im Modell-Frame (Position += r_modell),
     bei einfachen Figuren None."""
     if eintrag is None:
-        eintrag = konfig.summenkoerper[name]
         paketwurzel = os.path.join(boot_bau.MODELL_ORDNER, name)
         if (_ist_repo_konfig(konfig)
                 and getattr(konfig, "paketfabrik_aktiv", True)):
-            if not os.path.isfile(os.path.join(paketwurzel, "modell.json")):
+            manifest_pfad = os.path.join(paketwurzel, "modell.json")
+            if os.path.isfile(manifest_pfad):
+                return baue_modellpaket(
+                    konfig, paketwurzel, aktive_blaetter=aktive_blaetter,
+                    sitzungs_ueberschreibungen=getattr(
+                        konfig, "paket_ueberschreibungen", {}).get(
+                            name, {}))
+            if name in konfig.summenkoerper:
                 raise ValueError(
                     "Paketfabrik ist aktiv, aber Modellpaket %r fehlt"
                     % name)
-            return baue_modellpaket(
-                konfig, paketwurzel, aktive_blaetter=aktive_blaetter,
-                sitzungs_ueberschreibungen=getattr(
-                    konfig, "paket_ueberschreibungen", {}).get(name, {}))
+            raise ValueError(
+                "Unbekanntes Modell %r: kein Paket unter %s"
+                % (name, boot_bau.MODELL_ORDNER))
+        eintrag = konfig.summenkoerper[name]
     if "form" in eintrag:
         return baue_form(konfig, eintrag), None
     ordner = os.path.join(boot_bau.MODELL_ORDNER, name)
@@ -318,6 +324,22 @@ def _spec_aus_modellknoten(
         }
     if aktive_ids is not None and knoten.id not in aktive_ids:
         return None
+    if knoten.masse_kg is not None:
+        from .modell_lader import ModellPose
+
+        werte = konfig.segler_einstellungen.werte(
+            manifest.id, knoten.masse_kg, knoten.position_rumpf_m)
+        translation = tuple(
+            r + x for r, x in zip(
+                manifest.rumpfreferenz_m, werte["position_rumpf_m"]))
+        return {
+            "punktmasse": True, "masse": werte["masse_kg"],
+            "_name": knoten.id, "knoten_id": knoten.id,
+            "_fehlerkontext": "%s/segler" % manifest.id,
+            "name": knoten.name, "rolle": "allgemein",
+            "verdrangend": False,
+            "basis_pose": ModellPose(translation, (1.0, 0.0, 0.0, 0.0)),
+        }
 
     from .mesh import mesh_aus_quelle
 
@@ -385,6 +407,7 @@ WARN_SCHWELLE = 0.40   # Einzelteil > 40 % der Gesamtmasse -> Warnung
 def _protokoll_und_warnung(koerper, konfig):
     """Protokolliert die bereits gebauten Blätter ohne zweite Massenberechnung."""
     zeilen = []
+    punktmassen = set()
 
     def gehe(knoten):
         for kind, _pose in knoten.teile:
@@ -395,12 +418,14 @@ def _protokoll_und_warnung(koerper, konfig):
             if not name:
                 raise ValueError("Zusammengesetztes Blatt ohne stabilen Namen")
             zeilen.append((name, kind.masse))
+            if getattr(kind, "punktmasse", False):
+                punktmassen.add(name)
 
     gehe(koerper)
     gesamt = sum(m for _n, m in zeilen)
     for n, m in zeilen:
         konfig.protokoll.append("%s: masse=%.3f kg (%.1f %%)" % (n, m, 100.0 * m / gesamt))
-        if m > WARN_SCHWELLE * gesamt:
+        if n not in punktmassen and m > WARN_SCHWELLE * gesamt:
             print("WARNUNG (Plausibilitaet): Teil '%s' hat %.1f %% der Gesamtmasse "
                   "(> %.0f %%). Vergessen wanddicke_m? (Spec P3)"
                   % (n, 100.0 * m / gesamt, 100.0 * WARN_SCHWELLE))

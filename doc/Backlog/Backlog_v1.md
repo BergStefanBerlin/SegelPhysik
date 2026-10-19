@@ -1,6 +1,6 @@
 # Backlog v1 – priorisierte Arbeitsliste
 
-**Stand:** 17.10.2026
+**Stand:** 19.10.2026
 **Zweck:** Nachverfolgbare Liste offener, laufender, zurückgestellter und
 abgeschlossener Entwicklungsarbeiten. Die Nummern `BL1`, `BL2` usw. sind die
 neuen stabilen Backlog-IDs. Die Spalte „Bisherige ID“ erhält die Zuordnung zu
@@ -39,6 +39,33 @@ und technischen Gates unvalidierte Kräfte produktiv einzuschalten.
 | **BL22** | Neu | Blockiert HYD-0005/0013 | Ruderdrehachse, Drehpunkt, Vorzeichen und Winkelgrenzen für jede Produktions-/Manöverbewertung aus einer autoritativen Konstruktions-/Modellquelle nachweisen. Das aktuelle Yachtmanifest enthält für `ruder` weder Pose noch Gelenk. Eine Mesh-abgeleitete Kinematik ist nur als ausdrücklich genehmigte, getrennte Testannahme zulässig (Spec0066). | **Teilweise; eine Vorderkantenachse ist nutzerfreigegeben und ausschließlich als Testannahme im isolierten Modell umgesetzt. Autoritativer Nachweis, mechanische Grenzen und Produktionsgelenk fehlen; Spec0065 bleibt für Manöver-/Produktionsfreigabe offen.** |
 | **BL23** | Neu | Blockiert HYD-0004/0008–0010 | Für die Yacht passende, ausreichend dokumentierte Referenzdaten zu Rumpfwiderstand und Kiel-/Ruderkräften beschaffen oder einen klar begrenzten Näherungszweig fachlich freigeben. TU-Delft-Ergebnisse zeigen Wechselwirkungen und experimentelle Unstimmigkeiten; Werte sind ohne Geometrie-/Bedingungsabgleich keine direkt übertragbaren Koeffizienten. | **Teilweise; nutzerfreigegebener Rudernormalkraftzweig isoliert implementiert und getestet. Er bleibt `berechnete_naeherung`; passende Yacht-Referenzdaten fehlen, Rumpfwiderstand und Kiel-/Ruderinteraktion sind nicht validiert, keine Produktivaktivierung.** |
 
+## Ideen: Echtzeit-Berechnung und Darstellung
+
+Die folgenden Ideen verwenden die projektweite Kennung `I-BL-…` gemäß
+[Nummerierungs-Anweisung](../Anweisungen/Nummerierungs-Anweisung.md). Sie sind
+Vorschläge, keine Umsetzungsfreigabe. Vorher-/Nachher-Messungen müssen
+dieselben Modelle, Einstellungen, Hardware und Genauigkeitsgates verwenden.
+
+| Idee-ID | Möglichkeit | Komplexität | Umsetzungsstand |
+|---|---|---:|---|
+| **I-BL-000001** | Aktuellen Echtzeitpfad end-to-end profilieren und Messung aus dem sichtbaren GUI-Zustand reproduzieren; Zeitanteile für Hydrostatik, Hydrodynamik, Integration, Worker/IPC und Rendering getrennt erfassen. | Niedrig bis mittel | Werkzeuge für Live-GUI, Physik und Nachholrate sind vorhanden. Screenshot-Baseline: `19,2 FPS`, `1,035 s` Rückstand, `1,05×` Zeitfaktor. Frisches komponentengetrenntes Profil des aktuellen Laufs fehlt. In die Spezifikation zuV0.9 als [A-V0.9-00003](../WegZuV1.0/Revisionslog/zuV0.9/Spezifikationen/Spezifikation_Echtzeitberechnung_und_Darstellung_v0.9.md) übernommen; Umsetzung offen. |
+| **I-BL-000002** | Den genauen `exakt_union`-Pfad anhand des Profils optimieren, etwa Vorbereitungsdaten, Boolesche Operationen oder Poseauswertung gezielt verbessern. | Hoch | Nicht als gezielte Optimierung des aktuellen Hotspots nachgewiesen. Nur beginnen, wenn I-BL-000001 einen konkreten Anteil zeigt; Referenzgenauigkeit und Parität erhalten. In die Spezifikation zuV0.9 als [A-V0.9-00006](../WegZuV1.0/Revisionslog/zuV0.9/Spezifikationen/Spezifikation_Echtzeitberechnung_und_Darstellung_v0.9.md) übernommen; Umsetzung offen. |
+| **I-BL-000003** | Wiederverwendung von Hydrostatikresultaten in Echtzeit erweitern, sofern Poseänderungen oder ein kontrollierter Näherungsfehler dies zulassen. | Mittel bis hoch | Cache-Hülle ist vorhanden; Echtzeit nutzt Intervall `1` und wertet daher exakt je Schritt neu aus. Größere Intervalle wären näherungsbehaftet und sind nicht freigegeben. In die Spezifikation zuV0.9 als [A-V0.9-00007](../WegZuV1.0/Revisionslog/zuV0.9/Spezifikationen/Spezifikation_Echtzeitberechnung_und_Darstellung_v0.9.md) übernommen; Umsetzung offen. |
+| **I-BL-000004** | Körperfesten CPU-Voxelpfad als schnellere Hydrostatikoption untersuchen und gegebenenfalls neu gegen den exakten Referenzpfad validieren. | Hoch | Pfad ist implementiert, aber Genauigkeits-/Gleichgewichtsgates wurden verfehlt; nicht produktiv freigegeben. Verknüpfung: BL9, BL13, BL17. |
+| **I-BL-000005** | OpenCL/GPU-Hydrostatik erneut bewerten und nur nach Bestehen von Genauigkeits-, Paritäts- und vollständigen Live-Gates produktiv erwägen. | Hoch | Prototyp vorhanden; Genauigkeitsgate verfehlt, Produktionsfreigabe gesperrt. Verknüpfung: BL12, BL15, BL17. |
+| **I-BL-000006** | NPU-Eignung für den Echtzeitpfad ermitteln: zuerst NPU-Modell, Treiber, unterstützte Rechenlaufzeit und verfügbare Operatoren feststellen; danach einen isolierten, repräsentativen Teilkernel benchmarken. | Niedrig für Machbarkeitsprüfung; hoch für Implementierung | Neu. Hardwaremodell und Laufzeit sind noch nicht erfasst; keine NPU-Nutzung im Projekt nachgewiesen. NPUs sind nicht automatisch für Boolesche Mesh-Union oder beliebige NumPy-Geometrieoperationen geeignet. Nur weiterverfolgen, wenn sich ein numerisch passender, ausreichend großer Tensor-/Vektor-Teilpfad findet und End-to-End-Gates gegenüber CPU bestehen. In die Spezifikation zuV0.9 als [A-V0.9-00008](../WegZuV1.0/Revisionslog/zuV0.9/Spezifikationen/Spezifikation_Echtzeitberechnung_und_Darstellung_v0.9.md) übernommen; Machbarkeitsprüfung offen. |
+| **I-BL-000007** | Einen durch Profiling belegten CPU-Hotspot mit JIT/kompiliertem Code (beispielsweise Numba oder eine native Erweiterung) beschleunigen. | Hoch | Nicht umgesetzt. Erst nach I-BL-000001; Messgewinn, Installations-/Wartungsaufwand und numerische Parität nachweisen. In die Spezifikation zuV0.9 als [A-V0.9-00005](../WegZuV1.0/Revisionslog/zuV0.9/Spezifikationen/Spezifikation_Echtzeitberechnung_und_Darstellung_v0.9.md) übernommen; Umsetzung offen. |
+| **I-BL-000008** | Unabhängige Dreiecks- oder Bauteilbeiträge parallel berechnen, soweit der Algorithmus keine zeitliche Schrittabhängigkeit verletzt. | Hoch | Nicht umgesetzt. Abhängige Physikzeitschritte bleiben seriell; Parallelisierung auf Teilbeiträge begrenzen und Reduktions-/Determinismuseffekte testen. |
+| **I-BL-000009** | Adaptive oder größere Physikzeitschritte als optionalen Leistungsmodus untersuchen. | Hoch | Nicht umgesetzt und nicht freigegeben. Erfordert vorher definierte Fehler- und Stabilitätsgrenzen, Vergleich gegen feste Zeitschritte und eigene Konvergenztests. |
+| **I-BL-000010** | Renderlast getrennt reduzieren oder messen (Wasseroptik, SSAO, Overlay-Layer), um die sichtbare Bildrate und Bedienbarkeit zu verbessern. | Niedrig bis mittel | Keine Berechnungsbeschleunigung; vorhandener GUI-Live-Benchmark kann Render- und Physikmetriken getrennt erfassen. Die Screenshot-FPS von `19,2` belegen einen Anzeigeengpass, aber nicht allein dessen Ursache. Verknüpfung: BL4, BL12. In die Spezifikation zuV0.9 als [A-V0.9-00004](../WegZuV1.0/Revisionslog/zuV0.9/Spezifikationen/Spezifikation_Echtzeitberechnung_und_Darstellung_v0.9.md) übernommen; Umsetzung offen. |
+
+Bereits umgesetzt und deshalb nicht als neue Idee geführt sind die
+Physikberechnung im Hintergrund/Prozess-Worker, begrenzte Schrittbündelung,
+Vorbereitung geometrischer Daten, vorberechnete hydrodynamische Meshkennwerte,
+solverlokales Memoisieren sowie vektorisierte Wasserlinienschnitte und
+Actor-Wiederverwendung. Ihre weitere Wirkung ist mit den oben genannten
+End-to-End-Messungen zu überprüfen.
+
 ## Sofortige Umsetzungspläne
 
 - [Hydrodynamik-Bestandsaufnahme HYD-0001 bis HYD-0006](../WegZuV1.0/Revisionslog/zuV0.6/Hydrodynamik_Bestandsaufnahme_HYD-0001-bis-0006.md):
@@ -74,6 +101,19 @@ und technischen Gates unvalidierte Kräfte produktiv einzuschalten.
   nicht Teil der beiden Umsetzungspläne.
 - Für Punkte mit Verweisen auf den bisherigen Umsetzungsplan gelten dessen
   vollständige G1–G4- und Paritätsregeln weiter.
+
+## Ergänzender Messstand zuV0.9
+
+Die historischen BL3-/BL4-Werte oben gelten weiterhin für ihre damaligen
+Szenarien, nicht als aktueller Folkeboot-Nachweis. Im expliziten
+Schulungs-Optikmodus erreicht Folkeboot einschließlich Segler in zwei
+300-s-Läufen 33,64/33,68 Qt-Swaps/s, Frame-P95 47,343/47,242 ms und
+Eingabe-P95 39,896/41,277 ms bei jeweils negativem Rückstandtrend.
+Das ist kein Monitor-Scanoutnachweis, kein erneuter Nachholratenbeleg
+für das separate BL3-Gate und keine allgemeine 30-FPS-Freigabe aller Modelle
+oder hochwertiger Standardoptik. Pädagogische Nutzerabnahme bleibt offen.
+Details und Kandidatenentscheidungen:
+[Prüfprotokoll zuV0.9](../WegZuV1.0/Revisionslog/zuV0.9/Umsetzungsplan/Abnahme_v0.9.md).
 
 ## Backlog pflegen
 

@@ -433,10 +433,19 @@ class NavigationsWidgetFenster(QWidget):
         self._werte = werte
         self._optionen = dict(optionen)
         self._geschwindigkeit_m_pro_s = geschwindigkeit_m_pro_s
+        if not self.isVisible():
+            return
+        self._instrumente_rendern()
+
+    def _instrumente_rendern(self):
         for widget in self.widgets:
             widget.aktualisieren(self._werte, self._optionen)
         self.geschwindigkeit_widget.aktualisieren(
             self._geschwindigkeit_m_pro_s)
+
+    def showEvent(self, ereignis):
+        self._instrumente_rendern()
+        super().showEvent(ereignis)
 
     def sichtbarkeit_setzen(self, optionen):
         self._optionen = dict(optionen)

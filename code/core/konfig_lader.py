@@ -275,6 +275,9 @@ def _val_koerper(d,mats,pfad):
 class Konfiguration:
     def __init__(self,m,k,ordner):
         self._m=m; self._k=k; self.ordner=ordner; self.protokoll=[]
+        from .segler_einstellungen import SeglerEinstellungen
+        self.segler_einstellungen = SeglerEinstellungen(
+            os.path.join(ordner, "segler.json"))
     @property
     def materialien(self):
         return {n:float(b["dichte_kg_pro_m3"]) for n,b in self._m["materialien"].items() if not n.startswith("_")}

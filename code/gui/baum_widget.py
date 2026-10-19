@@ -232,13 +232,19 @@ class BaumWidget(QTreeWidget):
             titel = "Material ändern"
             formular = QFormLayout()
             formular.addRow("Material:", eingabe)
-        elif eigenschaft in ("Dichte", "Wanddicke"):
+        elif eigenschaft in (
+                "Dichte", "Wanddicke", "Masse",
+                "Position x", "Position y", "Position z"):
             eingabe = QDoubleSpinBox()
             eingabe.setDecimals(6)
-            eingabe.setMinimum(0.000001)
+            eingabe.setMinimum(
+                -1_000_000_000 if eigenschaft.startswith("Position")
+                else 0.000001)
             eingabe.setMaximum(1_000_000_000)
             eingabe.setValue(self._zahlwert(eigenschaft, wert))
-            eingabe.setSuffix(" kg/m³" if eigenschaft == "Dichte" else " mm")
+            eingabe.setSuffix({
+                "Dichte": " kg/m³", "Wanddicke": " mm", "Masse": " kg"
+            }.get(eigenschaft, " m"))
             titel = "%s ändern" % eigenschaft
             formular = QFormLayout()
             formular.addRow("%s:" % eigenschaft, eingabe)
@@ -268,6 +274,32 @@ class BaumWidget(QTreeWidget):
                       if name == eigenschaft), None)
         if index is None:
             raise ValueError("Eigenschaft nicht im Baum gefunden: %s" % eigenschaft)
+
+        if knoten.id == "segler" and eigenschaft in (
+                "Masse", "Position x", "Position y", "Position z"):
+            from ..core.segler_einstellungen import seglerwerte_pruefen
+
+            werte = {
+                "masse_kg": eintrag["masse_kg"],
+                "position_rumpf_m": list(eintrag["position_rumpf_m"]),
+            }
+            if eigenschaft == "Masse":
+                werte["masse_kg"] = wert
+            else:
+                werte["position_rumpf_m"]["xyz".index(eigenschaft[-1])] = wert
+            werte = seglerwerte_pruefen(werte)
+            haupt = knoten
+            while haupt.eltern is not None and haupt.art != ART_SUMMEN:
+                haupt = haupt.eltern
+            self._welt.konfiguration.segler_einstellungen.setzen(
+                haupt.name, werte)
+            eintrag.update(werte)
+            knoten.eigenschaften[index] = (
+                eigenschaft, "%g %s" % (
+                    float(wert), "kg" if eigenschaft == "Masse" else "m"))
+            self.lade(self._welt)
+            self.laufzeit_aenderung.emit("eigenschaft")
+            return
 
         if eigenschaft == "Material":
             materialien = self._materialnamen_laden()

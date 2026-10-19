@@ -100,9 +100,19 @@ def test_alle_layerkombinationen_zeichnen_ohne_fehler(maske):
     b._vg_unmoeglich = True
     b._plotter = SimpleNamespace(remove_actor=lambda *a, **k: None)
     gb_mesh = gb._mesh_actor_setzen
+    class Actor:
+        def SetPosition(self, *position):
+            self.position = position
+
+        def SetVisibility(self, sichtbar):
+            self.sichtbar = sichtbar
+
+        def SetUserMatrix(self, matrix):
+            self.matrix = matrix
+
     gb._mesh_actor_setzen = (
         lambda plotter, store, n, mesh, **kw: (
-            store.__setitem__(n, object()), gezeichnet.__setitem__(n, mesh)))
+            store.__setitem__(n, Actor()), gezeichnet.__setitem__(n, mesh)))
     try:
         hydro = Auftriebsergebnis(1.0, (0.3, 0.0, 0.0), (0.0, 0.0, 1000.0),
                                   (0.0, 0.0, 0.0))

@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.4",
+  "schema_version": "1.5",
   "statisch": {
     "toleranz": {
       "typ": "float",
@@ -108,6 +108,13 @@
     }
   },
   "anzeigen": {
+    "schulungs_darstellung": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "Expliziter Schulungs-Darstellungsmodus: ohne SSAO und MSAA, reduzierte Wasseroptik; Physik und Lernanzeigen unverändert",
+      "seit_version": "1.5"
+    },
     "titel_sichtbar": {
       "typ": "bool",
       "default": true,
