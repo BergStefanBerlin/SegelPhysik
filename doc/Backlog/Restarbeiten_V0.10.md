@@ -9,7 +9,7 @@ Keine automatische Zuordnung zu einer Folgeversion.
 **Nachweise und Abschlussentscheidung:**
 [Abschlussbilanz V0.10](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md)  
 **Technische Einzelschnittstellen:**
-[CPPI-Register](../WegZuV1.0/Revisionsinformation/Schnittstellenregister_CPP.md)
+[CPPI-Register](../Dokumentation/Schnittstellenregister_CPP.md)
 
 V0.10 ist als begrenzter Versionsstand abgeschlossen, nicht als vollständig
 erfüllter ursprünglicher C++-Migrationsplan. Die Tabelle führt je

@@ -12,7 +12,7 @@ anderen Implementierungen oder Pflichtnachweise. Aktuelle Regression:
 strenge Folkeboot-Eingabeparität weiterhin verfehlt. Die
 [Abschlussbilanz mit Performance-Fallübersicht und Restpunkten](../Messungen/Abschlussbilanz_V0.10_2026-10-20.md)
 und das
-[Interface-Einzelregister mit Python-/V0.10-Spalten](../../../Revisionsinformation/Schnittstellenregister_CPP.md)
+[Interface-Einzelregister mit Python-/V0.10-Spalten](../../../../Dokumentation/Schnittstellenregister_CPP.md)
 ergänzen die bisherigen Nachweise. Der ursprüngliche Gesamtplan ist
 damit noch nicht vollständig abgenommen. Nach Vorlage der Abschlussbilanz
 hat der Nutzer den begrenzten Versionsabschluss ausdrücklich freigegeben.

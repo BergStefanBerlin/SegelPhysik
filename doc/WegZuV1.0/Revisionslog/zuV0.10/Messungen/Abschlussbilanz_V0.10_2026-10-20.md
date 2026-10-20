@@ -100,7 +100,7 @@ nicht eine Softwareversion V0.16.
   Konvertierung und Ausgabeobjekte. Sie sind keine isolierten C++-Kernelzeiten.
   Soweit ein gemeinsamer Block gemessen wurde, ist dessen Gesamtwert
   keinem einzelnen untergeordneten Interface als Eigenzeit zuzurechnen.
-- Im [Schnittstellenregister](../../../Revisionsinformation/Schnittstellenregister_CPP.md)
+- Im [Schnittstellenregister](../../../../Dokumentation/Schnittstellenregister_CPP.md)
   stehen zuordenbare Adaptermessungen in den Versionsspalten.
   Fehlende Einzelmessungen bleiben ausdrücklich gekennzeichnet;
   Elternblocklinks sind nur Integrationskontext.

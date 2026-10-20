@@ -724,7 +724,7 @@ ausgeführt. Die 165 v16-Fälle sind mit Einzelzeiten, P95, Faktor und
 Nachweisen in der
 [Abschlussbilanz](Abschlussbilanz_V0.10_2026-10-20.md)
 zusammengeführt und im
-[CPPI-Einzelregister](../../../Revisionsinformation/Schnittstellenregister_CPP.md)
+[CPPI-Einzelregister](../../../../Dokumentation/Schnittstellenregister_CPP.md)
 als Python-/V0.10-Adapterwerte bzw. ausdrücklich nur als Elternblock
 zugeordnet. Nicht separat gemessene Interfaces bleiben gekennzeichnet.
 Die Abschlussbilanz nennt die übrigen Implementierungs- und Abnahmegrenzen;

@@ -71,7 +71,7 @@ rückwirkend die Kennung eines bestehenden Eintrags.
 - Der CPPI-Zähler läuft projektweit über alle Versionen und Revisionen
   hinweg fort; er wird nicht zurückgesetzt.
 - Maßgebliche Vergabestelle ist das
-  [Schnittstellenregister Python/C++](../../doc/WegZuV1.0/Revisionsinformation/Schnittstellenregister_CPP.md).
+  [Schnittstellenregister Python/C++](../../doc/Dokumentation/Schnittstellenregister_CPP.md).
   Jeder exportierte Datentyp, jede Funktion und jede qualifizierte
   Kontextmethode erhält einen eigenen Eintrag, keine Sammel-ID pro Familie.
 - Konkrete geplante Interfaces erhalten bereits vor der Implementierung

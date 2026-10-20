@@ -36,7 +36,7 @@ vollständig umgesetzter Anforderungen oben aufgenommen.
 
 - [Abschlussbilanz und Anforderungsmatrix](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md)
 - [Restarbeiten nach ursprünglicher A-Kennung](../Backlog/Restarbeiten_V0.10.md)
-- [CPPI-Register mit Performance](../WegZuV1.0/Revisionsinformation/Schnittstellenregister_CPP.md)
+- [CPPI-Register mit Performance](../Dokumentation/Schnittstellenregister_CPP.md)
 
 Die ursprünglichen Anforderungen bleiben die fachliche Quelle; die
 Restarbeiten sind keiner Folgeversion automatisch zugewiesen.

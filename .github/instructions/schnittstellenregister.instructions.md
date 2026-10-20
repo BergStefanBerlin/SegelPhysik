@@ -6,7 +6,7 @@ applyTo: "**/*.py, **/*.pyi, **/*.cpp, **/*.cc, **/*.cxx, **/*.h, **/*.hpp, **/*
 
 Diese Regel gilt für alle Entwicklungsstände, Versionen und Revisionsschritte
 des Projekts SegelPhysik, nicht nur für V0.10. Das zentrale Register ist
-`doc/WegZuV1.0/Revisionsinformation/Schnittstellenregister_CPP.md`;
+`doc/Dokumentation/Schnittstellenregister_CPP.md`;
 maßgeblich sind dessen Statusdefinitionen und Pflegehinweise.
 
 ## Prüfzeitpunkte
