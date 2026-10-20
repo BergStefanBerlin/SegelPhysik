@@ -203,9 +203,9 @@
     "titel_beschreibung_sichtbar": true,
     "analog_sichtbar": true,
     "numerisch_sichtbar": true,
-    "hydrodynamik_rumpf": true,
-    "hydrodynamik_kiel": true,
-    "hydrodynamik_ruder": true,
+    "hydrodynamik_rumpf": false,
+    "hydrodynamik_kiel": false,
+    "hydrodynamik_ruder": false,
     "schulungs_darstellung": false
   },
   "pfeil_hydro_sum": {
