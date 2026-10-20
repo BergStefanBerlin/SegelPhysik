@@ -1,0 +1,6 @@
+{
+  "abgeschlossen": false,
+  "m1_freigegeben": false,
+  "grund": "Auch auf synchrone Callbacks begrenztes cProfile erfasst in dieser Python-/Qt-Umgebung inkonsistente threaduebergreifende Profilzeiten. Der erste Lauf bleibt als Fehlernachweis erhalten und ist kein gueltiger Zeitbeleg.",
+  "korrektur": "Threadlokaler Standardbibliotheksprofiler profile.Profile, neues Teilprofil pro Callback, getrennte Ersatzserie ohne Ueberschreiben der Rohdaten."
+}

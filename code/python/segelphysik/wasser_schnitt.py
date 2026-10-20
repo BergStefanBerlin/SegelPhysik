@@ -11,13 +11,29 @@ Rein numpy-basiert -> deterministisch, versionsunabhaengig, unit-testbar.
 """
 from __future__ import annotations
 import numpy as np
+from .core.rechenpfad import rechenpfad
 
 EPS = 1e-12
+
+
+def _native_mesh(punkte, dreiecke=None):
+    from .core.native_backend import mesh_vorbereiten
+
+    if dreiecke is None:
+        dreiecke = np.empty((0, 3), dtype=np.int64)
+    return mesh_vorbereiten(
+        np.asarray(punkte, dtype=np.float64).reshape(-1, 3),
+        np.asarray(dreiecke, dtype=np.int64).reshape(-1, 3))
 
 
 def _clip_polygon(polygon, ebene_z, oberhalb):
     """Sutherland-Hodgman: Polygon gegen Halbraum schneiden.
     Aufeinanderfolgende Duplikate werden entfernt (keine entarteten Dreiecke)."""
+    if rechenpfad() == "cpp":
+        from .core.native_backend import native_laden
+
+        return list(native_laden().clip_polygon(
+            _native_mesh(polygon), float(ebene_z), bool(oberhalb)))
     if len(polygon) == 0:
         return []
     def wert(p):
@@ -76,6 +92,11 @@ def _schnittkontur_berechnen(punkte, gesichter, abstand, ebene_z):
 
 def wasserlinie_aus_teilmesh(punkte, dreiecke, ebene_z=0.0, tol=1e-9):
     """Randkanten eines Teil-Meshes, die vollstaendig auf Schnitthoehe liegen."""
+    if rechenpfad() == "cpp":
+        from .core.native_backend import native_laden
+
+        return native_laden().wasserlinie(
+            _native_mesh(punkte, dreiecke), float(ebene_z), float(tol))
     P = np.asarray(punkte, dtype=float)
     T = np.asarray(dreiecke, dtype=np.int64)
     if len(T) == 0:
@@ -100,6 +121,13 @@ def schneide_am_wasser(punkte, gesichter, ebene_z=0.0, mit_deckel=False):
 
     Rueckgabe: (unten_punkte, unten_dreiecke, oben_punkte, oben_dreiecke, kontur)
         kontur : (2s,3) Wasserlinien-Segmentendpunkte (Paare)"""
+    if rechenpfad() == "cpp":
+        from .core.native_backend import native_laden
+
+        native = native_laden()
+        return native.wasserschnitt(
+            _native_mesh(punkte, gesichter), float(ebene_z),
+            bool(mit_deckel), native.Abbruch())
     P = np.asarray(punkte, dtype=float)
     F = np.asarray(gesichter, dtype=np.int64)
     abstand = P[F, 2] - ebene_z
@@ -217,6 +245,10 @@ def schneide_am_wasser(punkte, gesichter, ebene_z=0.0, mit_deckel=False):
 
 def mesh_volumen(punkte, dreiecke):
     """Signiertes Volumen eines geschlossenen Dreiecks-Meshes (Divergenzsatz)."""
+    if rechenpfad() == "cpp":
+        from .core.native_backend import native_laden
+
+        return native_laden().mesh_volumen(_native_mesh(punkte, dreiecke))
     P = np.asarray(punkte, dtype=float)
     T = np.asarray(dreiecke, dtype=np.int64)
     if len(T) == 0:
@@ -226,6 +258,11 @@ def mesh_volumen(punkte, dreiecke):
 
 
 def einzigartige_konturpunkte(kontur, tol=1e-9):
+    if rechenpfad() == "cpp":
+        from .core.native_backend import native_laden
+
+        return native_laden().einzigartige_konturpunkte(
+            _native_mesh(kontur), float(tol))
     if len(kontur) == 0:
         return np.zeros((0, 3))
     gerundet = np.round(kontur / tol).astype(np.int64)
@@ -235,6 +272,10 @@ def einzigartige_konturpunkte(kontur, tol=1e-9):
 
 def polygonzug_der_kontur(kontur, tol=1e-9):
     """Ordnet Konturpunkte zu einem geschlossenen Polygonzug (konvexe Wasserlinie)."""
+    if rechenpfad() == "cpp":
+        from .core.native_backend import native_laden
+
+        return native_laden().polygonzug(_native_mesh(kontur), float(tol))
     punkte = einzigartige_konturpunkte(kontur, tol)
     if len(punkte) < 3:
         return punkte
@@ -270,6 +311,10 @@ DECKEL_TOL = 1e-7
 
 def _ketten(segmente, tol=DECKEL_TOL):
     """Verkettet Kantenpaare zu geschlossenen Ringen (Reihenfolge beliebig)."""
+    if rechenpfad() == "cpp":
+        from .core.native_backend import native_laden
+
+        return native_laden().konturketten(_native_mesh(segmente), float(tol))
     seg = np.asarray(segmente, dtype=float)
     if seg.size == 0:
         return []
@@ -308,12 +353,21 @@ def _ketten(segmente, tol=DECKEL_TOL):
 def _ring_flaeche_xy(ring):
     """Signierte Flaeche in der Ebene z=const (positiv = gegen Uhrzeigersinn
     von +z aus gesehen)."""
+    if rechenpfad() == "cpp":
+        from .core.native_backend import native_laden
+
+        return native_laden().ringflaeche(_native_mesh(ring))
     x, y = ring[:, 0], ring[:, 1]
     return 0.5 * float(np.sum(x * np.roll(y, -1) - np.roll(x, -1) * y))
 
 
 def _punkt_in_ring(p, ring):
     """Punkt-in-Polygon (Ray Casting) in der xy-Ebene."""
+    if rechenpfad() == "cpp":
+        from .core.native_backend import native_laden
+
+        return native_laden().punkt_in_ring(
+            np.array([p[0], p[1], 0.], dtype=np.float64), _native_mesh(ring))
     x, y = float(p[0]), float(p[1])
     rx, ry = ring[:, 0], ring[:, 1]
     drinnen = False
@@ -333,6 +387,12 @@ def _deckel_setzen(punkte, dreiecke, ebene_z, teil_oben, rand=None):
     teil_oben=True  -> Teil-Mesh liegt oberhalb, Deckelnormale nach unten (-z).
     teil_oben=False -> Teil-Mesh liegt unterhalb, Deckelnormale nach oben (+z).
     Rueckgabe: neue Punkte- und Dreiecks-Arrays (Original bleibt unangetastet)."""
+    if rechenpfad() == "cpp":
+        from .core.native_backend import native_laden
+
+        return native_laden().deckel_setzen(
+            _native_mesh(punkte, dreiecke), float(ebene_z), bool(teil_oben),
+            None if rand is None else _native_mesh(rand))
     P = np.asarray(punkte, dtype=float).reshape(-1, 3)
     T = np.asarray(dreiecke, dtype=np.int64).reshape(-1, 3)
     if len(T) == 0:

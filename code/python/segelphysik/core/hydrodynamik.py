@@ -13,6 +13,7 @@ import numpy as np
 
 from .dynamik_6dof import quaternion_matrix
 from .kraftmodell import Kraftbeitrag, Wrench
+from .rechenpfad import nativer_kern, rechenpfad
 
 NU_WASSER_M2_S = 1.004e-6
 CD_QUERSTROEMUNG = 1.17
@@ -92,6 +93,7 @@ def _vektor(wert, name, laenge):
     return ergebnis
 
 
+@nativer_kern("ittc_reibungsbeiwert", skalare=(0,))
 def ittc_reibungsbeiwert(reynolds):
     """ITTC-1957-Linie oberhalb Re=5e5, stetiger laminarer Uebergang darunter."""
     reynolds = float(reynolds)
@@ -376,6 +378,33 @@ class HydrodynamikModell:
                              "gueltigen Bereichs")
         self.fluidgeschwindigkeit.setflags(write=False)
         self.fluidwinkelgeschwindigkeit.setflags(write=False)
+        self._native_teile = None
+        self._native_quellen = None
+        if rechenpfad() == "cpp":
+            self._native_vorbereiten()
+
+    def _native_vorbereiten(self):
+        from .native_backend import native_laden
+
+        native = native_laden()
+        self._native_teile = native.HydroKontext([
+            native.HydroTeil(native.Mesh(
+                teil.punkte_m, teil.dreiecke, teil.name, teil.rolle))
+            for teil in self.teile])
+        self._native_quellen = self.teile
+
+    def __getstate__(self):
+        daten = self.__dict__.copy()
+        daten.pop("_native_teile", None)
+        daten.pop("_native_quellen", None)
+        return daten
+
+    def __setstate__(self, daten):
+        self.__dict__.update(daten)
+        self._native_teile = None
+        self._native_quellen = None
+        if rechenpfad() == "cpp":
+            self._native_vorbereiten()
 
     @property
     def ruderwinkel_rad(self):
@@ -419,6 +448,23 @@ class HydrodynamikModell:
             (0.0, 0.0, 0.0) if omega is None else omega,
             "Koerper-Winkelgeschwindigkeit", 3
         ) - self.fluidwinkelgeschwindigkeit
+        if rechenpfad() == "cpp":
+            from .native_backend import native_laden
+
+            native = native_laden()
+            if self._native_quellen is not self.teile:
+                self._native_vorbereiten()
+            beitraege = self._native_teile.beitraege(
+                rotation, position, geschwindigkeit,
+                winkelgeschwindigkeit, np.array([
+                    self.rho, self.nu, self.formfaktor_rumpf, self.cd_quer,
+                    self.wirkungsgrad, self.cd0_profil, self.ruderwinkel_rad],
+                    dtype=np.float64),
+                self.cd_volumenkoerper, native.Abbruch())
+            return tuple(Kraftbeitrag(b.name, Wrench(
+                b.wrench.frame, tuple(b.wrench.bezugspunkt),
+                tuple(b.wrench.kraft), tuple(b.wrench.moment)))
+                for b in beitraege)
         beitraege = []
         for teil in self.teile:
             ecken = teil._dreiecksecken @ rotation.T + position

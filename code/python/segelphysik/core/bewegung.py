@@ -8,6 +8,7 @@ Determinismus (K7''): phi ist reine Funktion von t.
 from __future__ import annotations
 import math, json
 import numpy as np
+from .rechenpfad import nativer_kern
 
 __all__ = ["OMEGA","PERIOD_S","DT","phi_rad","phi_deg","rotation_matrix",
            "body_pose","Clock","Scene"]
@@ -21,6 +22,7 @@ def phi_rad(t): return OMEGA*float(t)
 def phi_deg(t): return math.degrees(phi_rad(t))
 
 
+@nativer_kern("rotation_matrix", skalare=(0,))
 def rotation_matrix(phi, axis=(0.0,1.0,0.0)):
     """3x3 Rotationsmatrix um axis (Weltframe), Winkel phi in rad."""
     a = np.asarray(axis, dtype=np.float64); n = np.linalg.norm(a)

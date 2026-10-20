@@ -1,0 +1,6531 @@
+{
+  "modell": "platte",
+  "testprofil": {
+    "koerper_id": "platte",
+    "kraft_betrag_N": 12.0,
+    "azimut_grad": 0.0,
+    "elevation_grad": 0.0,
+    "angriffspunkt_m": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "ruderwinkel_grad": 0.0,
+    "modell": "generischer_volumenkoerper",
+    "cd_volumenkoerper": 1.2,
+    "referenzgeschwindigkeit_m_pro_s": 1.0,
+    "status": "vorläufig; Kante voraus, projizierte Fläche 0.02 m^2"
+  },
+  "eingabe_sha256": "38dd48e4f3a63ce6896618e78740c57408a6ccacac78b67fb4528e21f0aefe5f",
+  "solver": {
+    "anzahl": 3,
+    "median_s": 0.024721199995838106,
+    "p95_s": 0.0310195799684152,
+    "minimum_s": 0.022915000037755817,
+    "maximum_s": 0.03171939996536821,
+    "spannweite_s": 0.008804399927612394,
+    "standardabweichung_s": 0.0037969961693049585,
+    "rohwerte_s": [
+      0.024721199995838106,
+      0.03171939996536821,
+      0.022915000037755817
+    ]
+  },
+  "ergebnis": {
+    "konvergiert": true,
+    "stufen": [
+      {
+        "name": "Geradeausfahrt",
+        "konvergiert": true,
+        "iterationen": 4,
+        "pose": [
+          0.0,
+          0.0,
+          -6.792787770588411e-22,
+          0.0,
+          3.0642953506848146e-06,
+          0.0
+        ],
+        "geschwindigkeit_m_s": [
+          1.4139990774374585,
+          0.0,
+          0.0
+        ],
+        "winkelgeschwindigkeit_rad_s": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "restkraft_N": [
+          -3.6385030901087134e-05,
+          0.0,
+          2.842170943040401e-14
+        ],
+        "restmoment_Nm": [
+          2.658097808701243e-16,
+          6.073465371944642e-08,
+          -1.0975915047042288e-16
+        ],
+        "normierte_restkraft": 3.032085908423928e-06,
+        "normiertes_restmoment": 2.530610571643601e-09
+      },
+      {
+        "name": "gekoppeltes Gleichgewicht",
+        "konvergiert": true,
+        "iterationen": 1,
+        "pose": [
+          0.0,
+          0.0,
+          -6.792787770588411e-22,
+          0.0,
+          3.0642953506848146e-06,
+          0.0
+        ],
+        "geschwindigkeit_m_s": [
+          1.4139990774374585,
+          0.0,
+          0.0
+        ],
+        "winkelgeschwindigkeit_rad_s": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "restkraft_N": [
+          -3.6385030901087134e-05,
+          0.0,
+          2.842170943040401e-14
+        ],
+        "restmoment_Nm": [
+          2.658097808701243e-16,
+          6.073465371944642e-08,
+          -1.0975915047042288e-16
+        ],
+        "normierte_restkraft": 3.032085908423928e-06,
+        "normiertes_restmoment": 2.530610571643601e-09
+      }
+    ],
+    "ruderwinkel_rad": 0.0
+  },
+  "dynamikpruefung_10s": {
+    "anzahl": 3,
+    "median_s": 3.3183690999867395,
+    "p95_s": 3.9335406999802216,
+    "minimum_s": 3.0288751000189222,
+    "maximum_s": 4.0018930999794975,
+    "spannweite_s": 0.9730179999605753,
+    "standardabweichung_s": 0.40794551145284974,
+    "rohwerte_s": [
+      4.0018930999794975,
+      3.3183690999867395,
+      3.0288751000189222
+    ]
+  },
+  "dynamikergebnis": {
+    "bestanden": true,
+    "simulierte_dauer_s": 10.0,
+    "vorwaerts_start_m_s": 1.4139990774374585,
+    "vorwaerts_ende_m_s": 1.4139969341921865,
+    "relative_vorwaertsabweichung": 1.5157331473002213e-06,
+    "orientierung_mitte_rad": 0.0,
+    "orientierung_ende_rad": 0.0,
+    "winkelgeschwindigkeit_mitte_rad_s": 5.203881874992303e-12,
+    "winkelgeschwindigkeit_ende_rad_s": 3.449340565652974e-13,
+    "querfahrt_mitte_m_s": 1.4674781037691546e-14,
+    "querfahrt_ende_m_s": 3.2447876946669023e-15,
+    "fehlergrund": null
+  },
+  "wiederholungen_exakt_identisch": true,
+  "instrumentiertes_solverprofil": [
+    {
+      "datei": "<frozen importlib._bootstrap>",
+      "zeile": 648,
+      "funktion": "parent",
+      "primitive_aufrufe": 38,
+      "aufrufe": 38,
+      "eigenzeit_s": 1.93e-05,
+      "gesamtzeit_s": 3.1700000000000005e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 34,
+          "funktion": "_hydrostatik_lage",
+          "statistik": [
+            19,
+            19,
+            1.02e-05,
+            1.6100000000000002e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            19,
+            19,
+            9.100000000000001e-06,
+            1.56e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "<string>",
+      "zeile": 2,
+      "funktion": "__init__",
+      "primitive_aufrufe": 209,
+      "aufrufe": 209,
+      "eigenzeit_s": 0.00020170000000000002,
+      "gesamtzeit_s": 0.0034681,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            19,
+            19,
+            2.4e-05,
+            0.00037140000000000003
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 70,
+          "funktion": "auf_bezugspunkt",
+          "statistik": [
+            95,
+            95,
+            8.93e-05,
+            0.00159
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 90,
+          "funktion": "aggregiere_kraftbeitraege",
+          "statistik": [
+            19,
+            19,
+            1.46e-05,
+            0.0002994
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            76,
+            76,
+            7.38e-05,
+            0.0012073000000000001
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "C:\\Users\\Katarina\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\dataclasses.py",
+      "zeile": 1454,
+      "funktion": "fields",
+      "primitive_aufrufe": 3,
+      "aufrufe": 3,
+      "eigenzeit_s": 8.000000000000001e-06,
+      "gesamtzeit_s": 1.5100000000000001e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\Users\\Katarina\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\dataclasses.py",
+          "zeile": 1508,
+          "funktion": "_asdict_inner",
+          "statistik": [
+            3,
+            3,
+            8.000000000000001e-06,
+            1.5100000000000001e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "C:\\Users\\Katarina\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\dataclasses.py",
+      "zeile": 1469,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 27,
+      "aufrufe": 27,
+      "eigenzeit_s": 6.1e-06,
+      "gesamtzeit_s": 6.1e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\Users\\Katarina\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\dataclasses.py",
+          "zeile": 1454,
+          "funktion": "fields",
+          "statistik": [
+            27,
+            27,
+            6.1e-06,
+            6.1e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "C:\\Users\\Katarina\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\dataclasses.py",
+      "zeile": 1472,
+      "funktion": "_is_dataclass_instance",
+      "primitive_aufrufe": 1,
+      "aufrufe": 1,
+      "eigenzeit_s": 6.000000000000001e-07,
+      "gesamtzeit_s": 9.000000000000001e-07,
+      "aufrufer": [
+        {
+          "datei": "C:\\Users\\Katarina\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\dataclasses.py",
+          "zeile": 1484,
+          "funktion": "asdict",
+          "statistik": [
+            1,
+            1,
+            6.000000000000001e-07,
+            9.000000000000001e-07
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "C:\\Users\\Katarina\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\dataclasses.py",
+      "zeile": 1484,
+      "funktion": "asdict",
+      "primitive_aufrufe": 1,
+      "aufrufe": 1,
+      "eigenzeit_s": 7.7e-06,
+      "gesamtzeit_s": 5.9300000000000005e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\werkzeuge\\migration_szenarien.py",
+          "zeile": 356,
+          "funktion": "solver",
+          "statistik": [
+            1,
+            1,
+            7.7e-06,
+            5.9300000000000005e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "C:\\Users\\Katarina\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\dataclasses.py",
+      "zeile": 1508,
+      "funktion": "_asdict_inner",
+      "primitive_aufrufe": 1,
+      "aufrufe": 63,
+      "eigenzeit_s": 3.1700000000000005e-05,
+      "gesamtzeit_s": 5.0700000000000006e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\Users\\Katarina\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\dataclasses.py",
+          "zeile": 1484,
+          "funktion": "asdict",
+          "statistik": [
+            1,
+            1,
+            4.5e-06,
+            5.0700000000000006e-05
+          ]
+        },
+        {
+          "datei": "C:\\Users\\Katarina\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\dataclasses.py",
+          "zeile": 1508,
+          "funktion": "_asdict_inner",
+          "statistik": [
+            62,
+            4,
+            2.72e-05,
+            3.7300000000000005e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/_methods.py",
+      "zeile": 39,
+      "funktion": "_amax",
+      "primitive_aufrufe": 7,
+      "aufrufe": 7,
+      "eigenzeit_s": 2.5e-06,
+      "gesamtzeit_s": 2.15e-05,
+      "aufrufer": [
+        {
+          "datei": "~",
+          "zeile": 0,
+          "funktion": "<method 'max' of 'numpy.ndarray' objects>",
+          "statistik": [
+            7,
+            7,
+            2.5e-06,
+            2.15e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/_methods.py",
+      "zeile": 47,
+      "funktion": "_sum",
+      "primitive_aufrufe": 304,
+      "aufrufe": 304,
+      "eigenzeit_s": 7.400000000000001e-05,
+      "gesamtzeit_s": 0.0004955000000000001,
+      "aufrufer": [
+        {
+          "datei": "~",
+          "zeile": 0,
+          "funktion": "<method 'sum' of 'numpy.ndarray' objects>",
+          "statistik": [
+            304,
+            304,
+            7.400000000000001e-05,
+            0.0004955000000000001
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/_methods.py",
+      "zeile": 64,
+      "funktion": "_all",
+      "primitive_aufrufe": 1137,
+      "aufrufe": 1137,
+      "eigenzeit_s": 0.0002634,
+      "gesamtzeit_s": 0.0008911,
+      "aufrufer": [
+        {
+          "datei": "~",
+          "zeile": 0,
+          "funktion": "<method 'all' of 'numpy.generic' objects>",
+          "statistik": [
+            84,
+            84,
+            2.1400000000000002e-05,
+            7.400000000000001e-05
+          ]
+        },
+        {
+          "datei": "~",
+          "zeile": 0,
+          "funktion": "<method 'all' of 'numpy.ndarray' objects>",
+          "statistik": [
+            1053,
+            1053,
+            0.00024200000000000003,
+            0.0008171000000000001
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/_methods.py",
+      "zeile": 96,
+      "funktion": "_clip",
+      "primitive_aufrufe": 22,
+      "aufrufe": 22,
+      "eigenzeit_s": 5.55e-05,
+      "gesamtzeit_s": 5.55e-05,
+      "aufrufer": [
+        {
+          "datei": "~",
+          "zeile": 0,
+          "funktion": "<method 'clip' of 'numpy.generic' objects>",
+          "statistik": [
+            19,
+            19,
+            4.8100000000000004e-05,
+            4.8100000000000004e-05
+          ]
+        },
+        {
+          "datei": "~",
+          "zeile": 0,
+          "funktion": "<method 'clip' of 'numpy.ndarray' objects>",
+          "statistik": [
+            3,
+            3,
+            7.4e-06,
+            7.4e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/_ufunc_config.py",
+      "zeile": 462,
+      "funktion": "__init__",
+      "primitive_aufrufe": 45,
+      "aufrufe": 45,
+      "eigenzeit_s": 9.5e-06,
+      "gesamtzeit_s": 9.5e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 2320,
+          "funktion": "isclose",
+          "statistik": [
+            42,
+            42,
+            8.900000000000001e-06,
+            8.900000000000001e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 374,
+          "funktion": "solve",
+          "statistik": [
+            3,
+            3,
+            6.000000000000001e-07,
+            6.000000000000001e-07
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/_ufunc_config.py",
+      "zeile": 472,
+      "funktion": "__enter__",
+      "primitive_aufrufe": 45,
+      "aufrufe": 45,
+      "eigenzeit_s": 3.96e-05,
+      "gesamtzeit_s": 7.790000000000001e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 2320,
+          "funktion": "isclose",
+          "statistik": [
+            42,
+            42,
+            3.6400000000000004e-05,
+            7.1e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 374,
+          "funktion": "solve",
+          "statistik": [
+            3,
+            3,
+            3.2000000000000003e-06,
+            6.900000000000001e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/_ufunc_config.py",
+      "zeile": 488,
+      "funktion": "__exit__",
+      "primitive_aufrufe": 45,
+      "aufrufe": 45,
+      "eigenzeit_s": 1.76e-05,
+      "gesamtzeit_s": 3.8e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 2320,
+          "funktion": "isclose",
+          "statistik": [
+            42,
+            42,
+            1.6100000000000002e-05,
+            3.46e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 374,
+          "funktion": "solve",
+          "statistik": [
+            3,
+            3,
+            1.5e-06,
+            3.4e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/einsumfunc.py",
+      "zeile": 1234,
+      "funktion": "_einsum_dispatcher",
+      "primitive_aufrufe": 570,
+      "aufrufe": 570,
+      "eigenzeit_s": 7.54e-05,
+      "gesamtzeit_s": 7.54e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            95,
+            95,
+            1.36e-05,
+            1.36e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\volumen_union.py",
+          "zeile": 148,
+          "funktion": "_summe",
+          "statistik": [
+            475,
+            475,
+            6.18e-05,
+            6.18e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/einsumfunc.py",
+      "zeile": 1242,
+      "funktion": "einsum",
+      "primitive_aufrufe": 114,
+      "aufrufe": 114,
+      "eigenzeit_s": 4.75e-05,
+      "gesamtzeit_s": 0.00033380000000000004,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            19,
+            19,
+            8.200000000000001e-06,
+            6.41e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\volumen_union.py",
+          "zeile": 148,
+          "funktion": "_summe",
+          "statistik": [
+            95,
+            95,
+            3.93e-05,
+            0.0002697
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/fromnumeric.py",
+      "zeile": 38,
+      "funktion": "_wrapit",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 4.4200000000000004e-05,
+      "gesamtzeit_s": 8.010000000000001e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 48,
+          "funktion": "_wrapfunc",
+          "statistik": [
+            19,
+            19,
+            4.4200000000000004e-05,
+            8.010000000000001e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/fromnumeric.py",
+      "zeile": 48,
+      "funktion": "_wrapfunc",
+      "primitive_aufrufe": 117,
+      "aufrufe": 117,
+      "eigenzeit_s": 9.5e-05,
+      "gesamtzeit_s": 0.00033360000000000003,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 1115,
+          "funktion": "argsort",
+          "statistik": [
+            19,
+            19,
+            3.0100000000000003e-05,
+            0.0001166
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 1259,
+          "funktion": "argmax",
+          "statistik": [
+            38,
+            38,
+            2.46e-05,
+            5.5e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 2031,
+          "funktion": "nonzero",
+          "statistik": [
+            38,
+            38,
+            2.32e-05,
+            5.56e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 2245,
+          "funktion": "clip",
+          "statistik": [
+            22,
+            22,
+            1.7100000000000002e-05,
+            0.00010640000000000001
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/fromnumeric.py",
+      "zeile": 66,
+      "funktion": "_wrapreduction",
+      "primitive_aufrufe": 95,
+      "aufrufe": 95,
+      "eigenzeit_s": 0.00011700000000000001,
+      "gesamtzeit_s": 0.00029,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 2342,
+          "funktion": "sum",
+          "statistik": [
+            57,
+            57,
+            7.510000000000001e-05,
+            0.0001874
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 3325,
+          "funktion": "prod",
+          "statistik": [
+            38,
+            38,
+            4.19e-05,
+            0.0001026
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/fromnumeric.py",
+      "zeile": 86,
+      "funktion": "_wrapreduction_any_all",
+      "primitive_aufrufe": 181,
+      "aufrufe": 181,
+      "eigenzeit_s": 0.00022840000000000002,
+      "gesamtzeit_s": 0.0005067,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 2474,
+          "funktion": "any",
+          "statistik": [
+            76,
+            76,
+            8.48e-05,
+            0.0001527
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 2586,
+          "funktion": "all",
+          "statistik": [
+            105,
+            105,
+            0.00014360000000000002,
+            0.00035400000000000004
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/fromnumeric.py",
+      "zeile": 1109,
+      "funktion": "_argsort_dispatcher",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 2.9e-06,
+      "gesamtzeit_s": 2.9e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_function_base_impl.py",
+          "zeile": 421,
+          "funktion": "_weights_are_valid",
+          "statistik": [
+            19,
+            19,
+            2.9e-06,
+            2.9e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/fromnumeric.py",
+      "zeile": 1115,
+      "funktion": "argsort",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 1.43e-05,
+      "gesamtzeit_s": 0.0001309,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_function_base_impl.py",
+          "zeile": 421,
+          "funktion": "_weights_are_valid",
+          "statistik": [
+            19,
+            19,
+            1.43e-05,
+            0.0001309
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/fromnumeric.py",
+      "zeile": 1255,
+      "funktion": "_argmax_dispatcher",
+      "primitive_aufrufe": 38,
+      "aufrufe": 38,
+      "eigenzeit_s": 5e-06,
+      "gesamtzeit_s": 5e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 123,
+          "funktion": "_benetzung_aus_dreiecksecken",
+          "statistik": [
+            38,
+            38,
+            5e-06,
+            5e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/fromnumeric.py",
+      "zeile": 1259,
+      "funktion": "argmax",
+      "primitive_aufrufe": 38,
+      "aufrufe": 38,
+      "eigenzeit_s": 4.0600000000000004e-05,
+      "gesamtzeit_s": 9.56e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 123,
+          "funktion": "_benetzung_aus_dreiecksecken",
+          "statistik": [
+            38,
+            38,
+            4.0600000000000004e-05,
+            9.56e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/fromnumeric.py",
+      "zeile": 1839,
+      "funktion": "_trace_dispatcher",
+      "primitive_aufrufe": 21,
+      "aufrufe": 21,
+      "eigenzeit_s": 2.4000000000000003e-06,
+      "gesamtzeit_s": 2.4000000000000003e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 51,
+          "funktion": "quaternion_aus_matrix",
+          "statistik": [
+            21,
+            21,
+            2.4000000000000003e-06,
+            2.4000000000000003e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/fromnumeric.py",
+      "zeile": 1844,
+      "funktion": "trace",
+      "primitive_aufrufe": 21,
+      "aufrufe": 21,
+      "eigenzeit_s": 1.91e-05,
+      "gesamtzeit_s": 7.1e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 51,
+          "funktion": "quaternion_aus_matrix",
+          "statistik": [
+            21,
+            21,
+            1.91e-05,
+            7.1e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/fromnumeric.py",
+      "zeile": 2027,
+      "funktion": "_nonzero_dispatcher",
+      "primitive_aufrufe": 38,
+      "aufrufe": 38,
+      "eigenzeit_s": 4.800000000000001e-06,
+      "gesamtzeit_s": 4.800000000000001e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\volumen_union.py",
+          "zeile": 153,
+          "funktion": "auswerten",
+          "statistik": [
+            38,
+            38,
+            4.800000000000001e-06,
+            4.800000000000001e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/fromnumeric.py",
+      "zeile": 2031,
+      "funktion": "nonzero",
+      "primitive_aufrufe": 38,
+      "aufrufe": 38,
+      "eigenzeit_s": 1.5700000000000002e-05,
+      "gesamtzeit_s": 7.13e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\volumen_union.py",
+          "zeile": 153,
+          "funktion": "auswerten",
+          "statistik": [
+            38,
+            38,
+            1.5700000000000002e-05,
+            7.13e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/fromnumeric.py",
+      "zeile": 2240,
+      "funktion": "_clip_dispatcher",
+      "primitive_aufrufe": 22,
+      "aufrufe": 22,
+      "eigenzeit_s": 4.3e-06,
+      "gesamtzeit_s": 4.3e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 34,
+          "funktion": "_hydrostatik_lage",
+          "statistik": [
+            19,
+            19,
+            3.7e-06,
+            3.7e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 147,
+          "funktion": "loese_stationaer",
+          "statistik": [
+            3,
+            3,
+            6.000000000000001e-07,
+            6.000000000000001e-07
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/fromnumeric.py",
+      "zeile": 2245,
+      "funktion": "clip",
+      "primitive_aufrufe": 22,
+      "aufrufe": 22,
+      "eigenzeit_s": 2.9800000000000003e-05,
+      "gesamtzeit_s": 0.0001362,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 34,
+          "funktion": "_hydrostatik_lage",
+          "statistik": [
+            19,
+            19,
+            2.5600000000000002e-05,
+            0.0001195
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 147,
+          "funktion": "loese_stationaer",
+          "statistik": [
+            3,
+            3,
+            4.2000000000000004e-06,
+            1.67e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/fromnumeric.py",
+      "zeile": 2337,
+      "funktion": "_sum_dispatcher",
+      "primitive_aufrufe": 57,
+      "aufrufe": 57,
+      "eigenzeit_s": 8.000000000000001e-06,
+      "gesamtzeit_s": 8.000000000000001e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 123,
+          "funktion": "_benetzung_aus_dreiecksecken",
+          "statistik": [
+            19,
+            19,
+            2.7e-06,
+            2.7e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            38,
+            38,
+            5.3e-06,
+            5.3e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/fromnumeric.py",
+      "zeile": 2342,
+      "funktion": "sum",
+      "primitive_aufrufe": 57,
+      "aufrufe": 57,
+      "eigenzeit_s": 5.7e-05,
+      "gesamtzeit_s": 0.0002526,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 123,
+          "funktion": "_benetzung_aus_dreiecksecken",
+          "statistik": [
+            19,
+            19,
+            2.44e-05,
+            0.00011540000000000001
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            38,
+            38,
+            3.26e-05,
+            0.0001372
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/fromnumeric.py",
+      "zeile": 2469,
+      "funktion": "_any_dispatcher",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 1.09e-05,
+      "gesamtzeit_s": 1.09e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_function_base_impl.py",
+          "zeile": 451,
+          "funktion": "average",
+          "statistik": [
+            19,
+            19,
+            2.6e-06,
+            2.6e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 123,
+          "funktion": "_benetzung_aus_dreiecksecken",
+          "statistik": [
+            38,
+            38,
+            5.9e-06,
+            5.9e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            19,
+            19,
+            2.4000000000000003e-06,
+            2.4000000000000003e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/fromnumeric.py",
+      "zeile": 2474,
+      "funktion": "any",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 4.57e-05,
+      "gesamtzeit_s": 0.00019840000000000002,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_function_base_impl.py",
+          "zeile": 451,
+          "funktion": "average",
+          "statistik": [
+            19,
+            19,
+            1.1400000000000001e-05,
+            4.94e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 123,
+          "funktion": "_benetzung_aus_dreiecksecken",
+          "statistik": [
+            38,
+            38,
+            2.3400000000000003e-05,
+            9.95e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            19,
+            19,
+            1.09e-05,
+            4.9500000000000004e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/fromnumeric.py",
+      "zeile": 2581,
+      "funktion": "_all_dispatcher",
+      "primitive_aufrufe": 105,
+      "aufrufe": 105,
+      "eigenzeit_s": 1.4900000000000001e-05,
+      "gesamtzeit_s": 1.4900000000000001e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 2226,
+          "funktion": "allclose",
+          "statistik": [
+            21,
+            21,
+            2.9e-06,
+            2.9e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 2320,
+          "funktion": "isclose",
+          "statistik": [
+            84,
+            84,
+            1.2e-05,
+            1.2e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/fromnumeric.py",
+      "zeile": 2586,
+      "funktion": "all",
+      "primitive_aufrufe": 105,
+      "aufrufe": 105,
+      "eigenzeit_s": 6.390000000000001e-05,
+      "gesamtzeit_s": 0.0004179,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 2226,
+          "funktion": "allclose",
+          "statistik": [
+            21,
+            21,
+            1.1700000000000001e-05,
+            6.13e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 2320,
+          "funktion": "isclose",
+          "statistik": [
+            84,
+            84,
+            5.22e-05,
+            0.00035660000000000005
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/fromnumeric.py",
+      "zeile": 3320,
+      "funktion": "_prod_dispatcher",
+      "primitive_aufrufe": 38,
+      "aufrufe": 38,
+      "eigenzeit_s": 4.4e-06,
+      "gesamtzeit_s": 4.4e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 123,
+          "funktion": "_benetzung_aus_dreiecksecken",
+          "statistik": [
+            38,
+            38,
+            4.4e-06,
+            4.4e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/fromnumeric.py",
+      "zeile": 3325,
+      "funktion": "prod",
+      "primitive_aufrufe": 38,
+      "aufrufe": 38,
+      "eigenzeit_s": 2.54e-05,
+      "gesamtzeit_s": 0.00012800000000000002,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 123,
+          "funktion": "_benetzung_aus_dreiecksecken",
+          "statistik": [
+            38,
+            38,
+            2.54e-05,
+            0.00012800000000000002
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/getlimits.py",
+      "zeile": 169,
+      "funktion": "__new__",
+      "primitive_aufrufe": 78,
+      "aufrufe": 78,
+      "eigenzeit_s": 7.61e-05,
+      "gesamtzeit_s": 0.00010960000000000001,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 31,
+          "funktion": "quaternion_normalisieren",
+          "statistik": [
+            78,
+            78,
+            7.61e-05,
+            0.00010960000000000001
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/multiarray.py",
+      "zeile": 115,
+      "funktion": "empty_like",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 2.0000000000000003e-06,
+      "gesamtzeit_s": 2.0000000000000003e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 97,
+          "funktion": "zeros_like",
+          "statistik": [
+            19,
+            19,
+            2.0000000000000003e-06,
+            2.0000000000000003e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/multiarray.py",
+      "zeile": 197,
+      "funktion": "concatenate",
+      "primitive_aufrufe": 21,
+      "aufrufe": 21,
+      "eigenzeit_s": 2.6e-06,
+      "gesamtzeit_s": 2.6e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            19,
+            19,
+            2.2e-06,
+            2.2e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 109,
+          "funktion": "_residuum",
+          "statistik": [
+            2,
+            2,
+            4.0000000000000003e-07,
+            4.0000000000000003e-07
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/multiarray.py",
+      "zeile": 406,
+      "funktion": "where",
+      "primitive_aufrufe": 38,
+      "aufrufe": 38,
+      "eigenzeit_s": 4.800000000000001e-06,
+      "gesamtzeit_s": 4.800000000000001e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 123,
+          "funktion": "_benetzung_aus_dreiecksecken",
+          "statistik": [
+            38,
+            38,
+            4.800000000000001e-06,
+            4.800000000000001e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/multiarray.py",
+      "zeile": 713,
+      "funktion": "result_type",
+      "primitive_aufrufe": 40,
+      "aufrufe": 40,
+      "eigenzeit_s": 4.6e-06,
+      "gesamtzeit_s": 4.6e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 2320,
+          "funktion": "isclose",
+          "statistik": [
+            21,
+            21,
+            2.3e-06,
+            2.3e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_function_base_impl.py",
+          "zeile": 451,
+          "funktion": "average",
+          "statistik": [
+            19,
+            19,
+            2.3e-06,
+            2.3e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/multiarray.py",
+      "zeile": 1088,
+      "funktion": "copyto",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 2.3e-06,
+      "gesamtzeit_s": 2.3e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 97,
+          "funktion": "zeros_like",
+          "statistik": [
+            19,
+            19,
+            2.3e-06,
+            2.3e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/numeric.py",
+      "zeile": 91,
+      "funktion": "_zeros_like_dispatcher",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 1.9e-06,
+      "gesamtzeit_s": 1.9e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 123,
+          "funktion": "_benetzung_aus_dreiecksecken",
+          "statistik": [
+            19,
+            19,
+            1.9e-06,
+            1.9e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/numeric.py",
+      "zeile": 97,
+      "funktion": "zeros_like",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 5.86e-05,
+      "gesamtzeit_s": 7.14e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 123,
+          "funktion": "_benetzung_aus_dreiecksecken",
+          "statistik": [
+            19,
+            19,
+            5.86e-05,
+            7.14e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/numeric.py",
+      "zeile": 1427,
+      "funktion": "normalize_axis_tuple",
+      "primitive_aufrufe": 1615,
+      "aufrufe": 1615,
+      "eigenzeit_s": 0.0022231,
+      "gesamtzeit_s": 0.0035269000000000003,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 1489,
+          "funktion": "moveaxis",
+          "statistik": [
+            1596,
+            1596,
+            0.0021842000000000003,
+            0.0034666000000000002
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_function_base_impl.py",
+          "zeile": 451,
+          "funktion": "average",
+          "statistik": [
+            19,
+            19,
+            3.8900000000000004e-05,
+            6.03e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/numeric.py",
+      "zeile": 1476,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 3230,
+      "aufrufe": 3230,
+      "eigenzeit_s": 0.00045490000000000005,
+      "gesamtzeit_s": 0.0006647000000000001,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 1427,
+          "funktion": "normalize_axis_tuple",
+          "statistik": [
+            3230,
+            3230,
+            0.00045490000000000005,
+            0.0006647000000000001
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/numeric.py",
+      "zeile": 1485,
+      "funktion": "_moveaxis_dispatcher",
+      "primitive_aufrufe": 798,
+      "aufrufe": 798,
+      "eigenzeit_s": 7.83e-05,
+      "gesamtzeit_s": 7.83e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 1563,
+          "funktion": "cross",
+          "statistik": [
+            798,
+            798,
+            7.83e-05,
+            7.83e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/numeric.py",
+      "zeile": 1489,
+      "funktion": "moveaxis",
+      "primitive_aufrufe": 798,
+      "aufrufe": 798,
+      "eigenzeit_s": 0.0015357,
+      "gesamtzeit_s": 0.005686200000000001,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 1563,
+          "funktion": "cross",
+          "statistik": [
+            798,
+            798,
+            0.0015357,
+            0.005686200000000001
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/numeric.py",
+      "zeile": 1559,
+      "funktion": "_cross_dispatcher",
+      "primitive_aufrufe": 266,
+      "aufrufe": 266,
+      "eigenzeit_s": 3.1e-05,
+      "gesamtzeit_s": 3.1e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 276,
+          "funktion": "kraftfunktion_berechne",
+          "statistik": [
+            19,
+            19,
+            2.1000000000000002e-06,
+            2.1000000000000002e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            57,
+            57,
+            6.900000000000001e-06,
+            6.900000000000001e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 70,
+          "funktion": "auf_bezugspunkt",
+          "statistik": [
+            95,
+            95,
+            1.16e-05,
+            1.16e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\volumen_union.py",
+          "zeile": 148,
+          "funktion": "_summe",
+          "statistik": [
+            95,
+            95,
+            1.04e-05,
+            1.04e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/numeric.py",
+      "zeile": 1563,
+      "funktion": "cross",
+      "primitive_aufrufe": 266,
+      "aufrufe": 266,
+      "eigenzeit_s": 0.0029373000000000003,
+      "gesamtzeit_s": 0.009284500000000001,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 276,
+          "funktion": "kraftfunktion_berechne",
+          "statistik": [
+            19,
+            19,
+            0.00022490000000000002,
+            0.0006473000000000001
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            57,
+            57,
+            0.0006339000000000001,
+            0.0019697
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 70,
+          "funktion": "auf_bezugspunkt",
+          "statistik": [
+            95,
+            95,
+            0.0010634000000000002,
+            0.003272
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\volumen_union.py",
+          "zeile": 148,
+          "funktion": "_summe",
+          "statistik": [
+            95,
+            95,
+            0.0010151000000000001,
+            0.0033955
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/numeric.py",
+      "zeile": 2222,
+      "funktion": "_allclose_dispatcher",
+      "primitive_aufrufe": 21,
+      "aufrufe": 21,
+      "eigenzeit_s": 3.7e-06,
+      "gesamtzeit_s": 3.7e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 51,
+          "funktion": "quaternion_aus_matrix",
+          "statistik": [
+            21,
+            21,
+            3.7e-06,
+            3.7e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/numeric.py",
+      "zeile": 2226,
+      "funktion": "allclose",
+      "primitive_aufrufe": 21,
+      "aufrufe": 21,
+      "eigenzeit_s": 5.1000000000000006e-05,
+      "gesamtzeit_s": 0.0008590000000000001,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 51,
+          "funktion": "quaternion_aus_matrix",
+          "statistik": [
+            21,
+            21,
+            5.1000000000000006e-05,
+            0.0008590000000000001
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/numeric.py",
+      "zeile": 2316,
+      "funktion": "_isclose_dispatcher",
+      "primitive_aufrufe": 42,
+      "aufrufe": 42,
+      "eigenzeit_s": 5.8e-06,
+      "gesamtzeit_s": 5.8e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 2226,
+          "funktion": "allclose",
+          "statistik": [
+            21,
+            21,
+            3e-06,
+            3e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 51,
+          "funktion": "quaternion_aus_matrix",
+          "statistik": [
+            21,
+            21,
+            2.8000000000000003e-06,
+            2.8000000000000003e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/numeric.py",
+      "zeile": 2320,
+      "funktion": "isclose",
+      "primitive_aufrufe": 42,
+      "aufrufe": 42,
+      "eigenzeit_s": 0.0005746000000000001,
+      "gesamtzeit_s": 0.0012038,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 2226,
+          "funktion": "allclose",
+          "statistik": [
+            21,
+            21,
+            0.0003661,
+            0.0007408
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 51,
+          "funktion": "quaternion_aus_matrix",
+          "statistik": [
+            21,
+            21,
+            0.00020850000000000003,
+            0.00046300000000000003
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/_core/numeric.py",
+      "zeile": 2412,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 210,
+      "aufrufe": 210,
+      "eigenzeit_s": 6.3e-05,
+      "gesamtzeit_s": 9.520000000000001e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 2320,
+          "funktion": "isclose",
+          "statistik": [
+            210,
+            210,
+            6.3e-05,
+            9.520000000000001e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/lib/_function_base_impl.py",
+      "zeile": 375,
+      "funktion": "iterable",
+      "primitive_aufrufe": 95,
+      "aufrufe": 95,
+      "eigenzeit_s": 2.7700000000000002e-05,
+      "gesamtzeit_s": 4.1700000000000004e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_stride_tricks_impl.py",
+          "zeile": 447,
+          "funktion": "_broadcast_to",
+          "statistik": [
+            95,
+            95,
+            2.7700000000000002e-05,
+            4.1700000000000004e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/lib/_function_base_impl.py",
+      "zeile": 421,
+      "funktion": "_weights_are_valid",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 9.860000000000001e-05,
+      "gesamtzeit_s": 0.0003123,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_function_base_impl.py",
+          "zeile": 451,
+          "funktion": "average",
+          "statistik": [
+            19,
+            19,
+            9.860000000000001e-05,
+            0.0003123
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/lib/_function_base_impl.py",
+      "zeile": 434,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 38,
+      "aufrufe": 38,
+      "eigenzeit_s": 8.400000000000001e-06,
+      "gesamtzeit_s": 8.400000000000001e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_function_base_impl.py",
+          "zeile": 421,
+          "funktion": "_weights_are_valid",
+          "statistik": [
+            38,
+            38,
+            8.400000000000001e-06,
+            8.400000000000001e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/lib/_function_base_impl.py",
+      "zeile": 441,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 57,
+      "aufrufe": 57,
+      "eigenzeit_s": 1.54e-05,
+      "gesamtzeit_s": 1.54e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_function_base_impl.py",
+          "zeile": 421,
+          "funktion": "_weights_are_valid",
+          "statistik": [
+            57,
+            57,
+            1.54e-05,
+            1.54e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/lib/_function_base_impl.py",
+      "zeile": 446,
+      "funktion": "_average_dispatcher",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 2.9e-06,
+      "gesamtzeit_s": 2.9e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            19,
+            19,
+            2.9e-06,
+            2.9e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/lib/_function_base_impl.py",
+      "zeile": 451,
+      "funktion": "average",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 0.00019590000000000002,
+      "gesamtzeit_s": 0.0007187000000000001,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            19,
+            19,
+            0.00019590000000000002,
+            0.0007187000000000001
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/lib/_stride_tricks_impl.py",
+      "zeile": 25,
+      "funktion": "_maybe_view_as_subclass",
+      "primitive_aufrufe": 95,
+      "aufrufe": 95,
+      "eigenzeit_s": 3.1100000000000004e-05,
+      "gesamtzeit_s": 3.1100000000000004e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_stride_tricks_impl.py",
+          "zeile": 447,
+          "funktion": "_broadcast_to",
+          "statistik": [
+            95,
+            95,
+            3.1100000000000004e-05,
+            3.1100000000000004e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/lib/_stride_tricks_impl.py",
+      "zeile": 447,
+      "funktion": "_broadcast_to",
+      "primitive_aufrufe": 95,
+      "aufrufe": 95,
+      "eigenzeit_s": 0.0004995,
+      "gesamtzeit_s": 0.0006714000000000001,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_stride_tricks_impl.py",
+          "zeile": 474,
+          "funktion": "broadcast_to",
+          "statistik": [
+            95,
+            95,
+            0.0004995,
+            0.0006714000000000001
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/lib/_stride_tricks_impl.py",
+      "zeile": 452,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 285,
+      "aufrufe": 285,
+      "eigenzeit_s": 4.0300000000000004e-05,
+      "gesamtzeit_s": 4.0300000000000004e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_stride_tricks_impl.py",
+          "zeile": 447,
+          "funktion": "_broadcast_to",
+          "statistik": [
+            285,
+            285,
+            4.0300000000000004e-05,
+            4.0300000000000004e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/lib/_stride_tricks_impl.py",
+      "zeile": 470,
+      "funktion": "_broadcast_to_dispatcher",
+      "primitive_aufrufe": 95,
+      "aufrufe": 95,
+      "eigenzeit_s": 1.13e-05,
+      "gesamtzeit_s": 1.13e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\volumen_union.py",
+          "zeile": 153,
+          "funktion": "auswerten",
+          "statistik": [
+            95,
+            95,
+            1.13e-05,
+            1.13e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/lib/_stride_tricks_impl.py",
+      "zeile": 474,
+      "funktion": "broadcast_to",
+      "primitive_aufrufe": 95,
+      "aufrufe": 95,
+      "eigenzeit_s": 5.13e-05,
+      "gesamtzeit_s": 0.0007227000000000001,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\volumen_union.py",
+          "zeile": 153,
+          "funktion": "auswerten",
+          "statistik": [
+            95,
+            95,
+            5.13e-05,
+            0.0007227000000000001
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/lib/_twodim_base_impl.py",
+      "zeile": 178,
+      "funktion": "eye",
+      "primitive_aufrufe": 40,
+      "aufrufe": 40,
+      "eigenzeit_s": 0.00011860000000000001,
+      "gesamtzeit_s": 0.00015030000000000002,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 94,
+          "funktion": "pose_matrix",
+          "statistik": [
+            19,
+            19,
+            5.19e-05,
+            6.66e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 51,
+          "funktion": "quaternion_aus_matrix",
+          "statistik": [
+            21,
+            21,
+            6.670000000000001e-05,
+            8.37e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/linalg/_linalg.py",
+      "zeile": 163,
+      "funktion": "_makearray",
+      "primitive_aufrufe": 6,
+      "aufrufe": 6,
+      "eigenzeit_s": 3.7e-06,
+      "gesamtzeit_s": 5.3e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 374,
+          "funktion": "solve",
+          "statistik": [
+            6,
+            6,
+            3.7e-06,
+            5.3e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/linalg/_linalg.py",
+      "zeile": 168,
+      "funktion": "isComplexType",
+      "primitive_aufrufe": 177,
+      "aufrufe": 177,
+      "eigenzeit_s": 3.93e-05,
+      "gesamtzeit_s": 5.7e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 201,
+          "funktion": "_commonType",
+          "statistik": [
+            27,
+            27,
+            5.9e-06,
+            8.3e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 374,
+          "funktion": "solve",
+          "statistik": [
+            3,
+            3,
+            6.000000000000001e-07,
+            8.000000000000001e-07
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 2372,
+          "funktion": "det",
+          "statistik": [
+            21,
+            21,
+            4.000000000000001e-06,
+            6.200000000000001e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 2615,
+          "funktion": "norm",
+          "statistik": [
+            126,
+            126,
+            2.8800000000000002e-05,
+            4.1700000000000004e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/linalg/_linalg.py",
+      "zeile": 182,
+      "funktion": "_realType",
+      "primitive_aufrufe": 27,
+      "aufrufe": 27,
+      "eigenzeit_s": 9.800000000000001e-06,
+      "gesamtzeit_s": 1.66e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 201,
+          "funktion": "_commonType",
+          "statistik": [
+            27,
+            27,
+            9.800000000000001e-06,
+            1.66e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/linalg/_linalg.py",
+      "zeile": 201,
+      "funktion": "_commonType",
+      "primitive_aufrufe": 24,
+      "aufrufe": 24,
+      "eigenzeit_s": 3.55e-05,
+      "gesamtzeit_s": 6.41e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 374,
+          "funktion": "solve",
+          "statistik": [
+            3,
+            3,
+            6.1e-06,
+            1.1200000000000001e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 2372,
+          "funktion": "det",
+          "statistik": [
+            21,
+            21,
+            2.9400000000000003e-05,
+            5.2900000000000005e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/linalg/_linalg.py",
+      "zeile": 250,
+      "funktion": "_assert_stacked_square",
+      "primitive_aufrufe": 24,
+      "aufrufe": 24,
+      "eigenzeit_s": 1.52e-05,
+      "gesamtzeit_s": 1.52e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 374,
+          "funktion": "solve",
+          "statistik": [
+            3,
+            3,
+            1.9e-06,
+            1.9e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 2372,
+          "funktion": "det",
+          "statistik": [
+            21,
+            21,
+            1.3300000000000001e-05,
+            1.3300000000000001e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/linalg/_linalg.py",
+      "zeile": 370,
+      "funktion": "_solve_dispatcher",
+      "primitive_aufrufe": 3,
+      "aufrufe": 3,
+      "eigenzeit_s": 5.000000000000001e-07,
+      "gesamtzeit_s": 5.000000000000001e-07,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 147,
+          "funktion": "loese_stationaer",
+          "statistik": [
+            3,
+            3,
+            5.000000000000001e-07,
+            5.000000000000001e-07
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/linalg/_linalg.py",
+      "zeile": 374,
+      "funktion": "solve",
+      "primitive_aufrufe": 3,
+      "aufrufe": 3,
+      "eigenzeit_s": 3.29e-05,
+      "gesamtzeit_s": 6.55e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 147,
+          "funktion": "loese_stationaer",
+          "statistik": [
+            3,
+            3,
+            3.29e-05,
+            6.55e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/linalg/_linalg.py",
+      "zeile": 543,
+      "funktion": "_unary_dispatcher",
+      "primitive_aufrufe": 21,
+      "aufrufe": 21,
+      "eigenzeit_s": 2.4000000000000003e-06,
+      "gesamtzeit_s": 2.4000000000000003e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 51,
+          "funktion": "quaternion_aus_matrix",
+          "statistik": [
+            21,
+            21,
+            2.4000000000000003e-06,
+            2.4000000000000003e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/linalg/_linalg.py",
+      "zeile": 2372,
+      "funktion": "det",
+      "primitive_aufrufe": 21,
+      "aufrufe": 21,
+      "eigenzeit_s": 0.00011580000000000001,
+      "gesamtzeit_s": 0.00022400000000000002,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 51,
+          "funktion": "quaternion_aus_matrix",
+          "statistik": [
+            21,
+            21,
+            0.00011580000000000001,
+            0.00022400000000000002
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/linalg/_linalg.py",
+      "zeile": 2611,
+      "funktion": "_norm_dispatcher",
+      "primitive_aufrufe": 171,
+      "aufrufe": 171,
+      "eigenzeit_s": 1.79e-05,
+      "gesamtzeit_s": 1.79e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 31,
+          "funktion": "quaternion_normalisieren",
+          "statistik": [
+            78,
+            78,
+            8.200000000000001e-06,
+            8.200000000000001e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            57,
+            57,
+            6.200000000000001e-06,
+            6.200000000000001e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 124,
+          "funktion": "_stufe_ergebnis",
+          "statistik": [
+            4,
+            4,
+            4.0000000000000003e-07,
+            4.0000000000000003e-07
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 147,
+          "funktion": "loese_stationaer",
+          "statistik": [
+            13,
+            13,
+            1.3e-06,
+            1.3e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\volumen_union.py",
+          "zeile": 243,
+          "funktion": "auswerten_ebene",
+          "statistik": [
+            19,
+            19,
+            1.8000000000000001e-06,
+            1.8000000000000001e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": ".venv/Lib/site-packages/numpy/linalg/_linalg.py",
+      "zeile": 2615,
+      "funktion": "norm",
+      "primitive_aufrufe": 171,
+      "aufrufe": 171,
+      "eigenzeit_s": 0.00038030000000000003,
+      "gesamtzeit_s": 0.0007477,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 31,
+          "funktion": "quaternion_normalisieren",
+          "statistik": [
+            78,
+            78,
+            0.0001453,
+            0.0003105
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            57,
+            57,
+            0.00016030000000000002,
+            0.0002831
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 124,
+          "funktion": "_stufe_ergebnis",
+          "statistik": [
+            4,
+            4,
+            5.2e-06,
+            1.06e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 147,
+          "funktion": "loese_stationaer",
+          "statistik": [
+            13,
+            13,
+            3.88e-05,
+            8.36e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\volumen_union.py",
+          "zeile": 243,
+          "funktion": "auswerten_ebene",
+          "statistik": [
+            19,
+            19,
+            3.07e-05,
+            5.9900000000000006e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/auftrieb.py",
+      "zeile": 53,
+      "funktion": "__init__",
+      "primitive_aufrufe": 95,
+      "aufrufe": 95,
+      "eigenzeit_s": 8.88e-05,
+      "gesamtzeit_s": 0.0001965,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 71,
+          "funktion": "__init__",
+          "statistik": [
+            57,
+            57,
+            5.42e-05,
+            0.0001393
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            38,
+            38,
+            3.46e-05,
+            5.72e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/auftrieb.py",
+      "zeile": 54,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 380,
+      "aufrufe": 380,
+      "eigenzeit_s": 0.0001077,
+      "gesamtzeit_s": 0.0001077,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 53,
+          "funktion": "__init__",
+          "statistik": [
+            380,
+            380,
+            0.0001077,
+            0.0001077
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/auftrieb.py",
+      "zeile": 56,
+      "funktion": "as_array",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 2.93e-05,
+      "gesamtzeit_s": 6.71e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            38,
+            38,
+            1.43e-05,
+            3.3e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 98,
+          "funktion": "_beitrag_werte",
+          "statistik": [
+            38,
+            38,
+            1.5e-05,
+            3.41e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/auftrieb.py",
+      "zeile": 71,
+      "funktion": "__init__",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 3.93e-05,
+      "gesamtzeit_s": 0.0001853,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 276,
+          "funktion": "kraftfunktion_berechne",
+          "statistik": [
+            19,
+            19,
+            3.93e-05,
+            0.0001853
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/auftrieb.py",
+      "zeile": 82,
+      "funktion": "lage_pruefen",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 5.94e-05,
+      "gesamtzeit_s": 9.95e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 276,
+          "funktion": "kraftfunktion_berechne",
+          "statistik": [
+            19,
+            19,
+            5.94e-05,
+            9.95e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/auftrieb.py",
+      "zeile": 88,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 1.29e-05,
+      "gesamtzeit_s": 1.29e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 82,
+          "funktion": "lage_pruefen",
+          "statistik": [
+            76,
+            76,
+            1.29e-05,
+            1.29e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/auftrieb.py",
+      "zeile": 94,
+      "funktion": "pose_matrix",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 7.510000000000001e-05,
+      "gesamtzeit_s": 0.00016340000000000001,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 276,
+          "funktion": "kraftfunktion_berechne",
+          "statistik": [
+            19,
+            19,
+            7.510000000000001e-05,
+            0.00016340000000000001
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/auftrieb.py",
+      "zeile": 108,
+      "funktion": "_in_welt",
+      "primitive_aufrufe": 38,
+      "aufrufe": 38,
+      "eigenzeit_s": 0.000165,
+      "gesamtzeit_s": 0.00018790000000000001,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 276,
+          "funktion": "kraftfunktion_berechne",
+          "statistik": [
+            38,
+            38,
+            0.000165,
+            0.00018790000000000001
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/auftrieb.py",
+      "zeile": 276,
+      "funktion": "kraftfunktion_berechne",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 0.0001745,
+      "gesamtzeit_s": 0.0091645,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 378,
+          "funktion": "funktion",
+          "statistik": [
+            19,
+            19,
+            0.0001745,
+            0.0091645
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/auftrieb.py",
+      "zeile": 337,
+      "funktion": "als_bindung",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 8.5e-06,
+      "gesamtzeit_s": 1.72e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 276,
+          "funktion": "kraftfunktion_berechne",
+          "statistik": [
+            19,
+            19,
+            8.5e-06,
+            1.72e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/auftrieb.py",
+      "zeile": 378,
+      "funktion": "funktion",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 3.0600000000000005e-05,
+      "gesamtzeit_s": 0.009195100000000001,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 233,
+          "funktion": "__call__",
+          "statistik": [
+            19,
+            19,
+            3.0600000000000005e-05,
+            0.009195100000000001
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/dynamik_6dof.py",
+      "zeile": 19,
+      "funktion": "_vektor",
+      "primitive_aufrufe": 78,
+      "aufrufe": 78,
+      "eigenzeit_s": 9.94e-05,
+      "gesamtzeit_s": 0.00021070000000000003,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 31,
+          "funktion": "quaternion_normalisieren",
+          "statistik": [
+            78,
+            78,
+            9.94e-05,
+            0.00021070000000000003
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/dynamik_6dof.py",
+      "zeile": 31,
+      "funktion": "quaternion_normalisieren",
+      "primitive_aufrufe": 78,
+      "aufrufe": 78,
+      "eigenzeit_s": 0.00026240000000000004,
+      "gesamtzeit_s": 0.0009014,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 39,
+          "funktion": "quaternion_matrix",
+          "statistik": [
+            57,
+            57,
+            0.000182,
+            0.0006370000000000001
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 51,
+          "funktion": "quaternion_aus_matrix",
+          "statistik": [
+            21,
+            21,
+            8.04e-05,
+            0.00026440000000000003
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/dynamik_6dof.py",
+      "zeile": 39,
+      "funktion": "quaternion_matrix",
+      "primitive_aufrufe": 57,
+      "aufrufe": 57,
+      "eigenzeit_s": 0.0002112,
+      "gesamtzeit_s": 0.0009235000000000001,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            19,
+            19,
+            6.99e-05,
+            0.00032020000000000003
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 34,
+          "funktion": "_hydrostatik_lage",
+          "statistik": [
+            19,
+            19,
+            7.05e-05,
+            0.0002907
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            19,
+            19,
+            7.08e-05,
+            0.0003126
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/dynamik_6dof.py",
+      "zeile": 51,
+      "funktion": "quaternion_aus_matrix",
+      "primitive_aufrufe": 21,
+      "aufrufe": 21,
+      "eigenzeit_s": 0.0002899,
+      "gesamtzeit_s": 0.0023661000000000003,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 87,
+          "funktion": "_pose_und_bewegung",
+          "statistik": [
+            21,
+            21,
+            0.0002899,
+            0.0023661000000000003
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/dynamik_6dof.py",
+      "zeile": 99,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 105,
+      "aufrufe": 105,
+      "eigenzeit_s": 4.2300000000000005e-05,
+      "gesamtzeit_s": 4.2300000000000005e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 51,
+          "funktion": "quaternion_aus_matrix",
+          "statistik": [
+            105,
+            105,
+            4.2300000000000005e-05,
+            4.2300000000000005e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/hydrodynamik.py",
+      "zeile": 82,
+      "funktion": "_vektor",
+      "primitive_aufrufe": 57,
+      "aufrufe": 57,
+      "eigenzeit_s": 6.280000000000001e-05,
+      "gesamtzeit_s": 0.0001374,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            57,
+            57,
+            6.280000000000001e-05,
+            0.0001374
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/hydrodynamik.py",
+      "zeile": 123,
+      "funktion": "_benetzung_aus_dreiecksecken",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 0.0009320000000000001,
+      "gesamtzeit_s": 0.0015214,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            19,
+            19,
+            0.0009320000000000001,
+            0.0015214
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/hydrodynamik.py",
+      "zeile": 380,
+      "funktion": "ruderwinkel_rad",
+      "primitive_aufrufe": 1,
+      "aufrufe": 1,
+      "eigenzeit_s": 1.0000000000000001e-07,
+      "gesamtzeit_s": 1.0000000000000001e-07,
+      "aufrufer": [
+        {
+          "datei": "~",
+          "zeile": 0,
+          "funktion": "<built-in method builtins.getattr>",
+          "statistik": [
+            1,
+            1,
+            1.0000000000000001e-07,
+            1.0000000000000001e-07
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/hydrodynamik.py",
+      "zeile": 400,
+      "funktion": "beitraege_erzeugen",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 0.0011825000000000002,
+      "gesamtzeit_s": 0.0069217,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            19,
+            19,
+            0.0011825000000000002,
+            0.0069217
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/hydrodynamik.py",
+      "zeile": 518,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 3.55e-05,
+      "gesamtzeit_s": 3.55e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            76,
+            76,
+            3.55e-05,
+            3.55e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/hydrodynamik.py",
+      "zeile": 519,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 2.2700000000000003e-05,
+      "gesamtzeit_s": 2.2700000000000003e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            76,
+            76,
+            2.2700000000000003e-05,
+            2.2700000000000003e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/hydrodynamik.py",
+      "zeile": 520,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 2.04e-05,
+      "gesamtzeit_s": 2.04e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            76,
+            76,
+            2.04e-05,
+            2.04e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 24,
+      "funktion": "_flussvektor",
+      "primitive_aufrufe": 779,
+      "aufrufe": 779,
+      "eigenzeit_s": 0.0008179000000000001,
+      "gesamtzeit_s": 0.0020196000000000003,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 58,
+          "funktion": "__post_init__",
+          "statistik": [
+            627,
+            627,
+            0.0006550000000000001,
+            0.0016560000000000001
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 70,
+          "funktion": "auf_bezugspunkt",
+          "statistik": [
+            95,
+            95,
+            9.56e-05,
+            0.00021370000000000002
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 90,
+          "funktion": "aggregiere_kraftbeitraege",
+          "statistik": [
+            19,
+            19,
+            1.77e-05,
+            4.46e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            38,
+            38,
+            4.9600000000000006e-05,
+            0.00010530000000000001
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 34,
+      "funktion": "_hydrostatik_lage",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 0.00013350000000000002,
+      "gesamtzeit_s": 0.0006010000000000001,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 233,
+          "funktion": "__call__",
+          "statistik": [
+            19,
+            19,
+            0.00013350000000000002,
+            0.0006010000000000001
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 58,
+      "funktion": "__post_init__",
+      "primitive_aufrufe": 209,
+      "aufrufe": 209,
+      "eigenzeit_s": 0.0008762,
+      "gesamtzeit_s": 0.0032664,
+      "aufrufer": [
+        {
+          "datei": "<string>",
+          "zeile": 2,
+          "funktion": "__init__",
+          "statistik": [
+            209,
+            209,
+            0.0008762,
+            0.0032664
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 67,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 2508,
+      "aufrufe": 2508,
+      "eigenzeit_s": 0.0006403,
+      "gesamtzeit_s": 0.0006403,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 58,
+          "funktion": "__post_init__",
+          "statistik": [
+            2508,
+            2508,
+            0.0006403,
+            0.0006403
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 70,
+      "funktion": "auf_bezugspunkt",
+      "primitive_aufrufe": 95,
+      "aufrufe": 95,
+      "eigenzeit_s": 0.000506,
+      "gesamtzeit_s": 0.0059436,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 90,
+          "funktion": "aggregiere_kraftbeitraege",
+          "statistik": [
+            95,
+            95,
+            0.000506,
+            0.0059436
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 78,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 380,
+      "aufrufe": 380,
+      "eigenzeit_s": 0.00012340000000000002,
+      "gesamtzeit_s": 0.00012340000000000002,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 70,
+          "funktion": "auf_bezugspunkt",
+          "statistik": [
+            380,
+            380,
+            0.00012340000000000002,
+            0.00012340000000000002
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 80,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 380,
+      "aufrufe": 380,
+      "eigenzeit_s": 0.0001023,
+      "gesamtzeit_s": 0.0001023,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 70,
+          "funktion": "auf_bezugspunkt",
+          "statistik": [
+            380,
+            380,
+            0.0001023,
+            0.0001023
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 90,
+      "funktion": "aggregiere_kraftbeitraege",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 0.00033570000000000003,
+      "gesamtzeit_s": 0.006829900000000001,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            19,
+            19,
+            0.00033570000000000003,
+            0.006829900000000001
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 108,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 2.0300000000000002e-05,
+      "gesamtzeit_s": 2.0300000000000002e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 90,
+          "funktion": "aggregiere_kraftbeitraege",
+          "statistik": [
+            76,
+            76,
+            2.0300000000000002e-05,
+            2.0300000000000002e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 109,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 1.91e-05,
+      "gesamtzeit_s": 1.91e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 90,
+          "funktion": "aggregiere_kraftbeitraege",
+          "statistik": [
+            76,
+            76,
+            1.91e-05,
+            1.91e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 110,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 2.02e-05,
+      "gesamtzeit_s": 2.02e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 90,
+          "funktion": "aggregiere_kraftbeitraege",
+          "statistik": [
+            76,
+            76,
+            2.02e-05,
+            2.02e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 233,
+      "funktion": "__call__",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 6.110000000000001e-05,
+      "gesamtzeit_s": 0.0266223,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 109,
+          "funktion": "_residuum",
+          "statistik": [
+            19,
+            19,
+            6.110000000000001e-05,
+            0.0266223
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 255,
+      "funktion": "mit_hydrostatik",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 0.0007814,
+      "gesamtzeit_s": 0.0167651,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 233,
+          "funktion": "__call__",
+          "statistik": [
+            19,
+            19,
+            0.0007814,
+            0.0167651
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 272,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 2.36e-05,
+      "gesamtzeit_s": 2.36e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            76,
+            76,
+            2.36e-05,
+            2.36e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 273,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 2.05e-05,
+      "gesamtzeit_s": 2.05e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            76,
+            76,
+            2.05e-05,
+            2.05e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 276,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 2.0700000000000002e-05,
+      "gesamtzeit_s": 2.0700000000000002e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            76,
+            76,
+            2.0700000000000002e-05,
+            2.0700000000000002e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 277,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 1.86e-05,
+      "gesamtzeit_s": 1.86e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            76,
+            76,
+            1.86e-05,
+            1.86e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 300,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 2.3100000000000002e-05,
+      "gesamtzeit_s": 2.3100000000000002e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            76,
+            76,
+            2.3100000000000002e-05,
+            2.3100000000000002e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 302,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 2.02e-05,
+      "gesamtzeit_s": 2.02e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            76,
+            76,
+            2.02e-05,
+            2.02e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 309,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 2.0300000000000002e-05,
+      "gesamtzeit_s": 2.0300000000000002e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            76,
+            76,
+            2.0300000000000002e-05,
+            2.0300000000000002e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 314,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 133,
+      "aufrufe": 133,
+      "eigenzeit_s": 3.08e-05,
+      "gesamtzeit_s": 3.08e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            133,
+            133,
+            3.08e-05,
+            3.08e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 316,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 133,
+      "aufrufe": 133,
+      "eigenzeit_s": 2.72e-05,
+      "gesamtzeit_s": 2.72e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            133,
+            133,
+            2.72e-05,
+            2.72e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 317,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 133,
+      "aufrufe": 133,
+      "eigenzeit_s": 2.7400000000000002e-05,
+      "gesamtzeit_s": 2.7400000000000002e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            133,
+            133,
+            2.7400000000000002e-05,
+            2.7400000000000002e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 318,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 1.84e-05,
+      "gesamtzeit_s": 1.84e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            76,
+            76,
+            1.84e-05,
+            1.84e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 319,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 1.74e-05,
+      "gesamtzeit_s": 1.74e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            76,
+            76,
+            1.74e-05,
+            1.74e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 356,
+      "funktion": "_position_aus_lage",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 5.42e-05,
+      "gesamtzeit_s": 0.0001121,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            19,
+            19,
+            5.42e-05,
+            0.0001121
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/kraftmodell.py",
+      "zeile": 360,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 2.1400000000000002e-05,
+      "gesamtzeit_s": 2.1400000000000002e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 356,
+          "funktion": "_position_aus_lage",
+          "statistik": [
+            76,
+            76,
+            2.1400000000000002e-05,
+            2.1400000000000002e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/stationaer_hydrodynamik.py",
+      "zeile": 65,
+      "funktion": "_rotation",
+      "primitive_aufrufe": 21,
+      "aufrufe": 21,
+      "eigenzeit_s": 0.0001452,
+      "gesamtzeit_s": 0.0002366,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 87,
+          "funktion": "_pose_und_bewegung",
+          "statistik": [
+            21,
+            21,
+            0.0001452,
+            0.0002366
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/stationaer_hydrodynamik.py",
+      "zeile": 87,
+      "funktion": "_pose_und_bewegung",
+      "primitive_aufrufe": 21,
+      "aufrufe": 21,
+      "eigenzeit_s": 7.010000000000001e-05,
+      "gesamtzeit_s": 0.0026955,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 109,
+          "funktion": "_residuum",
+          "statistik": [
+            19,
+            19,
+            6.52e-05,
+            0.0024693000000000002
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 124,
+          "funktion": "_stufe_ergebnis",
+          "statistik": [
+            2,
+            2,
+            4.9000000000000005e-06,
+            0.00022620000000000002
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/stationaer_hydrodynamik.py",
+      "zeile": 98,
+      "funktion": "_beitrag_werte",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 5.910000000000001e-05,
+      "gesamtzeit_s": 0.00014350000000000002,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 109,
+          "funktion": "_residuum",
+          "statistik": [
+            19,
+            19,
+            5.910000000000001e-05,
+            0.00014350000000000002
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/stationaer_hydrodynamik.py",
+      "zeile": 109,
+      "funktion": "_residuum",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 0.0001009,
+      "gesamtzeit_s": 0.0293472,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 147,
+          "funktion": "loese_stationaer",
+          "statistik": [
+            19,
+            19,
+            0.0001009,
+            0.0293472
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/stationaer_hydrodynamik.py",
+      "zeile": 124,
+      "funktion": "_stufe_ergebnis",
+      "primitive_aufrufe": 2,
+      "aufrufe": 2,
+      "eigenzeit_s": 2.51e-05,
+      "gesamtzeit_s": 0.0002762,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 147,
+          "funktion": "loese_stationaer",
+          "statistik": [
+            2,
+            2,
+            2.51e-05,
+            0.0002762
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/stationaer_hydrodynamik.py",
+      "zeile": 138,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 8,
+      "aufrufe": 8,
+      "eigenzeit_s": 2.2e-06,
+      "gesamtzeit_s": 2.2e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 124,
+          "funktion": "_stufe_ergebnis",
+          "statistik": [
+            8,
+            8,
+            2.2e-06,
+            2.2e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/stationaer_hydrodynamik.py",
+      "zeile": 139,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 8,
+      "aufrufe": 8,
+      "eigenzeit_s": 1.9e-06,
+      "gesamtzeit_s": 1.9e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 124,
+          "funktion": "_stufe_ergebnis",
+          "statistik": [
+            8,
+            8,
+            1.9e-06,
+            1.9e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/stationaer_hydrodynamik.py",
+      "zeile": 140,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 8,
+      "aufrufe": 8,
+      "eigenzeit_s": 1.9e-06,
+      "gesamtzeit_s": 1.9e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 124,
+          "funktion": "_stufe_ergebnis",
+          "statistik": [
+            8,
+            8,
+            1.9e-06,
+            1.9e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/stationaer_hydrodynamik.py",
+      "zeile": 141,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 8,
+      "aufrufe": 8,
+      "eigenzeit_s": 1.8000000000000001e-06,
+      "gesamtzeit_s": 1.8000000000000001e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 124,
+          "funktion": "_stufe_ergebnis",
+          "statistik": [
+            8,
+            8,
+            1.8000000000000001e-06,
+            1.8000000000000001e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/stationaer_hydrodynamik.py",
+      "zeile": 147,
+      "funktion": "loese_stationaer",
+      "primitive_aufrufe": 1,
+      "aufrufe": 1,
+      "eigenzeit_s": 0.0001573,
+      "gesamtzeit_s": 0.0299816,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\werkzeuge\\migration_szenarien.py",
+          "zeile": 356,
+          "funktion": "solver",
+          "statistik": [
+            1,
+            1,
+            0.0001573,
+            0.0299816
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/stationaer_hydrodynamik.py",
+      "zeile": 164,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 6,
+      "aufrufe": 6,
+      "eigenzeit_s": 2.2e-06,
+      "gesamtzeit_s": 2.7e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 147,
+          "funktion": "loese_stationaer",
+          "statistik": [
+            6,
+            6,
+            2.2e-06,
+            2.7e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/volumen_union.py",
+      "zeile": 148,
+      "funktion": "_summe",
+      "primitive_aufrufe": 95,
+      "aufrufe": 95,
+      "eigenzeit_s": 0.0006156,
+      "gesamtzeit_s": 0.0047223000000000005,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\volumen_union.py",
+          "zeile": 153,
+          "funktion": "auswerten",
+          "statistik": [
+            95,
+            95,
+            0.0006156,
+            0.0047223000000000005
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/volumen_union.py",
+      "zeile": 153,
+      "funktion": "auswerten",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 0.0012720000000000001,
+      "gesamtzeit_s": 0.0074105,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\volumen_union.py",
+          "zeile": 243,
+          "funktion": "auswerten_ebene",
+          "statistik": [
+            19,
+            19,
+            0.0012720000000000001,
+            0.0074105
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/volumen_union.py",
+      "zeile": 172,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 0.00018270000000000002,
+      "gesamtzeit_s": 0.00018270000000000002,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\volumen_union.py",
+          "zeile": 153,
+          "funktion": "auswerten",
+          "statistik": [
+            76,
+            76,
+            0.00018270000000000002,
+            0.00018270000000000002
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/volumen_union.py",
+      "zeile": 180,
+      "funktion": "<genexpr>",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 0.00016600000000000002,
+      "gesamtzeit_s": 0.00016600000000000002,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\volumen_union.py",
+          "zeile": 153,
+          "funktion": "auswerten",
+          "statistik": [
+            76,
+            76,
+            0.00016600000000000002,
+            0.00016600000000000002
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "code/python/segelphysik/core/volumen_union.py",
+      "zeile": 243,
+      "funktion": "auswerten_ebene",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 0.0001366,
+      "gesamtzeit_s": 0.007634900000000001,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 276,
+          "funktion": "kraftfunktion_berechne",
+          "statistik": [
+            19,
+            19,
+            0.0001366,
+            0.007634900000000001
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "werkzeuge/migration_szenarien.py",
+      "zeile": 356,
+      "funktion": "solver",
+      "primitive_aufrufe": 1,
+      "aufrufe": 1,
+      "eigenzeit_s": 1.77e-05,
+      "gesamtzeit_s": 0.030058900000000003,
+      "aufrufer": []
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method _operator.index>",
+      "primitive_aufrufe": 1695,
+      "aufrufe": 1695,
+      "eigenzeit_s": 0.00015030000000000002,
+      "gesamtzeit_s": 0.00015030000000000002,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 1427,
+          "funktion": "normalize_axis_tuple",
+          "statistik": [
+            1615,
+            1615,
+            0.0001419,
+            0.0001419
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_twodim_base_impl.py",
+          "zeile": 178,
+          "funktion": "eye",
+          "statistik": [
+            80,
+            80,
+            8.400000000000001e-06,
+            8.400000000000001e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method builtins.abs>",
+      "primitive_aufrufe": 94,
+      "aufrufe": 94,
+      "eigenzeit_s": 3.44e-05,
+      "gesamtzeit_s": 3.44e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 2320,
+          "funktion": "isclose",
+          "statistik": [
+            84,
+            84,
+            3.2500000000000004e-05,
+            3.2500000000000004e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 147,
+          "funktion": "loese_stationaer",
+          "statistik": [
+            10,
+            10,
+            1.9e-06,
+            1.9e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method builtins.getattr>",
+      "primitive_aufrufe": 924,
+      "aufrufe": 924,
+      "eigenzeit_s": 0.0001264,
+      "gesamtzeit_s": 0.0001265,
+      "aufrufer": [
+        {
+          "datei": "C:\\Users\\Katarina\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\dataclasses.py",
+          "zeile": 1454,
+          "funktion": "fields",
+          "statistik": [
+            3,
+            3,
+            4.0000000000000003e-07,
+            4.0000000000000003e-07
+          ]
+        },
+        {
+          "datei": "C:\\Users\\Katarina\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\dataclasses.py",
+          "zeile": 1508,
+          "funktion": "_asdict_inner",
+          "statistik": [
+            24,
+            24,
+            2.4000000000000003e-06,
+            2.4000000000000003e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 38,
+          "funktion": "_wrapit",
+          "statistik": [
+            19,
+            19,
+            3.7e-06,
+            3.7e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 48,
+          "funktion": "_wrapfunc",
+          "statistik": [
+            117,
+            117,
+            2.6000000000000002e-05,
+            2.6000000000000002e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 86,
+          "funktion": "_wrapreduction_any_all",
+          "statistik": [
+            84,
+            84,
+            1.3300000000000001e-05,
+            1.3300000000000001e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 2320,
+          "funktion": "isclose",
+          "statistik": [
+            42,
+            42,
+            7.3e-06,
+            7.3e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 163,
+          "funktion": "_makearray",
+          "statistik": [
+            6,
+            6,
+            8.000000000000001e-07,
+            8.000000000000001e-07
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 58,
+          "funktion": "__post_init__",
+          "statistik": [
+            627,
+            627,
+            7.1e-05,
+            7.1e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 147,
+          "funktion": "loese_stationaer",
+          "statistik": [
+            2,
+            2,
+            1.5e-06,
+            1.6000000000000001e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method builtins.hasattr>",
+      "primitive_aufrufe": 53,
+      "aufrufe": 53,
+      "eigenzeit_s": 1.0500000000000001e-05,
+      "gesamtzeit_s": 1.0500000000000001e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\Users\\Katarina\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\dataclasses.py",
+          "zeile": 1472,
+          "funktion": "_is_dataclass_instance",
+          "statistik": [
+            1,
+            1,
+            3.0000000000000004e-07,
+            3.0000000000000004e-07
+          ]
+        },
+        {
+          "datei": "C:\\Users\\Katarina\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\dataclasses.py",
+          "zeile": 1508,
+          "funktion": "_asdict_inner",
+          "statistik": [
+            14,
+            14,
+            1.5e-06,
+            1.5e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 337,
+          "funktion": "als_bindung",
+          "statistik": [
+            38,
+            38,
+            8.7e-06,
+            8.7e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method builtins.isinstance>",
+      "primitive_aufrufe": 2245,
+      "aufrufe": 2245,
+      "eigenzeit_s": 0.00030500000000000004,
+      "gesamtzeit_s": 0.00030500000000000004,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 1844,
+          "funktion": "trace",
+          "statistik": [
+            21,
+            21,
+            3.3e-06,
+            3.3e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 2342,
+          "funktion": "sum",
+          "statistik": [
+            57,
+            57,
+            8.200000000000001e-06,
+            8.200000000000001e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 1427,
+          "funktion": "normalize_axis_tuple",
+          "statistik": [
+            1615,
+            1615,
+            0.00022170000000000002,
+            0.00022170000000000002
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 2320,
+          "funktion": "isclose",
+          "statistik": [
+            21,
+            21,
+            2.6e-06,
+            2.6e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 2412,
+          "funktion": "<genexpr>",
+          "statistik": [
+            168,
+            168,
+            2.7300000000000003e-05,
+            2.7300000000000003e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 2615,
+          "funktion": "norm",
+          "statistik": [
+            38,
+            38,
+            4.9000000000000005e-06,
+            4.9000000000000005e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 71,
+          "funktion": "__init__",
+          "statistik": [
+            57,
+            57,
+            6.7e-06,
+            6.7e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            19,
+            19,
+            2.3e-06,
+            2.3e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 34,
+          "funktion": "_hydrostatik_lage",
+          "statistik": [
+            19,
+            19,
+            2.3e-06,
+            2.3e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 58,
+          "funktion": "__post_init__",
+          "statistik": [
+            209,
+            209,
+            2.29e-05,
+            2.29e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 356,
+          "funktion": "_position_aus_lage",
+          "statistik": [
+            19,
+            19,
+            2.3e-06,
+            2.3e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 147,
+          "funktion": "loese_stationaer",
+          "statistik": [
+            2,
+            2,
+            5.000000000000001e-07,
+            5.000000000000001e-07
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method builtins.issubclass>",
+      "primitive_aufrufe": 394,
+      "aufrufe": 394,
+      "eigenzeit_s": 4.6700000000000003e-05,
+      "gesamtzeit_s": 4.6700000000000003e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_function_base_impl.py",
+          "zeile": 451,
+          "funktion": "average",
+          "statistik": [
+            19,
+            19,
+            3.8e-06,
+            3.8e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 168,
+          "funktion": "isComplexType",
+          "statistik": [
+            177,
+            177,
+            1.77e-05,
+            1.77e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 201,
+          "funktion": "_commonType",
+          "statistik": [
+            27,
+            27,
+            3.7e-06,
+            3.7e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 2615,
+          "funktion": "norm",
+          "statistik": [
+            171,
+            171,
+            2.15e-05,
+            2.15e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method builtins.iter>",
+      "primitive_aufrufe": 95,
+      "aufrufe": 95,
+      "eigenzeit_s": 1.4000000000000001e-05,
+      "gesamtzeit_s": 1.4000000000000001e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_function_base_impl.py",
+          "zeile": 375,
+          "funktion": "iterable",
+          "statistik": [
+            95,
+            95,
+            1.4000000000000001e-05,
+            1.4000000000000001e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method builtins.len>",
+      "primitive_aufrufe": 5352,
+      "aufrufe": 5352,
+      "eigenzeit_s": 0.00044290000000000003,
+      "gesamtzeit_s": 0.00044290000000000003,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 1427,
+          "funktion": "normalize_axis_tuple",
+          "statistik": [
+            3230,
+            3230,
+            0.00027550000000000003,
+            0.00027550000000000003
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 1489,
+          "funktion": "moveaxis",
+          "statistik": [
+            1596,
+            1596,
+            0.000115,
+            0.000115
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 1563,
+          "funktion": "cross",
+          "statistik": [
+            266,
+            266,
+            2.4100000000000003e-05,
+            2.4100000000000003e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 2615,
+          "funktion": "norm",
+          "statistik": [
+            45,
+            45,
+            3.6000000000000003e-06,
+            3.6000000000000003e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 82,
+          "funktion": "lage_pruefen",
+          "statistik": [
+            19,
+            19,
+            2.2e-06,
+            2.2e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 123,
+          "funktion": "_benetzung_aus_dreiecksecken",
+          "statistik": [
+            57,
+            57,
+            7.2000000000000005e-06,
+            7.2000000000000005e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            19,
+            19,
+            2.1000000000000002e-06,
+            2.1000000000000002e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 34,
+          "funktion": "_hydrostatik_lage",
+          "statistik": [
+            19,
+            19,
+            2.3e-06,
+            2.3e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 356,
+          "funktion": "_position_aus_lage",
+          "statistik": [
+            19,
+            19,
+            1.7e-06,
+            1.7e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 147,
+          "funktion": "loese_stationaer",
+          "statistik": [
+            6,
+            6,
+            5.000000000000001e-07,
+            5.000000000000001e-07
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\volumen_union.py",
+          "zeile": 153,
+          "funktion": "auswerten",
+          "statistik": [
+            76,
+            76,
+            8.7e-06,
+            8.7e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method builtins.max>",
+      "primitive_aufrufe": 11,
+      "aufrufe": 11,
+      "eigenzeit_s": 4.1000000000000006e-06,
+      "gesamtzeit_s": 4.1000000000000006e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 124,
+          "funktion": "_stufe_ergebnis",
+          "statistik": [
+            2,
+            2,
+            7.000000000000001e-07,
+            7.000000000000001e-07
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 147,
+          "funktion": "loese_stationaer",
+          "statistik": [
+            9,
+            9,
+            3.4e-06,
+            3.4e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method builtins.sorted>",
+      "primitive_aufrufe": 798,
+      "aufrufe": 798,
+      "eigenzeit_s": 0.00022510000000000002,
+      "gesamtzeit_s": 0.00022510000000000002,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 1489,
+          "funktion": "moveaxis",
+          "statistik": [
+            798,
+            798,
+            0.00022510000000000002,
+            0.00022510000000000002
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method math.asin>",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 5.9e-06,
+      "gesamtzeit_s": 5.9e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 34,
+          "funktion": "_hydrostatik_lage",
+          "statistik": [
+            19,
+            19,
+            5.9e-06,
+            5.9e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method math.atan2>",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 6.7e-06,
+      "gesamtzeit_s": 6.7e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 34,
+          "funktion": "_hydrostatik_lage",
+          "statistik": [
+            19,
+            19,
+            6.7e-06,
+            6.7e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method math.cos>",
+      "primitive_aufrufe": 63,
+      "aufrufe": 63,
+      "eigenzeit_s": 1.3100000000000002e-05,
+      "gesamtzeit_s": 1.3100000000000002e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 65,
+          "funktion": "_rotation",
+          "statistik": [
+            63,
+            63,
+            1.3100000000000002e-05,
+            1.3100000000000002e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method math.isclose>",
+      "primitive_aufrufe": 1,
+      "aufrufe": 1,
+      "eigenzeit_s": 4.0000000000000003e-07,
+      "gesamtzeit_s": 4.0000000000000003e-07,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 147,
+          "funktion": "loese_stationaer",
+          "statistik": [
+            1,
+            1,
+            4.0000000000000003e-07,
+            4.0000000000000003e-07
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method math.isfinite>",
+      "primitive_aufrufe": 5,
+      "aufrufe": 5,
+      "eigenzeit_s": 5.000000000000001e-07,
+      "gesamtzeit_s": 5.000000000000001e-07,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 164,
+          "funktion": "<genexpr>",
+          "statistik": [
+            5,
+            5,
+            5.000000000000001e-07,
+            5.000000000000001e-07
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method math.radians>",
+      "primitive_aufrufe": 1,
+      "aufrufe": 1,
+      "eigenzeit_s": 3.0000000000000004e-07,
+      "gesamtzeit_s": 3.0000000000000004e-07,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\werkzeuge\\migration_szenarien.py",
+          "zeile": 356,
+          "funktion": "solver",
+          "statistik": [
+            1,
+            1,
+            3.0000000000000004e-07,
+            3.0000000000000004e-07
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method math.sin>",
+      "primitive_aufrufe": 63,
+      "aufrufe": 63,
+      "eigenzeit_s": 9.2e-06,
+      "gesamtzeit_s": 9.2e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 65,
+          "funktion": "_rotation",
+          "statistik": [
+            63,
+            63,
+            9.2e-06,
+            9.2e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method math.sqrt>",
+      "primitive_aufrufe": 21,
+      "aufrufe": 21,
+      "eigenzeit_s": 6.7e-06,
+      "gesamtzeit_s": 6.7e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 51,
+          "funktion": "quaternion_aus_matrix",
+          "statistik": [
+            21,
+            21,
+            6.7e-06,
+            6.7e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method numpy._core._multiarray_umath._make_extobj>",
+      "primitive_aufrufe": 45,
+      "aufrufe": 45,
+      "eigenzeit_s": 2.25e-05,
+      "gesamtzeit_s": 2.25e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\_ufunc_config.py",
+          "zeile": 472,
+          "funktion": "__enter__",
+          "statistik": [
+            45,
+            45,
+            2.25e-05,
+            2.25e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method numpy._core._multiarray_umath.c_einsum>",
+      "primitive_aufrufe": 114,
+      "aufrufe": 114,
+      "eigenzeit_s": 0.0002863,
+      "gesamtzeit_s": 0.0002863,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\einsumfunc.py",
+          "zeile": 1242,
+          "funktion": "einsum",
+          "statistik": [
+            114,
+            114,
+            0.0002863,
+            0.0002863
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method numpy.arange>",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 8.2e-05,
+      "gesamtzeit_s": 8.2e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 123,
+          "funktion": "_benetzung_aus_dreiecksecken",
+          "statistik": [
+            38,
+            38,
+            3.5600000000000005e-05,
+            3.5600000000000005e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\volumen_union.py",
+          "zeile": 153,
+          "funktion": "auswerten",
+          "statistik": [
+            38,
+            38,
+            4.64e-05,
+            4.64e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method numpy.array>",
+      "primitive_aufrufe": 408,
+      "aufrufe": 408,
+      "eigenzeit_s": 0.0002997,
+      "gesamtzeit_s": 0.0002997,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_stride_tricks_impl.py",
+          "zeile": 447,
+          "funktion": "_broadcast_to",
+          "statistik": [
+            95,
+            95,
+            2.5e-05,
+            2.5e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 56,
+          "funktion": "as_array",
+          "statistik": [
+            76,
+            76,
+            3.7800000000000004e-05,
+            3.7800000000000004e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 94,
+          "funktion": "pose_matrix",
+          "statistik": [
+            19,
+            19,
+            2.1700000000000002e-05,
+            2.1700000000000002e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 276,
+          "funktion": "kraftfunktion_berechne",
+          "statistik": [
+            19,
+            19,
+            1.79e-05,
+            1.79e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 39,
+          "funktion": "quaternion_matrix",
+          "statistik": [
+            57,
+            57,
+            7.53e-05,
+            7.53e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 51,
+          "funktion": "quaternion_aus_matrix",
+          "statistik": [
+            21,
+            21,
+            1.76e-05,
+            1.76e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            19,
+            19,
+            9e-06,
+            9e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 65,
+          "funktion": "_rotation",
+          "statistik": [
+            63,
+            63,
+            6.91e-05,
+            6.91e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 87,
+          "funktion": "_pose_und_bewegung",
+          "statistik": [
+            21,
+            21,
+            1.45e-05,
+            1.45e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 109,
+          "funktion": "_residuum",
+          "statistik": [
+            17,
+            17,
+            1.08e-05,
+            1.08e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 147,
+          "funktion": "loese_stationaer",
+          "statistik": [
+            1,
+            1,
+            1.0000000000000002e-06,
+            1.0000000000000002e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method numpy.asanyarray>",
+      "primitive_aufrufe": 122,
+      "aufrufe": 122,
+      "eigenzeit_s": 2.08e-05,
+      "gesamtzeit_s": 2.08e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 1844,
+          "funktion": "trace",
+          "statistik": [
+            21,
+            21,
+            3.5000000000000004e-06,
+            3.5000000000000004e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 2320,
+          "funktion": "isclose",
+          "statistik": [
+            21,
+            21,
+            6.200000000000001e-06,
+            6.200000000000001e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 2412,
+          "funktion": "<genexpr>",
+          "statistik": [
+            42,
+            42,
+            4.9000000000000005e-06,
+            4.9000000000000005e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_function_base_impl.py",
+          "zeile": 421,
+          "funktion": "_weights_are_valid",
+          "statistik": [
+            19,
+            19,
+            2.2e-06,
+            2.2e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_function_base_impl.py",
+          "zeile": 451,
+          "funktion": "average",
+          "statistik": [
+            19,
+            19,
+            4.000000000000001e-06,
+            4.000000000000001e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method numpy.asarray>",
+      "primitive_aufrufe": 2350,
+      "aufrufe": 2350,
+      "eigenzeit_s": 0.0007675000000000001,
+      "gesamtzeit_s": 0.0007675000000000001,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 1563,
+          "funktion": "cross",
+          "statistik": [
+            532,
+            532,
+            5.27e-05,
+            5.27e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 163,
+          "funktion": "_makearray",
+          "statistik": [
+            6,
+            6,
+            8.000000000000001e-07,
+            8.000000000000001e-07
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 2372,
+          "funktion": "det",
+          "statistik": [
+            21,
+            21,
+            3e-06,
+            3e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 2615,
+          "funktion": "norm",
+          "statistik": [
+            171,
+            171,
+            1.84e-05,
+            1.84e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 108,
+          "funktion": "_in_welt",
+          "statistik": [
+            38,
+            38,
+            8.6e-06,
+            8.6e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 276,
+          "funktion": "kraftfunktion_berechne",
+          "statistik": [
+            19,
+            19,
+            1.29e-05,
+            1.29e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 19,
+          "funktion": "_vektor",
+          "statistik": [
+            78,
+            78,
+            2.1000000000000002e-05,
+            2.1000000000000002e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 51,
+          "funktion": "quaternion_aus_matrix",
+          "statistik": [
+            21,
+            21,
+            4.7e-06,
+            4.7e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 82,
+          "funktion": "_vektor",
+          "statistik": [
+            57,
+            57,
+            1.54e-05,
+            1.54e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 24,
+          "funktion": "_flussvektor",
+          "statistik": [
+            779,
+            779,
+            0.00035610000000000004,
+            0.00035610000000000004
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 34,
+          "funktion": "_hydrostatik_lage",
+          "statistik": [
+            38,
+            38,
+            2.0300000000000002e-05,
+            2.0300000000000002e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 70,
+          "funktion": "auf_bezugspunkt",
+          "statistik": [
+            285,
+            285,
+            0.00012460000000000002,
+            0.00012460000000000002
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 90,
+          "funktion": "aggregiere_kraftbeitraege",
+          "statistik": [
+            190,
+            190,
+            8.280000000000001e-05,
+            8.280000000000001e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            38,
+            38,
+            2.3100000000000002e-05,
+            2.3100000000000002e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 356,
+          "funktion": "_position_aus_lage",
+          "statistik": [
+            19,
+            19,
+            1.1200000000000001e-05,
+            1.1200000000000001e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 98,
+          "funktion": "_beitrag_werte",
+          "statistik": [
+            38,
+            38,
+            7.3e-06,
+            7.3e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 147,
+          "funktion": "loese_stationaer",
+          "statistik": [
+            1,
+            1,
+            7.000000000000001e-07,
+            7.000000000000001e-07
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\volumen_union.py",
+          "zeile": 243,
+          "funktion": "auswerten_ebene",
+          "statistik": [
+            19,
+            19,
+            3.9e-06,
+            3.9e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method numpy.empty>",
+      "primitive_aufrufe": 266,
+      "aufrufe": 266,
+      "eigenzeit_s": 9.130000000000001e-05,
+      "gesamtzeit_s": 9.130000000000001e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 1563,
+          "funktion": "cross",
+          "statistik": [
+            266,
+            266,
+            9.130000000000001e-05,
+            9.130000000000001e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method numpy.lib.array_utils.normalize_axis_index>",
+      "primitive_aufrufe": 2413,
+      "aufrufe": 2413,
+      "eigenzeit_s": 0.0003237,
+      "gesamtzeit_s": 0.0003237,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 1476,
+          "funktion": "<genexpr>",
+          "statistik": [
+            1615,
+            1615,
+            0.0002098,
+            0.0002098
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 1563,
+          "funktion": "cross",
+          "statistik": [
+            798,
+            798,
+            0.0001139,
+            0.0001139
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method numpy.promote_types>",
+      "primitive_aufrufe": 266,
+      "aufrufe": 266,
+      "eigenzeit_s": 4.58e-05,
+      "gesamtzeit_s": 4.58e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 1563,
+          "funktion": "cross",
+          "statistik": [
+            266,
+            266,
+            4.58e-05,
+            4.58e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method numpy.zeros>",
+      "primitive_aufrufe": 141,
+      "aufrufe": 141,
+      "eigenzeit_s": 6.71e-05,
+      "gesamtzeit_s": 6.71e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 97,
+          "funktion": "zeros_like",
+          "statistik": [
+            19,
+            19,
+            8.5e-06,
+            8.5e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_twodim_base_impl.py",
+          "zeile": 178,
+          "funktion": "eye",
+          "statistik": [
+            40,
+            40,
+            2.33e-05,
+            2.33e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 123,
+          "funktion": "_benetzung_aus_dreiecksecken",
+          "statistik": [
+            19,
+            19,
+            1.2e-05,
+            1.2e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 90,
+          "funktion": "aggregiere_kraftbeitraege",
+          "statistik": [
+            38,
+            38,
+            1.3000000000000001e-05,
+            1.3000000000000001e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 87,
+          "funktion": "_pose_und_bewegung",
+          "statistik": [
+            21,
+            21,
+            8.200000000000001e-06,
+            8.200000000000001e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 147,
+          "funktion": "loese_stationaer",
+          "statistik": [
+            4,
+            4,
+            2.1000000000000002e-06,
+            2.1000000000000002e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<built-in method time.perf_counter>",
+      "primitive_aufrufe": 2,
+      "aufrufe": 2,
+      "eigenzeit_s": 6.000000000000001e-07,
+      "gesamtzeit_s": 6.000000000000001e-07,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 147,
+          "funktion": "loese_stationaer",
+          "statistik": [
+            2,
+            2,
+            6.000000000000001e-07,
+            6.000000000000001e-07
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method '__array_wrap__' of 'numpy.ndarray' objects>",
+      "primitive_aufrufe": 3,
+      "aufrufe": 3,
+      "eigenzeit_s": 1.2000000000000002e-06,
+      "gesamtzeit_s": 1.2000000000000002e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 374,
+          "funktion": "solve",
+          "statistik": [
+            3,
+            3,
+            1.2000000000000002e-06,
+            1.2000000000000002e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method '__enter__' of 'numpy.nditer' objects>",
+      "primitive_aufrufe": 95,
+      "aufrufe": 95,
+      "eigenzeit_s": 1.4700000000000002e-05,
+      "gesamtzeit_s": 1.4700000000000002e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_stride_tricks_impl.py",
+          "zeile": 447,
+          "funktion": "_broadcast_to",
+          "statistik": [
+            95,
+            95,
+            1.4700000000000002e-05,
+            1.4700000000000002e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method '__exit__' of 'numpy.nditer' objects>",
+      "primitive_aufrufe": 95,
+      "aufrufe": 95,
+      "eigenzeit_s": 1.91e-05,
+      "gesamtzeit_s": 1.91e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_stride_tricks_impl.py",
+          "zeile": 447,
+          "funktion": "_broadcast_to",
+          "statistik": [
+            95,
+            95,
+            1.91e-05,
+            1.91e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'all' of 'numpy.generic' objects>",
+      "primitive_aufrufe": 84,
+      "aufrufe": 84,
+      "eigenzeit_s": 8.31e-05,
+      "gesamtzeit_s": 0.0001571,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 86,
+          "funktion": "_wrapreduction_any_all",
+          "statistik": [
+            84,
+            84,
+            8.31e-05,
+            0.0001571
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'all' of 'numpy.ndarray' objects>",
+      "primitive_aufrufe": 1053,
+      "aufrufe": 1053,
+      "eigenzeit_s": 0.0003552,
+      "gesamtzeit_s": 0.0011723,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 82,
+          "funktion": "lage_pruefen",
+          "statistik": [
+            19,
+            19,
+            7.2000000000000005e-06,
+            2.5e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 19,
+          "funktion": "_vektor",
+          "statistik": [
+            78,
+            78,
+            2.7300000000000003e-05,
+            9.03e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\dynamik_6dof.py",
+          "zeile": 51,
+          "funktion": "quaternion_aus_matrix",
+          "statistik": [
+            21,
+            21,
+            8.5e-06,
+            2.85e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 82,
+          "funktion": "_vektor",
+          "statistik": [
+            57,
+            57,
+            1.76e-05,
+            5.92e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 24,
+          "funktion": "_flussvektor",
+          "statistik": [
+            779,
+            779,
+            0.00025550000000000003,
+            0.0008456000000000001
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 356,
+          "funktion": "_position_aus_lage",
+          "statistik": [
+            19,
+            19,
+            6.7e-06,
+            2.1300000000000003e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 98,
+          "funktion": "_beitrag_werte",
+          "statistik": [
+            38,
+            38,
+            1.3800000000000002e-05,
+            4.3e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 147,
+          "funktion": "loese_stationaer",
+          "statistik": [
+            4,
+            4,
+            2.2e-06,
+            6.6e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\volumen_union.py",
+          "zeile": 153,
+          "funktion": "auswerten",
+          "statistik": [
+            19,
+            19,
+            9.800000000000001e-06,
+            3.0600000000000005e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\volumen_union.py",
+          "zeile": 243,
+          "funktion": "auswerten_ebene",
+          "statistik": [
+            19,
+            19,
+            6.6e-06,
+            2.22e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'append' of 'list' objects>",
+      "primitive_aufrufe": 154,
+      "aufrufe": 154,
+      "eigenzeit_s": 2.6600000000000003e-05,
+      "gesamtzeit_s": 2.6600000000000003e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            19,
+            19,
+            4.9000000000000005e-06,
+            4.9000000000000005e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 90,
+          "funktion": "aggregiere_kraftbeitraege",
+          "statistik": [
+            95,
+            95,
+            1.6000000000000003e-05,
+            1.6000000000000003e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            38,
+            38,
+            5.3e-06,
+            5.3e-06
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 147,
+          "funktion": "loese_stationaer",
+          "statistik": [
+            2,
+            2,
+            4.0000000000000003e-07,
+            4.0000000000000003e-07
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'argmax' of 'numpy.ndarray' objects>",
+      "primitive_aufrufe": 76,
+      "aufrufe": 76,
+      "eigenzeit_s": 4.9000000000000005e-05,
+      "gesamtzeit_s": 4.9000000000000005e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 48,
+          "funktion": "_wrapfunc",
+          "statistik": [
+            38,
+            38,
+            2.39e-05,
+            2.39e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\volumen_union.py",
+          "zeile": 153,
+          "funktion": "auswerten",
+          "statistik": [
+            38,
+            38,
+            2.51e-05,
+            2.51e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'argsort' of 'numpy.ndarray' objects>",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 1.7800000000000002e-05,
+      "gesamtzeit_s": 1.7800000000000002e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 38,
+          "funktion": "_wrapit",
+          "statistik": [
+            19,
+            19,
+            1.7800000000000002e-05,
+            1.7800000000000002e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'as_arrays' of 'numpy._core._multiarray_umath._array_converter' objects>",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 7.3e-06,
+      "gesamtzeit_s": 7.3e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 38,
+          "funktion": "_wrapit",
+          "statistik": [
+            19,
+            19,
+            7.3e-06,
+            7.3e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'astype' of 'numpy.generic' objects>",
+      "primitive_aufrufe": 21,
+      "aufrufe": 21,
+      "eigenzeit_s": 3.2800000000000004e-05,
+      "gesamtzeit_s": 3.2800000000000004e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 2372,
+          "funktion": "det",
+          "statistik": [
+            21,
+            21,
+            3.2800000000000004e-05,
+            3.2800000000000004e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'astype' of 'numpy.ndarray' objects>",
+      "primitive_aufrufe": 535,
+      "aufrufe": 535,
+      "eigenzeit_s": 0.0002562,
+      "gesamtzeit_s": 0.0002562,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 1563,
+          "funktion": "cross",
+          "statistik": [
+            532,
+            532,
+            0.0002549,
+            0.0002549
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 374,
+          "funktion": "solve",
+          "statistik": [
+            3,
+            3,
+            1.3e-06,
+            1.3e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'clip' of 'numpy.generic' objects>",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 2.65e-05,
+      "gesamtzeit_s": 7.460000000000001e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 48,
+          "funktion": "_wrapfunc",
+          "statistik": [
+            19,
+            19,
+            2.65e-05,
+            7.460000000000001e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'clip' of 'numpy.ndarray' objects>",
+      "primitive_aufrufe": 3,
+      "aufrufe": 3,
+      "eigenzeit_s": 1.8000000000000001e-06,
+      "gesamtzeit_s": 9.2e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 48,
+          "funktion": "_wrapfunc",
+          "statistik": [
+            3,
+            3,
+            1.8000000000000001e-06,
+            9.2e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'conj' of 'numpy.ndarray' objects>",
+      "primitive_aufrufe": 38,
+      "aufrufe": 38,
+      "eigenzeit_s": 1.0500000000000001e-05,
+      "gesamtzeit_s": 1.0500000000000001e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 2615,
+          "funktion": "norm",
+          "statistik": [
+            38,
+            38,
+            1.0500000000000001e-05,
+            1.0500000000000001e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'copy' of 'numpy.ndarray' objects>",
+      "primitive_aufrufe": 15,
+      "aufrufe": 15,
+      "eigenzeit_s": 8.900000000000001e-06,
+      "gesamtzeit_s": 8.900000000000001e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py",
+          "zeile": 147,
+          "funktion": "loese_stationaer",
+          "statistik": [
+            15,
+            15,
+            8.900000000000001e-06,
+            8.900000000000001e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'disable' of '_lsprof.Profiler' objects>",
+      "primitive_aufrufe": 1,
+      "aufrufe": 1,
+      "eigenzeit_s": 2.78e-05,
+      "gesamtzeit_s": 2.78e-05,
+      "aufrufer": []
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'dot' of 'numpy.ndarray' objects>",
+      "primitive_aufrufe": 126,
+      "aufrufe": 126,
+      "eigenzeit_s": 0.00013910000000000002,
+      "gesamtzeit_s": 0.00013910000000000002,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 2615,
+          "funktion": "norm",
+          "statistik": [
+            126,
+            126,
+            0.00013910000000000002,
+            0.00013910000000000002
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'extend' of 'list' objects>",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 4.6e-06,
+      "gesamtzeit_s": 4.6e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\kraftmodell.py",
+          "zeile": 255,
+          "funktion": "mit_hydrostatik",
+          "statistik": [
+            19,
+            19,
+            4.6e-06,
+            4.6e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'get' of 'dict' objects>",
+      "primitive_aufrufe": 183,
+      "aufrufe": 183,
+      "eigenzeit_s": 4.0300000000000004e-05,
+      "gesamtzeit_s": 4.0300000000000004e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\getlimits.py",
+          "zeile": 169,
+          "funktion": "__new__",
+          "statistik": [
+            156,
+            156,
+            3.35e-05,
+            3.35e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 182,
+          "funktion": "_realType",
+          "statistik": [
+            27,
+            27,
+            6.8e-06,
+            6.8e-06
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'insert' of 'list' objects>",
+      "primitive_aufrufe": 798,
+      "aufrufe": 798,
+      "eigenzeit_s": 0.0001129,
+      "gesamtzeit_s": 0.0001129,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 1489,
+          "funktion": "moveaxis",
+          "statistik": [
+            798,
+            798,
+            0.0001129,
+            0.0001129
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'items' of 'dict' objects>",
+      "primitive_aufrufe": 276,
+      "aufrufe": 276,
+      "eigenzeit_s": 5.2400000000000007e-05,
+      "gesamtzeit_s": 5.2400000000000007e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 66,
+          "funktion": "_wrapreduction",
+          "statistik": [
+            95,
+            95,
+            1.69e-05,
+            1.69e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 86,
+          "funktion": "_wrapreduction_any_all",
+          "statistik": [
+            181,
+            181,
+            3.55e-05,
+            3.55e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'max' of 'numpy.ndarray' objects>",
+      "primitive_aufrufe": 7,
+      "aufrufe": 7,
+      "eigenzeit_s": 6.8e-06,
+      "gesamtzeit_s": 2.83e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 2615,
+          "funktion": "norm",
+          "statistik": [
+            7,
+            7,
+            6.8e-06,
+            2.83e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'nonzero' of 'numpy.ndarray' objects>",
+      "primitive_aufrufe": 38,
+      "aufrufe": 38,
+      "eigenzeit_s": 2.4800000000000003e-05,
+      "gesamtzeit_s": 2.4800000000000003e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 48,
+          "funktion": "_wrapfunc",
+          "statistik": [
+            38,
+            38,
+            2.4800000000000003e-05,
+            2.4800000000000003e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'ravel' of 'numpy.ndarray' objects>",
+      "primitive_aufrufe": 126,
+      "aufrufe": 126,
+      "eigenzeit_s": 4.5600000000000004e-05,
+      "gesamtzeit_s": 4.5600000000000004e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 2615,
+          "funktion": "norm",
+          "statistik": [
+            126,
+            126,
+            4.5600000000000004e-05,
+            4.5600000000000004e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'reduce' of 'numpy.ufunc' objects>",
+      "primitive_aufrufe": 1678,
+      "aufrufe": 1678,
+      "eigenzeit_s": 0.0013505000000000001,
+      "gesamtzeit_s": 0.0013505000000000001,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\_methods.py",
+          "zeile": 39,
+          "funktion": "_amax",
+          "statistik": [
+            7,
+            7,
+            1.9e-05,
+            1.9e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\_methods.py",
+          "zeile": 47,
+          "funktion": "_sum",
+          "statistik": [
+            304,
+            304,
+            0.0004215,
+            0.0004215
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\_methods.py",
+          "zeile": 64,
+          "funktion": "_all",
+          "statistik": [
+            1137,
+            1137,
+            0.0006277,
+            0.0006277
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 66,
+          "funktion": "_wrapreduction",
+          "statistik": [
+            95,
+            95,
+            0.0001561,
+            0.0001561
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 86,
+          "funktion": "_wrapreduction_any_all",
+          "statistik": [
+            97,
+            97,
+            7.24e-05,
+            7.24e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\linalg\\_linalg.py",
+          "zeile": 2615,
+          "funktion": "norm",
+          "statistik": [
+            38,
+            38,
+            5.380000000000001e-05,
+            5.380000000000001e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'reset' of '_contextvars.ContextVar' objects>",
+      "primitive_aufrufe": 45,
+      "aufrufe": 45,
+      "eigenzeit_s": 2.04e-05,
+      "gesamtzeit_s": 2.04e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\_ufunc_config.py",
+          "zeile": 488,
+          "funktion": "__exit__",
+          "statistik": [
+            45,
+            45,
+            2.04e-05,
+            2.04e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'reshape' of 'numpy.ndarray' objects>",
+      "primitive_aufrufe": 95,
+      "aufrufe": 95,
+      "eigenzeit_s": 5.08e-05,
+      "gesamtzeit_s": 5.08e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_function_base_impl.py",
+          "zeile": 421,
+          "funktion": "_weights_are_valid",
+          "statistik": [
+            19,
+            19,
+            1.4900000000000001e-05,
+            1.4900000000000001e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 108,
+          "funktion": "_in_welt",
+          "statistik": [
+            38,
+            38,
+            1.43e-05,
+            1.43e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\auftrieb.py",
+          "zeile": 276,
+          "funktion": "kraftfunktion_berechne",
+          "statistik": [
+            38,
+            38,
+            2.16e-05,
+            2.16e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'rpartition' of 'str' objects>",
+      "primitive_aufrufe": 38,
+      "aufrufe": 38,
+      "eigenzeit_s": 1.2400000000000002e-05,
+      "gesamtzeit_s": 1.2400000000000002e-05,
+      "aufrufer": [
+        {
+          "datei": "<frozen importlib._bootstrap>",
+          "zeile": 648,
+          "funktion": "parent",
+          "statistik": [
+            38,
+            38,
+            1.2400000000000002e-05,
+            1.2400000000000002e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'set' of '_contextvars.ContextVar' objects>",
+      "primitive_aufrufe": 45,
+      "aufrufe": 45,
+      "eigenzeit_s": 1.58e-05,
+      "gesamtzeit_s": 1.58e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\_ufunc_config.py",
+          "zeile": 472,
+          "funktion": "__enter__",
+          "statistik": [
+            45,
+            45,
+            1.58e-05,
+            1.58e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'sum' of 'numpy.ndarray' objects>",
+      "primitive_aufrufe": 304,
+      "aufrufe": 304,
+      "eigenzeit_s": 0.00014010000000000002,
+      "gesamtzeit_s": 0.0006356,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_function_base_impl.py",
+          "zeile": 451,
+          "funktion": "average",
+          "statistik": [
+            38,
+            38,
+            1.83e-05,
+            8.81e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\hydrodynamik.py",
+          "zeile": 400,
+          "funktion": "beitraege_erzeugen",
+          "statistik": [
+            19,
+            19,
+            1.0300000000000001e-05,
+            3.16e-05
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\volumen_union.py",
+          "zeile": 148,
+          "funktion": "_summe",
+          "statistik": [
+            190,
+            190,
+            8.340000000000001e-05,
+            0.00036930000000000003
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\core\\volumen_union.py",
+          "zeile": 153,
+          "funktion": "auswerten",
+          "statistik": [
+            57,
+            57,
+            2.8100000000000002e-05,
+            0.0001466
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'trace' of 'numpy.ndarray' objects>",
+      "primitive_aufrufe": 21,
+      "aufrufe": 21,
+      "eigenzeit_s": 4.5100000000000005e-05,
+      "gesamtzeit_s": 4.5100000000000005e-05,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 1844,
+          "funktion": "trace",
+          "statistik": [
+            21,
+            21,
+            4.5100000000000005e-05,
+            4.5100000000000005e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'transpose' of 'numpy.ndarray' objects>",
+      "primitive_aufrufe": 817,
+      "aufrufe": 817,
+      "eigenzeit_s": 0.0002699,
+      "gesamtzeit_s": 0.0002699,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\numeric.py",
+          "zeile": 1489,
+          "funktion": "moveaxis",
+          "statistik": [
+            798,
+            798,
+            0.0002309,
+            0.0002309
+          ]
+        },
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\lib\\_function_base_impl.py",
+          "zeile": 421,
+          "funktion": "_weights_are_valid",
+          "statistik": [
+            19,
+            19,
+            3.9e-05,
+            3.9e-05
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'values' of 'dict' objects>",
+      "primitive_aufrufe": 3,
+      "aufrufe": 3,
+      "eigenzeit_s": 6.000000000000001e-07,
+      "gesamtzeit_s": 6.000000000000001e-07,
+      "aufrufer": [
+        {
+          "datei": "C:\\Users\\Katarina\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\dataclasses.py",
+          "zeile": 1454,
+          "funktion": "fields",
+          "statistik": [
+            3,
+            3,
+            6.000000000000001e-07,
+            6.000000000000001e-07
+          ]
+        }
+      ]
+    },
+    {
+      "datei": "~",
+      "zeile": 0,
+      "funktion": "<method 'wrap' of 'numpy._core._multiarray_umath._array_converter' objects>",
+      "primitive_aufrufe": 19,
+      "aufrufe": 19,
+      "eigenzeit_s": 7.100000000000001e-06,
+      "gesamtzeit_s": 7.100000000000001e-06,
+      "aufrufer": [
+        {
+          "datei": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\numpy\\_core\\fromnumeric.py",
+          "zeile": 38,
+          "funktion": "_wrapit",
+          "statistik": [
+            19,
+            19,
+            7.100000000000001e-06,
+            7.100000000000001e-06
+          ]
+        }
+      ]
+    }
+  ],
+  "hinweis": "Bestehendes Testprofil; keine unabhaengige hydrodynamische Modellvalidierung."
+}

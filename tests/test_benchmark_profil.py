@@ -65,7 +65,10 @@ def test_eingabehash_beruecksichtigt_alle_slots_parameter():
     assert eingabe_hash(None, physik, 1000., "exakt_union", None) != vorher
 
 
-def test_worker_profil_laesst_zustand_und_kraefte_unveraendert(monkeypatch, profildatei):
+@pytest.mark.parametrize("rechenpfad", ["python", "cpp"])
+def test_worker_profil_laesst_zustand_und_kraefte_unveraendert(
+        monkeypatch, profildatei, rechenpfad):
+    monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", rechenpfad)
     punkte, dreiecke = build_box(1., 1., 1.)
     snapshot = KoerperSnapshot(
         masse=500., traegheitstensor=tuple(map(tuple, np.eye(3) * 100.)),
@@ -84,12 +87,19 @@ def test_worker_profil_laesst_zustand_und_kraefte_unveraendert(monkeypatch, prof
         referenz[1].M_gesamt.as_array(), rel=0., abs=1e-12)
     bericht = worker_bericht(profildatei)
     assert bericht["batchanzahl"] == 1
-    assert bericht["cache_pruefung"]["cache_pose_aufrufe"] == 3
+    assert bericht["cache_pruefung"]["cache_pose_aufrufe"] == (
+        3 if rechenpfad == "python" else None)
     roh = [json.loads(z) for z in profildatei.read_text(encoding="utf-8").splitlines()]
     batch = roh[1]
-    summe = sum(batch[k + "_s"] for k in (
-        "hydrostatik_geometrie", "hydrodynamik", "kraftaggregation_exklusiv",
-        "integrator_exklusiv", "kraftaufruf_rest", "worker_rest"))
+    komponenten = (
+        ("hydrostatik_geometrie", "hydrodynamik", "kraftaggregation_exklusiv",
+         "integrator_exklusiv", "kraftaufruf_rest", "worker_rest")
+        if rechenpfad == "python" else ("nativer_batch", "worker_rest"))
+    if rechenpfad == "cpp":
+        assert batch["hydrostatik_geometrie_s"] is None
+        assert bericht["batchkomponenten"]["hydrostatik_geometrie"]["anzahl"] == 0
+        assert bericht["batchkomponenten"]["nativer_batch_inkl_kraefte"]["anzahl"] == 1
+    summe = sum(batch[k + "_s"] for k in komponenten)
     assert summe == pytest.approx(batch["worker_s"], abs=1e-12)
     assert bericht["cpu_hotspots"]
     assert eingabe_hash(snapshot, physik, 1000., "exakt_union", None) != eingabe_hash(

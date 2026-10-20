@@ -1,0 +1,6 @@
+{
+  "abgeschlossen": false,
+  "m1_freigegeben": false,
+  "grund": "Neuer Actor-Snapshot versuchte eine 3D-Matrix fuer einen 2D-Textactor zu lesen. Vor Speicherung eines Modellberichts abgebrochen.",
+  "korrektur": "3D-Geometrie wird explizit auf vtkActor begrenzt. Instrumenttexte werden separat ueber die SVG-Bytes verglichen. Regression mit echtem vtkActor und vtkTextActor hinzugefuegt."
+}

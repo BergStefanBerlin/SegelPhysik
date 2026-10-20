@@ -399,7 +399,10 @@ def test_vollstaendiger_bestandskatalog_und_formpakete_laden():
         assert len(paket.meshes) == erwartete_meshanzahl
 
 
-def test_bestandsmodelle_stimmen_mit_phase3_goldenwerten_ueberein():
+@pytest.mark.parametrize("rechenpfad", ["python", "cpp"])
+def test_bestandsmodelle_stimmen_mit_phase3_goldenwerten_ueberein(monkeypatch, rechenpfad):
+    monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", rechenpfad)
+    tensor_atol = 1e-20 if rechenpfad == "python" else 1e-10
     wurzel = Path(__file__).resolve().parents[1]
     golden_pfad = (
         wurzel / "doc" / "WegZuV1.0" / "Revisionslog" / "zuV0.5"
@@ -437,7 +440,7 @@ def test_bestandsmodelle_stimmen_mit_phase3_goldenwerten_ueberein():
             legacy.traegheitstensor,
             erwartung["traegheit_kg_m2"],
             rtol=1e-12,
-            atol=1e-20,
+            atol=tensor_atol,
         )
         assert legacy.verdrangend is erwartung["verdraengend"]
         assert len(legacy.punkte) == erwartung["punkte"]
@@ -477,7 +480,7 @@ def test_bestandsmodelle_stimmen_mit_phase3_goldenwerten_ueberein():
             kanonisch.traegheitstensor,
             paket_erwartung["traegheit_kg_m2"],
             rtol=1e-12,
-            atol=1e-20,
+            atol=tensor_atol,
         )
         if offset is not None:
             np.testing.assert_allclose(

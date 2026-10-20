@@ -1,0 +1,308 @@
+{
+  "umgebung": {
+    "python": "3.14.8",
+    "plattform": "Windows-11-10.0.26200-SP0",
+    "prozessor": "AMD64 Family 25 Model 117 Stepping 2, AuthenticAMD",
+    "cpu_threads": 12,
+    "bibliotheken": {
+      "numpy": "2.5.4",
+      "PySide6": "6.10.3",
+      "pyvista": "0.49.1",
+      "pyvistaqt": "0.13.1",
+      "vtk": "9.7.1",
+      "manifold3d": "3.5.4"
+    },
+    "npu": {
+      "onnxruntime_installiert": false,
+      "zugriff_nachgewiesen": false,
+      "operatoren_nachgewiesen": [],
+      "hinweis": "Ohne NPU-Execution-Provider kein Operator-/Kernelnachweis."
+    }
+  },
+  "build": {
+    "CMAKE_CXX_FLAGS:STRING": "/DWIN32 /D_WINDOWS /EHsc",
+    "CMAKE_CXX_FLAGS_RELEASE:STRING": "/O2 /Ob2 /DNDEBUG",
+    "CMAKE_GENERATOR:INTERNAL": "Visual Studio 17 2022",
+    "CMAKE_GENERATOR_INSTANCE:INTERNAL": "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools",
+    "CMAKE_GENERATOR_PLATFORM:INTERNAL": "x64",
+    "compilerkonfiguration": "set(CMAKE_CXX_COMPILER \"C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe\")\nset(CMAKE_CXX_COMPILER_ARG1 \"\")\nset(CMAKE_CXX_COMPILER_ID \"MSVC\")\nset(CMAKE_CXX_COMPILER_VERSION \"19.44.35229.0\")\nset(CMAKE_CXX_COMPILER_VERSION_INTERNAL \"\")\nset(CMAKE_CXX_COMPILER_WRAPPER \"\")\nset(CMAKE_CXX_STANDARD_COMPUTED_DEFAULT \"14\")\nset(CMAKE_CXX_EXTENSIONS_COMPUTED_DEFAULT \"OFF\")\nset(CMAKE_CXX_STANDARD_LATEST \"23\")\nset(CMAKE_CXX_COMPILE_FEATURES \"cxx_std_98;cxx_template_template_parameters;cxx_std_11;cxx_alias_templates;cxx_alignas;cxx_alignof;cxx_attributes;cxx_auto_type;cxx_constexpr;cxx_decltype;cxx_decltype_incomplete_return_types;cxx_default_function_template_args;cxx_defaulted_functions;cxx_defaulted_move_initializers;cxx_delegating_constructors;cxx_deleted_functions;cxx_enum_forward_declarations;cxx_explicit_conversions;cxx_extended_friend_declarations;cxx_extern_templates;cxx_final;cxx_func_identifier;cxx_generalized_initializers;cxx_inheriting_constructors;cxx_inline_namespaces;cxx_lambdas;cxx_local_type_template_args;cxx_long_long_type;cxx_noexcept;cxx_nonstatic_member_init;cxx_nullptr;cxx_override;cxx_range_for;cxx_raw_string_literals;cxx_reference_qualified_functions;cxx_right_angle_brackets;cxx_rvalue_references;cxx_sizeof_member;cxx_static_assert;cxx_strong_enums;cxx_thread_local;cxx_trailing_return_types;cxx_unicode_literals;cxx_uniform_initialization;cxx_unrestricted_unions;cxx_user_literals;cxx_variadic_macros;cxx_variadic_templates;cxx_std_14;cxx_aggregate_default_initializers;cxx_attribute_deprecated;cxx_binary_literals;cxx_contextual_conversions;cxx_decltype_auto;cxx_digit_separators;cxx_generic_lambdas;cxx_lambda_init_captures;cxx_relaxed_constexpr;cxx_return_type_deduction;cxx_variable_templates;cxx_std_17;cxx_std_20;cxx_std_23\")\nset(CMAKE_CXX98_COMPILE_FEATURES \"cxx_std_98;cxx_template_template_parameters\")\nset(CMAKE_CXX11_COMPILE_FEATURES \"cxx_std_11;cxx_alias_templates;cxx_alignas;cxx_alignof;cxx_attributes;cxx_auto_type;cxx_constexpr;cxx_decltype;cxx_decltype_incomplete_return_types;cxx_default_function_template_args;cxx_defaulted_functions;cxx_defaulted_move_initializers;cxx_delegating_constructors;cxx_deleted_functions;cxx_enum_forward_declarations;cxx_explicit_conversions;cxx_extended_friend_declarations;cxx_extern_templates;cxx_final;cxx_func_identifier;cxx_generalized_initializers;cxx_inheriting_constructors;cxx_inline_namespaces;cxx_lambdas;cxx_local_type_template_args;cxx_long_long_type;cxx_noexcept;cxx_nonstatic_member_init;cxx_nullptr;cxx_override;cxx_range_for;cxx_raw_string_literals;cxx_reference_qualified_functions;cxx_right_angle_brackets;cxx_rvalue_references;cxx_sizeof_member;cxx_static_assert;cxx_strong_enums;cxx_thread_local;cxx_trailing_return_types;cxx_unicode_literals;cxx_uniform_initialization;cxx_unrestricted_unions;cxx_user_literals;cxx_variadic_macros;cxx_variadic_templates\")\nset(CMAKE_CXX14_COMPILE_FEATURES \"cxx_std_14;cxx_aggregate_default_initializers;cxx_attribute_deprecated;cxx_binary_literals;cxx_contextual_conversions;cxx_decltype_auto;cxx_digit_separators;cxx_generic_lambdas;cxx_lambda_init_captures;cxx_relaxed_constexpr;cxx_return_type_deduction;cxx_variable_templates\")\nset(CMAKE_CXX17_COMPILE_FEATURES \"cxx_std_17\")\nset(CMAKE_CXX20_COMPILE_FEATURES \"cxx_std_20\")\nset(CMAKE_CXX23_COMPILE_FEATURES \"cxx_std_23\")\nset(CMAKE_CXX26_COMPILE_FEATURES \"\")\n\nset(CMAKE_CXX_PLATFORM_ID \"Windows\")\nset(CMAKE_CXX_SIMULATE_ID \"\")\nset(CMAKE_CXX_COMPILER_FRONTEND_VARIANT \"MSVC\")\nset(CMAKE_CXX_COMPILER_APPLE_SYSROOT \"\")\nset(CMAKE_CXX_SIMULATE_VERSION \"\")\nset(CMAKE_CXX_COMPILER_ARCHITECTURE_ID \"x64\")\n\nset(MSVC_CXX_ARCHITECTURE_ID x64)\n\n\nset(CMAKE_AR \"C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lib.exe\")\nset(CMAKE_CXX_COMPILER_AR \"\")\nset(CMAKE_RANLIB \":\")\nset(CMAKE_CXX_COMPILER_RANLIB \"\")\nset(CMAKE_LINKER \"C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/link.exe\")\nset(CMAKE_LINKER_LINK \"C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/link.exe\")\nset(CMAKE_LINKER_LLD \"lld-link\")\nset(CMAKE_CXX_COMPILER_LINKER \"C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/HostX64/x64/link.exe\")\nset(CMAKE_CXX_COMPILER_LINKER_ARCHITECTURE_FLAGS \"\")\nset(CMAKE_CXX_COMPILER_LINKER_ID \"MSVC\")\nset(CMAKE_CXX_COMPILER_LINKER_VERSION \"14.44.35229.0\")\nset(CMAKE_CXX_COMPILER_LINKER_FRONTEND_VARIANT \"MSVC\")\nset(CMAKE_MT \"CMAKE_MT-NOTFOUND\")\nset(CMAKE_TAPI \"\")\nset(CMAKE_COMPILER_IS_GNUCXX )\nset(CMAKE_CXX_COMPILER_LOADED 1)\nset(CMAKE_CXX_COMPILER_WORKS TRUE)\nset(CMAKE_CXX_ABI_COMPILED TRUE)\n\nset(CMAKE_CXX_COMPILER_ENV_VAR \"CXX\")\n\nset(CMAKE_CXX_COMPILER_ID_RUN 1)\nset(CMAKE_CXX_SOURCE_FILE_EXTENSIONS C;M;c++;cc;cpp;cxx;m;mm;mpp;CPP;ixx;cppm;ccm;cxxm;c++m)\nset(CMAKE_CXX_IGNORE_EXTENSIONS inl;h;hpp;HPP;H;o;O;obj;OBJ;def;DEF;rc;RC)\n\nforeach (lang IN ITEMS C OBJC OBJCXX)\n  if (CMAKE_${lang}_COMPILER_ID_RUN)\n    foreach(extension IN LISTS CMAKE_${lang}_SOURCE_FILE_EXTENSIONS)\n      list(REMOVE_ITEM CMAKE_CXX_SOURCE_FILE_EXTENSIONS ${extension})\n    endforeach()\n  endif()\nendforeach()\n\nset(CMAKE_CXX_LINKER_PREFERENCE 30)\nset(CMAKE_CXX_LINKER_PREFERENCE_PROPAGATES 1)\nset(CMAKE_CXX_LINKER_DEPFILE_SUPPORTED )\nset(CMAKE_LINKER_PUSHPOP_STATE_SUPPORTED )\nset(CMAKE_CXX_LINKER_PUSHPOP_STATE_SUPPORTED )\n\n# Save compiler ABI information.\nset(CMAKE_CXX_SIZEOF_DATA_PTR \"8\")\nset(CMAKE_CXX_COMPILER_ABI \"\")\nset(CMAKE_CXX_BYTE_ORDER \"LITTLE_ENDIAN\")\nset(CMAKE_CXX_LIBRARY_ARCHITECTURE \"\")\n\nif(CMAKE_CXX_SIZEOF_DATA_PTR)\n  set(CMAKE_SIZEOF_VOID_P \"${CMAKE_CXX_SIZEOF_DATA_PTR}\")\nendif()\n\nif(CMAKE_CXX_COMPILER_ABI)\n  set(CMAKE_INTERNAL_PLATFORM_ABI \"${CMAKE_CXX_COMPILER_ABI}\")\nendif()\n\nif(CMAKE_CXX_LIBRARY_ARCHITECTURE)\n  set(CMAKE_LIBRARY_ARCHITECTURE \"\")\nendif()\n\nset(CMAKE_CXX_CL_SHOWINCLUDES_PREFIX \"\")\nif(CMAKE_CXX_CL_SHOWINCLUDES_PREFIX)\n  set(CMAKE_CL_SHOWINCLUDES_PREFIX \"${CMAKE_CXX_CL_SHOWINCLUDES_PREFIX}\")\nendif()\n\n\n\n\n\nset(CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES \"\")\nset(CMAKE_CXX_IMPLICIT_LINK_LIBRARIES \"\")\nset(CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES \"\")\nset(CMAKE_CXX_IMPLICIT_LINK_FRAMEWORK_DIRECTORIES \"\")\nset(CMAKE_CXX_COMPILER_CLANG_RESOURCE_DIR \"\")\n\nset(CMAKE_CXX_COMPILER_IMPORT_STD \"\")\nset(CMAKE_CXX_COMPILER_IMPORT_STD_ERROR_MESSAGE  \"Unsupported generator: Visual Studio 17 2022\")\nset(CMAKE_CXX_STDLIB_MODULES_JSON \"\")\n",
+    "buildtyp": "Release (pyproject.toml)",
+    "native_paketversion": "0.10.0"
+  },
+  "native_modul": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\build\\native-m2-testenv\\Lib\\site-packages\\_segelphysik_native.cp314-win_amd64.pyd",
+  "native_binary_sha256": "850938f0b75036c88917ce9fa9dd046189c2af9027469cb083fd3bc862c26f28",
+  "paritaetsnachweis": "build\\v010-produktiv-2026-10-20-v2.xml",
+  "paritaetsnachweis_sha256": "ce56e40cccb560400f8c707e685654353ec0ce68cad2c08d0443c55f79d6c5f4",
+  "referenzmanifest": {
+    "fassung": 1,
+    "commit": "7a955c24ceb6c0825e05a574b959dd1176be2e2c",
+    "hashverfahren": "SHA256; CRLF nach LF normalisiert",
+    "dateien": {
+      "code/README.md": "7d9d182b5f3fbd5b2438b07a14cb5a59e2bd8f8edd77a39bc46186db12fbbe72",
+      "code/cpp/CMakeLists.txt": "5ba9b9a826208893bec6d7663fce97e1679de03178ca6d95b5fac7fdb18e54e7",
+      "code/cpp/README.md": "3dab6c6b1e0e192900a1307025c4e0f29a75c3f6216ec419b3d6b0c9aefe94a0",
+      "code/cpp/src/modul.cpp": "748ebb2582813c81729792a3b9d8c5839058c5e73c59a5072e84ebe2e3a9ff0a",
+      "code/modelle/bleistift/modell.json": "aa946f7189e7d3eb09728eaf9d0d77650f70fc20e24781ac0edf4f82fbe78bc0",
+      "code/modelle/folkeboot/NAEHERUNG.md": "0ca038b97a0bd7faf90fa085d338952dfb10a50d578da4f01c304443553f83ea",
+      "code/modelle/folkeboot/fock.obj": "c41527b8833fc52647d64b3ec23961b1fb03a86d2498d6ab70ff9dfbc3644cce",
+      "code/modelle/folkeboot/generiere_meshes.py": "baf539a4f94794f7c233a57db89fae0a5ff971092cc0fa0325a5a4fcd8a60546",
+      "code/modelle/folkeboot/grossbaum.obj": "368a7d18ac436b73dd615c6bd49366b54ce71953c3298661e052a76c6a890d89",
+      "code/modelle/folkeboot/grosssegel.obj": "08bf4f359155620df6bb1c7e7db3f0cce60153d57ed0f38ee86d15ad2ac0d13e",
+      "code/modelle/folkeboot/kiel.obj": "635ff08d92bf6dcc6dc303d3190e6cc873a6d61b39d387705ff9fa91289e922e",
+      "code/modelle/folkeboot/mast.obj": "be0ad2e4c44430e1c6a131d5e6067983d2907548c471b0ead8a2924bf4f25685",
+      "code/modelle/folkeboot/modell.json": "0215dbb0501955d5ea063afa681e265e7bc765249e08d697117c8c030eafb30e",
+      "code/modelle/folkeboot/ruder.obj": "2797066350b69fbb1fdedca2d123073b8500da378dfc886d9dc89f76574cbfba",
+      "code/modelle/folkeboot/rumpf.obj": "da677848c44b92c5e5278f8bd5d43deac6f11797ce2affa96f6992d03558a3b0",
+      "code/modelle/kegel/modell.json": "b4228e5ecb87fc9e13412b538b6ad291f53e6ba013a4af685ee9cc4cf3c64222",
+      "code/modelle/kugel/modell.json": "bbcb11150909573f7e1a6d761d52947d2049e29b64036e1bbb63372fa3c08f59",
+      "code/modelle/optimist/MODELLHINWEIS.md": "14466f21d7554ba48efd4c445ebee4a8e40b8b450820ecd1777d666a05318c26",
+      "code/modelle/optimist/baum.obj": "4bb424d676c5f184022a3309355f39a1de9c3499c85882b5cbcadbf21ce14784",
+      "code/modelle/optimist/gummigelenk.obj": "7ed0160a315d34f00e3cd0a84574fb0deac64a1c9420bd7ceb8861acc9eb8fcf",
+      "code/modelle/optimist/hydrodynamik/geometrie_metadaten.json": "38edbc6bde0a1d8a14d4b0915ae2f45d34aafc49d75a6f7ee642199b2831acea",
+      "code/modelle/optimist/mast.obj": "f34ff6166b84618173477d5e4358a76d3bef63b18f2e48f76a5a0b5d3b2e4796",
+      "code/modelle/optimist/modell.json": "24e19886d7be0c066044d58010a906c9944cfdd91bac2ae40b1d08e1fde4752f",
+      "code/modelle/optimist/pinne.obj": "3303522e2c5776685034c1c2c4bc0fe1b59593b9b7e238f43aea0220234a88f4",
+      "code/modelle/optimist/pinneverlaengerung.obj": "c505cde2cd8d2ba06823f9e07e2399099e4544ca0539355afac9c93fb78514d9",
+      "code/modelle/optimist/ruder.obj": "5a961b0b59849b01ca6287ce06a9ffc53eb108faccd602e1990ad7a5a896d505",
+      "code/modelle/optimist/rumpf.obj": "1731332ebc054d948f32996ee589ce19f15bc950112b4b9a8d242537dbc6d9ad",
+      "code/modelle/optimist/schwert.obj": "5d112effc3730b9053c2a5e4ae50adb47a69fdece14857ee3f357207a24bd1bd",
+      "code/modelle/optimist/segel.obj": "bb75059dbb1e5706f0a2a0b81a62084497bbc919dabe179be6e425b071d8a355",
+      "code/modelle/optimist/spriet.obj": "359d40a7dd2ea90892640562bd9d0986af7cd9e923a5e6385187d26df452d550",
+      "code/modelle/platte/modell.json": "53fe581b62e9d331977141836224c9f6ccf26752a6a0d694f015ad7cdf5ccc5e",
+      "code/modelle/pyramide/modell.json": "440e214614275bcbd4e1968953a072752c5c86fead6fa2f8b2d39e5dd57ac761",
+      "code/modelle/quader/modell.json": "bae83029e6d592ff480f2378bdbf562064cd829d2bca1e32fd395fcd122d2dc8",
+      "code/modelle/rolle/modell.json": "c27270e049814ca2197425168d9337375f71f6f710c86e03f445d08256556e76",
+      "code/modelle/unregelmaessig/modell.json": "a79e4e72f37028f74877097732de03340363221750cde5ef376b825f8ab06a91",
+      "code/modelle/yacht1/boom.obj": "3353f2314a974747b3653281552d9b16cab2b71ea633813f8332153543b72a77",
+      "code/modelle/yacht1/bulb.obj": "282294f26b4e01e49e0d9b42791f2ce9ada0d7e9bee6300487f4b24fe6b3d778",
+      "code/modelle/yacht1/bulb.obj.bak": "993321edfe1748c01223db4aae98b34188e60ef98be1b5c182fff1a26396beff",
+      "code/modelle/yacht1/fock.obj": "5ea11301e43b9d903f29ecddb92ba177a2cb3027bcae9d0f2242c1bd36c84fc0",
+      "code/modelle/yacht1/grosssegel.obj": "9bfb46a598cadaf65e6368bfb063cd12658d9ad4bc50e35bdd1d917e3841fdea",
+      "code/modelle/yacht1/hydrodynamik/geometrie_metadaten.json": "fa596c6ac8969505158a50824999c0758e5646027907f66fdee24bb5ef8d0a9f",
+      "code/modelle/yacht1/kiel.obj": "355d65a511b5d6603891d85379edfb614e275cc381e172b5292bc5fa459db8b9",
+      "code/modelle/yacht1/mast.obj": "356bfe0a2f752e2060a6c8ba814ff4b5ce685d871b17baa7aaf44fc89297183d",
+      "code/modelle/yacht1/modell.json": "c365779aa08667660a1ac66401fef2157839da00cbb0c2cb9a89c9e681762de5",
+      "code/modelle/yacht1/paket/fock.obj": "ee6fd81f0b54a2f35a261ef884aedcf6c79b46773fb3f620c9e6d2546f936ae8",
+      "code/modelle/yacht1/paket/grosssegel.obj": "3ed2300160fed7937d136a2d3b3d4fe82cf823565768d5a66a95edeb506170a4",
+      "code/modelle/yacht1/paket/mast_components/mast_korpus.obj": "38c65209dcd2674bdbfa39b7b43e02e0eb2151c0f5ee2af1d1f26b85bb1da818",
+      "code/modelle/yacht1/ruder.obj": "c7771fb72834b6dff6069c6826988495e09ffbe116d3edee43877cf6380020ff",
+      "code/modelle/yacht1/rumpf.obj": "5a2d8873746552c18d20ac5a46ebf9d4d31486d658b9a66fc487841457e1fdbd",
+      "code/python/segelphysik/core/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "code/python/segelphysik/core/auftrieb.py": "6edde9d49da72d05da5e22d44f9a97203b7bf1639c5dce1ac1b9981450cb859a",
+      "code/python/segelphysik/core/bewegung.py": "565491fa74b462a38a9906b46478a17a2257b5eba1d229da323637df47ed074a",
+      "code/python/segelphysik/core/boot_bau.py": "2f621b563b4efd0a0caa4e2ac2e4f31e7965ca40e0d7914d8e843e86220211ac",
+      "code/python/segelphysik/core/dynamik.py": "dc23d0d734baa642156a3d1f222977842baa089c5fc8930a53ba16d41222f3e6",
+      "code/python/segelphysik/core/dynamik_6dof.py": "d17dcb4b8018f722ead68fd6149f78bbb3426be9722cab6af72c5439ca3dcc0e",
+      "code/python/segelphysik/core/echtzeit_prozess.py": "99d8dca3c9844867183dd739f72890d01209e5be6b1c483b5e83748647b4848c",
+      "code/python/segelphysik/core/einstellungen.py": "ce0ce8aa4639f002eea01040118823beb98a0e25c6fc326dbe3cdb60c8ba3ba6",
+      "code/python/segelphysik/core/fabriken.py": "1463465effd00302076aacc82c7a39d92d5d8c64a22523de782388cb94c7a419",
+      "code/python/segelphysik/core/formerkennung.py": "e87e3c305ce58f574ff2b24c0f0099b0205de7b333be4f1be3e6920613ff3233",
+      "code/python/segelphysik/core/frames.py": "06420416c0056be9ec7d2dfec3d4a890d4816e104c86bbbb3321355bf145c6b5",
+      "code/python/segelphysik/core/genauigkeit_v09.py": "ffb54d43bc6d21ba5e61de6bf125b5b2e4b48e381bd670a1c717819a22484909",
+      "code/python/segelphysik/core/geometrie_konflikte.py": "7889d255ea7212b03a034b0ef65534062a188b7c65b62dda761806744feedd6e",
+      "code/python/segelphysik/core/hydrodynamik.py": "073eefd2ad2b6297512c4035e57c969a1a5cb9438dc529b48d7ba305725d311f",
+      "code/python/segelphysik/core/hydrodynamik_metadaten.py": "8dfb264858c452528f8b59a401214709d609d090a74e4893d0b7ba9632558ccc",
+      "code/python/segelphysik/core/hydrodynamik_ruder_naeherung.py": "c96d8ea7f084d858686aad86e8948ea04297b6e5f7066cd5c8de423b31702c05",
+      "code/python/segelphysik/core/hydrostatik.py": "34624b1aa11ea30af12b166579c92501cc868af983846a5b2a180cf2a3a176c1",
+      "code/python/segelphysik/core/koerper.py": "5b1eff42ee9eb41c56771f752a381a356786ad5a48b3ac2b7f40bfb00ce1e044",
+      "code/python/segelphysik/core/koerper_formen.py": "e1e6295415388c5fe6b7423390c251be7eb82a81f83068d210000f7c5383a47c",
+      "code/python/segelphysik/core/konfig_lader.py": "5d782f2d363e45efb22247f2a37dae3edfe22dfc699d287a0aa1f9eb5ced56aa",
+      "code/python/segelphysik/core/kraefte_bild.py": "98bd46271e72c2f52a5b96696490e84b2bf3a493e75ccf86b8d9cd6356f2bf39",
+      "code/python/segelphysik/core/kraftmodell.py": "32af8688ea7d311410856d3a059e8349404027f1bca0ed2405303e3ad72f041b",
+      "code/python/segelphysik/core/massen.py": "6033bb6918592c4946ca583a291fd6113a3bd202da9c787badbd50028c8e3d66",
+      "code/python/segelphysik/core/mesh.py": "02f6e3f33d3399d3b77067abdbb0b3aa670a9ce57078d70500fad61dea6f7b0c",
+      "code/python/segelphysik/core/modell_lader.py": "812bf621f45eb2587b0128f1192f7c01e1cd525d8325833032ddd4ec404c0e12",
+      "code/python/segelphysik/core/navigationsanzeigen.py": "a040d4cbf0f82494ce42fb65b2e5d5d8519fda67ae8ef587e387c62e0073174f",
+      "code/python/segelphysik/core/overlays.py": "ee9705a6886f575c258f8fc295163c37163f6f65e6d50457b20f648b52f7bd43",
+      "code/python/segelphysik/core/pfeilstil.py": "05467fda055e5a0038a23bf36465bcff67b4087da4901fc0a14754fe6a59a854",
+      "code/python/segelphysik/core/physik_backend.py": "0f9045c0475cd57487f3478afeb4200e867f2fd1553c96476675e82c91e75f6c",
+      "code/python/segelphysik/core/segler_einstellungen.py": "5bdc7515b876d54bccbd4fd2cacd8942ce4b2566d30488beffe179eb6a7229fd",
+      "code/python/segelphysik/core/sim_modus.py": "0bde3deaf1a75b523b9dda4ee36181c73c116e50e95db10a1199f0c95cf12c55",
+      "code/python/segelphysik/core/stationaer_hydrodynamik.py": "61117d713239791920dc3b611d961fb43e1420ee08143d9eb3162804cfa969c1",
+      "code/python/segelphysik/core/statisch.py": "c7424a1bb6fb394611212bf51c1c278ae1a20147aae9fd441472aaa87ba64953",
+      "code/python/segelphysik/core/statisch_robust.py": "71686d8f749ca960a8c6eb81f04f57362931eb97b8d7d81ea8c62c04f55806e9",
+      "code/python/segelphysik/core/statusanzeige.py": "a7052f54a61d4e1e9a7ac68609680413a8a905afc61eef07f4fd289783d3a8d3",
+      "code/python/segelphysik/core/stoerung.py": "c7344db45919eb719058e9a8a1ff59f85de5f5848e650bf507e20b5fca5d486c",
+      "code/python/segelphysik/core/volumen_union.py": "f9dee3df126926d4f7644c726f03e5ce738b59b0be06abf5889fd56dc16185ca",
+      "code/python/segelphysik/core/voxelmodell.py": "cb93a786a5e19cc3182cf9015fb5667a8e2498dca913cec4dc43daedfb1e1721",
+      "code/python/segelphysik/core/wasserpunkte.py": "c0db4a52a4b511a23f55c5d7f1a71908ad402e75e4b931b11b3797839ddc2143",
+      "code/python/segelphysik/demo_app.py": "696e01e593cbb81310f58763887f84c1fe6365e263afbad6fb90c3cf1cef3637",
+      "code/python/segelphysik/grafik_bruecke.py": "13a220a0d0d7359ba37004b5f58cb22d455ad25a0e01cfeb617626a718919557",
+      "code/python/segelphysik/grafik_optimierung.py": "a25387ee54ed88f5a5d5492db8be7ee0abb54e293db3710a032f7a6eb34506ac",
+      "code/python/segelphysik/gui/__init__.py": "7d9291f81a2d87ed72be182efd534132aa7930ea5e03806c3fc4ab4c34392739",
+      "code/python/segelphysik/gui/app.py": "eee886e2cd7106fa1ec3894736401297271fd12a2e778383eae6812b5bbb23a7",
+      "code/python/segelphysik/gui/baum.py": "995e7c1d53556bfcda2896b1d1fbcf2bdfce68281d7104c4ee4459368ca5ab54",
+      "code/python/segelphysik/gui/baum_widget.py": "b6c08f56da1a677a4fad5186e84c630bf47f6bbe2e7aea4c075e41d4f5b6f29b",
+      "code/python/segelphysik/gui/einstellungen_dialog.py": "627e9934c0021fa752529e98318bb4c9632e4933609ea098c49d16cde4977b04",
+      "code/python/segelphysik/gui/hauptfenster.py": "3c369a0a319734ff6bb77fde6065122af1a0913bb1b2b9a749a0557437d8f7e8",
+      "code/python/segelphysik/gui/navigationswidgets.py": "9b8addc67ea5cc9ddd9713b8fefbd9305e101a067a4ecc6d26e75fbe3e62317e",
+      "code/python/segelphysik/gui/steuer_api.py": "fe14f3f1004ea4050e5b3e7e53e2feff9292799d9ba35a11d0c30cb817c38c38",
+      "code/python/segelphysik/render/__init__.py": "a1c0e55373ef1d269e9961729560e1a47e7199989dbeb03701072f918e2c0c48",
+      "code/python/segelphysik/render/vista.py": "ec3389465f25f4400573147e555221abecb030764f03b24ead09184ba23d582c",
+      "code/python/segelphysik/steuerung.py": "e37f41d69b947b78befa7e5c848c7e9d42541c246888e47f19626e0d6a771719",
+      "code/python/segelphysik/wasser_schnitt.py": "122bd221bcb41fd0ff29ad183b5c41a29625d686d3b74737a9581ab0f651abbf",
+      "doc/WegZuV1.0/Revisionslog/zuV0.7/Widgets/BeschreibungElementeWidgets.svg": "29a3bd20adfd8f09e0395f9c5ee40dd635d67b454a0b49193b5a30760c14aecb",
+      "doc/WegZuV1.0/Revisionslog/zuV0.7/Widgets/Widget_Kompass.svg": "19ee51f631317886ed0e10ad9ffde4b36f5fb1ea65a74670a68f572e002fa318",
+      "doc/WegZuV1.0/Revisionslog/zuV0.7/Widgets/Widget_Stampfen.svg": "d6ff611a933e1e42b44a6aaa286d4fa3a5d5c1605e021121eb1240d52d39610a",
+      "doc/WegZuV1.0/Revisionslog/zuV0.9/Messungen/Genauigkeit_Referenzfaelle_v0.9.json": "a7e9ea97f3774728ebb2fb948108e1f5c6060a083022ba2fba4fe66c7d5512d6",
+      "konfigurationen/koerper.json": "94d33ff8aa2a8f90b3dd2421c87ae3be1164348394dab55ef8ca81a51dff20f6",
+      "konfigurationen/koerper.json.original": "6bb9874b42f34f426733827c4a7e2e1a320b38831eb7ee362f826322c66dcb45",
+      "konfigurationen/materialien.json": "36fde67eb7b520ba23110dfe55da6589227a1bc4612ccbb9547960592e0a36f7",
+      "konfigurationen/physik.json": "6a94bcff76fc67c5c8d04baa09ff4c2721f57352a432872341c00ed8438a7fc3",
+      "konfigurationen/settings.json": "592e351641df109526572c83062a8d40416b078404e7eeaa06ef8760819b590e",
+      "pyproject.toml": "d9be3b4767e6678399b9dc53f9b2c3e4695927a63dd32927c7ee2fa1b0bba51a",
+      "requirements-dev.txt": "89e90d764fddb6e1a8d2cfbe779d4451dc164ce5a2df7783951ec8a533355b8d",
+      "requirements.txt": "f5a6dbdd93e607e5d23df0c56ba7503744c15df85c6b5dbb12e820865af4001f",
+      "segelphysik.py": "09b93b38cc2c609b84537b141eec88a27ae86bf726940ab2171c9d46cf26902d"
+    },
+    "abweichende_native_kandidatendateien": [
+      {
+        "datei": "code/cpp/CMakeLists.txt",
+        "referenz_sha256": "5ba9b9a826208893bec6d7663fce97e1679de03178ca6d95b5fac7fdb18e54e7",
+        "kandidat_sha256": "e1848a50168e388561048f85e04dc60232ebfddde32026a21218f92d786d8c9a"
+      },
+      {
+        "datei": "code/cpp/README.md",
+        "referenz_sha256": "3dab6c6b1e0e192900a1307025c4e0f29a75c3f6216ec419b3d6b0c9aefe94a0",
+        "kandidat_sha256": "a6f05fbbc75be644eb096b5be023b17b9984a0b498487612a29bbc8624f7864d"
+      },
+      {
+        "datei": "code/cpp/src/modul.cpp",
+        "referenz_sha256": "748ebb2582813c81729792a3b9d8c5839058c5e73c59a5072e84ebe2e3a9ff0a",
+        "kandidat_sha256": "4b631a55364e1bb5bc229772efbf21fb82f438da39b01ece1ea7e3634ff9e60e"
+      }
+    ],
+    "hinweis": "Originalreferenzen bleiben aus dem Sicherungscommit erhalten. Nur explizit gewaehlte native Kandidatenquellen duerfen abweichen; Python, Modelle, Konfigurationen und eingefrorene Werte bleiben streng geprueft.",
+    "abweichende_produktive_migrationsdateien": [
+      {
+        "datei": "code/python/segelphysik/core/auftrieb.py",
+        "referenz_sha256": "6edde9d49da72d05da5e22d44f9a97203b7bf1639c5dce1ac1b9981450cb859a",
+        "produktiv_sha256": "810fb097c6da1c57d463faa55a012f6d4f8b867ad24290bf628cd235db50802c"
+      },
+      {
+        "datei": "code/python/segelphysik/core/bewegung.py",
+        "referenz_sha256": "565491fa74b462a38a9906b46478a17a2257b5eba1d229da323637df47ed074a",
+        "produktiv_sha256": "859759f6f276f20daede8ff678cce7b0b67d91da3d6f3fe7d5691ca2c9cce470"
+      },
+      {
+        "datei": "code/python/segelphysik/core/dynamik_6dof.py",
+        "referenz_sha256": "d17dcb4b8018f722ead68fd6149f78bbb3426be9722cab6af72c5439ca3dcc0e",
+        "produktiv_sha256": "fc94c0320d5e762e177e3460e5d2686217d2008d0309a5931f50bee1cabcdd43"
+      },
+      {
+        "datei": "code/python/segelphysik/core/echtzeit_prozess.py",
+        "referenz_sha256": "99d8dca3c9844867183dd739f72890d01209e5be6b1c483b5e83748647b4848c",
+        "produktiv_sha256": "735678e4797acd10ad9a7577ff62a64dd46934febae13e8bc57a867667f7db7b"
+      },
+      {
+        "datei": "code/python/segelphysik/core/frames.py",
+        "referenz_sha256": "06420416c0056be9ec7d2dfec3d4a890d4816e104c86bbbb3321355bf145c6b5",
+        "produktiv_sha256": "9d6fefd42b116466c8dda45b36c854f13e0500a67c8ddc42eac829cbda143a49"
+      },
+      {
+        "datei": "code/python/segelphysik/core/hydrodynamik.py",
+        "referenz_sha256": "073eefd2ad2b6297512c4035e57c969a1a5cb9438dc529b48d7ba305725d311f",
+        "produktiv_sha256": "9e974db5372ddcd59c0e738362755d226e50c60fb865ea9871a17f5a14cf4af4"
+      },
+      {
+        "datei": "code/python/segelphysik/core/hydrostatik.py",
+        "referenz_sha256": "34624b1aa11ea30af12b166579c92501cc868af983846a5b2a180cf2a3a176c1",
+        "produktiv_sha256": "433c58d76a9ff9af94ec980e8837443b520b805f05fcc8ab69cc34fe7650ed46"
+      },
+      {
+        "datei": "code/python/segelphysik/core/koerper.py",
+        "referenz_sha256": "5b1eff42ee9eb41c56771f752a381a356786ad5a48b3ac2b7f40bfb00ce1e044",
+        "produktiv_sha256": "830e35099002ecb687694989fefd039d5ffeea1c72762260aa149675d5cb7ddb"
+      },
+      {
+        "datei": "code/python/segelphysik/core/kraftmodell.py",
+        "referenz_sha256": "32af8688ea7d311410856d3a059e8349404027f1bca0ed2405303e3ad72f041b",
+        "produktiv_sha256": "31f5b9d21c2b599a3db06b8b5c801288d8e69a90bd873d107de0ee2d45c7df35"
+      },
+      {
+        "datei": "code/python/segelphysik/core/massen.py",
+        "referenz_sha256": "6033bb6918592c4946ca583a291fd6113a3bd202da9c787badbd50028c8e3d66",
+        "produktiv_sha256": "5da2abe22a570d9a45c9aa650bd1a7baf11f97a53395fec260f7fc4a9f40fb2b"
+      },
+      {
+        "datei": "code/python/segelphysik/core/stationaer_hydrodynamik.py",
+        "referenz_sha256": "61117d713239791920dc3b611d961fb43e1420ee08143d9eb3162804cfa969c1",
+        "produktiv_sha256": "10f623f672d297598e9f3a8a2971199668a8dc5428ac521e334631c2bef49bf1"
+      },
+      {
+        "datei": "code/python/segelphysik/core/statisch.py",
+        "referenz_sha256": "c7424a1bb6fb394611212bf51c1c278ae1a20147aae9fd441472aaa87ba64953",
+        "produktiv_sha256": "7e099b88c74064677423edf76c76c7b5f424fe4476f4cfd53ec88aeb7cf81038"
+      },
+      {
+        "datei": "code/python/segelphysik/core/statisch_robust.py",
+        "referenz_sha256": "71686d8f749ca960a8c6eb81f04f57362931eb97b8d7d81ea8c62c04f55806e9",
+        "produktiv_sha256": "1e43c2333d1c8f6610a3446d7bbd326f3d31ee972768d72ef059107ccab73b19"
+      },
+      {
+        "datei": "code/python/segelphysik/core/stoerung.py",
+        "referenz_sha256": "c7344db45919eb719058e9a8a1ff59f85de5f5848e650bf507e20b5fca5d486c",
+        "produktiv_sha256": "8669b2dbcdb3946c697eb89e0d6950437915929b71bfade46aa47102f0145250"
+      },
+      {
+        "datei": "code/python/segelphysik/core/volumen_union.py",
+        "referenz_sha256": "f9dee3df126926d4f7644c726f03e5ce738b59b0be06abf5889fd56dc16185ca",
+        "produktiv_sha256": "c38339d1e4ec1b64c6ad575355acc7c70aaedbb6ac56a0e2d47c40231c418765"
+      },
+      {
+        "datei": "code/python/segelphysik/gui/app.py",
+        "referenz_sha256": "eee886e2cd7106fa1ec3894736401297271fd12a2e778383eae6812b5bbb23a7",
+        "produktiv_sha256": "51d604c83878d487ec5a111fd3ea19285020cdfe6b1ededdd62c6d9e77d34361"
+      },
+      {
+        "datei": "code/python/segelphysik/gui/hauptfenster.py",
+        "referenz_sha256": "3c369a0a319734ff6bb77fde6065122af1a0913bb1b2b9a749a0557437d8f7e8",
+        "produktiv_sha256": "e5041d27b75160147d212a7581532613b7d9128a4e8aa2036e46fffd7215c598"
+      },
+      {
+        "datei": "code/python/segelphysik/wasser_schnitt.py",
+        "referenz_sha256": "122bd221bcb41fd0ff29ad183b5c41a29625d686d3b74737a9581ab0f651abbf",
+        "produktiv_sha256": "da214b392f2ad19f1bfe79e5dd2b721e44ea3eba752463d3f33e6a4748859fc8"
+      }
+    ],
+    "hinweis_produktive_migration": "Expliziter Integrationsmodus: einzeln benannte produktive Quellen duerfen abweichen; Originalhashes bleiben unveraendert. Modelle, Konfigurationen und eingefrorene Werte bleiben strikt geprueft."
+  },
+  "quellen_sha256": {
+    "code\\python\\segelphysik\\core\\kraftmodell.py": "31f5b9d21c2b599a3db06b8b5c801288d8e69a90bd873d107de0ee2d45c7df35",
+    "code\\python\\segelphysik\\core\\hydrodynamik.py": "9e974db5372ddcd59c0e738362755d226e50c60fb865ea9871a17f5a14cf4af4",
+    "code\\python\\segelphysik\\wasser_schnitt.py": "da214b392f2ad19f1bfe79e5dd2b721e44ea3eba752463d3f33e6a4748859fc8",
+    "code\\python\\segelphysik\\core\\massen.py": "5da2abe22a570d9a45c9aa650bd1a7baf11f97a53395fec260f7fc4a9f40fb2b",
+    "code\\python\\segelphysik\\core\\stationaer_hydrodynamik.py": "10f623f672d297598e9f3a8a2971199668a8dc5428ac521e334631c2bef49bf1",
+    "code\\python\\segelphysik\\core\\stoerung.py": "8669b2dbcdb3946c697eb89e0d6950437915929b71bfade46aa47102f0145250",
+    "code\\python\\segelphysik\\core\\dynamik_6dof.py": "fc94c0320d5e762e177e3460e5d2686217d2008d0309a5931f50bee1cabcdd43",
+    "code\\python\\segelphysik\\core\\auftrieb.py": "810fb097c6da1c57d463faa55a012f6d4f8b867ad24290bf628cd235db50802c",
+    "code\\python\\segelphysik\\gui\\hauptfenster.py": "e5041d27b75160147d212a7581532613b7d9128a4e8aa2036e46fffd7215c598",
+    "code\\python\\segelphysik\\core\\frames.py": "9d6fefd42b116466c8dda45b36c854f13e0500a67c8ddc42eac829cbda143a49",
+    "code\\python\\segelphysik\\gui\\app.py": "51d604c83878d487ec5a111fd3ea19285020cdfe6b1ededdd62c6d9e77d34361",
+    "code\\python\\segelphysik\\core\\volumen_union.py": "c38339d1e4ec1b64c6ad575355acc7c70aaedbb6ac56a0e2d47c40231c418765",
+    "code\\python\\segelphysik\\core\\statisch.py": "7e099b88c74064677423edf76c76c7b5f424fe4476f4cfd53ec88aeb7cf81038",
+    "code\\python\\segelphysik\\core\\statisch_robust.py": "1e43c2333d1c8f6610a3446d7bbd326f3d31ee972768d72ef059107ccab73b19",
+    "code\\python\\segelphysik\\core\\koerper.py": "830e35099002ecb687694989fefd039d5ffeea1c72762260aa149675d5cb7ddb",
+    "code\\python\\segelphysik\\core\\bewegung.py": "859759f6f276f20daede8ff678cce7b0b67d91da3d6f3fe7d5691ca2c9cce470",
+    "code\\python\\segelphysik\\core\\echtzeit_prozess.py": "735678e4797acd10ad9a7577ff62a64dd46934febae13e8bc57a867667f7db7b",
+    "code\\python\\segelphysik\\core\\hydrostatik.py": "433c58d76a9ff9af94ec980e8837443b520b805f05fcc8ab69cc34fe7650ed46",
+    "code\\cpp\\src\\anzeige.hpp": "1f50059c23a8142b8d3c0f71690f459b662450e2dfb01f827a39c73f7dd0d27e",
+    "code\\cpp\\src\\datentypen.hpp": "2eb10c2aa5e09ccaa51d60d9d2027afddc8399a14fb2098afc1a56324225dc19",
+    "code\\cpp\\src\\dynamik.hpp": "0476f008da93bea074a403626a0d6ff42313aa5f002d7a51398dffa8f303a939",
+    "code\\cpp\\src\\ebenenschnitt.hpp": "ca34627f84bc0b5e2a48f460be8ba869248f71bb194d04c43be2eea55bc7ee9b",
+    "code\\cpp\\src\\frames.hpp": "6df6ce75595b4b38a6184ece9b95fba4174dc50e76b7f64da2006ef1271e05e3",
+    "code\\cpp\\src\\hydrodynamik.hpp": "b124c24d97b44675a1b1834e7220ad8b785303314ec8a44acb571e474ebe5502",
+    "code\\cpp\\src\\hydrostatik.hpp": "6e3a415f18fd0b46f361babc6907469cb3b36abb0d6992b2992d2b83f940b657",
+    "code\\cpp\\src\\koerperkontext.hpp": "4bb3465889bd7f8ba89f63c4fc187cdbc478f467973018318d67df03897cb937",
+    "code\\cpp\\src\\kraftmodell.hpp": "be5e3258670879f1137109ae36a3b28af8dcf3726260f738a5bb0a51c4aff083",
+    "code\\cpp\\src\\massen.hpp": "d14158847bfbfdfe9bf722034928301b251cb08c03e2640cb1de7efdacefbbcc",
+    "code\\cpp\\src\\modul.cpp": "4b631a55364e1bb5bc229772efbf21fb82f438da39b01ece1ea7e3634ff9e60e",
+    "code\\cpp\\src\\statik.hpp": "e0cdf0d3cc37b6cb7033cbac9441c53897158da9236ffa7397b9689290cac778",
+    "code\\cpp\\src\\stationaer.hpp": "1313871a3a842d919f10ec74d31a9eb5b79d12e604e8f2086c01cab47114bb67",
+    "code\\cpp\\src\\wasserschnitt.hpp": "a07ea7e15e6fce0f19248b292abe170f16a7d2e8709e45adb5a411187e2555d6",
+    "code\\python\\segelphysik\\core\\rechenpfad.py": "62d707c401502e0405a1c89c87c7a35bf2eefbe002ba4e23ea4b78f9effdb37d",
+    "code\\python\\segelphysik\\core\\native_backend.py": "d99db8cbc6ae60810eaccd436b1bae59b77ce95f9dc19702e104c0e7b5243f3c",
+    "werkzeuge\\migration_produktiv.py": "e2580025fd776f733e80e08ba2e581f1d1cf76b755ac98eff2ff574a5e662934"
+  },
+  "referenzwahl": "Threadlokaler expliziter python_referenz-Kontext; andere Threads und Prozesse werden nicht umgeschaltet"
+}

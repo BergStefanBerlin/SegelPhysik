@@ -1,9 +1,21 @@
 # Spezifikation V0.10: Zeitkritische Verarbeitung nach C++ übertragen
 
-**Stand:** 19.10.2026  
-**Status:** Entwurf zur Nutzerprüfung; keine pauschale Migrations- oder Produktivfreigabe  
+**Stand:** 20.10.2026\
+**Status:** V0.10 als begrenzter Versionsstand auf Nutzerauftrag abgeschlossen; ursprünglicher Migrationsumfang nicht vollständig erfüllt; Restarbeiten im Backlog\
 **Version:** V0.10  
 **Entwicklungsbranch:** `v0.10`
+
+**Abschlussentscheidung vom 20.10.2026:** Der Nutzer hat den begrenzten
+Versionsabschluss mit dokumentierten Restarbeiten ausdrücklich freigegeben.
+Die bekannten Optimist-Batchabweichungen werden für diesen Abschluss
+akzeptiert. Andere Restimplementierungen und fehlende Abnahmen bleiben
+unter ihren ursprünglichen A-Kennungen in der Spezifikation erhalten und
+sind im [Restarbeits-Backlog](../../../../Backlog/Restarbeiten_V0.10.md)
+nachverfolgt. Die
+[Abschlussbilanz](../Messungen/Abschlussbilanz_V0.10_2026-10-20.md)
+trennt erfüllte Teilumfänge, akzeptierte Ausnahme und offene Nachweise.
+Der Versionsabschluss bedeutet keine vollständige Erfüllung aller
+nachfolgenden Anforderungen und keine Veröffentlichung.
 
 ## Zweck und Ausgangspunkt
 
@@ -12,9 +24,12 @@ sollen in C++ ausgeführt werden, soweit sie nicht bereits wirksam in nativen
 Bibliotheken laufen. Python bleibt für Bedienung, Konfiguration,
 Versuchssteuerung und geeignete Schnittstellen erhalten.
 
-**Ausschließlich Performanceverbesserungen sind zulässig.** Der Sprachwechsel
-ist keine Erlaubnis für Funktionsabbau, geringere Darstellungsqualität,
-andere Physik, neue Näherungen oder gelockerte numerische Toleranzen.
+Der Sprachwechsel ist keine Erlaubnis für Funktionsabbau, geringere
+Darstellungsqualität, andere Physik oder neue Näherungsverfahren.
+Nach Nutzerentscheidungen vom 19./20.10.2026 sind auch langsamere
+Übertragungen und vorläufig numerisch abweichende Übertragungen produktiv
+einzubinden. Abweichungen und verwendete Ersatzprüfungen werden ausdrücklich
+dokumentiert; dies ist keine endgültige Genauigkeitsabnahme.
 Eine bloße C++-Hülle um dieselbe langsame Aufrufkette ist kein Erfolg.
 
 Gesicherter Ausgangspunkt ist Tag `0.9`, Commit `1b16648`. Der zu
@@ -70,10 +85,11 @@ Neu identifizierte eigenständig prüfbare Blöcke erhalten neue unbenutzte
 A-Kennungen an sachlich passender Stelle, ohne Umnummerierung.
 
 Ein gemessener zeitkritischer Python-Rechenkern wird nach C++ übertragen.
-Ausnahmen sind nur zulässig, wenn er bereits nativ ausgeführt wird, keine
-Zeitkritikalität nachgewiesen wird oder der native Kandidat keinen
-reproduzierbaren Vorteil erzielt. Ein weiterhin relevanter ungelöster
-Hotspot bleibt offen; eine Ausnahme ist kein erfüllter Migrationspunkt.
+Bereits native Bibliotheksarbeit wird erhalten. Alle vorgesehenen
+Übertragungen werden nach bestandener Funktions-/Numerikprüfung oder der
+dokumentierten vorläufigen Freigabe aus A-V0.10-00002 produktiv
+eingebunden, auch bei fehlendem oder negativem Performancegewinn.
+Ein langsamerer Kandidat ist kein Grund, eine Übertragung zurückzustellen.
 
 ### A-V0.10-00002 — Unveränderte Funktionalität und numerische Verträge
 
@@ -82,11 +98,35 @@ Vorzeichen, Rollen, Modellannahmen, Fehlerfälle und Bedienabläufe bleiben
 erhalten. Das gilt auch für benannte Einzelkräfte/-momente, Angriffspunkte,
 Diagnosen, GUI-Steuer-API, persistente Einstellungen und Moduswechsel.
 
-Bestehende exakte Referenztoleranzen sind maßgeblich, nicht die größeren
-pädagogischen Fehlerbudgets. Die freigegebenen Genauigkeitsgrenzen
-Fassung 1 bleiben unverändert; sie dürfen keine numerische Verschlechterung
-des unveränderten Verfahrens legitimieren. Float64 bleibt der Standard
-für die entsprechende bisherige Float64-Rechnung.
+Bestehende exakte Referenztoleranzen bleiben der strenge Vergleichsmaßstab.
+Nach ausdrücklichem Nutzerauftrag vom 20.10.2026 dürfen nicht erreichte
+numerische Prüfungen für die Umsetzung vorläufig gelockert werden.
+Originalergebnis, gelockerte Grenze, beobachtete Abweichung, fachliche
+Plausibilitätsprüfung und offene Genauigkeitsschuld werden getrennt
+dokumentiert. Eingefrorene Referenzwerte werden nicht neu erzeugt.
+Die pädagogischen Genauigkeitsgrenzen Fassung 1 werden nicht umdefiniert.
+Float64 bleibt der Standard; das Berechnungsverfahren bleibt unverändert.
+
+Zusätzliche Abschlussentscheidung vom 20.10.2026: Die bekannte strenge
+Optimist-Batchabweichung wird für den V0.10-Abschluss ausdrücklich akzeptiert
+und blockiert diesen nicht mehr. Die historischen Fehlerwerte und strengen
+Testergebnisse bleiben erhalten; die Ausnahme bedeutet weder eine
+Fehlerbehebung noch strenge Parität. Andere Abweichungen und fehlende
+Pflichtnachweise sind von dieser Einzelentscheidung nicht umfasst.
+
+Für den produktiven exakten Worker gilt vorläufig: Position `1e-5 m`,
+Quaternionkomponenten `1e-6`, Körpergeschwindigkeit und
+Körperwinkelgeschwindigkeit komponentenweise `1e-5` in SI-Einheiten,
+Volumen `1e-7 m³`, Punkte/Bezugspunkte `1e-5 m`,
+Kräfte/Momente `1 N` bzw. `1 Nm`. Zustandskomponenten werden ausschließlich
+gegen die absoluten Grenzen geprüft; für Volumen, Punkte/Bezugspunkte
+und Kräfte/Momente kommt `rtol=1e-6` hinzu.
+Die Kraft-/Momentgrenze wurde nach dem 120-s-Folkebootvergleich von
+`0.01` auf `1` angehoben; dies ist eine nachträgliche, dokumentierte
+vorläufige Lockerung und kein Bestehen der ursprünglichen Prüfung.
+Alle Zeitschritte und benannten Einzelbeiträge werden verglichen.
+Endlichkeit, Schemas, Frames, Einheiten, Zeit-/Batchindizes, Datenbesitz,
+Eingabefehler und Abbruch-/Nebenläufigkeitsverträge bleiben strenge Gates.
 
 Nicht zulässig sind insbesondere Fast-Math ohne gesonderten
 Äquivalenznachweis, geringere Rechengenauigkeit, größere/adaptive
@@ -455,7 +495,7 @@ Quellen: `render/vista.py`, `core/wasserpunkte.py`, `grafik_bruecke.py`.
 |---|---|
 | Oberflächenaufbereitung | `_surface_polydata`, `_bilinear_upsample`, `_unit_circle`, `_unit_square` |
 | Vorhandene Isofläche | `IsoSurfaceWater.splat`, `mesh`, `_mirrored`, `_calibrate`, `_half` |
-| Renderer-Geometrie | `PyVistaRenderer._smooth_surface`, `_update_ring`, `_clamp_to_bodies`, `update`: numerischer Anteil |
+| Renderer-Geometrie | `PyVistaRenderer._smooth_surface`: numerischer Anteil |
 | Wasserpunkte | `_hash01`, `punktlage`, `dunst_gitter`, `WasserPunktFeld.punkte_welt`, `aktualisieren` |
 | Bewegungs-/Spuraufbereitung | `GrafikBruecke._wasser_bewegung_nachfuehren`, `_wasserpunkte_zeichnen`, `_flaeche_verschieben` |
 
@@ -487,7 +527,7 @@ geringere Instrumentfrequenz oder geänderte SVG-Optik.
 | `core/bewegung.py` | `rotation_matrix`, `body_pose`, `koerper_pose`; numerische Poseberechnung |
 | `core/dynamik.py` | `schritt`, `schritt_mit_kraeften`; soweit noch aufgerufen |
 | `core/stoerung.py` | `rotationsmatrix`, `stoss_pose`, `projektion`, `kontakt_start`, `beste_loesung` |
-| `render/vista.py` | `screen_to_water`, `_body_half_height`, `_refresh_arrows`: numerischer Anteil |
+| `render/vista.py` | `screen_to_water`, `_refresh_arrows`: numerischer Anteil |
 
 Kinematik, Störung und vereinfachte Dynamik werden nicht durch den
 6-DOF-Pfad ersetzt. Zufalls-/Störungsparameter und Bedienverhalten bleiben gleich.
@@ -513,7 +553,9 @@ Genauigkeitsfehler verdecken. Keine neue GPU-/NPU-Abhängigkeit.
 Jeder implementierte Block wird mit identischen Eingaben direkt gegen die
 gesicherte Python-Referenz verglichen. Nicht nur Endlagen, sondern auch
 Zwischengrößen, Einzelbeiträge, Arrays, Frames, Randfälle und Fehlerwege
-werden geprüft. Vorhandene Tests werden nicht abgeschwächt.
+werden geprüft. Die bisherigen strengen Prüfungen bleiben als
+Genauigkeitsnachweis erhalten. Vorläufig gelockerte Vergleichsprüfungen
+werden gemäß A-V0.10-00002 zusätzlich und ausdrücklich getrennt ausgewiesen.
 
 Mindestumfang: Optimist, Folkeboot, yacht1 sowie vorhandene analytische/
 generische Testkörper; trocken/teil-/vollbenetzt; Wasserlinienwechsel;
@@ -531,12 +573,12 @@ Nach jeder integrierten Migrationsstufe laufen passende Regressionen;
 vor Gesamtfreigabe die vollständige Projektsuite und eingefrorene
 Referenzprüfung. Keine fehlende native Installation als Skip verstecken.
 
-### A-V0.10-00032 — Reproduzierbarer Performancegewinn ohne Gegenleistung
+### A-V0.10-00032 — Vollständige produktive Übernahme mit offenem Performancevergleich
 
 Für jeden Kandidaten sind native Rechenzeit sowie Konvertierung,
 Vorbereitung, Kopien, GIL-/Prozessübergänge und Gesamtzeit zu messen.
-Mikrobenchmarkgewinne ohne Vorteil im zugehörigen Anwendungspfad reichen
-nicht zur Produktivübernahme.
+Mikrobenchmarkgewinne ohne Vorteil im zugehörigen Anwendungspfad sind
+kein Nachweis eines Gesamtgewinns und keine Voraussetzung der Übernahme.
 
 Vorher/Nachher verwenden dieselbe Zielhardware, Python-/Bibliotheksumgebung,
 Modelle, Eingaben, Zeitschritte, Auflösung/Viewport/DPR, Layer, Wasseroptik,
@@ -551,12 +593,13 @@ Physikdurchsatz, Rückstandtrend, Qt-Swaprate, Frameabstände, Eingabeproxy,
 Start-/Lade-/Änderungszeit und Speicherentwicklung. Instrumentierte Profile
 werden von unverfälschten Leistungsabnahmen getrennt.
 
-Ein Kandidat wird nur übernommen, wenn sein End-to-End-Vorteil im
-betroffenen Pfad reproduzierbar und größer als die beobachtete
-Messstreuung ist, alle Paritätsgates bestehen und kein anderer relevanter
-Bedien-/Simulationspfad reproduzierbar verschlechtert wird. Kein
-Performanceversprechen allein aufgrund der Sprache. Es wird noch kein
-unbelegter Faktor wie 2x oder 10x vorgeschrieben.
+Nach Nutzerentscheidungen vom 19./20.10.2026 wird jeder vorgesehene Kandidat
+nach bestandenen Paritäts- und Robustheitsprüfungen oder dokumentierter
+vorläufiger numerischer Freigabe nach A-V0.10-00002 produktiv übernommen,
+auch bei unveränderter oder schlechterer Laufzeit. End-to-End-Zeiten
+und Messstreuung werden dokumentiert, sind aber keine Übernahmeschranke.
+Kein Performanceversprechen allein aufgrund der Sprache. Abschließend
+erfolgt ein Gesamtvergleich zum gesicherten Python-Ausgangsstand.
 
 Die bisherigen Softwareziele (mindestens 30 Qt-Swaps/s,
 Frame-P95 höchstens 67 ms, Eingabeproxy-P95 höchstens 100 ms und kein
@@ -587,17 +630,18 @@ dass der Nutzen nur für den gemeinsam ausgeführten Block nachgewiesen
 ist. Kein erfundener individueller Beschleunigungsfaktor.
 Fehlender, nicht messbarer oder negativer Gewinn wird explizit genannt
 und darf nicht als dokumentierte Performanceverbesserung gelten.
-Produktivübernahme bleibt an A-V0.10-00032 gebunden.
+Produktivübernahme erfolgt nach A-V0.10-00032 unabhängig vom Vorzeichen
+des gemessenen Performanceunterschieds.
 
 ### A-V0.10-00033 — Vollständiger Abschluss und nachvollziehbarer Status
 
 Die Abnahmematrix führt jede A-ID und jeden darin genannten
 Einzelfunktions-/Blockeintrag mit einem dieser Zustände:
 
-- nativ übertragen, eingebunden und mit Gewinn abgenommen;
+- nativ übertragen, produktiv eingebunden und korrektheitsgeprüft;
 - bereits native Ausführung nachgewiesen;
 - gemessen nicht zeitkritisch, mit Profilbeleg;
-- Kandidat ohne Gewinn verworfen, Anforderung gegebenenfalls weiter offen;
+- produktiv eingebunden mit dokumentierter Performanceverschlechterung;
 - noch offen oder blockiert, mit konkreter Ursache.
 
 Nicht ausgeführte, fehlgeschlagene oder nicht vergleichbare Prüfungen gelten
@@ -611,7 +655,7 @@ Erfüllte Anforderungen werden nach Abnahme im zentralen
 Kennungen bleiben unverändert. Diese Spezifikation ist kein
 Umsetzungsplan und vergibt deshalb keine U-Kennungen.
 
-## Umfangsgrenzen und noch ausstehende Freigabe
+## Umfangsgrenzen und Umsetzungsauftrag
 
 Nicht verlangt ist eine vollständige Neuschreibung von GUI, Dateiverwaltung,
 Konfigurationsschema, Modellkatalog oder Werkzeugen in C++. Deren schwere
@@ -620,13 +664,51 @@ Keine neue Physik, vereinfachte Darstellung, NPU-Ersatzmodelle,
 neue Engine, Hardwareanschaffung oder neue Produktivfreigabe vorhandener
 experimenteller Verfahren als Nebenwirkung dieser Migration.
 
-Der Nutzer prüft diesen Entwurf vor Erstellung eines verbindlichen
-Umsetzungsplans. Insbesondere ist noch keine bestimmte Beschleunigungshöhe
-zugesagt; die Forderung nach ausschließlich Performanceverbesserung
-und vollständigem Funktionserhalt ist verbindlicher Entwurfsinhalt.
+Spezifikation und Umsetzungsplan werden auf Nutzerauftrag umgesetzt.
+Eine bestimmte Beschleunigungshöhe ist nicht zugesagt.
+Vollständiger Funktionserhalt bleibt verbindlich; die
+Nutzerentscheidung vom 19.10.2026 hebt die Performance-Übernahmeschranke
+auf und verlangt vollständige produktive Integration auch langsamerer Blöcke.
 
 ## Nicht umsetzen
 
-Aktuell keine zurückgezogenen Anforderungen. Dieser Abschnitt ist kein
-Backlog; spätere Rücknahmen werden unter ihrer ursprünglichen Kennung
-mit Begründung archiviert.
+### Teilrücknahme zu A-V0.10-00002, A-V0.10-00031 und A-V0.10-00032 — Strenge Numerik als unbedingte Aktivierungssperre
+
+Die bisherige Forderung, bei jeder Überschreitung der ursprünglichen
+exakten Numerikgrenzen die Produktivübernahme zu sperren und keine Prüfung
+zu lockern, wird auf ausdrücklichen Nutzerauftrag vom 20.10.2026 aufgehoben.
+Numerische Abweichungen dürfen nach dokumentierter Plausibilitätsprüfung
+vorläufig übernommen werden; ihre Bereinigung erfolgt nachgelagert.
+Strenge historische Prüfungen und offene Abweichungen bleiben sichtbar.
+Dies hebt keine Struktur-, Fehler-, Sicherheits- oder Endlichkeitsprüfung auf.
+
+### Teilrücknahme zu A-V0.10-00001, A-V0.10-00032 und A-V0.10-00033 — Gewinn als Übernahmeschranke
+
+Die bisherige Regel, Kandidaten ohne reproduzierbaren End-to-End-Gewinn
+nicht produktiv zu übernehmen oder zu verwerfen, wird auf ausdrücklichen
+Nutzerwunsch vom 19.10.2026 nicht umgesetzt. Performance wird weiterhin
+vollständig gemessen und dokumentiert; Korrektheitsprüfungen bleiben Pflicht.
+
+### Teilrücknahme zu A-V0.10-00027 — Nicht ausführbare Renderer-Altpfade
+
+Mit Nutzerfreigabe vom 19.10.2026 aus der aktiven Performanceübertragung
+ausgenommen: `PyVistaRenderer._update_ring`,
+`PyVistaRenderer._clamp_to_bodies` und `PyVistaRenderer.update`
+aus `render/vista.py`.
+
+Diese drei Funktionen importieren bereits im gesicherten Referenzstand
+das fehlende Modul `segelphysik.core.bodies` und scheitern vor der
+numerischen Ausführung. Die Wiederherstellung des historischen
+Körper-/SPH-Renderers wäre neue Funktionalität, keine reine Beschleunigung.
+Der Quellcode wird nicht verändert oder gelöscht; die bestehenden
+Fehlerfalltests bleiben als nachvollziehbarer Bestandsnachweis erhalten.
+Alle übrigen Funktionen und Anforderungen von A-V0.10-00027 bleiben aktiv.
+
+### Teilrücknahme zu A-V0.10-00029 — Nicht ausführbare Körperhöhenhilfe
+
+Mit derselben Nutzerfreigabe ausgenommen:
+`PyVistaRenderer._body_half_height` aus `render/vista.py`.
+Auch diese Funktion scheitert am im Referenzstand fehlenden
+`segelphysik.core.bodies`. Keine neue Körperimplementierung als Nebenwirkung
+der Migration. Quellcode und Fehlerfallnachweis bleiben unverändert;
+alle übrigen Funktionen und Anforderungen von A-V0.10-00029 bleiben aktiv.

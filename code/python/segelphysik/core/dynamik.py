@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import math
 
 import numpy as np
+from .rechenpfad import rechenpfad
 
 
 @dataclass(frozen=True)
@@ -50,6 +51,16 @@ def schritt_mit_kraeften(zustand, kraftfunktion, masse, traegheit_xx, dt, g,
             or np.any(added < 0.0):
         raise ValueError("Added-Mass-Werte muessen sechs endliche "
                          "nicht-negative Werte enthalten.")
+    if rechenpfad() == "cpp":
+        from .native_backend import native_laden
+
+        neu, beschleunigung = native_laden().dynamik2d(
+            np.asarray((zustand.z, zustand.phi, zustand.v_z, zustand.omega_x), dtype=np.float64),
+            np.asarray(werte[:6], dtype=np.float64),
+            np.asarray((gesamt_kraft.z, gesamt_moment.x), dtype=np.float64), added)
+        if hasattr(ergebnis, "mit_beschleunigung"):
+            ergebnis = ergebnis.mit_beschleunigung(beschleunigung)
+        return Bewegungszustand(*neu), ergebnis
     effektive_masse = np.array([
         [masse + added[2], 0.0],
         [0.0, traegheit_xx + added[3]],

@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from .massen import validiere_mesh
+from .rechenpfad import rechenpfad
 
 
 class HydrostatikFehler(ValueError):
@@ -29,6 +30,17 @@ def _ringe_aus_mesh(punkte, dreiecke, ebene_z, toleranz):
             "%s" % fehler) from fehler
     if volumen < 0.0:
         dreiecke = dreiecke[:, [0, 2, 1]]
+
+    if rechenpfad() == "cpp":
+        from .native_backend import native_laden
+
+        native = native_laden()
+        try:
+            return native.wasserlinien_ringe(
+                native.Mesh(punkte, np.asarray(dreiecke, dtype=np.int64)),
+                float(ebene_z), float(toleranz))
+        except ValueError as fehler:
+            raise HydrostatikFehler(str(fehler)) from fehler
 
     knoten = {}
     knoten_punkte = []
@@ -105,6 +117,14 @@ def _ringe_aus_mesh(punkte, dreiecke, ebene_z, toleranz):
 
 
 def _ringmomente(ring):
+    if rechenpfad() == "cpp":
+        from .native_backend import native_laden
+
+        native = native_laden()
+        ergebnis = native.ringmomente(native.Mesh(
+            np.asarray(ring, dtype=np.float64).reshape(-1, 3),
+            np.empty((0, 3), dtype=np.int64)))
+        return None if ergebnis is None else tuple(ergebnis)
     xy = ring[:, :2]
     x, y = xy[:, 0], xy[:, 1]
     xn, yn = np.roll(x, -1), np.roll(y, -1)

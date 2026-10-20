@@ -250,6 +250,52 @@ class Koerper:
         self._r_eingabe = r
 
     def _baue_verband(self, teile):
+        from .rechenpfad import rechenpfad
+
+        if rechenpfad() == "cpp":
+            from .native_backend import native_laden
+
+            native = native_laden()
+            vorbereitet, kinder = [], []
+            for eintrag in teile:
+                if isinstance(eintrag, tuple):
+                    kind, rel = eintrag
+                    R_rel, zentrum = _rel_pose(rel)
+                else:
+                    kind, R_rel = eintrag, np.eye(3)
+                    zentrum = kind._r_eingabe
+                pose = pose_mit_gelenkwinkel(
+                    kind.basis_pose, kind.gelenkdefinition,
+                    kind.gelenkwinkel_rad)
+                R = pose.rotationsmatrix @ R_rel
+                t = pose.punkt_transformieren(zentrum)
+                vorbereitet.append(native.Koerperteil(
+                    kind.masse, kind.traegheitstensor,
+                    native.Mesh(
+                        kind.punkte, np.asarray(kind.dreiecke, dtype=np.int64)),
+                    native.Pose(
+                        "verband", "teil", t,
+                        np.asarray(quaternion_aus_matrix(R), dtype=np.float64))))
+                kinder.append((kind, R, t))
+            if not vorbereitet:
+                raise KoerperFehler("Verband ohne Masse")
+            ergebnis = native.verband_aggregieren(vorbereitet, native.Abbruch())
+            self.punkte = ergebnis.punkte
+            self.dreiecke = ergebnis.dreiecke
+            self.masse = ergebnis.masse
+            try:
+                self.traegheitstensor = ma.validiere_traegheitstensor(
+                    ergebnis.traegheit)
+            except ValueError as fehler:
+                raise KoerperFehler(
+                    "Ungültiger Trägheitstensor des Verbands: %s" % fehler) from fehler
+            self._r_eingabe = ergebnis.schwerpunkt
+            self.teile = [
+                (kind, (R, t - self._r_eingabe)) for kind, R, t in kinder]
+            self._volumen = None
+            self._flaeche = None
+            self.verdrangend = any(kind.verdrangend for kind, _R, _t in kinder)
+            return
         pts, tris = [], []
         versatz = 0
         m_ges = 0.0
@@ -478,6 +524,12 @@ class Koerper:
 
     def snapshot(self):
         """Erzeugt einen unveränderlichen Snapshot für Solver und Worker."""
+        from .rechenpfad import rechenpfad
+
+        if rechenpfad() == "cpp":
+            from .native_backend import NativeKoerperKontext
+
+            return NativeKoerperKontext(self).snapshot(self)
         blatt_meshes = []
         gelenke = []
         hydrodynamik_teile = []

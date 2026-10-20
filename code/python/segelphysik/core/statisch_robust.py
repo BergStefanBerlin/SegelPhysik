@@ -321,6 +321,16 @@ def loese_robust(funktion, m, g=G_NORM, start=(0.0, 0.0), tol=1e-8,
     Nach einer konvergierten, aber instabilen Lage kann eine nichtleere
     Stoerleiter einen begrenzten Scan des periodischen 2D-Rollwinkels
     ausloesen."""
+    from .rechenpfad import rechenpfad
+
+    if rechenpfad() == "cpp":
+        from .native_backend import statik_loesen
+
+        ergebnis = statik_loesen(
+            funktion, m, g, start, tol, max_iter, stoerleiter,
+            robust=True, stagnation=stagnation_anteil, neutral=neutral_toleranz)
+        if ergebnis is not None:
+            return ergebnis
     leiter = tuple(float(x) for x in stoerleiter)
     aktuelle = (float(start[0]), float(start[1]))
     restarts = 0

@@ -1,0 +1,72 @@
+{
+  "status": "abgebrochen; nicht als vergleichbare Gesamtbaseline freigegeben",
+  "ursache": "Viewportvergleich optimist_schulung_2: 491x828 statt 929x828",
+  "m1_freigegeben": false,
+  "laeufe": [
+    {
+      "datei": "folkeboot_schulung_1.json",
+      "viewport_px": [
+        491,
+        828
+      ],
+      "messlauf_gueltig_einzeln": true
+    },
+    {
+      "datei": "folkeboot_standard_1.json",
+      "viewport_px": [
+        929,
+        828
+      ],
+      "messlauf_gueltig_einzeln": true
+    },
+    {
+      "datei": "optimist_schulung_1.json",
+      "viewport_px": [
+        929,
+        828
+      ],
+      "messlauf_gueltig_einzeln": true
+    },
+    {
+      "datei": "optimist_schulung_2.json",
+      "viewport_px": [
+        491,
+        828
+      ],
+      "messlauf_gueltig_einzeln": true
+    },
+    {
+      "datei": "optimist_standard_1.json",
+      "viewport_px": [
+        491,
+        828
+      ],
+      "messlauf_gueltig_einzeln": true
+    },
+    {
+      "datei": "optimist_standard_2.json",
+      "viewport_px": [
+        491,
+        828
+      ],
+      "messlauf_gueltig_einzeln": true
+    },
+    {
+      "datei": "yacht1_schulung_1.json",
+      "viewport_px": [
+        491,
+        828
+      ],
+      "messlauf_gueltig_einzeln": true
+    },
+    {
+      "datei": "yacht1_standard_1.json",
+      "viewport_px": [
+        491,
+        828
+      ],
+      "messlauf_gueltig_einzeln": true
+    }
+  ],
+  "ersatzserie": "M1_Livebaseline_Fixviewport_2026-10-19"
+}

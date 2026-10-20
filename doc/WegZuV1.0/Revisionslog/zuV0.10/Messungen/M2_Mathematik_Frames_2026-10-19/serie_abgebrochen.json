@@ -1,0 +1,6 @@
+{
+  "abgeschlossen": false,
+  "ursache": "Die gesonderte Testumgebung fand die PySide6-Paketmetadaten der Projektumgebung nicht. Keine Performancewerte geschrieben.",
+  "ersatz": "../M2_Mathematik_Frames_Referenzumgebung_2026-10-19/mathematik_frames.json",
+  "korrektur": "Testumgebung verwendet einen lokalen .pth-Verweis auf die Referenzabhaengigkeiten. Tatsaechliche Modulpfade separat geprueft; Kandidatenmodul bleibt in der Testumgebung."
+}

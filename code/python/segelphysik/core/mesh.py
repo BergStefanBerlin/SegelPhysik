@@ -11,6 +11,7 @@ from typing import Mapping
 import numpy as np
 
 from .massen import validiere_mesh, validiere_mesh_eingaben
+from .rechenpfad import rechenpfad
 
 
 def _unveraenderliches_array(array, dtype):
@@ -128,6 +129,10 @@ def pfad_im_paket_aufloesen(paketwurzel, relativer_pfad):
 
 
 def _polygon_selbstschneidet(punkte, tol_laenge):
+    if rechenpfad() == "cpp":
+        from .native_backend import native_laden
+        return native_laden().polygon_selbstschnitt(
+            np.asarray(punkte, dtype=np.float64), float(tol_laenge))
     anzahl = len(punkte)
     tol_flaeche = tol_laenge * max(
         float(np.max(np.ptp(punkte, axis=0))), tol_laenge)
@@ -175,6 +180,14 @@ def _trianguliere_polygon(vertices, index, pfad, zeilennummer):
     if len(index) == 3:
         return [tuple(index)]
     punkte = np.asarray([vertices[i] for i in index], dtype=np.float64)
+    if rechenpfad() == "cpp":
+        from .native_backend import native_laden
+        try:
+            return native_laden().polygon_triangulieren(
+                punkte, np.asarray(index, dtype=np.int64))
+        except ValueError as fehler:
+            raise ValueError(
+                "%s, Zeile %d: %s" % (pfad, zeilennummer, fehler)) from fehler
     verschoben = punkte - punkte[0]
     spannweite = float(np.max(np.ptp(punkte, axis=0)))
     tol_laenge = max(
@@ -555,9 +568,14 @@ def _obj_achsenmatrix_pruefen(matrix):
 @lru_cache(maxsize=128)
 def _obj_mesh_cached(
         pfad, mtime_ns, ctime_ns, dateigroesse, skala, achsenmatrix, frame,
-        datei):
+        datei, _rechenpfad):
     punkte, dreiecke = _lade_obj_roh(pfad)
-    punkte = (punkte * skala) @ np.asarray(achsenmatrix).T
+    if rechenpfad() == "cpp":
+        from .native_backend import native_laden
+        punkte = native_laden().obj_transformieren(
+            punkte, np.asarray(achsenmatrix, dtype=np.float64), float(skala))
+    else:
+        punkte = (punkte * skala) @ np.asarray(achsenmatrix).T
     return Mesh(
         punkte, dreiecke, frame,
         metadaten={
@@ -597,7 +615,7 @@ def mesh_aus_quelle(geometrie, *, paketwurzel, obj_zu_m,
             return _obj_mesh_cached(
                 str(pfad), dateistatus.st_mtime_ns,
                 dateistatus.st_ctime_ns, dateistatus.st_size,
-                skala, matrix_key, frame, geometrie["datei"])
+                skala, matrix_key, frame, geometrie["datei"], rechenpfad())
         except (OSError, RuntimeError, TypeError, ValueError,
                 OverflowError) as fehler:
             raise ValueError(

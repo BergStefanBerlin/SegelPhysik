@@ -34,6 +34,7 @@ from __future__ import annotations
 import logging
 
 import numpy as np
+from .rechenpfad import rechenpfad
 
 from .. import wasser_schnitt as ws
 
@@ -145,6 +146,11 @@ def _y_intervalle_saeule(u_p, u_t, x0, z0):
     """Even-odd entlang y fuer die Vertikale (x0, z0) durch ein geschlossenes
     Teilmesh: sammelt die y-Hoehen aller Dreiecke, deren xz-Projektion den
     Punkt enthaelt, sortiert und paarweise zu Intervallen verbunden."""
+    if rechenpfad() == "cpp":
+        from .native_backend import native_laden
+        return native_laden().voxel_intervalle(
+            np.asarray(u_p, dtype=np.float64),
+            np.asarray(u_t, dtype=np.int64), float(x0), float(z0))
     schnitte = []
     for tri in u_t:
         p0, p1, p2 = u_p[tri[0]], u_p[tri[1]], u_p[tri[2]]
@@ -184,6 +190,9 @@ def _paare_bereit(schnitte):
     (oder nichts uebrig bleibt). Fix: die bisherige Einmal-Behandlung liess
     bei ungerader Zahl >= 5 wieder eine ungerade Liste zurueck (IndexError
     in der Paarbildung)."""
+    if rechenpfad() == "cpp":
+        from .native_backend import native_laden
+        return native_laden().voxel_paare_bereit(list(schnitte))
     while len(schnitte) % 2 == 1:
         if len(schnitte) < 4:
             return []
@@ -242,6 +251,11 @@ def _voxel_koerper(blatt_welt, aufloesung):
 def _y_intervalle_saeule_v(u_p, u_t, x0, z0):
     """Vektorisierte Variante von _y_intervalle_saeule (gleiche Logik,
     gleiche Toleranzen): alle Dreiecke gleichzeitig per numpy."""
+    if rechenpfad() == "cpp":
+        from .native_backend import native_laden
+        return native_laden().voxel_intervalle(
+            np.asarray(u_p, dtype=np.float64),
+            np.asarray(u_t, dtype=np.int64), float(x0), float(z0))
     p0 = u_p[u_t[:, 0]]
     p1 = u_p[u_t[:, 1]]
     p2 = u_p[u_t[:, 2]]
@@ -382,6 +396,18 @@ def baue_kraftfunktion(koerper, rho_w=1000.0, g=G_NORM, aufloesung=0.05,
                                       voxelmodell=voxelmodell,
                                       unionmodell=unionmodell)
 
+    funktion.native_kontext = None
+    from .rechenpfad import rechenpfad
+    if rechenpfad() == "cpp" and pfad == "exakt_union":
+        from .native_backend import hydrostatik_vorbereiten
+
+        bindung = als_bindung(koerper)
+        punkte = np.concatenate([np.asarray(p, dtype=np.float64)
+                                for p, _ in bindung.blatt_meshes], axis=0)
+        volumen, schwerpunkt = unionmodell.gesamtwerte()
+        funktion.native_kontext = hydrostatik_vorbereiten(
+            unionmodell, punkte.min(axis=0), punkte.max(axis=0),
+            volumen, schwerpunkt, bindung.r_S, rho_w, g)
     return funktion
 
 
@@ -457,6 +483,17 @@ def baue_kraftfunktion_6dof(koerper, rho_w=1000.0, g=G_NORM,
         if position.shape != (3,) or not np.isfinite(position).all():
             raise AuftriebFehler("6-DOF-Position muss drei endliche Werte haben")
         rotation = quaternion_matrix(lage[1])
+        if pfad == "exakt_union" and rechenpfad() == "cpp":
+            from .native_backend import hydrostatik_vorbereiten, native_laden
+
+            if funktion.native_kontext is None:
+                funktion.native_kontext = hydrostatik_vorbereiten(
+                    unionmodell, grenzen_min, grenzen_max,
+                    union_volumen, union_schwerpunkt, koerper.r_S, rho_w, g)
+            werte = funktion.native_kontext.auswerten(
+                rotation, position, native_laden().Abbruch())
+            return Auftriebsergebnis(
+                werte.volumen, werte.schwerpunkt, werte.kraft, werte.moment)
         if pfad == "voxel_koerperfest":
             volumen, schwerpunkt = voxelmodell.auswerten_6dof(
                 position, lage[1])
@@ -507,6 +544,13 @@ def baue_kraftfunktion_6dof(koerper, rho_w=1000.0, g=G_NORM,
         moment = np.cross(schwerpunkt - r_s_welt, kraft)
         return Auftriebsergebnis(volumen, schwerpunkt, kraft, moment)
 
+    funktion.native_kontext = None
+    if pfad == "exakt_union" and rechenpfad() == "cpp":
+        from .native_backend import hydrostatik_vorbereiten
+
+        funktion.native_kontext = hydrostatik_vorbereiten(
+            unionmodell, grenzen_min, grenzen_max,
+            union_volumen, union_schwerpunkt, koerper.r_S, rho_w, g)
     return funktion
 
 

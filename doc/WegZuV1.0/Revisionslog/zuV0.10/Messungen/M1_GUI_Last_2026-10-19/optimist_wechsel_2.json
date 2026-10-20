@@ -1,0 +1,18 @@
+{
+  "modell": "optimist",
+  "aktion": "wechsel",
+  "zielmodell": "folkeboot",
+  "aktionsdauer_s": 0.23046450002584606,
+  "qpa_plattform": "windows",
+  "viewport_px": [
+    640,
+    480
+  ],
+  "generation_alt": 1,
+  "generation_neu": 3,
+  "altes_ergebnis_tatsaechlich_berechnet": true,
+  "altes_ergebnis_nach_aktion_zugestellt": true,
+  "veraltetes_ergebnis_ohne_zustandsaenderung_verworfen": true,
+  "neues_modell_rechnet_und_praesentiert": true,
+  "hinweis": "Deterministischer Race-Test: echtes Workerresultat vor Signalzustellung gehalten, Wechsel/Schliessen ohne vorheriges Warten auf Worker. Beim Wechsel neue Timer nur fuer die Stale-Pruefung angehalten, danach echte weitere Physik und Qt-Swaps nachgewiesen. Aktionsdauer dieses instrumentierten Falls ist keine Performancebaseline."
+}

@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import math
 
 import numpy as np
+from .rechenpfad import nativer_kern, rechenpfad
 
 
 _EPSILON = 1e-10
@@ -21,10 +22,12 @@ class Navigationswerte:
     segelwinkel_rad: float | None = None
 
 
+@nativer_kern("winkel_360", skalare=(0,))
 def winkel_360(winkel_rad):
     return float(winkel_rad % (2.0 * math.pi))
 
 
+@nativer_kern("wrap_180", skalare=(0,))
 def wrap_180(winkel_rad):
     return float((winkel_rad + math.pi) % (2.0 * math.pi) - math.pi)
 
@@ -49,6 +52,13 @@ def navigationswerte_ableiten(
         rotation = quaternion_matrix(quaternion)
     except (TypeError, ValueError, OverflowError):
         rotation = None
+
+    if rechenpfad() == "cpp":
+        from .native_backend import native_laden
+
+        return Navigationswerte(*native_laden().navigationswerte(
+            rotation, _endlicher_winkel(kamera_offset_rad),
+            _endlicher_winkel(kamera_elevation_rad), _endlicher_winkel(segelwinkel_rad)))
 
     heading = kraengung = stampfen = None
     if rotation is not None and np.isfinite(rotation).all():
@@ -112,5 +122,9 @@ def richtung_16(heading_grad):
     heading = _endlicher_winkel(heading_grad)
     if heading is None:
         return None
+    if rechenpfad() == "cpp":
+        from .native_backend import native_laden
+
+        return RICHTUNGEN_16[native_laden().richtungssektor(heading)]
     sektor = int(math.floor((heading % 360.0 + 11.25) / 22.5)) % 16
     return RICHTUNGEN_16[sektor]

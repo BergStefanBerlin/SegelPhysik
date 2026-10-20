@@ -1,0 +1,8 @@
+{
+  "abgeschlossen": false,
+  "abbruchfall": "yacht1_standard_2.json",
+  "ursache": "Kein Qt-frameSwapped und keine Eingabereaktion trotz Physikbatches und VTK-Ereignissen; sichtbares Baselinegate verweigert.",
+  "gueltige_einzelberichte": 10,
+  "fortsetzung": "../M1_Livebaseline_Speicher_Fortsetzung_2026-10-19/liveberichte.json",
+  "hinweis": "Ungueltigen Bericht unveraendert aufbewahrt. Zehn gueltige Einzelberichte in der Fortsetzung erneut geprueft und per Hash referenziert; acht andere Faelle dort neu gemessen."
+}

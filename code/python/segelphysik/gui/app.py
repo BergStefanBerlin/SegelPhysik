@@ -137,6 +137,19 @@ def main():
         sys.__excepthook__(typ, wert, tb)
     sys.excepthook = _excepthook
 
+    from ..core.rechenpfad import rechenpfad
+    from ..core.native_backend import NativeBackendFehler, native_laden
+    pfad = rechenpfad()
+    _log("Rechenpfad: %s; C++-Umfang: Quaternionen, Frames, Aggregation, "
+         "Snapshots, exakter 6DOF-Auftrieb, Wasserschnitt, Rollen- und Kraftkerne; "
+         "exakter Workerbatch, Statik-/stationaere Solver, Anzeigeinterpolation "
+         "und Masseneigenschaften nativ; optionale Pfade separat." % pfad)
+    if pfad == "cpp":
+        try:
+            native_laden()
+        except NativeBackendFehler as fehler:
+            _log("C++-Backend nicht einsatzbereit: %s" % fehler)
+
     _gpu_praesenz_protokollieren()
 
     try:

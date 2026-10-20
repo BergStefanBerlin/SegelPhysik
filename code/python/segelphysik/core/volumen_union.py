@@ -139,6 +139,16 @@ class _EbenenSchnitt:
     """
 
     def __init__(self, punkte, dreiecke):
+        from .rechenpfad import rechenpfad
+
+        self._native = None
+        if rechenpfad() == "cpp":
+            from .native_backend import native_laden
+
+            native = native_laden()
+            self._native = native.EbenenSchnitt(native.Mesh(
+                np.asarray(punkte, dtype=np.float64),
+                np.asarray(dreiecke, dtype=np.int64)))
         self.punkte = punkte
         self.dreiecke = dreiecke
         a, b, c = (punkte[dreiecke[:, i]] for i in range(3))
@@ -150,7 +160,33 @@ class _EbenenSchnitt:
         det = np.einsum("ij,ij->i", p, np.cross(q, r))
         return det.sum(), (det[:, None] * (p + q + r)).sum(axis=0)
 
+    def __getstate__(self):
+        daten = self.__dict__.copy()
+        daten.pop("_native", None)
+        return daten
+
+    def __setstate__(self, daten):
+        self.__dict__.update(daten)
+        self._native = None
+
     def auswerten(self, normale, offset):
+        from .rechenpfad import rechenpfad
+
+        if rechenpfad() == "cpp":
+            from .native_backend import native_laden
+
+            native = native_laden()
+            schnitt = self._native
+            if schnitt is None:
+                schnitt = native.EbenenSchnitt(native.Mesh(
+                    self.punkte, np.asarray(self.dreiecke, dtype=np.int64)))
+                self._native = schnitt
+            try:
+                return schnitt.auswerten(
+                    np.asarray(normale, dtype=np.float64), float(offset),
+                    native.Abbruch())
+            except ValueError as fehler:
+                raise VolumenUnionFehler(str(fehler)) from fehler
         punkte, dreiecke = self.punkte, self.dreiecke
         s = punkte @ normale - offset
         innen = (s >= 0.0)[dreiecke]

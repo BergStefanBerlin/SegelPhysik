@@ -11,6 +11,7 @@ from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtWidgets import QScrollArea, QVBoxLayout, QWidget
 
 from ..core.navigationsanzeigen import Navigationswerte, richtung_16
+from ..core.rechenpfad import nativer_kern, rechenpfad
 
 
 _SVG_NS = "http://www.w3.org/2000/svg"
@@ -128,6 +129,18 @@ def _style_setzen(element, name, value):
 
 def _sichtbar_setzen(element, sichtbar):
     _style_setzen(element, "display", None if sichtbar else "none")
+
+
+@nativer_kern("svg_rahmen", skalare=(0, 1, 2, 3), tuple_ausgabe=True)
+def _svg_rahmen(breite, hoehe, svg_breite, svg_hoehe):
+    skala = min(breite / max(svg_breite, 1), hoehe / max(svg_hoehe, 1))
+    w, h = svg_breite * skala, svg_hoehe * skala
+    return (breite - w) / 2., (hoehe - h) / 2., w, h
+
+
+@nativer_kern("geschwindigkeitseinheiten", skalare=(0,), tuple_ausgabe=True)
+def _geschwindigkeitseinheiten(wert):
+    return wert, wert * 3.6, wert * 1.9438444924406
 
 
 def _rotation_setzen(element, grad):
@@ -249,16 +262,28 @@ class SVGInstrumentWidget(QWidget):
             "kraengung": roll,
             "stampfen": pitch,
         }[self.typ]
-        fehler = error_value is None
-        gefahr = (not fehler and self.typ != "kompass"
-                  and abs(error_value) > 90.0)
+        nativ = rechenpfad() == "cpp"
+        if nativ:
+            from ..core.native_backend import native_laden
+            kamera_name = {
+                "kompass": "kamera_azimut_grad", "kraengung": "kamera_kraengung_grad",
+                "stampfen": "kamera_stampfen_grad"}[self.typ]
+            daten = native_laden().instrument_aufbereitung(
+                {"kompass": 0, "kraengung": 1, "stampfen": 2}[self.typ],
+                error_value, getattr(werte, kamera_name, None))
+            fehler, gefahr, pose_grad, kamera_grad, gerundet = daten
+        else:
+            fehler = error_value is None
+            gefahr = (not fehler and self.typ != "kompass"
+                      and abs(error_value) > 90.0)
         if self.typ == "kompass":
             camera = getattr(werte, "kamera_azimut_grad", None)
             if heading is not None:
-                grad = heading % 360.0
+                grad = pose_grad if nativ else heading % 360.0
                 _rotation_setzen(
                     self._elemente["heading_pointer"], grad)
-                gerundet = int(math.floor(grad + 0.5)) % 360
+                if not nativ:
+                    gerundet = int(math.floor(grad + 0.5)) % 360
                 self._elemente["heading_value"].text = "%03d°" % gerundet
                 self._elemente["heading_direction"].text = (
                     richtung_16(grad) or "")
@@ -266,7 +291,7 @@ class SVGInstrumentWidget(QWidget):
                 "FEHLER" if fehler else self._elemente["heading_value"].text)
             if camera is not None:
                 _rotation_setzen(
-                    self._elemente["camera_symbol"], camera % 360.0)
+                    self._elemente["camera_symbol"], kamera_grad if nativ else camera % 360.0)
         else:
             winkel = roll if self.typ == "kraengung" else pitch
             id_prefix = self._prefix
@@ -276,13 +301,13 @@ class SVGInstrumentWidget(QWidget):
                 else getattr(werte, "kamera_stampfen_grad", None))
             _rotation_setzen(
                 self._elemente[id_prefix + "_pose"],
-                -winkel if winkel is not None else 0.0)
+                pose_grad if nativ else (-winkel if winkel is not None else 0.0))
             self._elemente[id_prefix + "_value"].text = (
                 self._winkel_text(winkel) if winkel is not None else "FEHLER")
             if kamera_winkel is not None:
                 _rotation_setzen(
                     self._elemente[id_prefix + "_camera"],
-                    90.0 - kamera_winkel)
+                    kamera_grad if nativ else 90.0 - kamera_winkel)
             if self.typ == "kraengung":
                 sail = getattr(werte, "segelwinkel_rad", None)
                 sail_element = self._elemente["roll_sail_side"]
@@ -331,17 +356,8 @@ class SVGInstrumentWidget(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         svg_size = self._renderer.defaultSize()
-        scale = min(
-            self.width() / max(svg_size.width(), 1),
-            self.height() / max(svg_size.height(), 1))
-        width = svg_size.width() * scale
-        height = svg_size.height() * scale
-        bounds = QRectF(
-            (self.width() - width) / 2.0,
-            (self.height() - height) / 2.0,
-            width,
-            height,
-        )
+        bounds = QRectF(*_svg_rahmen(
+            self.width(), self.height(), svg_size.width(), svg_size.height()))
         self._renderer.render(painter, bounds)
 
 
@@ -366,11 +382,8 @@ class GeschwindigkeitsWidget(QWidget):
         if geschwindigkeit_m_pro_s is not None:
             geschwindigkeit = float(geschwindigkeit_m_pro_s)
             if math.isfinite(geschwindigkeit) and geschwindigkeit >= 0.0:
-                werte = (
-                    "%.2f" % geschwindigkeit,
-                    "%.2f" % (geschwindigkeit * 3.6),
-                    "%.2f" % (geschwindigkeit * 1.9438444924406),
-                )
+                werte = tuple("%.2f" % wert for wert in
+                              _geschwindigkeitseinheiten(geschwindigkeit))
             else:
                 werte = ("FEHLER", "FEHLER", "FEHLER")
         for element_id, wert in zip(
@@ -387,17 +400,8 @@ class GeschwindigkeitsWidget(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         svg_size = self._renderer.defaultSize()
-        scale = min(
-            self.width() / max(svg_size.width(), 1),
-            self.height() / max(svg_size.height(), 1))
-        width = svg_size.width() * scale
-        height = svg_size.height() * scale
-        bounds = QRectF(
-            (self.width() - width) / 2.0,
-            (self.height() - height) / 2.0,
-            width,
-            height,
-        )
+        bounds = QRectF(*_svg_rahmen(
+            self.width(), self.height(), svg_size.width(), svg_size.height()))
         self._renderer.render(painter, bounds)
 
 

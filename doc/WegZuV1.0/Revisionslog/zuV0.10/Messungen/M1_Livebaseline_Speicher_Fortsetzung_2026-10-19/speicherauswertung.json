@@ -1,0 +1,743 @@
+{
+  "berichte": [
+    {
+      "name": "optimist_standard_1",
+      "datei": "doc/WegZuV1.0/Revisionslog/zuV0.10/Messungen/M1_Livebaseline_Speicher_2026-10-19/optimist_standard_1.json",
+      "sha256": "fb0375c1ee7116858b01d3aecbac9bd85c18c764ca0e742a0e1d96a882f317f1",
+      "messpunkte": 300,
+      "messdauer_s": 300.063,
+      "prozesse": [
+        {
+          "pid": 16480,
+          "rolle": "gui",
+          "private_bytes": {
+            "start": 955490304,
+            "ende": 956710912,
+            "max": 963108864,
+            "delta": 1220608
+          },
+          "working_set_bytes": {
+            "start": 550842368,
+            "ende": 558817280,
+            "max": 577433600,
+            "delta": 7974912
+          }
+        },
+        {
+          "pid": 37176,
+          "rolle": "physikprozess",
+          "private_bytes": {
+            "start": 434544640,
+            "ende": 434720768,
+            "max": 434761728,
+            "delta": 176128
+          },
+          "working_set_bytes": {
+            "start": 42721280,
+            "ende": 43376640,
+            "max": 43376640,
+            "delta": 655360
+          }
+        }
+      ]
+    },
+    {
+      "name": "optimist_schulung_1",
+      "datei": "doc/WegZuV1.0/Revisionslog/zuV0.10/Messungen/M1_Livebaseline_Speicher_2026-10-19/optimist_schulung_1.json",
+      "sha256": "46b093387d70fbaf92da2f6ac39da81062e3791b6533e978bcd99ba10b441cb1",
+      "messpunkte": 300,
+      "messdauer_s": 300.053,
+      "prozesse": [
+        {
+          "pid": 10972,
+          "rolle": "gui",
+          "private_bytes": {
+            "start": 891047936,
+            "ende": 893980672,
+            "max": 900993024,
+            "delta": 2932736
+          },
+          "working_set_bytes": {
+            "start": 521261056,
+            "ende": 524021760,
+            "max": 551051264,
+            "delta": 2760704
+          }
+        },
+        {
+          "pid": 17344,
+          "rolle": "physikprozess",
+          "private_bytes": {
+            "start": 434245632,
+            "ende": 434774016,
+            "max": 434831360,
+            "delta": 528384
+          },
+          "working_set_bytes": {
+            "start": 42790912,
+            "ende": 43433984,
+            "max": 43433984,
+            "delta": 643072
+          }
+        }
+      ]
+    },
+    {
+      "name": "folkeboot_standard_1",
+      "datei": "doc/WegZuV1.0/Revisionslog/zuV0.10/Messungen/M1_Livebaseline_Speicher_2026-10-19/folkeboot_standard_1.json",
+      "sha256": "cb11c1d843355b46392fc1d41bf626b706600c7310e4e1771409ae9236202a95",
+      "messpunkte": 300,
+      "messdauer_s": 300.034,
+      "prozesse": [
+        {
+          "pid": 26976,
+          "rolle": "physikprozess",
+          "private_bytes": {
+            "start": 431980544,
+            "ende": 432304128,
+            "max": 432304128,
+            "delta": 323584
+          },
+          "working_set_bytes": {
+            "start": 40534016,
+            "ende": 40787968,
+            "max": 40787968,
+            "delta": 253952
+          }
+        },
+        {
+          "pid": 33604,
+          "rolle": "gui",
+          "private_bytes": {
+            "start": 907943936,
+            "ende": 907661312,
+            "max": 911523840,
+            "delta": -282624
+          },
+          "working_set_bytes": {
+            "start": 537972736,
+            "ende": 514629632,
+            "max": 563761152,
+            "delta": -23343104
+          }
+        }
+      ]
+    },
+    {
+      "name": "folkeboot_schulung_1",
+      "datei": "doc/WegZuV1.0/Revisionslog/zuV0.10/Messungen/M1_Livebaseline_Speicher_2026-10-19/folkeboot_schulung_1.json",
+      "sha256": "c71fea3d093720ba728571a1432435dbc8f633de54166cd32baef780e8e454c3",
+      "messpunkte": 301,
+      "messdauer_s": 300.053,
+      "prozesse": [
+        {
+          "pid": 36656,
+          "rolle": "gui",
+          "private_bytes": {
+            "start": 878821376,
+            "ende": 886194176,
+            "max": 887304192,
+            "delta": 7372800
+          },
+          "working_set_bytes": {
+            "start": 506458112,
+            "ende": 531640320,
+            "max": 533782528,
+            "delta": 25182208
+          }
+        },
+        {
+          "pid": 37108,
+          "rolle": "physikprozess",
+          "private_bytes": {
+            "start": 431976448,
+            "ende": 432250880,
+            "max": 432250880,
+            "delta": 274432
+          },
+          "working_set_bytes": {
+            "start": 40517632,
+            "ende": 40775680,
+            "max": 40775680,
+            "delta": 258048
+          }
+        }
+      ]
+    },
+    {
+      "name": "yacht1_standard_1",
+      "datei": "doc/WegZuV1.0/Revisionslog/zuV0.10/Messungen/M1_Livebaseline_Speicher_2026-10-19/yacht1_standard_1.json",
+      "sha256": "cf1f7a4ae48a63a27f9301e8b2825b4531bbbc8f0b5d0b3ba0bd1c80b9cc2d24",
+      "messpunkte": 300,
+      "messdauer_s": 300.031,
+      "prozesse": [
+        {
+          "pid": 32356,
+          "rolle": "gui",
+          "private_bytes": {
+            "start": 956403712,
+            "ende": 956157952,
+            "max": 961318912,
+            "delta": -245760
+          },
+          "working_set_bytes": {
+            "start": 563294208,
+            "ende": 573128704,
+            "max": 583749632,
+            "delta": 9834496
+          }
+        },
+        {
+          "pid": 38868,
+          "rolle": "physikprozess",
+          "private_bytes": {
+            "start": 436609024,
+            "ende": 436502528,
+            "max": 436613120,
+            "delta": -106496
+          },
+          "working_set_bytes": {
+            "start": 44756992,
+            "ende": 45154304,
+            "max": 45215744,
+            "delta": 397312
+          }
+        }
+      ]
+    },
+    {
+      "name": "yacht1_schulung_1",
+      "datei": "doc/WegZuV1.0/Revisionslog/zuV0.10/Messungen/M1_Livebaseline_Speicher_2026-10-19/yacht1_schulung_1.json",
+      "sha256": "04ded7a5c01bc34da3b863eadd5c007067b9189af570455bfcdc1be65f4c32c0",
+      "messpunkte": 300,
+      "messdauer_s": 300.034,
+      "prozesse": [
+        {
+          "pid": 34952,
+          "rolle": "physikprozess",
+          "private_bytes": {
+            "start": 436236288,
+            "ende": 436305920,
+            "max": 436449280,
+            "delta": 69632
+          },
+          "working_set_bytes": {
+            "start": 44548096,
+            "ende": 45056000,
+            "max": 45129728,
+            "delta": 507904
+          }
+        },
+        {
+          "pid": 38512,
+          "rolle": "gui",
+          "private_bytes": {
+            "start": 927023104,
+            "ende": 929681408,
+            "max": 936267776,
+            "delta": 2658304
+          },
+          "working_set_bytes": {
+            "start": 532267008,
+            "ende": 530595840,
+            "max": 550952960,
+            "delta": -1671168
+          }
+        }
+      ]
+    },
+    {
+      "name": "optimist_standard_2",
+      "datei": "doc/WegZuV1.0/Revisionslog/zuV0.10/Messungen/M1_Livebaseline_Speicher_2026-10-19/optimist_standard_2.json",
+      "sha256": "b7ccfce1d15872d4f8944588a16bd0676882332ed09c025bf94201fba9698352",
+      "messpunkte": 301,
+      "messdauer_s": 300.045,
+      "prozesse": [
+        {
+          "pid": 9756,
+          "rolle": "gui",
+          "private_bytes": {
+            "start": 956121088,
+            "ende": 957722624,
+            "max": 961708032,
+            "delta": 1601536
+          },
+          "working_set_bytes": {
+            "start": 555261952,
+            "ende": 561000448,
+            "max": 581586944,
+            "delta": 5738496
+          }
+        },
+        {
+          "pid": 29904,
+          "rolle": "physikprozess",
+          "private_bytes": {
+            "start": 433823744,
+            "ende": 434696192,
+            "max": 434696192,
+            "delta": 872448
+          },
+          "working_set_bytes": {
+            "start": 42360832,
+            "ende": 43339776,
+            "max": 43339776,
+            "delta": 978944
+          }
+        }
+      ]
+    },
+    {
+      "name": "optimist_schulung_2",
+      "datei": "doc/WegZuV1.0/Revisionslog/zuV0.10/Messungen/M1_Livebaseline_Speicher_2026-10-19/optimist_schulung_2.json",
+      "sha256": "2aa57aa4bc33522f87cafd859ed2e5e713eb8327ec1c31c8dea7ead2ddb435e3",
+      "messpunkte": 301,
+      "messdauer_s": 300.068,
+      "prozesse": [
+        {
+          "pid": 25720,
+          "rolle": "physikprozess",
+          "private_bytes": {
+            "start": 433758208,
+            "ende": 434712576,
+            "max": 434786304,
+            "delta": 954368
+          },
+          "working_set_bytes": {
+            "start": 42209280,
+            "ende": 43323392,
+            "max": 43323392,
+            "delta": 1114112
+          }
+        },
+        {
+          "pid": 27304,
+          "rolle": "gui",
+          "private_bytes": {
+            "start": 925188096,
+            "ende": 929419264,
+            "max": 935100416,
+            "delta": 4231168
+          },
+          "working_set_bytes": {
+            "start": 523177984,
+            "ende": 529629184,
+            "max": 546824192,
+            "delta": 6451200
+          }
+        }
+      ]
+    },
+    {
+      "name": "folkeboot_standard_2",
+      "datei": "doc/WegZuV1.0/Revisionslog/zuV0.10/Messungen/M1_Livebaseline_Speicher_2026-10-19/folkeboot_standard_2.json",
+      "sha256": "66f4d7f098904844eb7bf5a26d81b5d2bc8f4b307be6c920ca0515b5be18b055",
+      "messpunkte": 300,
+      "messdauer_s": 300.053,
+      "prozesse": [
+        {
+          "pid": 32712,
+          "rolle": "gui",
+          "private_bytes": {
+            "start": 891039744,
+            "ende": 889094144,
+            "max": 899883008,
+            "delta": -1945600
+          },
+          "working_set_bytes": {
+            "start": 536145920,
+            "ende": 541495296,
+            "max": 563163136,
+            "delta": 5349376
+          }
+        },
+        {
+          "pid": 35516,
+          "rolle": "physikprozess",
+          "private_bytes": {
+            "start": 432189440,
+            "ende": 432369664,
+            "max": 432369664,
+            "delta": 180224
+          },
+          "working_set_bytes": {
+            "start": 40693760,
+            "ende": 40890368,
+            "max": 40890368,
+            "delta": 196608
+          }
+        }
+      ]
+    },
+    {
+      "name": "folkeboot_schulung_2",
+      "datei": "doc/WegZuV1.0/Revisionslog/zuV0.10/Messungen/M1_Livebaseline_Speicher_2026-10-19/folkeboot_schulung_2.json",
+      "sha256": "6c18a72067a0adf987e2fb9e93a03c74064f1e8a3dd898ad710b86414a2d640b",
+      "messpunkte": 300,
+      "messdauer_s": 300.048,
+      "prozesse": [
+        {
+          "pid": 25792,
+          "rolle": "gui",
+          "private_bytes": {
+            "start": 876875776,
+            "ende": 876662784,
+            "max": 882905088,
+            "delta": -212992
+          },
+          "working_set_bytes": {
+            "start": 502865920,
+            "ende": 522702848,
+            "max": 532488192,
+            "delta": 19836928
+          }
+        },
+        {
+          "pid": 38376,
+          "rolle": "physikprozess",
+          "private_bytes": {
+            "start": 431992832,
+            "ende": 432267264,
+            "max": 432267264,
+            "delta": 274432
+          },
+          "working_set_bytes": {
+            "start": 40538112,
+            "ende": 40787968,
+            "max": 40787968,
+            "delta": 249856
+          }
+        }
+      ]
+    },
+    {
+      "name": "yacht1_standard_2",
+      "datei": "doc/WegZuV1.0/Revisionslog/zuV0.10/Messungen/M1_Livebaseline_Speicher_Fortsetzung_2026-10-19/yacht1_standard_2.json",
+      "sha256": "d60ff4a561907b6ad205d41b01f750d3a1aceaca9ae417a4fb246d54b0eae096",
+      "messpunkte": 300,
+      "messdauer_s": 300.032,
+      "prozesse": [
+        {
+          "pid": 25772,
+          "rolle": "physikprozess",
+          "private_bytes": {
+            "start": 436396032,
+            "ende": 436736000,
+            "max": 436887552,
+            "delta": 339968
+          },
+          "working_set_bytes": {
+            "start": 44699648,
+            "ende": 45363200,
+            "max": 45404160,
+            "delta": 663552
+          }
+        },
+        {
+          "pid": 32340,
+          "rolle": "gui",
+          "private_bytes": {
+            "start": 957075456,
+            "ende": 957562880,
+            "max": 964378624,
+            "delta": 487424
+          },
+          "working_set_bytes": {
+            "start": 564797440,
+            "ende": 565276672,
+            "max": 586084352,
+            "delta": 479232
+          }
+        }
+      ]
+    },
+    {
+      "name": "yacht1_schulung_2",
+      "datei": "doc/WegZuV1.0/Revisionslog/zuV0.10/Messungen/M1_Livebaseline_Speicher_Fortsetzung_2026-10-19/yacht1_schulung_2.json",
+      "sha256": "ed359406959a3f2376ba590f98f451fa81b5bb9ea3673306235f2ad1751dd193",
+      "messpunkte": 300,
+      "messdauer_s": 300.078,
+      "prozesse": [
+        {
+          "pid": 37164,
+          "rolle": "gui",
+          "private_bytes": {
+            "start": 926556160,
+            "ende": 925413376,
+            "max": 932753408,
+            "delta": -1142784
+          },
+          "working_set_bytes": {
+            "start": 531365888,
+            "ende": 544604160,
+            "max": 554106880,
+            "delta": 13238272
+          }
+        },
+        {
+          "pid": 38080,
+          "rolle": "physikprozess",
+          "private_bytes": {
+            "start": 436518912,
+            "ende": 436436992,
+            "max": 436535296,
+            "delta": -81920
+          },
+          "working_set_bytes": {
+            "start": 44773376,
+            "ende": 45219840,
+            "max": 45219840,
+            "delta": 446464
+          }
+        }
+      ]
+    },
+    {
+      "name": "optimist_standard_3",
+      "datei": "doc/WegZuV1.0/Revisionslog/zuV0.10/Messungen/M1_Livebaseline_Speicher_Fortsetzung_2026-10-19/optimist_standard_3.json",
+      "sha256": "b0e295af22cc62bbc1014080ba50e82583719383981567b22f6343bb71b1bde0",
+      "messpunkte": 300,
+      "messdauer_s": 300.022,
+      "prozesse": [
+        {
+          "pid": 10696,
+          "rolle": "gui",
+          "private_bytes": {
+            "start": 918560768,
+            "ende": 924102656,
+            "max": 924102656,
+            "delta": 5541888
+          },
+          "working_set_bytes": {
+            "start": 553840640,
+            "ende": 579166208,
+            "max": 581287936,
+            "delta": 25325568
+          }
+        },
+        {
+          "pid": 16512,
+          "rolle": "physikprozess",
+          "private_bytes": {
+            "start": 433545216,
+            "ende": 434462720,
+            "max": 434577408,
+            "delta": 917504
+          },
+          "working_set_bytes": {
+            "start": 42041344,
+            "ende": 42729472,
+            "max": 42795008,
+            "delta": 688128
+          }
+        }
+      ]
+    },
+    {
+      "name": "optimist_schulung_3",
+      "datei": "doc/WegZuV1.0/Revisionslog/zuV0.10/Messungen/M1_Livebaseline_Speicher_Fortsetzung_2026-10-19/optimist_schulung_3.json",
+      "sha256": "a42e9ada7a945f8ba252325586fa09e94c734e32e71ae5672cd3611bdf0c2c01",
+      "messpunkte": 300,
+      "messdauer_s": 300.072,
+      "prozesse": [
+        {
+          "pid": 34504,
+          "rolle": "gui",
+          "private_bytes": {
+            "start": 889823232,
+            "ende": 890138624,
+            "max": 897290240,
+            "delta": 315392
+          },
+          "working_set_bytes": {
+            "start": 520941568,
+            "ende": 540360704,
+            "max": 549593088,
+            "delta": 19419136
+          }
+        },
+        {
+          "pid": 38936,
+          "rolle": "physikprozess",
+          "private_bytes": {
+            "start": 434204672,
+            "ende": 434671616,
+            "max": 434749440,
+            "delta": 466944
+          },
+          "working_set_bytes": {
+            "start": 42704896,
+            "ende": 43180032,
+            "max": 43212800,
+            "delta": 475136
+          }
+        }
+      ]
+    },
+    {
+      "name": "folkeboot_standard_3",
+      "datei": "doc/WegZuV1.0/Revisionslog/zuV0.10/Messungen/M1_Livebaseline_Speicher_Fortsetzung_2026-10-19/folkeboot_standard_3.json",
+      "sha256": "7c9e42c124eb4bd6f1ebcb9e22af28fb9f2db17d8a17f0d21082ba12c9419930",
+      "messpunkte": 300,
+      "messdauer_s": 300.085,
+      "prozesse": [
+        {
+          "pid": 8444,
+          "rolle": "gui",
+          "private_bytes": {
+            "start": 907440128,
+            "ende": 905191424,
+            "max": 909348864,
+            "delta": -2248704
+          },
+          "working_set_bytes": {
+            "start": 537186304,
+            "ende": 555065344,
+            "max": 558706688,
+            "delta": 17879040
+          }
+        },
+        {
+          "pid": 39792,
+          "rolle": "physikprozess",
+          "private_bytes": {
+            "start": 431362048,
+            "ende": 431644672,
+            "max": 431644672,
+            "delta": 282624
+          },
+          "working_set_bytes": {
+            "start": 39985152,
+            "ende": 40378368,
+            "max": 40378368,
+            "delta": 393216
+          }
+        }
+      ]
+    },
+    {
+      "name": "folkeboot_schulung_3",
+      "datei": "doc/WegZuV1.0/Revisionslog/zuV0.10/Messungen/M1_Livebaseline_Speicher_Fortsetzung_2026-10-19/folkeboot_schulung_3.json",
+      "sha256": "3143b9adbe4c7d1d46739bfeef4832ba727507a403d9e7f7ec3f379782e4d622",
+      "messpunkte": 300,
+      "messdauer_s": 300.047,
+      "prozesse": [
+        {
+          "pid": 36788,
+          "rolle": "gui",
+          "private_bytes": {
+            "start": 859889664,
+            "ende": 862310400,
+            "max": 863490048,
+            "delta": 2420736
+          },
+          "working_set_bytes": {
+            "start": 504111104,
+            "ende": 525500416,
+            "max": 527278080,
+            "delta": 21389312
+          }
+        },
+        {
+          "pid": 36852,
+          "rolle": "physikprozess",
+          "private_bytes": {
+            "start": 431702016,
+            "ende": 431874048,
+            "max": 431874048,
+            "delta": 172032
+          },
+          "working_set_bytes": {
+            "start": 40239104,
+            "ende": 40452096,
+            "max": 40452096,
+            "delta": 212992
+          }
+        }
+      ]
+    },
+    {
+      "name": "yacht1_standard_3",
+      "datei": "doc/WegZuV1.0/Revisionslog/zuV0.10/Messungen/M1_Livebaseline_Speicher_Fortsetzung_2026-10-19/yacht1_standard_3.json",
+      "sha256": "7101d551ba76dba59db573237b058fc88355d3a93135d7d9d05296f1eb1bcd43",
+      "messpunkte": 300,
+      "messdauer_s": 300.087,
+      "prozesse": [
+        {
+          "pid": 22420,
+          "rolle": "gui",
+          "private_bytes": {
+            "start": 956350464,
+            "ende": 954605568,
+            "max": 961200128,
+            "delta": -1744896
+          },
+          "working_set_bytes": {
+            "start": 559435776,
+            "ende": 574083072,
+            "max": 578519040,
+            "delta": 14647296
+          }
+        },
+        {
+          "pid": 30924,
+          "rolle": "physikprozess",
+          "private_bytes": {
+            "start": 436731904,
+            "ende": 437161984,
+            "max": 437202944,
+            "delta": 430080
+          },
+          "working_set_bytes": {
+            "start": 44732416,
+            "ende": 45744128,
+            "max": 45744128,
+            "delta": 1011712
+          }
+        }
+      ]
+    },
+    {
+      "name": "yacht1_schulung_3",
+      "datei": "doc/WegZuV1.0/Revisionslog/zuV0.10/Messungen/M1_Livebaseline_Speicher_Fortsetzung_2026-10-19/yacht1_schulung_3.json",
+      "sha256": "81774c42f840458bdcb83ec5fc5c49b9de2db310d17d7f4cc2f4a9677db9bf08",
+      "messpunkte": 300,
+      "messdauer_s": 300.033,
+      "prozesse": [
+        {
+          "pid": 19488,
+          "rolle": "physikprozess",
+          "private_bytes": {
+            "start": 436469760,
+            "ende": 436776960,
+            "max": 436895744,
+            "delta": 307200
+          },
+          "working_set_bytes": {
+            "start": 44793856,
+            "ende": 45469696,
+            "max": 45535232,
+            "delta": 675840
+          }
+        },
+        {
+          "pid": 31612,
+          "rolle": "gui",
+          "private_bytes": {
+            "start": 928174080,
+            "ende": 919117824,
+            "max": 933609472,
+            "delta": -9056256
+          },
+          "working_set_bytes": {
+            "start": 533159936,
+            "ende": 526016512,
+            "max": 550199296,
+            "delta": -7143424
+          }
+        }
+      ]
+    }
+  ],
+  "hinweis": "Prozesswerte getrennt. Working Sets enthalten geteilte Seiten und duerfen nicht als physischer Gesamtverbrauch summiert werden. Start-/Enddifferenzen innerhalb des Fensters sind kein langfristiger Leakbeweis."
+}

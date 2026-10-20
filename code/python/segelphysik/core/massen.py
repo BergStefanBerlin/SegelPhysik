@@ -4,6 +4,8 @@ from collections import OrderedDict
 import hashlib
 import numpy as np
 from threading import Lock
+from .native_backend import mesh_vorbereiten, native_laden
+from .rechenpfad import rechenpfad
 
 
 _SELBSTSCHNITT_CACHE = OrderedDict()
@@ -210,18 +212,7 @@ def _dreieckspaare_schneiden(a, b, toleranz):
     return treffer
 
 
-def _pruefe_mesh_selbstueberschneidung(P, F):
-    fingerprint = hashlib.sha256()
-    fingerprint.update(P.shape.__repr__().encode("ascii"))
-    fingerprint.update(P.tobytes(order="C"))
-    fingerprint.update(F.shape.__repr__().encode("ascii"))
-    fingerprint.update(F.tobytes(order="C"))
-    schluessel = fingerprint.digest()
-    with _SELBSTSCHNITT_CACHE_LOCK:
-        if schluessel in _SELBSTSCHNITT_CACHE:
-            _SELBSTSCHNITT_CACHE.move_to_end(schluessel)
-            return
-
+def _selbstschnitt_python(P, F):
     dreiecke_punkte = P[F]
     minima = dreiecke_punkte.min(axis=1)
     maxima = dreiecke_punkte.max(axis=1)
@@ -269,6 +260,28 @@ def _pruefe_mesh_selbstueberschneidung(P, F):
             raise ValueError(
                 "Mesh ist selbstüberschneidend: Dreiecke %d und %d"
                 % (int(kandidat), int(index)))
+
+
+def _pruefe_mesh_selbstueberschneidung(P, F):
+    fingerprint = hashlib.sha256()
+    fingerprint.update(rechenpfad().encode("ascii"))
+    fingerprint.update(P.shape.__repr__().encode("ascii"))
+    fingerprint.update(P.tobytes(order="C"))
+    fingerprint.update(F.shape.__repr__().encode("ascii"))
+    fingerprint.update(F.tobytes(order="C"))
+    schluessel = fingerprint.digest()
+    with _SELBSTSCHNITT_CACHE_LOCK:
+        if schluessel in _SELBSTSCHNITT_CACHE:
+            _SELBSTSCHNITT_CACHE.move_to_end(schluessel)
+            return
+    if rechenpfad() == "cpp":
+        native = native_laden()
+        paar = native.mesh_selbstschnitt(mesh_vorbereiten(P, F), native.Abbruch())
+        if paar is not None:
+            raise ValueError(
+                "Mesh ist selbstüberschneidend: Dreiecke %d und %d" % tuple(paar))
+    else:
+        _selbstschnitt_python(P, F)
     with _SELBSTSCHNITT_CACHE_LOCK:
         _SELBSTSCHNITT_CACHE[schluessel] = None
         _SELBSTSCHNITT_CACHE.move_to_end(schluessel)
@@ -355,18 +368,24 @@ def validiere_traegheitstensor(tensor):
 
 
 def mesh_volumen(punkte, dreiecke):
+    if rechenpfad() == "cpp":
+        return native_laden().mesh_volumen(mesh_vorbereiten(punkte, dreiecke))
     P = np.asarray(punkte, float); T = np.asarray(dreiecke, np.int64)
     if len(T) == 0: return 0.0
     a, b, c = P[T[:, 0]], P[T[:, 1]], P[T[:, 2]]
     return float(np.einsum("ij,ij->", a, np.cross(b, c)) / 6.0)
 
 def mesh_flaeche(punkte, dreiecke):
+    if rechenpfad() == "cpp":
+        return native_laden().mesh_flaeche(mesh_vorbereiten(punkte, dreiecke))
     P = np.asarray(punkte, float); T = np.asarray(dreiecke, np.int64)
     if len(T) == 0: return 0.0
     a, b, c = P[T[:, 0]], P[T[:, 1]], P[T[:, 2]]
     return float(0.5 * np.linalg.norm(np.cross(b - a, c - a), axis=1).sum())
 
 def schwerpunkt_homogen(punkte, dreiecke):
+    if rechenpfad() == "cpp":
+        return native_laden().massenschwerpunkt(mesh_vorbereiten(punkte, dreiecke), False)
     P = np.asarray(punkte, float); T = np.asarray(dreiecke, np.int64)
     if len(T) == 0: raise ValueError("Leeres Mesh")
     a, b, c = P[T[:, 0]], P[T[:, 1]], P[T[:, 2]]
@@ -378,6 +397,8 @@ def schwerpunkt_homogen(punkte, dreiecke):
     return r, float(g / 6.0)
 
 def schwerpunkt_flaechig(punkte, dreiecke):
+    if rechenpfad() == "cpp":
+        return native_laden().massenschwerpunkt(mesh_vorbereiten(punkte, dreiecke), True)
     P = np.asarray(punkte, float); T = np.asarray(dreiecke, np.int64)
     if len(T) == 0: raise ValueError("Leeres Mesh")
     a, b, c = P[T[:, 0]], P[T[:, 1]], P[T[:, 2]]
@@ -389,6 +410,9 @@ def schwerpunkt_flaechig(punkte, dreiecke):
 def traegheitstensor_homogen(punkte, dreiecke, dichte=1.0):
     """Exakte Polyeder-Integration; Tetraeder-Momente: Quadrate V/10,
     Kreuzterme V/20; Kompakt-Tensor J = tr(M)*E - M; Parallel-Achsen-Satz."""
+    if rechenpfad() == "cpp":
+        return native_laden().massentraegheit(
+            mesh_vorbereiten(punkte, dreiecke), float(dichte), False)
     P = np.asarray(punkte, float); T = np.asarray(dreiecke, np.int64)
     if len(T) == 0: raise ValueError("Leeres Mesh")
     a, b, c = P[T[:, 0]], P[T[:, 1]], P[T[:, 2]]
@@ -420,6 +444,9 @@ def traegheitstensor_flaechig(punkte, dreiecke, flaechenmasse=1.0):
     Die Integration erfolgt direkt relativ zum Flaechen-Schwerpunkt, damit
     kleine Schalen bei grossen absoluten Koordinaten stabil bleiben.
     Unabhaengig von der Windung (Flaechen sind ungerichtet)."""
+    if rechenpfad() == "cpp":
+        return native_laden().massentraegheit(
+            mesh_vorbereiten(punkte, dreiecke), float(flaechenmasse), True)
     P = np.asarray(punkte, float); T = np.asarray(dreiecke, np.int64)
     if len(T) == 0: raise ValueError("Leeres Mesh")
     r, flaeche_ges = schwerpunkt_flaechig(P, T)

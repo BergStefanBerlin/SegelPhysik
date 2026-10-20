@@ -1,0 +1,112 @@
+{
+  "modell": "optimist",
+  "schritte_pro_batch": 10,
+  "snapshot_pickle_bytes": 126272,
+  "snapshot_serialisierung": {
+    "anzahl": 3,
+    "median_s": 0.00015459995483979583,
+    "p95_s": 0.00016369002405554057,
+    "minimum_s": 9.919999865815043e-05,
+    "maximum_s": 0.00016470003174617887,
+    "spannweite_s": 6.550003308802843e-05,
+    "standardabweichung_s": 2.879317247963077e-05,
+    "rohwerte_s": [
+      9.919999865815043e-05,
+      0.00016470003174617887,
+      0.00015459995483979583
+    ]
+  },
+  "snapshot_deserialisierung": {
+    "anzahl": 3,
+    "median_s": 6.880000000819564e-05,
+    "p95_s": 7.141001988202334e-05,
+    "minimum_s": 6.719998782500625e-05,
+    "maximum_s": 7.170002209022641e-05,
+    "spannweite_s": 4.500034265220165e-06,
+    "standardabweichung_s": 1.8625095212516119e-06,
+    "rohwerte_s": [
+      6.880000000819564e-05,
+      7.170002209022641e-05,
+      6.719998782500625e-05
+    ]
+  },
+  "antwort_pickle_bytes": 1997,
+  "antwort_serialisierung": {
+    "anzahl": 3,
+    "median_s": 3.320001997053623e-05,
+    "p95_s": 3.9319961797446015e-05,
+    "minimum_s": 3.15000070258975e-05,
+    "maximum_s": 3.999995533376932e-05,
+    "spannweite_s": 8.499948307871819e-06,
+    "standardabweichung_s": 3.672393802905677e-06,
+    "rohwerte_s": [
+      3.999995533376932e-05,
+      3.320001997053623e-05,
+      3.15000070258975e-05
+    ]
+  },
+  "antwort_deserialisierung": {
+    "anzahl": 3,
+    "median_s": 2.110004425048828e-05,
+    "p95_s": 2.199999871663749e-05,
+    "minimum_s": 2.0199979189783335e-05,
+    "maximum_s": 2.2099993657320738e-05,
+    "spannweite_s": 1.9000144675374031e-06,
+    "standardabweichung_s": 7.76034857935434e-07,
+    "rohwerte_s": [
+      2.2099993657320738e-05,
+      2.110004425048828e-05,
+      2.0199979189783335e-05
+    ]
+  },
+  "neuer_interpreter_aufbau": [
+    {
+      "dauer_s": 0.15498390002176166,
+      "eingabe_sha256": "c323b44aa05fa3023a65e974a64a4e9044208aba6108ce6065d79bf141da4aa1"
+    },
+    {
+      "dauer_s": 0.14060039998730645,
+      "eingabe_sha256": "c323b44aa05fa3023a65e974a64a4e9044208aba6108ce6065d79bf141da4aa1"
+    },
+    {
+      "dauer_s": 0.17244059999939054,
+      "eingabe_sha256": "c323b44aa05fa3023a65e974a64a4e9044208aba6108ce6065d79bf141da4aa1"
+    }
+  ],
+  "prozessstart_bis_erster_batch_s": 0.32623360003344715,
+  "roundtrip": {
+    "anzahl": 3,
+    "median_s": 0.011897900025360286,
+    "p95_s": 0.012905269995098934,
+    "minimum_s": 0.011536300007719547,
+    "maximum_s": 0.013017199991736561,
+    "spannweite_s": 0.0014808999840170145,
+    "standardabweichung_s": 0.0006304012611159576,
+    "rohwerte_s": [
+      0.013017199991736561,
+      0.011897900025360286,
+      0.011536300007719547
+    ]
+  },
+  "worker": {
+    "anzahl": 3,
+    "median_s": 0.011265300039667636,
+    "p95_s": 0.012188159994548187,
+    "minimum_s": 0.010988600028213114,
+    "maximum_s": 0.012290699989534914,
+    "spannweite_s": 0.001302099961321801,
+    "standardabweichung_s": 0.0005601063651764909,
+    "rohwerte_s": [
+      0.012290699989534914,
+      0.011265300039667636,
+      0.010988600028213114
+    ]
+  },
+  "roundtrip_minus_worker_s": [
+    0.0007265000022016466,
+    0.0006325999856926501,
+    0.000547699979506433
+  ],
+  "prozess_direkt_paritaet": "Zustaende und alle Wrenches exakt identisch",
+  "hinweis": "Differenz enthaelt Scheduling, Queue, Transport und Pickle, nicht reine IPC. Neue Interpreter sind kein Nachweis geleerter Betriebssystem-Dateicaches."
+}

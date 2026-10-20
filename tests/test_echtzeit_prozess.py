@@ -45,6 +45,7 @@ def test_worker_initialisierung_uebernimmt_feste_hydrostatikzuordnung(
 
 
 def test_worker_initialisierung_uebernimmt_generischen_cd(monkeypatch):
+    monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", "python")
     aufrufe = []
     monkeypatch.setattr(
         "segelphysik.core.auftrieb.baue_kraftfunktion_6dof",

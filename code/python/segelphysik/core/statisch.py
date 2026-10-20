@@ -55,6 +55,15 @@ def loese(funktion, m, g=G_NORM, start=(0.0, 0.0), tol=1e-8,
     Rueckgabe: dict(z, phi, iterationen, restarts, restkraft, restmoment, gm)
     Wirft SolverFehler bei Nichtkonvergenz oder erschöpfter Leiter.
     """
+    from .rechenpfad import rechenpfad
+
+    if rechenpfad() == "cpp":
+        from .native_backend import statik_loesen
+
+        ergebnis = statik_loesen(
+            funktion, m, g, start, tol, max_iter, stoerleiter, robust=False)
+        if ergebnis is not None:
+            return ergebnis
     leiter = tuple(float(x) for x in stoerleiter)
     aktuelle = tuple(float(x) for x in start)
     restarts = 0

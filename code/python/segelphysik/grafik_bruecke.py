@@ -1,5 +1,5 @@
 """Grafik-Bruecke V3 (Additivprinzip): verbindet die fertige v0.4-
-Render-Pipeline (code/python/segelphysik/render/vista.py - UNVERAENDERT) mit der
+Render-Pipeline (code/python/segelphysik/render/vista.py) mit der
 kinematischen Demo. Mehrkoerper-faehig.
 
 Wasserlinie (Verfahren B): Jeder Koerper wird pro Frame von
@@ -39,6 +39,7 @@ from .core.overlays import (LayerRegistry, hauptachsen,
                             LAYER_HYDRO_RUMPF, LAYER_HYDRO_KIEL,
                             LAYER_HYDRO_RUDER)
 from .core.frames import pose_mit_gelenkwinkel
+from .core.rechenpfad import rechenpfad
 from .core import pfeilstil
 
 FARBE_UNTEN = "#2166ac"
@@ -95,14 +96,15 @@ class StellvertreterApp:
 
 
 def _polydaten(pv, vertices, gesichter):
-    gesicht = np.asarray(gesichter, dtype=np.int64)
-    kopf = np.full((len(gesicht), 1), 3, dtype=np.int64)
-    return pv.PolyData(np.asarray(vertices, dtype=np.float64),
-                       np.hstack([kopf, gesicht]).ravel())
+    return _dreiecks_polydaten(pv, vertices, gesichter)
 
 
 def _dreiecks_polydaten(pv, punkte, dreiecke):
     dreiecke = np.asarray(dreiecke, dtype=np.int64)
+    if rechenpfad() == "cpp":
+        from .core.native_backend import native_laden
+        faces = native_laden().grafik_dreieckszellen(dreiecke)
+        return pv.PolyData(np.asarray(punkte, dtype=np.float64), faces.ravel())
     kopf = np.full((len(dreiecke), 1), 3, dtype=np.int64)
     return pv.PolyData(np.asarray(punkte, dtype=np.float64),
                        np.hstack([kopf, dreiecke]).ravel())
@@ -134,7 +136,10 @@ def _farbgruppen(koerper):
             knoten.gelenkdefinition is not None
             or any(hat_gelenk(kind) for kind, _pose in knoten.teile))
 
-    if koerper.teile and hat_gelenk(koerper):
+    gelenke = bool(koerper.teile) and hat_gelenk(koerper)
+    if koerper.teile and rechenpfad() == "cpp":
+        return _farbgruppen_nativ(koerper, gelenke)
+    if gelenke:
         gruppen = []
 
         def sammle(knoten, rotation, translation):
@@ -201,12 +206,62 @@ def _farbgruppen(koerper):
     return gruppen
 
 
+def _farbgruppen_nativ(koerper, gelenke):
+    from .core.native_backend import native_laden
+
+    eltern, rotationen, translationen, zentren = [], [], [], []
+    blaetter, punkte, gruppen = [], [], []
+
+    def sammeln(knoten, elternindex, rotation, translation):
+        if not knoten.teile and not len(knoten.dreiecke):
+            return
+        index = len(eltern)
+        eltern.append(elternindex)
+        rotationen.append(np.asarray(rotation, dtype=np.float64).reshape(9))
+        translationen.append(np.asarray(translation, dtype=np.float64))
+        zentren.append(
+            np.asarray(knoten._r_eingabe, dtype=np.float64)
+            if gelenke and not knoten.teile else np.zeros(3))
+        for kind, (r, t) in knoten.teile:
+            if gelenke:
+                pose = pose_mit_gelenkwinkel(
+                    kind.basis_pose, kind.gelenkdefinition, kind.gelenkwinkel_rad)
+                r, t = pose.rotationsmatrix, pose.translation_m
+            sammeln(kind, index, r, t)
+        if knoten.teile:
+            return
+        blaetter.append(index)
+        punkte.append(np.asarray(knoten.punkte, dtype=np.float64))
+        daten = {
+            "dreiecke": np.asarray(knoten.dreiecke, dtype=np.int64),
+            "farbe_oben": knoten.farbe,
+            "farbe_unten": knoten.unterwasser_farbe(),
+            "glanz": knoten.glanz,
+        }
+        gruppen.append(
+            {"knoten_id": knoten.knoten_id, **daten} if gelenke else daten)
+
+    sammeln(koerper, -1, np.eye(3),
+            -np.asarray(koerper._r_eingabe, dtype=np.float64) if gelenke else np.zeros(3))
+    geometrien = native_laden().grafik_farbgeometrie(
+        np.asarray(eltern, dtype=np.int64), np.asarray(rotationen, dtype=np.float64),
+        np.asarray(translationen, dtype=np.float64), np.asarray(zentren, dtype=np.float64),
+        np.asarray(blaetter, dtype=np.int64), punkte)
+    for gruppe, geometrie in zip(gruppen, geometrien):
+        gruppe["punkte"] = geometrie
+    return gruppen
+
+
 def _benetzte_geometrie(koerper):
     """Fasst nur verdrängende Blattmeshes im Schwerpunktframe zusammen."""
     snapshot = koerper.snapshot()
     meshes = snapshot.blatt_meshes
     if not meshes:
         return None
+    if rechenpfad() == "cpp":
+        from .core.native_backend import mesh_vorbereiten, native_laden
+        return native_laden().grafik_meshes_vereinen([
+            mesh_vorbereiten(p, f) for p, f in meshes])
     punkte = []
     dreiecke = []
     versatz = 0
@@ -217,6 +272,23 @@ def _benetzte_geometrie(koerper):
         dreiecke.append(mesh_dreiecke + versatz)
         versatz += len(mesh_punkte)
     return np.concatenate(punkte), np.concatenate(dreiecke)
+
+
+def _hauptachsen_geometrie(punkte, eigenvektoren, rotation):
+    if rechenpfad() == "cpp":
+        from .core.native_backend import native_laden
+        return native_laden().grafik_hauptachsen(
+            np.asarray(punkte, dtype=float),
+            np.asarray(eigenvektoren, dtype=float),
+            np.asarray(rotation, dtype=float))
+    richtungen = np.asarray(eigenvektoren, dtype=float) @ np.asarray(
+        rotation, dtype=float).T
+    rel = np.asarray(punkte, dtype=float)
+    laengen = []
+    for richtung in richtungen:
+        proj = rel @ richtung if len(rel) else np.zeros(1)
+        laengen.append(max(1.05 * float(np.abs(proj).max()), 0.05))
+    return richtungen, np.asarray(laengen)
 
 
 class GrafikBruecke:
@@ -676,6 +748,13 @@ class GrafikBruecke:
         kamera = self._plotter.camera
         position = np.asarray(kamera.position, dtype=np.float64)
         ziel = np.asarray(kamera.focal_point, dtype=np.float64)
+        if rechenpfad() == "cpp":
+            from .core.native_backend import native_laden
+            lage = native_laden().kameralage(
+                position, ziel, self._navigationskamera_heading)
+            if lage is not None:
+                self._navigationskamera = lage
+            return
         richtung = position - ziel
         distanz = float(np.linalg.norm(richtung))
         horizontal = float(np.linalg.norm(richtung[:2]))
@@ -705,6 +784,30 @@ class GrafikBruecke:
         if self._navigationskamera_observer is None:
             self._navigationskamera_observer = kamera.AddObserver(
                 "ModifiedEvent", self._navigationskamera_geaendert)
+        if rechenpfad() == "cpp":
+            from .core.native_backend import native_laden
+            alt = (self._navigationskamera
+                   if self._navigationskamera_name == name else None)
+            neu = native_laden().kamera_aktualisieren(
+                np.asarray(kamera.position, dtype=np.float64),
+                np.asarray(kamera.focal_point, dtype=np.float64),
+                np.asarray(kamera.up, dtype=np.float64), ziel, heading,
+                self._navigationskamera_heading, alt)
+            if neu is None:
+                return None, None
+            lage, letzter_heading, position, oben, geaendert = neu
+            self._navigationskamera = lage
+            self._navigationskamera_name = name
+            self._navigationskamera_heading = letzter_heading
+            if geaendert:
+                self._navigationskamera_busy = True
+                try:
+                    kamera.position = tuple(position)
+                    kamera.focal_point = tuple(ziel)
+                    kamera.up = tuple(oben)
+                finally:
+                    self._navigationskamera_busy = False
+            return lage[:2]
 
         if (self._navigationskamera is None
                 or self._navigationskamera_name != name):
@@ -1483,15 +1586,26 @@ class GrafikBruecke:
         R = k.get("statisch_R")
         if R is None:
             R = np.eye(3)
-        welt = pd["referenz_punkte"] @ R.T + k["position"]
+        gruppen = (k.get("gruppen") or []) if k.get("aktiv", True) else []
+        if rechenpfad() == "cpp":
+            from .core.native_backend import native_laden
+            geometrien = native_laden().grafik_transformieren(
+                np.asarray(R, dtype=np.float64), np.asarray(k["position"], dtype=np.float64),
+                [np.asarray(p["referenz_punkte"], dtype=np.float64)
+                 for p in [pd] + [g["pd"] for g in gruppen]])
+            welt = geometrien[0]
+        else:
+            welt = pd["referenz_punkte"] @ R.T + k["position"]
         pd.points = welt
         if not k.get("aktiv", True):
             # Ausgeblendete Koerper (Objektwechsel) duerfen ihre Actors
             # nicht neu aufbauen, sonst ueberlagern sie den neuen Koerper.
             return
         if k.get("gruppen"):
-            for g in k["gruppen"]:
-                g["pd"].points = g["pd"]["referenz_punkte"] @ R.T + k["position"]
+            for i, g in enumerate(k["gruppen"]):
+                g["pd"].points = (
+                    geometrien[i + 1] if rechenpfad() == "cpp"
+                    else g["pd"]["referenz_punkte"] @ R.T + k["position"])
             self._gruppen_actors(name, k)
         else:
             self._actors_aktualisieren(name, welt)
@@ -1549,13 +1663,8 @@ class GrafikBruecke:
             self._overlay_schwerpunkt_entfernen(name)
         if self._layer.ist_an(LAYER_HAUPTACHSEN):
             _werte, vektoren = hauptachsen(koerper.traegheitstensor)
-            richtungen = vektoren @ R.T
-            rel = np.asarray(koerper.punkte, dtype=float)
-            laengen = []
-            for i in range(3):
-                proj = rel @ richtungen[i] if len(rel) else np.zeros(1)
-                halbe = float(np.abs(proj).max())
-                laengen.append(max(1.05 * halbe, 0.05))
+            richtungen, laengen = _hauptachsen_geometrie(
+                koerper.punkte, vektoren, R)
             self._overlay_hauptachsen_setzen(name, cm, richtungen, laengen)
         else:
             self._overlay_hauptachsen_entfernen(name)

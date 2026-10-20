@@ -1,0 +1,149 @@
+{
+  "berichte": [
+    {
+      "datei": "optimist_standard_1.json",
+      "sha256": "9bb3a2e255b3a0678ab39686344bd349036221f4b0ae62c48c3e5a21fdb096b6",
+      "modell": "optimist",
+      "schulungsdarstellung": false,
+      "wiederholung": 1,
+      "profilaufrufe": 221
+    },
+    {
+      "datei": "optimist_standard_2.json",
+      "sha256": "f83282787398bd1cf32e719b9ea588864e75d62297301fa7b32df699dbdac83a",
+      "modell": "optimist",
+      "schulungsdarstellung": false,
+      "wiederholung": 2,
+      "profilaufrufe": 233
+    },
+    {
+      "datei": "optimist_standard_3.json",
+      "sha256": "30939e23f751788e566d608cbc792d1bbbb83891628bb1a4241514b35767018b",
+      "modell": "optimist",
+      "schulungsdarstellung": false,
+      "wiederholung": 3,
+      "profilaufrufe": 221
+    },
+    {
+      "datei": "optimist_schulung_1.json",
+      "sha256": "945c895307066b3465114134f3c681fe716d231d8edac3e8662a458f4a8fc7f2",
+      "modell": "optimist",
+      "schulungsdarstellung": true,
+      "wiederholung": 1,
+      "profilaufrufe": 203
+    },
+    {
+      "datei": "optimist_schulung_2.json",
+      "sha256": "b93f6c448a32b05bf28ef16c5f3e0b92f430076813e053fd7e2fd37da4578be2",
+      "modell": "optimist",
+      "schulungsdarstellung": true,
+      "wiederholung": 2,
+      "profilaufrufe": 211
+    },
+    {
+      "datei": "optimist_schulung_3.json",
+      "sha256": "37863a1dc26f748aa840e40933d0db4581f1c730d249a879fa9081f3d58e9060",
+      "modell": "optimist",
+      "schulungsdarstellung": true,
+      "wiederholung": 3,
+      "profilaufrufe": 205
+    },
+    {
+      "datei": "folkeboot_standard_1.json",
+      "sha256": "2a4170cff018c9b8660388094f7c2443e28fa521b4c76256c6d2735bdae95d2a",
+      "modell": "folkeboot",
+      "schulungsdarstellung": false,
+      "wiederholung": 1,
+      "profilaufrufe": 360
+    },
+    {
+      "datei": "folkeboot_standard_2.json",
+      "sha256": "c3bd6c0d7e5af2b81a38dc6460f2ddcc2c18cd0224a78bd593966c225beb9c27",
+      "modell": "folkeboot",
+      "schulungsdarstellung": false,
+      "wiederholung": 2,
+      "profilaufrufe": 376
+    },
+    {
+      "datei": "folkeboot_standard_3.json",
+      "sha256": "48ef8f32e7be2302d965609e69265c28c0d4435d05d9f16e636fd91f37314e9d",
+      "modell": "folkeboot",
+      "schulungsdarstellung": false,
+      "wiederholung": 3,
+      "profilaufrufe": 374
+    },
+    {
+      "datei": "folkeboot_schulung_1.json",
+      "sha256": "13c40b0c5d87cffe7785988370e25f4db3968cc8bbbc63018e3ec65692baa1af",
+      "modell": "folkeboot",
+      "schulungsdarstellung": true,
+      "wiederholung": 1,
+      "profilaufrufe": 310
+    },
+    {
+      "datei": "folkeboot_schulung_2.json",
+      "sha256": "63424f8b74d00b4121596338f10856fd1ea8b1466a5822e717bf6654fb9fbabb",
+      "modell": "folkeboot",
+      "schulungsdarstellung": true,
+      "wiederholung": 2,
+      "profilaufrufe": 330
+    },
+    {
+      "datei": "folkeboot_schulung_3.json",
+      "sha256": "2f6366d1a96b629b5a512fd7573c3612a2785a35df4a4652363482baec44de00",
+      "modell": "folkeboot",
+      "schulungsdarstellung": true,
+      "wiederholung": 3,
+      "profilaufrufe": 334
+    },
+    {
+      "datei": "yacht1_standard_1.json",
+      "sha256": "fcbef6fe61c1660b8142184b1ce83dfd064dc78a69a39613c73841f47718101a",
+      "modell": "yacht1",
+      "schulungsdarstellung": false,
+      "wiederholung": 1,
+      "profilaufrufe": 249
+    },
+    {
+      "datei": "yacht1_standard_2.json",
+      "sha256": "bd6a0a4237c06f750c8f35531a0a5bbae4db40985f1faf357021bff582bd175b",
+      "modell": "yacht1",
+      "schulungsdarstellung": false,
+      "wiederholung": 2,
+      "profilaufrufe": 253
+    },
+    {
+      "datei": "yacht1_standard_3.json",
+      "sha256": "4dd2b470204a862705f5aefd735b9319f02d16f2b04ec0f1cf18710807d602e1",
+      "modell": "yacht1",
+      "schulungsdarstellung": false,
+      "wiederholung": 3,
+      "profilaufrufe": 247
+    },
+    {
+      "datei": "yacht1_schulung_1.json",
+      "sha256": "c51570ca35bc12a326e6f33abcf3ad3e2090039228a54d37242d5e295ef7033f",
+      "modell": "yacht1",
+      "schulungsdarstellung": true,
+      "wiederholung": 1,
+      "profilaufrufe": 227
+    },
+    {
+      "datei": "yacht1_schulung_2.json",
+      "sha256": "ce04808102fda69b15a1b22b494f40242b753bc6f9081a8d6a7614c1b8a628aa",
+      "modell": "yacht1",
+      "schulungsdarstellung": true,
+      "wiederholung": 2,
+      "profilaufrufe": 235
+    },
+    {
+      "datei": "yacht1_schulung_3.json",
+      "sha256": "45a462b409f2e1bc4fd2ec6992ddabfe3ce1da2b6499958c3ff68c6432b657b0",
+      "modell": "yacht1",
+      "schulungsdarstellung": true,
+      "wiederholung": 3,
+      "profilaufrufe": 237
+    }
+  ],
+  "hinweis": "18 isolierte Callbackdiagnosen, keine 300-s-Performancebaseline und kein Ersatz fuer nicht erfasste GUI-/Instrumentfunktionen."
+}

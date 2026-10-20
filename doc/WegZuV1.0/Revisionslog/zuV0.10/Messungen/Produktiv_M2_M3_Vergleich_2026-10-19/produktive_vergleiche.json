@@ -1,0 +1,2091 @@
+{
+  "faelle": [
+    {
+      "funktion_oder_elternblock": "quaternion_normalisieren",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 6.351500051096082e-06,
+          "p95_s": 6.408899789676071e-06,
+          "minimum_s": 6.334999925456941e-06,
+          "maximum_s": 6.4259997452609245e-06,
+          "spannweite_s": 9.099981980398328e-08,
+          "standardabweichung_s": 2.8715277970110618e-08,
+          "rohwerte_s": [
+            6.351500051096082e-06,
+            6.343499990180135e-06,
+            6.334999925456941e-06,
+            6.3689998933114115e-06,
+            6.4259997452609245e-06,
+            6.357499805744737e-06,
+            6.3409999711439015e-06
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 7.166500145103783e-06,
+          "p95_s": 7.239050086354837e-06,
+          "minimum_s": 7.133499893825501e-06,
+          "maximum_s": 7.268000044859945e-06,
+          "spannweite_s": 1.3450015103444413e-07,
+          "standardabweichung_s": 4.217710276460027e-08,
+          "rohwerte_s": [
+            7.170000171754509e-06,
+            7.166500145103783e-06,
+            7.133499893825501e-06,
+            7.156500068958849e-06,
+            7.133500184863806e-06,
+            7.171500183176249e-06,
+            7.268000044859945e-06
+          ]
+        },
+        "ersparnis_s": -8.150000940077007e-07,
+        "ersparnis_prozent": -12.831615956093012,
+        "beschleunigungsfaktor": 0.8862764142181011,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "quaternion_matrix",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.392750011291355e-05,
+          "p95_s": 1.460410002619028e-05,
+          "minimum_s": 1.3888500106986612e-05,
+          "maximum_s": 1.4830000000074505e-05,
+          "spannweite_s": 9.414998930878938e-07,
+          "standardabweichung_s": 3.1340921737788047e-07,
+          "rohwerte_s": [
+            1.3986499980092048e-05,
+            1.392750011291355e-05,
+            1.3906999956816435e-05,
+            1.4077000087127089e-05,
+            1.3888500106986612e-05,
+            1.4830000000074505e-05,
+            1.3917000032961368e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 7.403000199701637e-06,
+          "p95_s": 7.563199818832799e-06,
+          "minimum_s": 7.381999748758971e-06,
+          "maximum_s": 7.606999715790152e-06,
+          "spannweite_s": 2.2499996703118093e-07,
+          "standardabweichung_s": 7.373004426250571e-08,
+          "rohwerte_s": [
+            7.461000059265644e-06,
+            7.403000199701637e-06,
+            7.4060002225451174e-06,
+            7.381999748758971e-06,
+            7.3944998439401384e-06,
+            7.39650015020743e-06,
+            7.606999715790152e-06
+          ]
+        },
+        "ersparnis_s": 6.524499913211912e-06,
+        "ersparnis_prozent": 46.8461666509872,
+        "beschleunigungsfaktor": 1.881331856978049,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "quaternion_aus_matrix",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 5.92639998649247e-05,
+          "p95_s": 6.100809993222356e-05,
+          "minimum_s": 5.894900008570403e-05,
+          "maximum_s": 6.159249984193594e-05,
+          "spannweite_s": 2.6434997562319097e-06,
+          "standardabweichung_s": 8.596743258327227e-07,
+          "rohwerte_s": [
+            5.9385500208009034e-05,
+            6.159249984193594e-05,
+            5.907000013394281e-05,
+            5.92639998649247e-05,
+            5.900899996049702e-05,
+            5.894900008570403e-05,
+            5.964450014289468e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 9.393499931320548e-06,
+          "p95_s": 9.883649909170344e-06,
+          "minimum_s": 9.228500130120664e-06,
+          "maximum_s": 9.959999879356473e-06,
+          "spannweite_s": 7.314997492358093e-07,
+          "standardabweichung_s": 2.3218688590728544e-07,
+          "rohwerte_s": [
+            9.372000058647244e-06,
+            9.228500130120664e-06,
+            9.393499931320548e-06,
+            9.705499978736043e-06,
+            9.351500193588435e-06,
+            9.492500103078783e-06,
+            9.959999879356473e-06
+          ]
+        },
+        "ersparnis_s": 4.987049993360415e-05,
+        "ersparnis_prozent": 84.14973685081948,
+        "beschleunigungsfaktor": 6.309043519266125,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "_quaternion_multiplizieren",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 6.145999941509217e-06,
+          "p95_s": 6.962750077946111e-06,
+          "minimum_s": 5.525500164367258e-06,
+          "maximum_s": 7.280000136233866e-06,
+          "spannweite_s": 1.7544999718666078e-06,
+          "standardabweichung_s": 4.822959253724781e-07,
+          "rohwerte_s": [
+            6.222499941941351e-06,
+            7.280000136233866e-06,
+            5.525500164367258e-06,
+            6.1629997799173e-06,
+            6.141999911051244e-06,
+            6.145999941509217e-06,
+            6.129500106908381e-06
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 7.436499872710556e-06,
+          "p95_s": 7.958800066262484e-06,
+          "minimum_s": 7.405000214930624e-06,
+          "maximum_s": 8.074000070337207e-06,
+          "spannweite_s": 6.689998554065833e-07,
+          "standardabweichung_s": 2.2498738913361252e-07,
+          "rohwerte_s": [
+            7.52649997593835e-06,
+            8.074000070337207e-06,
+            7.690000056754798e-06,
+            7.436499872710556e-06,
+            7.435999868903309e-06,
+            7.405000214930624e-06,
+            7.4250000761821865e-06
+          ]
+        },
+        "ersparnis_s": -1.2904999312013385e-06,
+        "ersparnis_prozent": -20.997395761192315,
+        "beschleunigungsfaktor": 0.8264640686760397,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "_orientierung_schritt",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.9666999869514256e-05,
+          "p95_s": 2.0576099981553853e-05,
+          "minimum_s": 1.9394499831832944e-05,
+          "maximum_s": 2.0599499985110016e-05,
+          "spannweite_s": 1.2050001532770724e-06,
+          "standardabweichung_s": 4.808754223097603e-07,
+          "rohwerte_s": [
+            2.052149997325614e-05,
+            1.9591499876696618e-05,
+            1.9394499831832944e-05,
+            2.0340500050224364e-05,
+            1.9666999869514256e-05,
+            2.0599499985110016e-05,
+            1.9502000068314373e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 9.574499854352325e-06,
+          "p95_s": 9.998300083680078e-06,
+          "minimum_s": 9.346000151708722e-06,
+          "maximum_s": 1.0112000163644552e-05,
+          "spannweite_s": 7.6600001193583e-07,
+          "standardabweichung_s": 2.267701524495726e-07,
+          "rohwerte_s": [
+            9.501999884378164e-06,
+            9.346000151708722e-06,
+            1.0112000163644552e-05,
+            9.501500171609223e-06,
+            9.574499854352325e-06,
+            9.650500142015516e-06,
+            9.732999897096307e-06
+          ]
+        },
+        "ersparnis_s": 1.009250001516193e-05,
+        "ersparnis_prozent": 51.31692724931716,
+        "beschleunigungsfaktor": 2.0541020595006994,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Pose.__post_init__",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.5451000072062014e-05,
+          "p95_s": 1.6624799958663058e-05,
+          "minimum_s": 1.5257500053849072e-05,
+          "maximum_s": 1.711649994831532e-05,
+          "spannweite_s": 1.8589998944662494e-06,
+          "standardabweichung_s": 6.150411323104627e-07,
+          "rohwerte_s": [
+            1.5257500053849072e-05,
+            1.5292500029318036e-05,
+            1.5303499822039157e-05,
+            1.711649994831532e-05,
+            1.5475500258617104e-05,
+            1.5451000072062014e-05,
+            1.5477499982807785e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 1.3125500117894262e-05,
+          "p95_s": 1.3434300024528058e-05,
+          "minimum_s": 1.2916999985463917e-05,
+          "maximum_s": 1.3455000007525087e-05,
+          "spannweite_s": 5.380000220611702e-07,
+          "standardabweichung_s": 1.9239587967556869e-07,
+          "rohwerte_s": [
+            1.3177000219002367e-05,
+            1.3022000202909113e-05,
+            1.2953999976161867e-05,
+            1.2916999985463917e-05,
+            1.3386000064201654e-05,
+            1.3455000007525087e-05,
+            1.3125500117894262e-05
+          ]
+        },
+        "ersparnis_s": 2.325499954167752e-06,
+        "ersparnis_prozent": 15.05080540626392,
+        "beschleunigungsfaktor": 1.177174197804269,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Pose.rotationsmatrix",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.4424500113818794e-05,
+          "p95_s": 1.4841250173049048e-05,
+          "minimum_s": 1.4366499963216483e-05,
+          "maximum_s": 1.4860000228509306e-05,
+          "spannweite_s": 4.935002652928227e-07,
+          "standardabweichung_s": 2.150159836715136e-07,
+          "rohwerte_s": [
+            1.4791499997954816e-05,
+            1.4424500113818794e-05,
+            1.4860000228509306e-05,
+            1.4381000073626638e-05,
+            1.4368999982252717e-05,
+            1.4797500043641775e-05,
+            1.4366499963216483e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 7.951500010676683e-06,
+          "p95_s": 8.167450170731172e-06,
+          "minimum_s": 7.848999812267721e-06,
+          "maximum_s": 8.204500190913677e-06,
+          "spannweite_s": 3.555003786459555e-07,
+          "standardabweichung_s": 1.1749139962381574e-07,
+          "rohwerte_s": [
+            8.08100012363866e-06,
+            7.848999812267721e-06,
+            7.951500010676683e-06,
+            7.918500050436706e-06,
+            7.860999903641642e-06,
+            8.204500190913677e-06,
+            7.964500109665096e-06
+          ]
+        },
+        "ersparnis_s": 6.4730001031421115e-06,
+        "ersparnis_prozent": 44.875039357106886,
+        "beschleunigungsfaktor": 1.8140602520845939,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Pose.punkt_transformieren",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 2.0921999821439384e-05,
+          "p95_s": 2.1281950001139192e-05,
+          "minimum_s": 2.0342000061646105e-05,
+          "maximum_s": 2.1340000093914567e-05,
+          "spannweite_s": 9.980000322684617e-07,
+          "standardabweichung_s": 3.815807248044476e-07,
+          "rohwerte_s": [
+            2.1109000081196427e-05,
+            2.1340000093914567e-05,
+            2.0342000061646105e-05,
+            2.1146499784663318e-05,
+            2.042499982053414e-05,
+            2.0415000035427512e-05,
+            2.0921999821439384e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 1.0247500031255185e-05,
+          "p95_s": 1.0888449935009702e-05,
+          "minimum_s": 1.008799998089671e-05,
+          "maximum_s": 1.0922499932348728e-05,
+          "spannweite_s": 8.344999514520172e-07,
+          "standardabweichung_s": 3.1277343039414885e-07,
+          "rohwerte_s": [
+            1.0247500031255185e-05,
+            1.0102000087499619e-05,
+            1.0288500052411109e-05,
+            1.008799998089671e-05,
+            1.0245000012218953e-05,
+            1.0922499932348728e-05,
+            1.0808999941218644e-05
+          ]
+        },
+        "ersparnis_s": 1.0674499790184199e-05,
+        "ersparnis_prozent": 51.020456367874196,
+        "beschleunigungsfaktor": 2.0416686760309,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Pose.vektor_transformieren",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.9469999824650585e-05,
+          "p95_s": 1.9859599764458835e-05,
+          "minimum_s": 1.9231000042054802e-05,
+          "maximum_s": 1.9882999768015e-05,
+          "spannweite_s": 6.519997259601961e-07,
+          "standardabweichung_s": 2.2906394323209187e-07,
+          "rohwerte_s": [
+            1.9231000042054802e-05,
+            1.9804999756161123e-05,
+            1.9882999768015e-05,
+            1.945800002431497e-05,
+            1.9266500021331013e-05,
+            1.9504499796312303e-05,
+            1.9469999824650585e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 1.0350499942433088e-05,
+          "p95_s": 1.117945005535148e-05,
+          "minimum_s": 1.0135000047739596e-05,
+          "maximum_s": 1.1285500077065081e-05,
+          "spannweite_s": 1.1505000293254854e-06,
+          "standardabweichung_s": 4.119899326654196e-07,
+          "rohwerte_s": [
+            1.0160999954678118e-05,
+            1.0135000047739596e-05,
+            1.0246000019833446e-05,
+            1.07634998857975e-05,
+            1.1285500077065081e-05,
+            1.0932000004686414e-05,
+            1.0350499942433088e-05
+          ]
+        },
+        "ersparnis_s": 9.119499882217497e-06,
+        "ersparnis_prozent": 46.838726062398194,
+        "beschleunigungsfaktor": 1.8810685409340506,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Pose.invers",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 9.373949986184016e-05,
+          "p95_s": 0.00010000535001745448,
+          "minimum_s": 5.319150019204244e-05,
+          "maximum_s": 0.00010013899998739361,
+          "spannweite_s": 4.694749979535117e-05,
+          "standardabweichung_s": 1.5259278272585876e-05,
+          "rohwerte_s": [
+            9.373949986184016e-05,
+            9.693300002254546e-05,
+            0.00010013899998739361,
+            9.969350008759648e-05,
+            9.370750020025298e-05,
+            8.751300018047914e-05,
+            5.319150019204244e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 2.4341999960597605e-05,
+          "p95_s": 2.54375999502372e-05,
+          "minimum_s": 1.3720499991904944e-05,
+          "maximum_s": 2.5664999848231675e-05,
+          "spannweite_s": 1.1944499856326731e-05,
+          "standardabweichung_s": 3.827045423073131e-06,
+          "rohwerte_s": [
+            2.4907000188250095e-05,
+            2.418050018604845e-05,
+            2.5664999848231675e-05,
+            2.4508000060450285e-05,
+            2.4341999960597605e-05,
+            2.3462500248569995e-05,
+            1.3720499991904944e-05
+          ]
+        },
+        "ersparnis_s": 6.939749990124255e-05,
+        "ersparnis_prozent": 74.03229162042197,
+        "beschleunigungsfaktor": 3.8509366532567695,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Pose.komponieren",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 7.225000008475036e-05,
+          "p95_s": 0.00011679005000041796,
+          "minimum_s": 6.688900000881404e-05,
+          "maximum_s": 0.00012558799993712456,
+          "spannweite_s": 5.869899992831052e-05,
+          "standardabweichung_s": 2.0141297502775994e-05,
+          "rohwerte_s": [
+            7.15910000144504e-05,
+            9.626150014810264e-05,
+            0.00012558799993712456,
+            7.247300003655254e-05,
+            6.736300012562424e-05,
+            7.225000008475036e-05,
+            6.688900000881404e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 1.693750004051253e-05,
+          "p95_s": 3.1070950091816485e-05,
+          "minimum_s": 1.580549986101687e-05,
+          "maximum_s": 3.127450007013976e-05,
+          "spannweite_s": 1.5469000209122894e-05,
+          "standardabweichung_s": 6.71179443684445e-06,
+          "rohwerte_s": [
+            1.6927499964367597e-05,
+            1.580549986101687e-05,
+            3.127450007013976e-05,
+            3.05960001423955e-05,
+            1.693750004051253e-05,
+            1.611400017281994e-05,
+            2.7592499973252414e-05
+          ]
+        },
+        "ersparnis_s": 5.531250004423783e-05,
+        "ersparnis_prozent": 76.55709339703172,
+        "beschleunigungsfaktor": 4.265682651627262,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "rotationsmatrix_achsenwinkel",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 7.285000174306333e-06,
+          "p95_s": 1.334045006660744e-05,
+          "minimum_s": 7.133999897632748e-06,
+          "maximum_s": 1.5117500151973217e-05,
+          "spannweite_s": 7.98350025434047e-06,
+          "standardabweichung_s": 2.724312643266969e-06,
+          "rohwerte_s": [
+            1.5117500151973217e-05,
+            9.193999867420643e-06,
+            7.133999897632748e-06,
+            7.285000174306333e-06,
+            7.262500002980232e-06,
+            7.31350010028109e-06,
+            7.2515002102591096e-06
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 4.534000181593001e-06,
+          "p95_s": 9.29055002052337e-06,
+          "minimum_s": 4.480499774217605e-06,
+          "maximum_s": 9.298500081058592e-06,
+          "spannweite_s": 4.818000306840987e-06,
+          "standardabweichung_s": 2.15647643592907e-06,
+          "rohwerte_s": [
+            9.298500081058592e-06,
+            9.271999879274517e-06,
+            4.581499961204827e-06,
+            4.484500095713884e-06,
+            4.534000181593001e-06,
+            4.480499774217605e-06,
+            4.480999778024853e-06
+          ]
+        },
+        "ersparnis_s": 2.7509999927133326e-06,
+        "ersparnis_prozent": 37.76252473426027,
+        "beschleunigungsfaktor": 1.6067489815906406,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "pose_aus_modellpose",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.442899985704571e-05,
+          "p95_s": 1.4645400136942045e-05,
+          "minimum_s": 7.45550001738593e-06,
+          "maximum_s": 1.465650013415143e-05,
+          "spannweite_s": 7.201000116765499e-06,
+          "standardabweichung_s": 2.463821647846499e-06,
+          "rohwerte_s": [
+            7.45550001738593e-06,
+            1.4619500143453479e-05,
+            1.442899985704571e-05,
+            1.465650013415143e-05,
+            1.4349000121001155e-05,
+            1.446149981347844e-05,
+            1.2229999992996454e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 1.2347000010777265e-05,
+          "p95_s": 1.2809950072551146e-05,
+          "minimum_s": 6.1360001564025875e-06,
+          "maximum_s": 1.2879999994765967e-05,
+          "spannweite_s": 6.7439998383633794e-06,
+          "standardabweichung_s": 2.2252857411268728e-06,
+          "rohwerte_s": [
+            1.2347000010777265e-05,
+            1.2619499757420272e-05,
+            1.2096500140614808e-05,
+            1.2646500254049897e-05,
+            1.2879999994765967e-05,
+            1.2100500171072782e-05,
+            6.1360001564025875e-06
+          ]
+        },
+        "ersparnis_s": 2.0819998462684444e-06,
+        "ersparnis_prozent": 14.429273455511192,
+        "beschleunigungsfaktor": 1.168623944638466,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "pose_mit_gelenkwinkel",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 7.539000071119517e-06,
+          "p95_s": 8.25775010162033e-06,
+          "minimum_s": 7.396499859169125e-06,
+          "maximum_s": 8.49550007842481e-06,
+          "spannweite_s": 1.0990002192556854e-06,
+          "standardabweichung_s": 3.5816108630658606e-07,
+          "rohwerte_s": [
+            8.49550007842481e-06,
+            7.45249999454245e-06,
+            7.396499859169125e-06,
+            7.6210001134313645e-06,
+            7.703000155743212e-06,
+            7.539000071119517e-06,
+            7.39650015020743e-06
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 1.2001499999314547e-05,
+          "p95_s": 1.2663050118135288e-05,
+          "minimum_s": 1.1961999989580363e-05,
+          "maximum_s": 1.2854000087827445e-05,
+          "spannweite_s": 8.920000982470814e-07,
+          "standardabweichung_s": 2.978511876999393e-07,
+          "rohwerte_s": [
+            1.2217500188853591e-05,
+            1.1961999989580363e-05,
+            1.2854000087827445e-05,
+            1.1975500092376023e-05,
+            1.2001499999314547e-05,
+            1.2191499990876764e-05,
+            1.1967500031460076e-05
+          ]
+        },
+        "ersparnis_s": -4.46249992819503e-06,
+        "ersparnis_prozent": -59.192199046263745,
+        "beschleunigungsfaktor": 0.6281714845269424,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Pose.punkte_transformieren",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "punkte": 1
+      },
+      "aufrufe_pro_wiederholung": 20,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.3830000534653664e-05,
+          "p95_s": 1.7594998062122614e-05,
+          "minimum_s": 9.97500028461218e-06,
+          "maximum_s": 1.7669997760094702e-05,
+          "spannweite_s": 7.694997475482523e-06,
+          "standardabweichung_s": 3.1369611970909154e-06,
+          "rohwerte_s": [
+            1.3830000534653664e-05,
+            1.7419998766854405e-05,
+            1.7669997760094702e-05,
+            1.42700009746477e-05,
+            1.010499836411327e-05,
+            1.0084998211823405e-05,
+            9.97500028461218e-06
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 4.680000711232424e-06,
+          "p95_s": 8.15599982161075e-06,
+          "minimum_s": 4.509999416768551e-06,
+          "maximum_s": 8.269998943433166e-06,
+          "spannweite_s": 3.759999526664615e-06,
+          "standardabweichung_s": 1.5191751216739173e-06,
+          "rohwerte_s": [
+            5.7249999372288585e-06,
+            4.635000368580222e-06,
+            8.269998943433166e-06,
+            7.890001870691777e-06,
+            4.680000711232424e-06,
+            4.509999416768551e-06,
+            4.610000178217888e-06
+          ]
+        },
+        "ersparnis_s": 9.14999982342124e-06,
+        "ersparnis_prozent": 66.16051677289668,
+        "beschleunigungsfaktor": 2.955127870271561,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Pose.punkte_transformieren",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "punkte": 1000
+      },
+      "aufrufe_pro_wiederholung": 20,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.8564998754300177e-05,
+          "p95_s": 2.0563500002026557e-05,
+          "minimum_s": 1.8229999113827944e-05,
+          "maximum_s": 2.103000006172806e-05,
+          "spannweite_s": 2.800000947900118e-06,
+          "standardabweichung_s": 9.221576656794791e-07,
+          "rohwerte_s": [
+            2.103000006172806e-05,
+            1.8619999173097314e-05,
+            1.8229999113827944e-05,
+            1.9474999862723053e-05,
+            1.846000086516142e-05,
+            1.8564998754300177e-05,
+            1.8370000179857016e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 2.0334997680038212e-05,
+          "p95_s": 2.1399998804554343e-05,
+          "minimum_s": 2.0169999334029854e-05,
+          "maximum_s": 2.1549998200498523e-05,
+          "spannweite_s": 1.3799988664686687e-06,
+          "standardabweichung_s": 4.6790867757471824e-07,
+          "rohwerte_s": [
+            2.1050000214017928e-05,
+            2.0169999334029854e-05,
+            2.030000032391399e-05,
+            2.1549998200498523e-05,
+            2.0554999355226756e-05,
+            2.031500043813139e-05,
+            2.0334997680038212e-05
+          ]
+        },
+        "ersparnis_s": -1.7699989257380353e-06,
+        "ersparnis_prozent": -9.534064338830369,
+        "beschleunigungsfaktor": 0.9129579971638969,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Pose.punkte_transformieren",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "punkte": 100000
+      },
+      "aufrufe_pro_wiederholung": 5,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.0013188800076022744,
+          "p95_s": 0.0016644960001576691,
+          "minimum_s": 0.0010468200081959367,
+          "maximum_s": 0.0017248200019821525,
+          "spannweite_s": 0.0006779999937862157,
+          "standardabweichung_s": 0.0002357686520166625,
+          "rohwerte_s": [
+            0.001183360000140965,
+            0.001462200004607439,
+            0.0017248200019821525,
+            0.0015237399959005416,
+            0.0010468200081959367,
+            0.0013188800076022744,
+            0.0010536000016145408
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.0020510999951511622,
+          "p95_s": 0.0038819400081410993,
+          "minimum_s": 0.00201909999595955,
+          "maximum_s": 0.0045067200087942185,
+          "spannweite_s": 0.0024876200128346685,
+          "standardabweichung_s": 0.0008471251262185095,
+          "rohwerte_s": [
+            0.0020973200094886123,
+            0.00201909999595955,
+            0.0045067200087942185,
+            0.0024241200066171587,
+            0.0020476200035773216,
+            0.0020510999951511622,
+            0.0020478000049479307
+          ]
+        },
+        "ersparnis_s": -0.0007322199875488878,
+        "ersparnis_prozent": -55.518317309249746,
+        "beschleunigungsfaktor": 0.6430110724587444,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Koerper.snapshot",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "modell": "optimist"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.00014757800032384695,
+          "p95_s": 0.00020316219946835186,
+          "minimum_s": 9.600799996405839e-05,
+          "maximum_s": 0.00022601199918426574,
+          "spannweite_s": 0.00013000399922020734,
+          "standardabweichung_s": 3.5475188970344853e-05,
+          "rohwerte_s": [
+            9.600799996405839e-05,
+            0.00022601199918426574,
+            0.00014493199996650218,
+            0.00014757800032384695,
+            0.00014892400009557604,
+            0.0001407240005210042,
+            0.00014984600013121964
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.0007491560000926256,
+          "p95_s": 0.0008079376003006473,
+          "minimum_s": 0.0005594719992950559,
+          "maximum_s": 0.0008111080003436655,
+          "spannweite_s": 0.0002516360010486096,
+          "standardabweichung_s": 7.888073759596058e-05,
+          "rohwerte_s": [
+            0.0005594719992950559,
+            0.0007206159993074834,
+            0.0007137479993980378,
+            0.000777676000725478,
+            0.0008005400002002716,
+            0.0008111080003436655,
+            0.0007491560000926256
+          ]
+        },
+        "ersparnis_s": -0.0006015779997687787,
+        "ersparnis_prozent": -407.6339281252413,
+        "beschleunigungsfaktor": 0.19699234913102265,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Koerper.punkte_in_welt",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "modell": "optimist"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 6.375600001774728e-05,
+          "p95_s": 7.269199995789676e-05,
+          "minimum_s": 6.260799942538142e-05,
+          "maximum_s": 7.52660003490746e-05,
+          "spannweite_s": 1.2658000923693183e-05,
+          "standardabweichung_s": 4.15946223596944e-06,
+          "rohwerte_s": [
+            6.333799916319549e-05,
+            6.49980001617223e-05,
+            7.52660003490746e-05,
+            6.668599904514849e-05,
+            6.26559997908771e-05,
+            6.375600001774728e-05,
+            6.260799942538142e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 7.857799995690584e-05,
+          "p95_s": 8.04262002930045e-05,
+          "minimum_s": 7.759399944916368e-05,
+          "maximum_s": 8.062600041739642e-05,
+          "spannweite_s": 3.0320009682327444e-06,
+          "standardabweichung_s": 1.0610186944357198e-06,
+          "rohwerte_s": [
+            8.062600041739642e-05,
+            7.996000000275672e-05,
+            7.844999898225069e-05,
+            7.774599944241345e-05,
+            7.759399944916368e-05,
+            7.9564000479877e-05,
+            7.857799995690584e-05
+          ]
+        },
+        "ersparnis_s": -1.482199993915856e-05,
+        "ersparnis_prozent": -23.248007928716778,
+        "beschleunigungsfaktor": 0.8113721404555051,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Modellaufbau einschliesslich Koerper.verband/_baue_verband",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "modell": "optimist"
+      },
+      "aufrufe_pro_wiederholung": 1,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.02312929998151958,
+          "p95_s": 0.025262329989345744,
+          "minimum_s": 0.015185200027190149,
+          "maximum_s": 0.025804099976085126,
+          "spannweite_s": 0.010618899948894978,
+          "standardabweichung_s": 0.003958753343360499,
+          "rohwerte_s": [
+            0.02312929998151958,
+            0.015185200027190149,
+            0.015518600004725158,
+            0.019406599982175976,
+            0.025804099976085126,
+            0.023592699959408492,
+            0.023998200020287186
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.016273499990347773,
+          "p95_s": 0.023815309995552526,
+          "minimum_s": 0.015184500021860003,
+          "maximum_s": 0.024031999986618757,
+          "spannweite_s": 0.008847499964758754,
+          "standardabweichung_s": 0.003904386260192027,
+          "rohwerte_s": [
+            0.016273499990347773,
+            0.015793600003235042,
+            0.015184500021860003,
+            0.015225799987092614,
+            0.024031999986618757,
+            0.02303740003844723,
+            0.023309700016397983
+          ]
+        },
+        "ersparnis_s": 0.006855799991171807,
+        "ersparnis_prozent": 29.641191028909756,
+        "beschleunigungsfaktor": 1.421286139751016,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "baue_kraftfunktion_6dof: vorbereitete exakte Union/Ebenenschnitt",
+      "anforderungen": [
+        "A-V0.10-00012",
+        "A-V0.10-00013",
+        "A-V0.10-00014"
+      ],
+      "eingabe": {
+        "modell": "optimist"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.00043128799996338784,
+          "p95_s": 0.000634936000336893,
+          "minimum_s": 0.0003354400000534952,
+          "maximum_s": 0.0006349660002160818,
+          "spannweite_s": 0.00029952600016258657,
+          "standardabweichung_s": 0.00012735172388619875,
+          "rohwerte_s": [
+            0.0006349660002160818,
+            0.0006348660006187856,
+            0.0006297540001105517,
+            0.00042013199999928473,
+            0.00043128799996338784,
+            0.0003493439999874681,
+            0.0003354400000534952
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.00010084399953484535,
+          "p95_s": 0.00010984519985504448,
+          "minimum_s": 6.796999950893223e-05,
+          "maximum_s": 0.00011207000003196299,
+          "spannweite_s": 4.410000052303076e-05,
+          "standardabweichung_s": 1.498515826219728e-05,
+          "rohwerte_s": [
+            0.00010465399944223464,
+            0.00010084399953484535,
+            0.00010288799996487796,
+            0.00011207000003196299,
+            7.721000001765787e-05,
+            6.796999950893223e-05,
+            8.686800021678209e-05
+          ]
+        },
+        "ersparnis_s": 0.0003304440004285425,
+        "ersparnis_prozent": 76.61794449569521,
+        "beschleunigungsfaktor": 4.276783962880824,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "wasserlinien_querschnitt/_ringe_aus_mesh/_ringmomente",
+      "anforderungen": [
+        "A-V0.10-00016"
+      ],
+      "eingabe": {
+        "modell": "optimist"
+      },
+      "aufrufe_pro_wiederholung": 2,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.029237000009743497,
+          "p95_s": 0.05003154499572701,
+          "minimum_s": 0.028744100010953844,
+          "maximum_s": 0.0513613999937661,
+          "spannweite_s": 0.022617299982812256,
+          "standardabweichung_s": 0.009116965035683822,
+          "rohwerte_s": [
+            0.046928550000302494,
+            0.041131700010737404,
+            0.0513613999937661,
+            0.029237000009743497,
+            0.028744100010953844,
+            0.028874949988676235,
+            0.02877035000710748
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.008827200013911352,
+          "p95_s": 0.009050269998260774,
+          "minimum_s": 0.004398999997647479,
+          "maximum_s": 0.009115699998801574,
+          "spannweite_s": 0.004716700001154095,
+          "standardabweichung_s": 0.002071306928711567,
+          "rohwerte_s": [
+            0.008897599996998906,
+            0.008827200013911352,
+            0.008857600012561306,
+            0.009115699998801574,
+            0.004398999997647479,
+            0.004565999988699332,
+            0.005377950001275167
+          ]
+        },
+        "ersparnis_s": 0.020409799995832145,
+        "ersparnis_prozent": 69.80811981061802,
+        "beschleunigungsfaktor": 3.312148808644534,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "schneide_am_wasser mit Deckel: Elternblock inklusive Konturketten",
+      "anforderungen": [
+        "A-V0.10-00015"
+      ],
+      "eingabe": {
+        "modell": "optimist"
+      },
+      "aufrufe_pro_wiederholung": 5,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.0009790200041607023,
+          "p95_s": 0.0010286700027063488,
+          "minimum_s": 0.0009580000070855022,
+          "maximum_s": 0.0010414800024591386,
+          "spannweite_s": 8.34799953736364e-05,
+          "standardabweichung_s": 2.687645386822379e-05,
+          "rohwerte_s": [
+            0.00099532000022009,
+            0.0009629799984395504,
+            0.000966879993211478,
+            0.0009987800032831729,
+            0.0009790200041607023,
+            0.0009580000070855022,
+            0.0010414800024591386
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.00013798000290989875,
+          "p95_s": 0.00014852800290100277,
+          "minimum_s": 0.00011569999624043703,
+          "maximum_s": 0.00015190000412985684,
+          "spannweite_s": 3.62000078894198e-05,
+          "standardabweichung_s": 1.3015964335549158e-05,
+          "rohwerte_s": [
+            0.0001393800019286573,
+            0.00012213999871164561,
+            0.00015190000412985684,
+            0.00011569999624043703,
+            0.00014066000003367662,
+            0.00011582000879570842,
+            0.00013798000290989875
+          ]
+        },
+        "ersparnis_s": 0.0008410400012508035,
+        "ersparnis_prozent": 85.90631424041362,
+        "beschleunigungsfaktor": 7.095376021987799,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Koerper.snapshot",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "modell": "folkeboot"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 5.5931999813765284e-05,
+          "p95_s": 5.842800019308925e-05,
+          "minimum_s": 5.287800100632012e-05,
+          "maximum_s": 5.9358000289648774e-05,
+          "spannweite_s": 6.4799992833286546e-06,
+          "standardabweichung_s": 2.037692090686713e-06,
+          "rohwerte_s": [
+            5.5931999813765284e-05,
+            5.625799996778369e-05,
+            5.587600055150688e-05,
+            5.287800100632012e-05,
+            5.9358000289648774e-05,
+            5.3014000877738e-05,
+            5.608199979178608e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.00025264000054448844,
+          "p95_s": 0.00027539119985885916,
+          "minimum_s": 0.00020809799898415803,
+          "maximum_s": 0.00028466599993407724,
+          "spannweite_s": 7.656800094991921e-05,
+          "standardabweichung_s": 2.4042798546211735e-05,
+          "rohwerte_s": [
+            0.00020809799898415803,
+            0.00028466599993407724,
+            0.00022170200012624263,
+            0.0002537499996833503,
+            0.00022486599977128207,
+            0.00025309599936008454,
+            0.00025264000054448844
+          ]
+        },
+        "ersparnis_s": -0.00019670800073072315,
+        "ersparnis_prozent": -351.69134196112157,
+        "beschleunigungsfaktor": 0.22139011911502898,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Koerper.punkte_in_welt",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "modell": "folkeboot"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 2.1007999312132597e-05,
+          "p95_s": 2.3675400181673467e-05,
+          "minimum_s": 2.06840003374964e-05,
+          "maximum_s": 2.4660000344738365e-05,
+          "spannweite_s": 3.976000007241966e-06,
+          "standardabweichung_s": 1.3077782216623322e-06,
+          "rohwerte_s": [
+            2.1377999801188707e-05,
+            2.106199972331524e-05,
+            2.1007999312132597e-05,
+            2.4660000344738365e-05,
+            2.085799933411181e-05,
+            2.0822000224143266e-05,
+            2.06840003374964e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 1.5808000462129712e-05,
+          "p95_s": 1.6817000461742283e-05,
+          "minimum_s": 1.55259994789958e-05,
+          "maximum_s": 1.715000020340085e-05,
+          "spannweite_s": 1.62400072440505e-06,
+          "standardabweichung_s": 4.98912941930127e-07,
+          "rohwerte_s": [
+            1.5993999550119043e-05,
+            1.577800023369491e-05,
+            1.5808000462129712e-05,
+            1.6040001064538955e-05,
+            1.715000020340085e-05,
+            1.55259994789958e-05,
+            1.5671999426558615e-05
+          ]
+        },
+        "ersparnis_s": 5.199998850002884e-06,
+        "ersparnis_prozent": 24.75247058390642,
+        "beschleunigungsfaktor": 1.3289472860568428,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Modellaufbau einschliesslich Koerper.verband/_baue_verband",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "modell": "folkeboot"
+      },
+      "aufrufe_pro_wiederholung": 1,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.00850129994796589,
+          "p95_s": 0.011120550002669916,
+          "minimum_s": 0.008210300002247095,
+          "maximum_s": 0.011170200014021248,
+          "spannweite_s": 0.0029599000117741525,
+          "standardabweichung_s": 0.0012027920394273564,
+          "rohwerte_s": [
+            0.008210300002247095,
+            0.00850129994796589,
+            0.00836360000539571,
+            0.008384599990677088,
+            0.011170200014021248,
+            0.011004699976183474,
+            0.009740400011651218
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.008309400000143796,
+          "p95_s": 0.011053390032611788,
+          "minimum_s": 0.00805829995078966,
+          "maximum_s": 0.01106020004954189,
+          "spannweite_s": 0.0030019000987522304,
+          "standardabweichung_s": 0.001266244002283571,
+          "rohwerte_s": [
+            0.00805829995078966,
+            0.008309400000143796,
+            0.008501000003889203,
+            0.008212300017476082,
+            0.011037499993108213,
+            0.01106020004954189,
+            0.008214699977543205
+          ]
+        },
+        "ersparnis_s": 0.00019189994782209396,
+        "ersparnis_prozent": 2.2573012244793214,
+        "beschleunigungsfaktor": 1.0230943206270937,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "baue_kraftfunktion_6dof: vorbereitete exakte Union/Ebenenschnitt",
+      "anforderungen": [
+        "A-V0.10-00012",
+        "A-V0.10-00013",
+        "A-V0.10-00014"
+      ],
+      "eingabe": {
+        "modell": "folkeboot"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.00022637200076133012,
+          "p95_s": 0.0002393075998406857,
+          "minimum_s": 0.0002206280000973493,
+          "maximum_s": 0.00024215999990701676,
+          "spannweite_s": 2.1531999809667465e-05,
+          "standardabweichung_s": 6.4136108108297365e-06,
+          "rohwerte_s": [
+            0.0002297539997380227,
+            0.00024215999990701676,
+            0.00022618200047872962,
+            0.00022637200076133012,
+            0.00023265199968591332,
+            0.00022501000086776912,
+            0.0002206280000973493
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 4.991400055587292e-05,
+          "p95_s": 5.2931799902580674e-05,
+          "minimum_s": 4.7635999508202075e-05,
+          "maximum_s": 5.3355999989435075e-05,
+          "spannweite_s": 5.720000481233e-06,
+          "standardabweichung_s": 1.8692225810268189e-06,
+          "rohwerte_s": [
+            5.0035999156534674e-05,
+            4.991400055587292e-05,
+            4.936999990604818e-05,
+            4.814199986867607e-05,
+            5.1941999699920416e-05,
+            4.7635999508202075e-05,
+            5.3355999989435075e-05
+          ]
+        },
+        "ersparnis_s": 0.0001764580002054572,
+        "ersparnis_prozent": 77.95045306486533,
+        "beschleunigungsfaktor": 4.5352405786014485,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "wasserlinien_querschnitt/_ringe_aus_mesh/_ringmomente",
+      "anforderungen": [
+        "A-V0.10-00016"
+      ],
+      "eingabe": {
+        "modell": "folkeboot"
+      },
+      "aufrufe_pro_wiederholung": 2,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.006064499990316108,
+          "p95_s": 0.00620334999402985,
+          "minimum_s": 0.005937650013947859,
+          "maximum_s": 0.006209949991898611,
+          "spannweite_s": 0.0002722999779507518,
+          "standardabweichung_s": 9.709365653480459e-05,
+          "rohwerte_s": [
+            0.006017049978254363,
+            0.006209949991898611,
+            0.005937650013947859,
+            0.006159900018246844,
+            0.006064499990316108,
+            0.005998550012009218,
+            0.00618794999900274
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.0013637499941978604,
+          "p95_s": 0.0014318050001747905,
+          "minimum_s": 0.0013088999839965254,
+          "maximum_s": 0.0014523999998345971,
+          "spannweite_s": 0.0001435000158380717,
+          "standardabweichung_s": 4.321131667134371e-05,
+          "rohwerte_s": [
+            0.001374299987219274,
+            0.0013088999839965254,
+            0.001334050000878051,
+            0.0013637499941978604,
+            0.0013837500009685755,
+            0.0014523999998345971,
+            0.0013352000096347183
+          ]
+        },
+        "ersparnis_s": 0.0047007499961182475,
+        "ersparnis_prozent": 77.5125732315027,
+        "beschleunigungsfaktor": 4.446929434366866,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "schneide_am_wasser mit Deckel: Elternblock inklusive Konturketten",
+      "anforderungen": [
+        "A-V0.10-00015"
+      ],
+      "eingabe": {
+        "modell": "folkeboot"
+      },
+      "aufrufe_pro_wiederholung": 5,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.00048443999839946627,
+          "p95_s": 0.0004979459987953305,
+          "minimum_s": 0.0004638400045223534,
+          "maximum_s": 0.0005001000012271106,
+          "spannweite_s": 3.6259996704757214e-05,
+          "standardabweichung_s": 1.2073980174092344e-05,
+          "rohwerte_s": [
+            0.000492919993121177,
+            0.000489799992647022,
+            0.00046976000303402545,
+            0.00048443999839946627,
+            0.0004638400045223534,
+            0.0005001000012271106,
+            0.00047662000870332124
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 5.3319998551160096e-05,
+          "p95_s": 5.868399632163346e-05,
+          "minimum_s": 4.2840000241994856e-05,
+          "maximum_s": 5.8779993560165165e-05,
+          "spannweite_s": 1.593999331817031e-05,
+          "standardabweichung_s": 6.636584977788609e-06,
+          "rohwerte_s": [
+            5.8779993560165165e-05,
+            4.3979997280985116e-05,
+            5.4099992848932746e-05,
+            4.2840000241994856e-05,
+            5.846000276505947e-05,
+            4.3120002374053e-05,
+            5.3319998551160096e-05
+          ]
+        },
+        "ersparnis_s": 0.0004311199998483062,
+        "ersparnis_prozent": 88.99347726708712,
+        "beschleunigungsfaktor": 9.085521597204286,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Koerper.snapshot",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "modell": "yacht1"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.0001557299995329231,
+          "p95_s": 0.0001967414000537246,
+          "minimum_s": 9.318800061009824e-05,
+          "maximum_s": 0.00021343400003388525,
+          "spannweite_s": 0.00012024599942378701,
+          "standardabweichung_s": 3.812276537044221e-05,
+          "rohwerte_s": [
+            9.676599991507828e-05,
+            0.00015474799904040992,
+            0.00015638999990187587,
+            0.0001577920001000166,
+            0.0001557299995329231,
+            9.318800061009824e-05,
+            0.00021343400003388525
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.000781122000189498,
+          "p95_s": 0.001004783400450833,
+          "minimum_s": 0.0005556160002015531,
+          "maximum_s": 0.0010176480002701282,
+          "spannweite_s": 0.00046203200006857516,
+          "standardabweichung_s": 0.00016515582790884651,
+          "rohwerte_s": [
+            0.00057523800060153,
+            0.0007671040005516261,
+            0.0010176480002701282,
+            0.0008476900006644428,
+            0.0009747660008724779,
+            0.000781122000189498,
+            0.0005556160002015531
+          ]
+        },
+        "ersparnis_s": -0.000625392000656575,
+        "ersparnis_prozent": -401.5873643692909,
+        "beschleunigungsfaktor": 0.19936706365349258,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Koerper.punkte_in_welt",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "modell": "yacht1"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 7.578599965199828e-05,
+          "p95_s": 8.228760038036853e-05,
+          "minimum_s": 3.501800005324185e-05,
+          "maximum_s": 8.304600021801889e-05,
+          "spannweite_s": 4.8028000164777034e-05,
+          "standardabweichung_s": 1.958275916091384e-05,
+          "rohwerte_s": [
+            3.502200008369982e-05,
+            3.501800005324185e-05,
+            6.594400038011372e-05,
+            8.051800075918436e-05,
+            8.304600021801889e-05,
+            7.925199926830828e-05,
+            7.578599965199828e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.00010890600038692356,
+          "p95_s": 0.00011100019956938923,
+          "minimum_s": 4.581000073812902e-05,
+          "maximum_s": 0.0001110739994328469,
+          "spannweite_s": 6.526399869471788e-05,
+          "standardabweichung_s": 2.8903251070623097e-05,
+          "rohwerte_s": [
+            4.581000073812902e-05,
+            4.5824000844731925e-05,
+            0.0001099479990079999,
+            0.00010890600038692356,
+            0.00011082799988798797,
+            0.0001110739994328469,
+            0.00010804999968968332
+          ]
+        },
+        "ersparnis_s": -3.312000073492527e-05,
+        "ersparnis_prozent": -43.70200417888395,
+        "beschleunigungsfaktor": 0.69588451860085,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Modellaufbau einschliesslich Koerper.verband/_baue_verband",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "modell": "yacht1"
+      },
+      "aufrufe_pro_wiederholung": 1,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.029614600003696978,
+          "p95_s": 0.03008036999963224,
+          "minimum_s": 0.028699299960862845,
+          "maximum_s": 0.03014909999910742,
+          "spannweite_s": 0.0014498000382445753,
+          "standardabweichung_s": 0.0004191811215877369,
+          "rohwerte_s": [
+            0.029614600003696978,
+            0.029583700001239777,
+            0.03014909999910742,
+            0.028699299960862845,
+            0.029920000000856817,
+            0.029664299974683672,
+            0.029495199967641383
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.02853269997285679,
+          "p95_s": 0.030187990044942124,
+          "minimum_s": 0.02824249997502193,
+          "maximum_s": 0.030691300053149462,
+          "spannweite_s": 0.002448800078127533,
+          "standardabweichung_s": 0.0007781178335087621,
+          "rohwerte_s": [
+            0.030691300053149462,
+            0.028525599977001548,
+            0.02854610001668334,
+            0.029013600025791675,
+            0.02845720003824681,
+            0.02853269997285679,
+            0.02824249997502193
+          ]
+        },
+        "ersparnis_s": 0.0010819000308401883,
+        "ersparnis_prozent": 3.6532657226676295,
+        "beschleunigungsfaktor": 1.0379178988272895,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "baue_kraftfunktion_6dof: vorbereitete exakte Union/Ebenenschnitt",
+      "anforderungen": [
+        "A-V0.10-00012",
+        "A-V0.10-00013",
+        "A-V0.10-00014"
+      ],
+      "eingabe": {
+        "modell": "yacht1"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.0003762540000025183,
+          "p95_s": 0.0005525658001424743,
+          "minimum_s": 0.0003403720003552735,
+          "maximum_s": 0.0006265500001609325,
+          "spannweite_s": 0.000286177999805659,
+          "standardabweichung_s": 9.420812467534546e-05,
+          "rohwerte_s": [
+            0.0006265500001609325,
+            0.00037993600009940566,
+            0.00037939000059850514,
+            0.0003762540000025183,
+            0.0003452019998803735,
+            0.00034655399969778954,
+            0.0003403720003552735
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 7.313799927942455e-05,
+          "p95_s": 7.353519950993359e-05,
+          "minimum_s": 6.900600041262806e-05,
+          "maximum_s": 7.360599935054779e-05,
+          "spannweite_s": 4.599998937919729e-06,
+          "standardabweichung_s": 1.7226553133157983e-06,
+          "rohwerte_s": [
+            7.225399953313172e-05,
+            6.991600035689771e-05,
+            7.336999988183379e-05,
+            7.360599935054779e-05,
+            7.313799927942455e-05,
+            6.900600041262806e-05,
+            7.330399937927724e-05
+          ]
+        },
+        "ersparnis_s": 0.00030311600072309376,
+        "ersparnis_prozent": 80.5615357500691,
+        "beschleunigungsfaktor": 5.144439329889729,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "wasserlinien_querschnitt/_ringe_aus_mesh/_ringmomente",
+      "anforderungen": [
+        "A-V0.10-00016"
+      ],
+      "eingabe": {
+        "modell": "yacht1"
+      },
+      "aufrufe_pro_wiederholung": 2,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.04506865001167171,
+          "p95_s": 0.07633145001309458,
+          "minimum_s": 0.04376134998165071,
+          "maximum_s": 0.0807914000179153,
+          "spannweite_s": 0.03703005003626458,
+          "standardabweichung_s": 0.013429800273262555,
+          "rohwerte_s": [
+            0.04392285001813434,
+            0.04376134998165071,
+            0.04948280000826344,
+            0.04402040000422858,
+            0.04506865001167171,
+            0.06592490000184625,
+            0.0807914000179153
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.00661979999858886,
+          "p95_s": 0.012597979980637313,
+          "minimum_s": 0.006494149973150343,
+          "maximum_s": 0.01501834997907281,
+          "spannweite_s": 0.008524200005922467,
+          "standardabweichung_s": 0.002924920020212072,
+          "rohwerte_s": [
+            0.006543850002344698,
+            0.006494149973150343,
+            0.006616350001422688,
+            0.00661979999858886,
+            0.006950449984287843,
+            0.006794949993491173,
+            0.01501834997907281
+          ]
+        },
+        "ersparnis_s": 0.03844885001308285,
+        "ersparnis_prozent": 85.31174109525249,
+        "beschleunigungsfaktor": 6.808158859977487,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "schneide_am_wasser mit Deckel: Elternblock inklusive Konturketten",
+      "anforderungen": [
+        "A-V0.10-00015"
+      ],
+      "eingabe": {
+        "modell": "yacht1"
+      },
+      "aufrufe_pro_wiederholung": 5,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.0034276199992746116,
+          "p95_s": 0.00345167200313881,
+          "minimum_s": 0.003205300006084144,
+          "maximum_s": 0.0034523800015449522,
+          "spannweite_s": 0.0002470799954608083,
+          "standardabweichung_s": 8.048207197711218e-05,
+          "rohwerte_s": [
+            0.003205300006084144,
+            0.0034523800015449522,
+            0.0034276199992746116,
+            0.0034314399934373798,
+            0.0034181799972429873,
+            0.0034500200068578123,
+            0.0033845400088466705
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.00048248000675812366,
+          "p95_s": 0.0004882259992882609,
+          "minimum_s": 0.00031888000667095183,
+          "maximum_s": 0.0004893000004813075,
+          "spannweite_s": 0.00017041999381035567,
+          "standardabweichung_s": 5.6602693773655486e-05,
+          "rohwerte_s": [
+            0.0004893000004813075,
+            0.00048537999391555785,
+            0.00048248000675812366,
+            0.00046172000002115966,
+            0.0004857199965044856,
+            0.0004624199937097728,
+            0.00031888000667095183
+          ]
+        },
+        "ersparnis_s": 0.002945139992516488,
+        "ersparnis_prozent": 85.92376031006263,
+        "beschleunigungsfaktor": 7.104170020029332,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "Produktiv_Integration_M2_M3_2026-10-19.xml; zusaetzliche direkte Geometrieparitaet in tests/test_native_geometrie.py",
+      "uebernahmeschranke_performance": false
+    }
+  ],
+  "hinweis": "Tatsaechliche oeffentliche Adapter, keine reine Kernzeit. Noch kein vollstaendiger Migrations-/GUI-Live-Gesamtvergleich.",
+  "nutzervorgabe": "Produktivuebernahme auch bei Verschlechterung; Paritaet und Robustheit bleiben Pflicht."
+}

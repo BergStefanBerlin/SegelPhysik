@@ -138,6 +138,11 @@ class _KraftMessung:
         return self.gemessen(*args, **kwargs)
 
 
+class _NativeBatchMessung:
+    def __init__(self, kontext, profil):
+        self.batch = profil.messen("nativer_batch_inkl_kraefte", kontext.batch)
+
+
 def profil_initialisieren(koerper, rho_w, physik, hydrostatik_pfad="exakt_union",
                          cd_volumenkoerper=None, *, datei, cpu_batches=0):
     global _profil
@@ -159,6 +164,9 @@ def profil_initialisieren(koerper, rho_w, physik, hydrostatik_pfad="exakt_union"
     dynamik_6dof.schritt = _profil.messen("integrator_inkl_kraefte", original)
     dynamik_6dof.schritt._benchmark_original = original
     worker._kraftfunktion = _KraftMessung(worker._kraftfunktion, _profil)
+    _profil.nativer_batch = worker._native_kontext is not None
+    if _profil.nativer_batch:
+        worker._native_kontext = _NativeBatchMessung(worker._native_kontext, _profil)
     _profil.schreiben({
         "typ": "initialisierung", "dauer_s": time.perf_counter() - start,
         "eingabe_sha256": eingabe_hash(
@@ -166,7 +174,8 @@ def profil_initialisieren(koerper, rho_w, physik, hydrostatik_pfad="exakt_union"
         "masse_kg": float(koerper.masse), "dt_s": float(physik.dt_s),
         "schwerpunkt": np.asarray(koerper.r_S).tolist(),
         "hydrostatik_backend": hydrostatik_pfad, "pid": os.getpid(),
-        "instrumentierung_version": 2,
+        "instrumentierung_version": 3,
+        "nativer_batch": _profil.nativer_batch,
         "physikparameter": {key: getattr(physik, key) for key in physik.__slots__},
     })
 
@@ -194,7 +203,7 @@ def profil_schritte_berechnen(zustand, anzahl_schritte, fremdkraft=None,
     dynamik = sum(werte.get("hydrodynamik", []))
     kraefte = sum(werte.get("kraefte_gesamt", []))
     integration = sum(werte.get("integrator_inkl_kraefte", []))
-    _profil.schreiben({
+    daten = {
         "typ": "batch", "batch": _profil.batch, "schritte": anzahl_schritte,
         "worker_s": dauer, "cpu_profiliert": profilieren,
         "hydrostatik_geometrie_s": hydro, "hydrodynamik_s": dynamik,
@@ -208,7 +217,20 @@ def profil_schritte_berechnen(zustand, anzahl_schritte, fremdkraft=None,
         "fehler": ergebnis[2],
         "cpu_hotspots": cpu_statistik(_profil.cpu) if (
             profilieren and _profil.batch == _profil.cpu_batches) else None,
-    })
+    }
+    daten["nativer_batch"] = _profil.nativer_batch
+    if _profil.nativer_batch:
+        for name in (
+                "hydrostatik_geometrie", "hydrodynamik", "kraftaggregation_exklusiv",
+                "integrator_exklusiv", "kraftaufruf_rest"):
+            daten[name + "_s"] = None
+        for name in (
+                "cache_pose_aufrufe", "cache_pose_direkte_treffer",
+                "cache_pose_eindeutig"):
+            daten[name] = None
+        daten["nativer_batch_s"] = sum(werte.get("nativer_batch_inkl_kraefte", []))
+        daten["worker_rest_s"] = dauer - daten["nativer_batch_s"]
+    _profil.schreiben(daten)
     return ergebnis
 
 
@@ -221,18 +243,23 @@ def worker_bericht(datei, roundtrips=None):
         "hydrostatik_geometrie", "hydrodynamik", "kraftaggregation_exklusiv",
         "integrator_exklusiv", "worker_rest",
     ):
-        komponenten[name] = statistik([b[name + "_s"] for b in batches])
+        komponenten[name] = statistik([
+            b[name + "_s"] for b in batches if b[name + "_s"] is not None])
     if batches and "kraftaufruf_rest_s" in batches[0]:
         komponenten["kraftaufruf_rest"] = statistik([
-            b["kraftaufruf_rest_s"] for b in batches])
+            b["kraftaufruf_rest_s"] for b in batches
+            if b["kraftaufruf_rest_s"] is not None])
     elif batches:
         komponenten["integration_inkl_kraftaufruf_rest"] = komponenten.pop(
             "integrator_exklusiv")
+    if any(b.get("nativer_batch", False) for b in batches):
+        komponenten["nativer_batch_inkl_kraefte"] = statistik([
+            b["nativer_batch_s"] for b in batches if b.get("nativer_batch", False)])
     schritte = {}
     for name in (
         "hydrostatik_geometrie", "hydrodynamik",
         "kraftaggregation_inkl_hydrodynamik", "integrator_inkl_kraefte",
-        "kraefte_gesamt",
+        "kraefte_gesamt", "nativer_batch_inkl_kraefte",
     ):
         schritte[name] = statistik([
             wert for batch in batches
@@ -260,6 +287,8 @@ def worker_bericht(datei, roundtrips=None):
             "Opt-in-Timer; Integrator exklusiv = Schritt minus Hydrostatik und "
             "Kraftaggregation im Schema 1 (inkl. Kraftaufrufverwaltung); "
             "Schema 2 trennt gesamten Kraftaufruf und dessen Rest zusätzlich ab. "
+            "Schema 3 misst den nativen Gesamtbatch; dessen innere Einzelzeiten "
+            "und Posecache-Zahlen sind ungemessen (null), nicht null Kosten. "
             "Worker-Rest separat. CPU-Profilbatches markiert. "
             "Cachetreffer sind nur beobachtet, kein Ergebniscache eingebaut."),
     }

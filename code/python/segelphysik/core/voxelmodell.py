@@ -4,6 +4,7 @@ from __future__ import annotations
 import numpy as np
 
 from .massen import validiere_mesh
+from .rechenpfad import rechenpfad
 
 
 class VoxelmodellFehler(ValueError):
@@ -22,6 +23,11 @@ def _positiv(wert, name):
 
 
 def _intervalle_saeule(punkte, dreiecke, x, z):
+    if rechenpfad() == "cpp":
+        from .native_backend import native_laden
+        return tuple(native_laden().voxel_intervalle(
+            np.asarray(punkte, dtype=np.float64),
+            np.asarray(dreiecke, dtype=np.int64), float(x), float(z)))
     p0 = punkte[dreiecke[:, 0]]
     p1 = punkte[dreiecke[:, 1]]
     p2 = punkte[dreiecke[:, 2]]
@@ -111,6 +117,26 @@ class KoerperfestesVoxelmodell:
         self._saeulen = tuple(
             (x, z, y, np.concatenate(([0.0], np.cumsum(y, dtype=np.float64))))
             for x, z, y in saeulen)
+        self._native_kontext = None
+
+    def _kontext_nativ(self):
+        if self._native_kontext is None:
+            from .native_backend import native_laden
+            xs, zs, offsets, ys, praefixe = [], [], [0], [], []
+            for x, z, y, praefix in self._saeulen:
+                xs.append(x)
+                zs.append(z)
+                ys.extend(y)
+                praefixe.extend(praefix)
+                offsets.append(len(ys))
+            self._native_kontext = native_laden()._VoxelKontext(
+                np.asarray(xs, dtype=np.float64),
+                np.asarray(zs, dtype=np.float64),
+                np.asarray(offsets, dtype=np.int64),
+                np.asarray(ys, dtype=np.float64),
+                np.asarray(praefixe, dtype=np.float64),
+                self.aufloesung)
+        return self._native_kontext
 
     def auswerten(self, z, phi):
         """Gibt (Volumen, Schwerpunkt_world) unter der Wasserfläche z_world=0."""
@@ -149,6 +175,11 @@ class KoerperfestesVoxelmodell:
         return self._auswerten_wasserhalbebene(rotation, position)
 
     def _auswerten_wasserhalbebene(self, rotation, position):
+        if rechenpfad() == "cpp":
+            volumen, schwerpunkt = self._kontext_nativ().auswerten(
+                np.asarray(rotation, dtype=np.float64),
+                np.asarray(position, dtype=np.float64))
+            return float(volumen), schwerpunkt
         if not len(self.zentren_lokal):
             return 0.0, np.zeros(3, dtype=np.float64)
 

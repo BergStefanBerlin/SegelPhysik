@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="9" time="6.960" timestamp="2026-10-20T00:00:23.680366+02:00" hostname="KleinerSchwarzer"><testcase classname="code.cpp.tests.paritaet_batch" name="test_nativer_batch_gegen_jeden_referenzschritt[optimist]" time="0.407"><failure message="AssertionError: &#10;Not equal to tolerance rtol=0, atol=1e-09&#10;&#10;Mismatched elements: 2 / 70 (2.86%)&#10;Mismatch at indices:&#10; [12]: -53.09854334793142 (ACTUAL), -53.09854334894166 (DESIRED)&#10; [60]: -20.91211938481684 (ACTUAL), -20.912119385826553 (DESIRED)&#10;Max absolute difference among violations: 1.01024256e-09&#10;Max relative difference among violations: 4.8283638e-11&#10; ACTUAL: array([ 6.379284e-01, -2.462731e-02, -2.612109e-01, -1.671924e-01,&#10;        0.000000e+00,  0.000000e+00,  6.255940e+03, -1.267876e+02,&#10;       -3.358286e+01, -2.418454e+02,  1.972690e+01,  1.653186e+02,...&#10; DESIRED: array([ 6.379284e-01, -2.462731e-02, -2.612109e-01, -1.671924e-01,&#10;        0.000000e+00,  0.000000e+00,  6.255940e+03, -1.267876e+02,&#10;       -3.358286e+01, -2.418454e+02,  1.972690e+01,  1.653186e+02,...">code\cpp\tests\paritaet_batch.py:47: in test_nativer_batch_gegen_jeden_referenzschritt
+    np.testing.assert_allclose(werte_cpp, werte_ref, rtol=0., atol=1e-9)
+E   AssertionError: 
+E   Not equal to tolerance rtol=0, atol=1e-09
+E   
+E   Mismatched elements: 2 / 70 (2.86%)
+E   Mismatch at indices:
+E    [12]: -53.09854334793142 (ACTUAL), -53.09854334894166 (DESIRED)
+E    [60]: -20.91211938481684 (ACTUAL), -20.912119385826553 (DESIRED)
+E   Max absolute difference among violations: 1.01024256e-09
+E   Max relative difference among violations: 4.8283638e-11
+E    ACTUAL: array([ 6.379284e-01, -2.462731e-02, -2.612109e-01, -1.671924e-01,
+E           0.000000e+00,  0.000000e+00,  6.255940e+03, -1.267876e+02,
+E          -3.358286e+01, -2.418454e+02,  1.972690e+01,  1.653186e+02,...
+E    DESIRED: array([ 6.379284e-01, -2.462731e-02, -2.612109e-01, -1.671924e-01,
+E           0.000000e+00,  0.000000e+00,  6.255940e+03, -1.267876e+02,
+E          -3.358286e+01, -2.418454e+02,  1.972690e+01,  1.653186e+02,...</failure></testcase><testcase classname="code.cpp.tests.paritaet_batch" name="test_nativer_batch_gegen_jeden_referenzschritt[folkeboot]" time="2.102" /><testcase classname="code.cpp.tests.paritaet_batch" name="test_nativer_batch_gegen_jeden_referenzschritt[yacht1]" time="3.732" /><testcase classname="code.cpp.tests.paritaet_batch" name="test_batch_ohne_python_schritt_oder_kraftcallback" time="0.104" /><testcase classname="code.cpp.tests.paritaet_batch" name="test_batch_lehnt_ungueltige_batchanzahl_ab[0]" time="0.094" /><testcase classname="code.cpp.tests.paritaet_batch" name="test_batch_lehnt_ungueltige_batchanzahl_ab[-1]" time="0.096" /><testcase classname="code.cpp.tests.paritaet_batch" name="test_batch_lehnt_ungueltige_batchanzahl_ab[1.5]" time="0.100" /><testcase classname="code.cpp.tests.paritaet_batch" name="test_batch_lehnt_ungueltige_batchanzahl_ab[2]" time="0.073" /><testcase classname="code.cpp.tests.paritaet_batch" name="test_batch_abbruch_auch_vor_dem_ersten_schritt" time="0.085" /></testsuite></testsuites>

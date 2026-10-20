@@ -34,22 +34,9 @@ _ECHTZEIT_ANZEIGE_PUFFER_MAX_S = 0.25
 
 
 def _stationaere_rotation(stufe):
-    phi = float(stufe.pose[3])
-    theta = float(stufe.pose[4])
-    psi = float(stufe.pose[5])
-    cphi, sphi = math.cos(phi), math.sin(phi)
-    ctheta, stheta = math.cos(theta), math.sin(theta)
-    cpsi, spsi = math.cos(psi), math.sin(psi)
-    rx = np.array([[1.0, 0.0, 0.0],
-                   [0.0, cphi, -sphi],
-                   [0.0, sphi, cphi]])
-    ry = np.array([[ctheta, 0.0, stheta],
-                   [0.0, 1.0, 0.0],
-                   [-stheta, 0.0, ctheta]])
-    rz = np.array([[cpsi, -spsi, 0.0],
-                   [spsi, cpsi, 0.0],
-                   [0.0, 0.0, 1.0]])
-    return rz @ ry @ rx
+    from ..core.stationaer_hydrodynamik import _rotation
+
+    return _rotation(*(float(w) for w in stufe.pose[3:6]))
 
 
 def _stationaere_kraftlage(stufe):
@@ -1887,39 +1874,12 @@ class HauptFenster(QMainWindow):
             0.0 if self._echtzeit_anzeige_wandzeit is None else
             max(0.0, jetzt - self._echtzeit_anzeige_wandzeit))
         self._echtzeit_anzeige_wandzeit = jetzt
-        zielzeit = max(verlauf[0][0], self._echtzeit_anzeigezeit_s)
-        # Rückstand darf den Puffer nicht abschalten; neue Batches dürfen die
-        # Anzeige weder vorspulen noch bei wachsendem Puffer zurücksetzen.
-        puffergrenze = max(
-            zielzeit,
-            verlauf[-1][0] - self._echtzeit_anzeige_verzoegerung_s)
-        zielzeit = min(verlauf[-1][0], puffergrenze, zielzeit + vergangen)
+        from ..core.dynamik_6dof import anzeige_interpolieren
+        zielzeit, index, pose = anzeige_interpolieren(
+            verlauf, self._echtzeit_anzeigezeit_s, vergangen,
+            self._echtzeit_anzeige_verzoegerung_s)
         self._echtzeit_anzeigezeit_s = zielzeit
-        if zielzeit <= verlauf[0][0] or len(verlauf) == 1:
-            pose = verlauf[0][1]
-        else:
-            index = 1
-            while index < len(verlauf) and verlauf[index][0] < zielzeit:
-                index += 1
-            startzeit, start = verlauf[index - 1]
-            endzeit, ende = verlauf[min(index, len(verlauf) - 1)]
-            dauer = endzeit - startzeit
-            anteil = (
-                1.0 if dauer <= 0.0 else
-                min(1.0, max(0.0, (zielzeit - startzeit) / dauer)))
-            from ..core.dynamik_6dof import quaternion_slerp
-            position = (
-                np.asarray(start.position)
-                + anteil * (np.asarray(ende.position)
-                            - np.asarray(start.position)))
-            pose = type(ende)(
-                position=tuple(position),
-                quaternion=tuple(quaternion_slerp(
-                    start.quaternion, ende.quaternion, anteil)),
-                geschwindigkeit_koerper=ende.geschwindigkeit_koerper,
-                winkelgeschwindigkeit_koerper=(
-                    ende.winkelgeschwindigkeit_koerper))
-            self._echtzeit_anzeige_verlauf = verlauf[index - 1:]
+        self._echtzeit_anzeige_verlauf = verlauf[index:]
         if not self._echtzeit_pose_anzeigen(pose, render=True):
             return
         self._echtzeit_fps_zaehler += 1

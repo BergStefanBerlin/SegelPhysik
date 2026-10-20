@@ -7,6 +7,7 @@ import math
 import numpy as np
 
 from .auftrieb import Vektor
+from .rechenpfad import rechenpfad
 
 
 def _vektor(werte, name, nichtnegativ=False):
@@ -68,6 +69,13 @@ class Wrench:
                     getattr(self, attribut), name)))
 
     def auf_bezugspunkt(self, punkt_m):
+        if rechenpfad() == "cpp":
+            from .native_backend import (
+                native_laden, wrench_nach_python, wrench_vorbereiten,
+            )
+
+            return wrench_nach_python(native_laden().wrench_verschieben(
+                wrench_vorbereiten(self), np.asarray(punkt_m, dtype=np.float64)))
         ziel = _flussvektor(punkt_m, "Neuer Wrench-Bezugspunkt")
         momentan = np.asarray(self.bezugspunkt_m, dtype=np.float64)
         kraft = np.asarray(self.kraft_N, dtype=np.float64)
@@ -90,6 +98,18 @@ class Kraftbeitrag:
 def aggregiere_kraftbeitraege(beitraege, bezugspunkt_m,
                                frame="simulationsframe"):
     """Bringt alle Beiträge einmal auf denselben Punkt und summiert sie."""
+    if rechenpfad() == "cpp":
+        from .native_backend import (
+            native_laden, wrench_nach_python, wrench_vorbereiten,
+        )
+
+        native = native_laden()
+        gesamt, normalisiert = native.aggregiere_kraftbeitraege(
+            [native.Beitrag(b.name, wrench_vorbereiten(b.wrench)) for b in beitraege],
+            np.asarray(bezugspunkt_m, dtype=np.float64), frame)
+        return wrench_nach_python(gesamt), tuple(
+            Kraftbeitrag(b.name, wrench_nach_python(b.wrench))
+            for b in normalisiert)
     bezugspunkt = _flussvektor(bezugspunkt_m, "Gesamt-Wrench-Bezugspunkt")
     normalisiert = []
     kraft = np.zeros(3, dtype=np.float64)
@@ -163,13 +183,19 @@ class KraftErgebnis:
                                    rtol=0.0, atol=1e-8)):
             raise ValueError("Added-Mass-Transformation braucht eine "
                              "gueltige 3x3-Rotation.")
-        beschleunigung_koerper = np.concatenate((
-            rotation.T @ beschleunigung[:3],
-            rotation.T @ beschleunigung[3:]))
-        zusatz_koerper = -added_mass * beschleunigung_koerper
-        zusatz = np.concatenate((
-            rotation @ zusatz_koerper[:3],
-            rotation @ zusatz_koerper[3:]))
+        if rechenpfad() == "cpp":
+            from .native_backend import native_laden
+
+            zusatz = native_laden().added_mass_kraft(
+                rotation, added_mass, beschleunigung)
+        else:
+            beschleunigung_koerper = np.concatenate((
+                rotation.T @ beschleunigung[:3],
+                rotation.T @ beschleunigung[3:]))
+            zusatz_koerper = -added_mass * beschleunigung_koerper
+            zusatz = np.concatenate((
+                rotation @ zusatz_koerper[:3],
+                rotation @ zusatz_koerper[3:]))
         if not np.any(zusatz):
             return self
         kraft = self.F_gesamt.as_array() + zusatz[:3]
@@ -262,9 +288,15 @@ class Kraftmodell:
         relativ = np.concatenate((
             geschwindigkeit - self.fluidgeschwindigkeit,
             winkelgeschwindigkeit - self.fluidwinkelgeschwindigkeit))
-        widerstand = (
-            -self.linear_widerstand * relativ
-            -self.quadratischer_widerstand * np.abs(relativ) * relativ)
+        if rechenpfad() == "cpp":
+            from .native_backend import native_laden
+
+            widerstand = native_laden().widerstand(
+                self.linear_widerstand, self.quadratischer_widerstand, relativ)
+        else:
+            widerstand = (
+                -self.linear_widerstand * relativ
+                -self.quadratischer_widerstand * np.abs(relativ) * relativ)
         position = _position_aus_lage(lage)
         beitraege = [
             Kraftbeitrag("hydrostatik", Wrench(

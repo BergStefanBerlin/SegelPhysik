@@ -1,0 +1,112 @@
+{
+  "modell": "folkeboot",
+  "schritte_pro_batch": 10,
+  "snapshot_pickle_bytes": 33587,
+  "snapshot_serialisierung": {
+    "anzahl": 3,
+    "median_s": 4.210002953186631e-05,
+    "p95_s": 4.731996450573206e-05,
+    "minimum_s": 4.029995761811733e-05,
+    "maximum_s": 4.789995728060603e-05,
+    "spannweite_s": 7.599999662488699e-06,
+    "standardabweichung_s": 3.2427597241152694e-06,
+    "rohwerte_s": [
+      4.789995728060603e-05,
+      4.210002953186631e-05,
+      4.029995761811733e-05
+    ]
+  },
+  "snapshot_deserialisierung": {
+    "anzahl": 3,
+    "median_s": 3.2999960239976645e-05,
+    "p95_s": 3.39000194799155e-05,
+    "minimum_s": 3.130000550299883e-05,
+    "maximum_s": 3.400002606213093e-05,
+    "spannweite_s": 2.700020559132099e-06,
+    "standardabweichung_s": 1.1145546582554572e-06,
+    "rohwerte_s": [
+      3.400002606213093e-05,
+      3.2999960239976645e-05,
+      3.130000550299883e-05
+    ]
+  },
+  "antwort_pickle_bytes": 2280,
+  "antwort_serialisierung": {
+    "anzahl": 3,
+    "median_s": 5.420000525191426e-05,
+    "p95_s": 5.8429985074326396e-05,
+    "minimum_s": 4.9799971748143435e-05,
+    "maximum_s": 5.889998283237219e-05,
+    "spannweite_s": 9.100011084228754e-06,
+    "standardabweichung_s": 3.7157365925090833e-06,
+    "rohwerte_s": [
+      5.889998283237219e-05,
+      5.420000525191426e-05,
+      4.9799971748143435e-05
+    ]
+  },
+  "antwort_deserialisierung": {
+    "anzahl": 3,
+    "median_s": 3.370002377778292e-05,
+    "p95_s": 3.4240027889609334e-05,
+    "minimum_s": 3.290001768618822e-05,
+    "maximum_s": 3.430002834647894e-05,
+    "spannweite_s": 1.400010660290718e-06,
+    "standardabweichung_s": 5.734927179594226e-07,
+    "rohwerte_s": [
+      3.370002377778292e-05,
+      3.430002834647894e-05,
+      3.290001768618822e-05
+    ]
+  },
+  "neuer_interpreter_aufbau": [
+    {
+      "dauer_s": 0.05512879998423159,
+      "eingabe_sha256": "069e175c50bee9d3f9831599ff7bc53c9e76295ccd8204798cb8ead86cda4073"
+    },
+    {
+      "dauer_s": 0.05852049996610731,
+      "eingabe_sha256": "069e175c50bee9d3f9831599ff7bc53c9e76295ccd8204798cb8ead86cda4073"
+    },
+    {
+      "dauer_s": 0.059064800036139786,
+      "eingabe_sha256": "069e175c50bee9d3f9831599ff7bc53c9e76295ccd8204798cb8ead86cda4073"
+    }
+  ],
+  "prozessstart_bis_erster_batch_s": 0.29261040000710636,
+  "roundtrip": {
+    "anzahl": 3,
+    "median_s": 0.012413399992510676,
+    "p95_s": 0.013010369980474935,
+    "minimum_s": 0.01202480000210926,
+    "maximum_s": 0.01307669997913763,
+    "spannweite_s": 0.00105189997702837,
+    "standardabweichung_s": 0.00043429001913360235,
+    "rohwerte_s": [
+      0.012413399992510676,
+      0.01307669997913763,
+      0.01202480000210926
+    ]
+  },
+  "worker": {
+    "anzahl": 3,
+    "median_s": 0.01174899999750778,
+    "p95_s": 0.012324819981586188,
+    "minimum_s": 0.011224200017750263,
+    "maximum_s": 0.012388799979817122,
+    "spannweite_s": 0.001164599962066859,
+    "standardabweichung_s": 0.00047621798320641334,
+    "rohwerte_s": [
+      0.01174899999750778,
+      0.012388799979817122,
+      0.011224200017750263
+    ]
+  },
+  "roundtrip_minus_worker_s": [
+    0.0006643999950028956,
+    0.000687899999320507,
+    0.0008005999843589962
+  ],
+  "prozess_direkt_paritaet": "Zustaende und alle Wrenches exakt identisch",
+  "hinweis": "Differenz enthaelt Scheduling, Queue, Transport und Pickle, nicht reine IPC. Neue Interpreter sind kein Nachweis geleerter Betriebssystem-Dateicaches."
+}

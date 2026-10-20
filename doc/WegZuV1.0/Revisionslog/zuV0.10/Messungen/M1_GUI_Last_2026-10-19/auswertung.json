@@ -1,0 +1,76 @@
+{
+  "berichte": [
+    {
+      "datei": "optimist_wechsel_1.json",
+      "sha256": "7f71277acaf882fbae7164a9a6a0f0b71ec042f0f9e681eba05d9c381663cff2"
+    },
+    {
+      "datei": "optimist_wechsel_2.json",
+      "sha256": "26a1d0b62f394899d4d65600f765121536a5db5cbfbc8b0f5204411a9ba53839"
+    },
+    {
+      "datei": "optimist_wechsel_3.json",
+      "sha256": "255dc22802819af5bbd108893661da4d4bbb3c40e99b295450c2c6c27fc35bc5"
+    },
+    {
+      "datei": "optimist_schliessen_1.json",
+      "sha256": "5abc07a12e1d049580ffe94023cc19b5a990daebee8e50abe0fec298942cb21f"
+    },
+    {
+      "datei": "optimist_schliessen_2.json",
+      "sha256": "74a0b23204412cf977e69c2cf2fc28c6e546697bff0f493c350e1af02b497639"
+    },
+    {
+      "datei": "optimist_schliessen_3.json",
+      "sha256": "0a65cc9fcaabc3a6a53b35b56b84616677b152d4f6fd0ac9f03b4771247017a1"
+    },
+    {
+      "datei": "folkeboot_wechsel_1.json",
+      "sha256": "dfcc10d63b2a0ae29b7780b73546baad2533439392bb6f7b5033c8273c3b8a93"
+    },
+    {
+      "datei": "folkeboot_wechsel_2.json",
+      "sha256": "87b124b8b04b0055dc351a4863a7893731d5770cda721a6083803a8709b269a3"
+    },
+    {
+      "datei": "folkeboot_wechsel_3.json",
+      "sha256": "042d5b000bb9c978aabdff4524456d107a8b71bb6decc890b64a587c45c4261b"
+    },
+    {
+      "datei": "folkeboot_schliessen_1.json",
+      "sha256": "8d7386cd055b9cbd800e93c5ad12f01b0867a9343961ca567e15b490e1ecb47d"
+    },
+    {
+      "datei": "folkeboot_schliessen_2.json",
+      "sha256": "9177cd9fa7b62239b9d0b1af8377bd5388a0da5e2920da6221540d2a816ee5cf"
+    },
+    {
+      "datei": "folkeboot_schliessen_3.json",
+      "sha256": "be286d737340cf9ace60b924f070baf606b6234dcbe5c9c2bf8219af1f413b89"
+    },
+    {
+      "datei": "yacht1_wechsel_1.json",
+      "sha256": "06fdca2585f32dd0337a01219b839aa079d89f82b6a18a9d9410c480f0abc870"
+    },
+    {
+      "datei": "yacht1_wechsel_2.json",
+      "sha256": "d74c01a86260650d7b31767b6f694410c82822dc8b7e701aa7f83f9498712c50"
+    },
+    {
+      "datei": "yacht1_wechsel_3.json",
+      "sha256": "dde8a1dd4044c50c21e61148e35061335c3be856e10346abfff6412924e15b11"
+    },
+    {
+      "datei": "yacht1_schliessen_1.json",
+      "sha256": "5b315af7223cb69fc8cfba95b7fc2280b2894c4ab650254f92c955188c20bd15"
+    },
+    {
+      "datei": "yacht1_schliessen_2.json",
+      "sha256": "6399f89b22f4bfb602ce4af1ddd4abd16316dc72ff5c8be0e5ca6c7cfbc3a122"
+    },
+    {
+      "datei": "yacht1_schliessen_3.json",
+      "sha256": "fd202581e7dbd737f06934e20f829afa7197aad11686fbe532e9010422e5eb3d"
+    }
+  ]
+}

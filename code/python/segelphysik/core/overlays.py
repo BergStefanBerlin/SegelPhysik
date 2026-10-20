@@ -15,6 +15,8 @@ Geometrie liefert core.kraefte_bild, die Wahrheit core.auftrieb.
 """
 import numpy as np
 
+from .rechenpfad import nativer_kern, rechenpfad
+
 LAYER_SCHWERPUNKT = "schwerpunkt"
 LAYER_HAUPTACHSEN = "hauptachsen"
 LAYER_KRAEFTE = "kraefte"
@@ -52,6 +54,7 @@ class LayerRegistry:
         return dict(self._zustand)
 
 
+@nativer_kern("achse_kanonisieren")
 def _kanonisiere(v):
     """Vorzeichen kanonisieren: groesste Komponente positiv.
 
@@ -74,6 +77,9 @@ def hauptachsen(traegheitstensor):
     I = np.asarray(traegheitstensor, float)
     I = 0.5 * (I + I.T)          # Symmetrie numerisch erzwingen
     werte, vektoren = np.linalg.eigh(I)
+    if rechenpfad() == "cpp":
+        from .native_backend import native_laden
+        return native_laden().hauptachsen_aufbereiten(werte, vektoren)
     reihenfolge = np.argsort(werte)[::-1]
     werte = werte[reihenfolge]
     vektoren = vektoren[:, reihenfolge]

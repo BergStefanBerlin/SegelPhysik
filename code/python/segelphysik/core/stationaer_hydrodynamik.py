@@ -13,6 +13,7 @@ from .dynamik_6dof import (
     quaternion_matrix,
     schritt,
 )
+from .rechenpfad import nativer_kern
 
 
 @dataclass(frozen=True, slots=True)
@@ -62,6 +63,7 @@ class StationaerSolverFehler(RuntimeError):
         self.stufen = tuple(stufen)
 
 
+@nativer_kern("euler_rotation", skalare=(0, 1, 2))
 def _rotation(phi, theta, psi):
     cphi, sphi = math.cos(phi), math.sin(phi)
     ctheta, stheta = math.cos(theta), math.sin(theta)
@@ -202,9 +204,35 @@ def loese_stationaer(kraftfunktion, *, charakteristische_kraft_N,
 
     stufen = []
     startzeit = time.perf_counter()
+    from .rechenpfad import rechenpfad
+    native_kontext = None
+    if rechenpfad() == "cpp":
+        from .native_backend import statikkontext_vorbereiten
+
+        native_kontext = statikkontext_vorbereiten(kraftfunktion)
     for stufe, name, indices in (
             (1, "Geradeausfahrt", (0, 1, 2)),
             (2, "gekoppeltes Gleichgewicht", (0, 1, 2, 3, 4, 5))):
+        if native_kontext is not None:
+            from .native_backend import native_laden
+
+            werte, kraft, moment, iteration, konvergiert, fehler = (
+                native_kontext.stationaere_stufe(
+                    werte, stufe, kraftskala, laenge, geschwindigkeit,
+                    toleranz, max_iterationen, native_laden().Abbruch()))
+            if fehler:
+                raise StationaerSolverFehler(
+                    "%s in Stufe %s" % (fehler, name), stufen=stufen)
+            ergebnis = _stufe_ergebnis(
+                name, werte, kraft, moment, kraftskala, momentskala, iteration, stufe)
+            stufen.append(ergebnis)
+            if fortschritt is not None:
+                fortschritt(ergebnis)
+            if not konvergiert:
+                raise StationaerSolverFehler(
+                    "Keine Konvergenz in Stufe %s nach %d Iterationen" % (name, iteration),
+                    stufen=stufen)
+            continue
         konvergiert = False
         residuum = None
         for iteration in range(1, max_iterationen + 1):
@@ -324,7 +352,23 @@ def pruefe_stationaer_dynamisch(kraftfunktion, stufe, *, masse_kg,
     vergangen = 0.0
     mitte = None
     fehlergrund = None
-    while vergangen < dauer_s:
+    from .rechenpfad import rechenpfad
+
+    native_kontext = None
+    if rechenpfad() == "cpp":
+        from .native_backend import native_laden, statikkontext_vorbereiten, zustand_vorbereiten
+
+        native_kontext = statikkontext_vorbereiten(kraftfunktion)
+        if native_kontext is not None:
+            ende, vergangen, mitte, fehlergrund = native_kontext.stationaere_dynamik(
+                zustand_vorbereiten(zustand), float(masse_kg), inertia,
+                np.asarray(getattr(kraftfunktion, "added_mass_diagonal", (0.,) * 6),
+                           dtype=np.float64),
+                float(dt_s), float(g_m_pro_s2), float(dauer_s), native_laden().Abbruch())
+            werte = ende.werte
+            zustand = Zustand6DOF(
+                tuple(werte[:3]), tuple(werte[3:7]), tuple(werte[7:10]), tuple(werte[10:13]))
+    while native_kontext is None and vergangen < dauer_s:
         schritt_s = min(float(dt_s), dauer_s - vergangen)
         try:
             zustand, _ergebnis = schritt(

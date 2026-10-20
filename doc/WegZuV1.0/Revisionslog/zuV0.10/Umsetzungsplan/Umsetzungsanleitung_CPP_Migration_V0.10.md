@@ -1,7 +1,24 @@
 # Umsetzungsanleitung V0.10: C++-Migration
 
-**Stand:** 19.10.2026  
-**Status:** Plan zur Prüfung; keine Umsetzung durch dieses Dokument nachgewiesen  
+**Stand:** 20.10.2026
+**Status:** V0.10 als begrenzter Versionsstand auf ausdrücklichen Nutzerauftrag abgeschlossen; Optimist-Batchabweichung akzeptiert; ursprüngliche vollständige Migration nicht abgeschlossen; Restarbeiten im Backlog
+
+**Abschlussprüfung vom 20.10.2026:** Die strenge Optimist-Batchabweichung
+darf nach ausdrücklichem Nutzerauftrag den V0.10-Abschluss nicht mehr
+blockieren. Historische Abweichungen werden nicht gelöscht und nicht als
+bestandene strenge Parität ausgewiesen. Diese Ausnahme ersetzt keine
+anderen Implementierungen oder Pflichtnachweise. Aktuelle Regression:
+1172 bestanden, ein Windows-Symlink-Skip; C++-Replay vorläufig bestanden,
+strenge Folkeboot-Eingabeparität weiterhin verfehlt. Die
+[Abschlussbilanz mit Performance-Fallübersicht und Restpunkten](../Messungen/Abschlussbilanz_V0.10_2026-10-20.md)
+und das
+[Interface-Einzelregister mit Python-/V0.10-Spalten](../../../Revisionsinformation/Schnittstellenregister_CPP.md)
+ergänzen die bisherigen Nachweise. Der ursprüngliche Gesamtplan ist
+damit noch nicht vollständig abgenommen. Nach Vorlage der Abschlussbilanz
+hat der Nutzer den begrenzten Versionsabschluss ausdrücklich freigegeben.
+Die verbleibende Arbeit wird nach ursprünglichen A-Kennungen im
+[Backlog](../../../../Backlog/Restarbeiten_V0.10.md) weitergeführt, nicht
+als erledigt ausgegeben und keiner Folgeversion automatisch zugewiesen.
 **Branch:** `v0.10`  
 **Fachliche Quelle:** [Spezifikation C++-Migration V0.10](../Spezifikationen/Spezifikation_CPP_Migration_V0.10.md)
 
@@ -18,8 +35,11 @@ Meldung wie „Hydrostatik erledigt“ verschwinden.
 
 Es gelten unverändert:
 
-- Nur Performanceverbesserungen, kein Funktions-/Optikabbau, keine
-  neue Physiknäherung und keine gelockerten numerischen Toleranzen.
+- Performanceänderungen einschließlich Verschlechterungen dokumentieren;
+  kein Funktions-/Optikabbau, keine
+  neue Physiknäherung. Numerische Prüfungen dürfen nach Nutzerfreigabe
+  vom 20.10.2026 vorläufig gelockert werden; ursprüngliches Ergebnis,
+  neue Grenze, Plausibilitätsprüfung und Genauigkeitsschuld dokumentieren.
 - Gleiche Modelle, Eingaben, Verfahren, Zeitschritte, Hydrostatikintervalle,
   Einzelkräfte/-momente, Diagnosen, Einheiten und Bedienabläufe.
 - Die exakten Python-Referenzen bleiben Vergleichsmaßstab. Keine
@@ -28,10 +48,12 @@ Es gelten unverändert:
   nativen Physikbatches. Bereits native Bibliotheksarbeit nicht unnötig
   neu schreiben.
 - Für jede Übertragung Performancebericht nach A-V0.10-00034;
-  Produktivübernahme nur nach Parität und End-to-End-Vorteil gemäß
+  Produktivübernahme nach Parität/Robustheit bzw. ausdrücklich dokumentierter
+  vorläufiger Numerikfreigabe unabhängig vom Zeitgewinn gemäß
   A-V0.10-00032.
 - Ein weiterhin relevanter, ungelöster Python-Hotspot bleibt offen.
-  „Kandidat ohne Gewinn“ ist kein vollständiger Migrationsabschluss.
+  Fehlender Gewinn ist kein Zurückstellungsgrund: alle vorgesehenen
+  Übertragungen produktiv integrieren und am Ende gemeinsam vergleichen.
 - Keine Wiederaufnahme des entfernten Hallo-/TEST-Buttons.
 - Keine automatische Veröffentlichung, Tags oder Releases. Sicherung
   auf dem Entwicklungsbranch erfolgt nur nach geltender Freigabe;
@@ -144,7 +166,9 @@ nicht die Verbesserung des Messharness, wohl aber die M1-Freigabe.
 - Toleranzen, qualitative Gates, Messkonfiguration und Auswertungsverfahren
   vor Messbeginn einfrieren. Fehlende Paritätsgrenzen nicht nachträglich
   aus Kandidatenergebnissen ableiten; bei fachlichem Entscheidungsbedarf
-  vorab Nutzerfreigabe einholen.
+  vorab Nutzerfreigabe einholen. Ausnahme ist die ausdrücklich freigegebene
+  vorläufige Prüfung vom 20.10.2026: nachträgliche Lockerungen werden mit
+  Originalergebnis und Begründung gesondert protokolliert.
 - Ergebnisse der unveränderten Python-Referenz erfassen; Fehlerfälle
   müssen tatsächlich scheitern. Absichtliche Testmutationen müssen
   abweichende Werte, fehlende Beiträge und falsche Frames erkennen.
@@ -423,10 +447,12 @@ eingefrorenen Referenzreplay und vergleichbare Gesamtmessungen ausführen.
 Saubere Installation und tatsächliche native Pfadwahl unabhängig prüfen.
 Alle Modelle/Verfahren und beide unveränderten Optikprofile abdecken.
 
-**Abschluss:** Keine unerklärte Paritätsabweichung, keine Regression,
-kein ungelöster zeitkritischer Python-Innenpfad. Leistungsgewinn über
-Messstreuung, unveränderte Funktion/Optik und keine reproduzierbare
-Verschlechterung anderer relevanter Pfade belegt.
+**Abschluss:** Keine unprotokollierte Paritätsabweichung, keine verschwiegene
+Regression, kein ungelöster zeitkritischer Python-Innenpfad.
+Unveränderte Funktion/Optik sowie vollständiger Vorher-/Nachher-Vergleich
+einschließlich Verschlechterungen und offener numerischer Abweichungen.
+Eine vorläufige Migrationsabnahme ist von der späteren strengen
+Genauigkeitsabnahme ausdrücklich zu unterscheiden.
 
 ### U-V0.10-000020 — Einzelfunktionsmatrix und Abschlussdokumentation
 
@@ -444,15 +470,17 @@ stillschweigend zurückziehen oder ins Backlog verschieben.
 umgesetzte und abgenommene Anforderungen in das zentrale
 [Log](../../../../Log/Log.md) eintragen. Bleibt ein relevanter Hotspot
 oder Pflichtnachweis offen, lautet der Stand Teilabschluss, nicht
-„alle übertragen“. Produktivumschaltung erst nach allen Gates und
-ausdrücklicher Gesamtfreigabe; keine automatische Veröffentlichung.
+„alle übertragen“. Die schrittweise Produktivumschaltung ist durch den
+Nutzerauftrag freigegeben, auch mit dokumentierter vorläufiger Numerik.
+Keine automatische Veröffentlichung.
 
 ## 4. Meilensteinprüfungen
 
 ### Für jeden Meilenstein verpflichtend
 
 1. Die zugehörigen Einzelfunktionen einschließlich Rand-/Fehlerfällen
-   direkt Python/C++ vergleichen; Ergebnisse und unveränderte Toleranzen
+   direkt Python/C++ vergleichen; strenge Ergebnisse und gegebenenfalls
+   ausdrücklich gelockerte vorläufige Toleranzen getrennt
    dokumentieren. In M1, vor Existenz der nativen Kandidaten, gilt
    stattdessen die Referenz-/Mutationsprüfung aus U-V0.10-000003;
    die nativen Vergleiche bleiben Pflicht des späteren Kandidatengates.
@@ -463,8 +491,9 @@ ausdrücklicher Gesamtfreigabe; keine automatische Veröffentlichung.
    mit Grund ausweisen; fehlende native Installation ist kein erlaubter
    Skip. Vorbestehende Umgebungssperren bleiben getrennt sichtbar.
 5. Änderungen an Physik-/Geometrie-/Modellpfaden zusätzlich mit dem
-   eingefrorenen Referenzreplay prüfen. Fehlgeschlagene Gates sperren
-   Folgeintegration; Kandidaten verbessern, nicht Toleranzen verändern.
+   eingefrorenen Referenzreplay prüfen. Fehlgeschlagene Struktur-/
+   Fehlergates sperren Folgeintegration. Numerikabweichungen dürfen nach
+   Nutzerauftrag vorläufig dokumentiert übernommen werden.
 
 Die folgenden Testnamen sind vorhandene Regressionen, keine Behauptung
 einer bereits vorhandenen C++-Paritätsabdeckung. Diese wird in
@@ -539,9 +568,9 @@ Jede Inventarzeile enthält mindestens:
 | Entscheidung | Tatsächlicher Status, Ursache bei fehlendem Gewinn, offene Arbeit und Abnahmedatum |
 
 Zulässige Einzelstatus entsprechen A-V0.10-00033: „nativ übertragen,
-eingebunden und mit Gewinn abgenommen“, „bereits native Ausführung
+produktiv eingebunden und korrektheitsgeprüft“, „bereits native Ausführung
 nachgewiesen“, „gemessen nicht zeitkritisch, mit Profilbeleg“,
-„Kandidat ohne Gewinn verworfen, Anforderung gegebenenfalls weiter offen“
+„produktiv eingebunden mit dokumentierter Performanceverschlechterung“
 oder „noch offen/blockiert, mit konkreter Ursache“. Nicht aufgerufen
 oder noch nicht vermessen bedeutet nicht automatisch „nicht zeitkritisch“.
 
@@ -558,7 +587,7 @@ angeben; jeder Hilfseintrag verweist auf diesen Beleg.
 
 Mindestens drei unabhängige Wiederholungen je Referenz/Kandidat unter
 gleichen Bedingungen; bei uneindeutiger Streuung weitere Messungen,
-keine Freigabe aus dem günstigsten Einzellauf. Reihenfolge möglichst
+keine Gewinnaussage aus dem günstigsten Einzellauf. Reihenfolge möglichst
 abwechselnd und unter gleichen Aufwärm-/Lastbedingungen; Referenzdaten
 nicht zwischen Kandidaten stillschweigend ersetzen.
 
@@ -578,7 +607,7 @@ Szenarienbündelung bleibt jeder Fall einzeln rückverfolgbar.
 Rohwerte, Median/P95, Streuung, Rückstandtrend, Physikdurchsatz,
 Qt-Swaprate, Frameabstände, Eingabeproxy und Speicherentwicklung
 dokumentieren. Die bekannten 30-Swap/s-, 67-ms-Frame-P95- und
-100-ms-Eingabe-P95-Ziele ersetzen nicht den C++-Gewinnnachweis.
+100-ms-Eingabe-P95-Ziele bleiben Vergleichsgrößen, keine Übernahmeschranken.
 Scanout/Photonenlatenz wird nicht behauptet.
 
 ## 6. Rückverfolgbarkeitsmatrix aller aktiven Anforderungen
@@ -619,28 +648,191 @@ Alle Einträge sind **geplant**, nicht durch dieses Dokument erledigt.
 | A-V0.10-00029 | Weitere Bewegung | U-V0.10-000017 | M9: Interaktion/Kinematik |
 | A-V0.10-00030 | Optionale Voxel-/GPU-Pfade | U-V0.10-000018 | M9: Bestandssperren und Transfers |
 | A-V0.10-00031 | Parität/Regression | U-V0.10-000003, U-V0.10-000005 bis U-V0.10-000019 | Alle Meilensteine, Vollsuite M10 |
-| A-V0.10-00032 | Reproduzierbarer Gewinn | U-V0.10-000002, U-V0.10-000003, U-V0.10-000005 bis U-V0.10-000019 | Je Kandidat und Gesamtvergleich |
+| A-V0.10-00032 | Produktive Übernahme unabhängig vom Gewinn | U-V0.10-000002, U-V0.10-000003, U-V0.10-000005 bis U-V0.10-000019 | Je Übertragung und abschließender Gesamtvergleich |
 | A-V0.10-00033 | Vollständiger Abschluss | U-V0.10-000002, U-V0.10-000020 | M10: Einzelfunktionsmatrix und Log |
 | A-V0.10-00034 | Performance je Übertragung dokumentieren | U-V0.10-000002, U-V0.10-000003, U-V0.10-000005 bis U-V0.10-000020 | Je Übertragung, Abschluss ohne Nachweislücke |
 
 ## 7. Abbruch, offene Entscheidungen und Status
 
-Scheitert Parität oder Robustheit, wird der Kandidat nicht produktiv
-aktiviert. Scheitert der Performancebeleg, wird die Ursache untersucht
-und der Ansatz verbessert; bleibt ein relevanter Python-Hotspot
-ungelöst, wird der Punkt offen/blockiert geführt. Eine alternative
+Aktueller Ausführungsnachweis:
+[M1-Prüfprotokoll](../Messungen/M1_Pruefprotokoll_2026-10-19.md).
+Das [Einzelfunktionsinventar](Funktionsinventar_V0.10.json) enthält die
+aufgelösten Startfunktionen und erzeugten Closures mit ihren offenen
+Mess-/Paritätsbelegen. Ein statisch aufgelöster Eintrag bedeutet weder
+nachgewiesene Zeitkritikalität noch eine abgeschlossene Migration.
+
+Scheitert die strenge numerische Parität, kann der Kandidat nach
+Nutzerfreigabe vom 20.10.2026 mit dokumentierter Ersatzprüfung vorläufig
+produktiv aktiviert werden. Schemas, Frames, Endlichkeit, Eingabefehler,
+Besitz und Nebenläufigkeit bleiben strenge Gates.
+Negative Performancewerte verhindern die Aktivierung nicht:
+sie werden dokumentiert und in den abschließenden Gesamtvergleich
+aufgenommen. Fehlende Messbelege werden nachgeholt, nicht als Gewinn
+ausgegeben. Eine alternative
 Funktionsreduktion oder Näherung gehört nicht zu diesem Auftrag.
 
 Nutzerentscheidungen sind vor der betroffenen Umsetzung einzuholen,
 wenn Referenzsicherung, fehlende fachliche Toleranzen, Änderung eines
 öffentlichen Vertrags oder eine Scopeänderung erforderlich werden.
 Vorschläge werden mit plausiblen Optionen vorgelegt. Bereits geltende
-Genauigkeitsgrenzen werden dabei nicht zur Lockerung angeboten.
+Genauigkeitsgrenzen werden nicht still geändert. Die ausdrücklich erteilte
+vorläufige Numerikfreigabe vom 20.10.2026 wird ohne erneute Rückfrage umgesetzt.
 
 Zu jedem Meilenstein enthält das Prüfprotokoll Datum, Commit,
 Umgebung, tatsächliche Kommandos, Ergebnisse, Skips, Performancebelege,
 offene Fehler und Entscheidung. Fehlende Tests/Messungen sperren das
 Gate. Ein reiner Dokument- oder Buildstand ist kein Migrationsabschluss.
+
+## 8. Ausführungsstand vom 20.10.2026
+
+Die Tabelle bezeichnet abgeschlossene Arbeitsschritte, nicht nur angelegte
+Dateien. Der native Modulrumpf ist keine abgenommene native Datenschicht.
+Belege und noch offene Gates stehen im
+[M1-Prüfprotokoll](../Messungen/M1_Pruefprotokoll_2026-10-19.md) und im
+[Produktivprotokoll vom 19.10.](../Messungen/Produktiv_Pruefprotokoll_2026-10-19.md)
+und im [Nachtrag vom 20.10.](../Messungen/Produktiv_Pruefprotokoll_2026-10-20.md).
+
+| Umsetzungspunkt | Inhalt | Status |
+|---|---|---|
+| U-V0.10-000001 | Ausgangsstand und unveränderliche Referenz | Abgeschlossen |
+| U-V0.10-000002 | Einzelfunktionsinventar und Baselines | Abgeschlossen; 298/298 Zuordnungen, Profile und vollständige 18-Lauf-Speicherbaseline geprüft |
+| U-V0.10-000003 | Vergleichsharness, Szenarien und Berichtsschema | Abgeschlossen; Prüfplan je Eintrag, Mutationen, Dynamik, Beladung, Last und Varianten geprüft; 909 Tests und Replay bestanden |
+| U-V0.10-000004 | Native Schnittstelle, Build und Datenhaltung | Abgeschlossen; native Datenverträge und Fehlerpfade geprüft, explizite Referenzwahl und GUI-Pfadanzeige integriert, kein automatischer Fallback |
+| U-V0.10-000005 | Mathematik, Frames und Körperkontext | Teilweise produktiv; Quaternionen, Frames, Aggregation und Snapshots geprüft und gemessen; vollständige Einzelfunktionsabnahme und einmalige Snapshotvorbereitung noch offen |
+| U-V0.10-000006 | Union und exakte Auftriebsauswertung | Teilweise produktiv; vorbereiteter Ebenenschnitt und vollständiger exakter 6DOF-Auftrieb nativ, Manifold-Bestand erhalten; weitere Varianten und Übergangsnachweise offen |
+| U-V0.10-000007 | Schnittgeometrie und Wasserlinienkennwerte | Teilweise produktiv; Wasserschnitt einschließlich Konturen/Deckel sowie Ringe und Momente nativ; Gesamtpfad-/Einzelfunktionsabnahme offen |
+| U-V0.10-000008 | Hydrodynamik, Benetzung und Rollenkräfte | Teilweise produktiv; vorbereiteter nativer Rollenkontext einschließlich Benetzung, Rumpf, Kiel, Ruder und generischer Körper; Vorbereitungshilfen/Testnäherung und vollständige Matrix offen |
+| U-V0.10-000009 | Aggregation und vollständiges Kraftmodell | Teilweise produktiv; Wrenchverschiebung, Aggregation, Widerstand und Added-Mass-Kerne nativ; öffentliche Steueradapter bleiben Python, vollständige Abnahme offen |
+| U-V0.10-000010 | Integrator, nativer Batch und Worker | Produktiv für cpp/exakt_union; keine Pythonkraftcallbacks im Batch, Windows-Spawn geprüft; drei unabhängige 120-s-Modellvergleiche vorläufig bestanden; Optimist-Batchabweichung als Abschlussausnahme akzeptiert, Folkeboot-Numerik weiterhin nur vorläufig freigegeben; Live-/Lifecycle-Gesamtabnahme ausstehend |
+| U-V0.10-000011 | Statische und stationäre Solver | Produktiv erweitert; beide statischen Solver, stationäre 3-/6D-Newtonstufen und gesamter dynamischer Nachlauf nativ für vorbereitete exakte Modelle; generische Pythoncallbacks bleiben Referenz-/Erweiterungspfad; vollständige Sonderfalldiagnosen/-abnahme offen |
+| U-V0.10-000012 | Modellaufbau und Änderungspfade | Teilweise produktiv; Masseneigenschaften und Sweep-and-prune-Selbstschnittprüfung sowie sämtliche Grundformen einschließlich Polyeder/Konvexhülle, Formzentrierung und OBJ-Polygon-/Transformationsnumerik nativ; bestehendes natives NumPy-argsort erhalten, OBJ-Cache pfadgetrennt; allgemeine Eingabe-/Topologievalidierung, Formerkennung und weitere Modellvermessung noch offen |
+| U-V0.10-000013 | Anzeigeinterpolation und Poseaufbereitung | Teilweise produktiv; SLERP, Anzeigezeit-/Pufferauswahl, Positions-/Orientierungsinterpolation sowie stationäre Rotationen nativ; weitere GUI-Aufbereitung und vollständige Optik-/Liveabnahme offen |
+| U-V0.10-000014 | Körperdarstellung, Kräfte und Achsen | Teilweise produktiv; Pfeile, Momente, Strichlinien, Wirkungslinien, Hauptachsen und jetzt Overlay-Richtungsrotation/-ausdehnung nativ; Farbgruppen einschließlich Gelenkhierarchie, benetzte Sammelgeometrie, Dreieckszellen und statische Sammeltransformation nativ; neuer Overlaykern geprüft, aber 2,56–3,51x langsamer; Qt-/VTK-Objektadapter und vollständige Live-/Optikabnahme offen |
+| U-V0.10-000015 | Wasseroberfläche und Spuren | Teilweise produktiv; deterministischer Hash, Punktlagen, Dunstgitter, Wasserpunktfelder und Spuren sowie Oberflächentriangulierung, bilineare Verfeinerung, Grundformen und gesamte Loch-/Median-/Laplaceaufbereitung nativ; IsoSurfaceWater-Spiegelung, Splatting und Kalibrierung nativ (v15: 2,591x / 7,455x / 0,239x Python/C++); PyVista-Marching-Cubes und vollständige Live-/Optikabnahme offen |
+| U-V0.10-000016 | Navigation, Instrumente und Kamera | Produktiv erweitert; Navigationswerte, Winkel/Richtung, ganze Kamera-Folgegeometrie und manuelle Lageableitung sowie Instrumentwinkel/-warnungen, SVG-Zielrechtecke und Geschwindigkeitseinheiten nativ; XML-/Qt-/VTK-Objektverwaltung und statische SVG-Elemente bleiben Adapter; SVGbytes und Instrumentpixel exakt geprüft; vollständige Live-/Optik-/Einzelfunktionsabnahme offen |
+| U-V0.10-000017 | Weitere Bewegung und Interaktion | Produktiv erweitert; kinematische/Störrotation, Stoßpose, Projektion, Kontaktstart für vorbereitete exakte Modelle, Lösungsauswahl und vereinfachter SI-Integrationskern nativ; vollständige Pfad-/Leistungsabnahme offen |
+| U-V0.10-000018 | Optionale Voxel-/GPU-Bestandspfade | Teilweise produktiv; körperfestes CPU-Voxelmodell, Säulenintervalle und Paarbildung nativ; v15 auf AMD gfx1103 mit fp64: 8 OpenCL-Tests bestanden, 60-s-GUI-Pfad ohne Programmfehler; vollständige Genauigkeitsmatrix und Übertragung des GPU-Kernels offen |
+| U-V0.10-000019 | Integrierte Parität und End-to-End-Leistung | Teilweise abgenommen; erneut 1172 bestanden/1 vorhandener Windows-Symlink-Skip und vorläufiger C++-Replay; 165 weiterhin quellidentische Produktivmessfälle; Optimist-Batchabweichung als Abschlussausnahme akzeptiert; drei sichtbare 60-s-Livepfade v15 plus 60-s-Overlay-Lauf v16 ohne Programmfehler, aber ohne Scanout-FPS-Nachweis; vollständige Langzeit-/Optik-/Speicher- und Gesamtabnahme offen |
+| U-V0.10-000020 | Abschlussmatrix und Dokumentation | Für den ausdrücklich begrenzten Versionsabschluss erledigt: 34-A-Bilanz, 118 CPPI-Einträge mit Performance-Spalten und Restarbeits-Backlog; ursprüngliche vollständige 298-Einzelabnahme und Migrationsrestumfänge nicht erfüllt |
+
+[Kumulierte Funktionsnachweise](Funktionsnachweise_V0.10.json) enthalten
+Rohdatenverweise, Hashes, Aufrufe und Eigen-/Gesamtzeiten. Auch bewusste
+Fehleraufrufe sind kein erfolgreicher Funktionsvergleich.
+Die vier nicht ausführbaren Renderer-Altpfade wurden mit Nutzerfreigabe
+unter A-V0.10-00027 und A-V0.10-00029 am Ende der Spezifikation archiviert.
+Die übrigen Teile beider Anforderungen bleiben aktiv. Das aktualisierte
+Inventar enthält 271 spezifizierte Einträge und 27 Closures, insgesamt
+298 aktive Einträge. Historische Rohprofile mit 302 Einträgen bleiben
+unverändert. Diese Teilrücknahme schließt weder M1 noch weitere Schritte ab.
+
+Die [konkrete Referenztestmatrix](Funktions_Testmatrix_V0.10.json) ordnet
+alle 298 aktiven Einträge tatsächlich bestandenen Test-Call-Phasen aus
+772 Fach-/Referenztests zu. Das ersetzt keine nativen Paritätsfälle.
+Die Profilmatrix umfasst jetzt 37 getrennte Bewertungen aus 31 Rohquellen;
+vier historische inkonsistente Profile bleiben als Zeitbelege gesperrt.
+Die vollständige Speicher-Livebaseline ergänzt ausdrücklich die bisher
+fehlende Speicherentwicklung, ohne alte Rohdaten zu verändern.
+Der [Einzelfunktions-Prüfplan](Funktionspruefplan_V0.10.json) enthält
+je Block konkrete Eingabe-/Testquellen und getrennte Zeitdiagnosen.
+M1-Abschluss: 909 Tests bestanden, ein vorhandener Windows-Symlink-Skip,
+exakter Replay und alle 116 Referenzdateien unverändert. Dies ist nur
+die Freigabe für M2, keine native Produktiv- oder Performanceabnahme.
+
+[M2-Prüfprotokoll](../Messungen/M2_Pruefprotokoll_2026-10-19.md):
+Die native Datenbasis und erste echte Rechenkandidaten sind umgesetzt.
+1041 gemeinsame Referenz-/Kandidatentests bestanden mit einem
+vorbestehenden Windows-Symlink-Skip; nach weiteren Optimierungen
+173 gezielte Kandidaten-/Referenzregressionstests bestanden. Negative Snapshot- und schwankende
+Großarraymessungen bleiben ausdrücklich sichtbar. Keine produktive
+Umschaltung und kein vollständiger M2-/Migrationsabschluss.
+
+## 9. Fortsetzung v15: Wasser, Voxel und integrierte Prüfungen
+
+Bezogen auf den ursprünglichen vollständigen Migrationsumfang bleibt dies
+ein **Teilabschluss**: M1 ist abgeschlossen; die vollständige technische
+Abnahme bis M10 ist offen. Der ausdrücklich freigegebene begrenzte
+V0.10-Versionsschnitt ist dagegen abgeschlossen; seine Restarbeiten stehen
+im verlinkten Backlog.
+Die neueren Belege und ihre Grenzen stehen im
+[Produktivprotokoll v15/v16](../Messungen/Produktiv_Pruefprotokoll_2026-10-20.md).
+
+| Prüfung | Ergebnis | Grenze |
+|---|---|---|
+| Vollständige Regression | 1171 bestanden, 1 vorhandener Skip wegen fehlender Windows-Symlinkberechtigung | Keine weiteren Skips; keine aktuelle native JUnit-Datei erzeugt |
+| Produktivmessung | 162 Fälle; neue Daten in `Produktiv_2026-10-20_v15` | Einzelfunktionsmessung, keine addierbaren Gesamtfaktoren |
+| Wasserpartikel | Spiegelung 2,591x, Splatting 7,455x Python/C++; Kalibrierung 0,239x | Kalibrierung rund 4,19x langsamer; Marching-Cubes bleibt PyVista |
+| Körperfestes Voxelmodell | Poseauswertung 37,375x, 6DOF 22,215x, Vorbereitung 2,608x, gesamter Unterwasser-Rasterpfad 3,402x | Klein-/Analytikfälle; ersetzt keine vollständige Modell-/Posegenauigkeitsmatrix |
+| Eingefrorener Replay | Vorläufig bestanden; physikalische Toleranzen unverändert | Streng weiterhin eine Folkeboot-Eingabekomponente um 1,1102230246251565e-16 m abweichend |
+| Strenge Schrittfolge | Folkeboot und yacht1 innerhalb der 1000-Schrittgrenzen | Optimist verfehlt strikt: Zustand 1,0303820297e-11, Kraftfeld 1,03769249193e-7 |
+| 120-s-Worker | Drei Modelle vorläufig innerhalb der freigegebenen Grenzen | Folkeboot-Maximum der Kraft-/Momentfelder 0,269893421; Abweichung bleibt Genauigkeitsschuld |
+| GPU | AMD gfx1103, fp64, OpenCL; 8 gezielte Tests bestanden | Vorläufige Voxelphysik, kein Nachweis für alle Modelle/Posen |
+| Sichtbare GUI | Exakt-, CPU-Voxel- und OpenCL-Voxelpfad je 30 s Warmup + 60 s Messung; Lifecycle, Eingabelatenz, Screenshots und Speicherzeitreihen erfasst | Monitor-Scanout nicht nachgewiesen; keine 10-minütigen Wiederholungen oder Referenzscreenshots |
+
+Der v14-Produktivmessversuch brach vor Abschluss wegen eines fehlenden
+`auftrieb`-Modulimports im Messskript ab. Er wurde nicht überschrieben.
+Nach Ergänzung des Imports wurde v15 in einem neuen Verzeichnis
+vollständig erstellt; dessen Umgebungsmanifest verweist auf das
+unveränderte v14-JUnit als Paritätsnachweis. Der aktuelle vollständige
+pytest-Lauf wurde zusätzlich direkt gegen den aktuellen Arbeitsstand
+ausgeführt.
+
+Unverändert offen sind insbesondere: vollständige Einzelparität M2–M4,
+Solver-Sonderfälle und strenge Optimist-Batchabweichung, allgemeine
+Modell-/Formerkennungs- und Topologievalidierung, übrige Actor-/Overlay-
+und GUI-Poseadapter, PyVista-/Qt-Objektverwaltung, vollständige
+Optik-/Liveabnahme und Vergleichsscreenshots, vollständige Voxel-/GPU-
+Genauigkeitsmatrix sowie die A-ID-/Einzelfunktions-Abschlussmatrix.
+Künftige Gates dürfen die gemessenen Grenzen nicht still lockern.
+
+## 10. Fortsetzung v16: Hauptachsen-Overlay
+
+Die dynamische Overlayaufbereitung rotiert nun im nativen Backend die
+Hauptachsen und berechnet die körperabhängigen Projektionsausdehnungen.
+Die vorhandene Eigenwertberechnung bleibt bei NumPy; der native Kern
+ersetzt ausschließlich `vektoren @ R.T`, die Punktprojektionen und die
+Längenschwelle `max(1.05 * halbe, 0.05)`. C++-VTK-/Actorerzeugung bleibt
+Bibliotheksadapter.
+
+- 200 reproduzierbare zufällige Punkt-/Rotationsfälle, einschließlich
+  leerer Punktmengen, verglichen; Richtungen und Längen stimmen mit der
+  Pythonreferenz bei `atol=2e-12` überein.
+- Gezielte Grafikgeometrie-, Backend- und Darstellungsregression:
+  24 bestanden.
+- Neue vollständige Suite: 1172 bestanden, ein vorhandener
+  Windows-Symlink-Skip. JUnit:
+  `build/v010-produktiv-2026-10-20-v16.xml`.
+- V16-Produktivvergleich: 165 Fälle. Der Overlay-Elternblock ist
+  langsamer: Python/C++ 0,338 Optimist, 0,391 Folkeboot, 0,285 yacht1.
+  Gemessen wird die gesamte Adapteraufrufzeit; der Verlust wird trotz
+  Messnachteils auf Nutzerauftrag integriert.
+- Die erneute Messung v16 erfasst außerdem Wasser/Voxel:
+  IsoSurfaceWater-Spiegelung 3,029x, Splatting 9,216x, Kalibrierung
+  0,279x; gesamter Unterwasser-Rasterpfad 3,162x. Die Einzelwerte
+  schwanken gegenüber v15 und werden als getrennte Läufe behandelt.
+- Ein aktueller sichtbarer 60-s-GUI-Lauf mit `exakt_union`, Lifecycle,
+  61 Speicherstichproben und Screenshot ist gültig; alle 60 Eingaben
+  reagierten. Keine Scanout-FPS verfügbar. Die drei gleichlangen
+  v15-Livevergleiche liegen zusätzlich im Prüfprotokoll.
+
+Rohdaten:
+[v16 Produktivmessungen](../Messungen/Produktiv_2026-10-20_v16/produktive_vergleiche.json),
+[v16 Umgebung](../Messungen/Produktiv_2026-10-20_v16/umgebung.json),
+[v16 GUI-Bericht](../Messungen/Live_GUI_2026-10-20_v16_exakt_union.json),
+[v16 Screenshot](../Messungen/Live_GUI_2026-10-20_v16_exakt_union.png).
+Der C++-Kern ist produktiv im `cpp`-Rechenpfad; sein Performanceverlust
+und die verbleibende Gesamtoptikabnahme bleiben ausdrücklich sichtbar.
+
+## 11. Begrenzter Abschlussumfang V0.10 vom 20.10.2026
+
+Der Nutzer hat den begrenzten Versionsabschluss und die Übernahme der
+Restarbeiten ins Backlog ausdrücklich freigegeben. Die ursprünglichen
+Vollständigkeitsbedingungen bleiben für den gesamten Migrationsumfang
+sichtbar, sind aber keine Sperre dieses begrenzten Versionsschnitts mehr.
+U-V0.10-000001 bis U-V0.10-000019 behalten die oben dokumentierten
+technischen Teil-/Abnahmestände. U-V0.10-000020 ist nur hinsichtlich der
+Dokumentation des freigegebenen begrenzten Abschlusses erledigt.
+Es werden keine Schritte stillschweigend als vollständig umgesetzt
+archiviert oder aus dem Plan entfernt.
 
 ## Nicht umsetzen
 

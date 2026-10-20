@@ -1,0 +1,407 @@
+{
+  "fassung": 1,
+  "laufanzahl": 18,
+  "messdauer_je_lauf_s": 300,
+  "warmup_je_lauf_s": 30,
+  "m1_freigegeben": false,
+  "cpp_gewinn_nachgewiesen": false,
+  "hinweis": "Python-Ausgangsmessung; Qt-Swaps und Eingabeproxy sind kein Scanoutnachweis. Weitere M1-Pflichtfaelle offen.",
+  "gruppen": [
+    {
+      "modell": "optimist",
+      "optik": "standard",
+      "laeufe": 3,
+      "viewport_px": [
+        640,
+        480
+      ],
+      "kennwerte": {
+        "abgeschlossene_frame_fps": {
+          "rohwerte": [
+            16.49,
+            16.48,
+            18.34
+          ],
+          "median": 16.49,
+          "minimum": 16.48,
+          "maximum": 18.34
+        },
+        "frameabstand_p95_ms": {
+          "rohwerte": [
+            93.018,
+            93.177,
+            74.591
+          ],
+          "median": 93.018,
+          "minimum": 74.591,
+          "maximum": 93.177
+        },
+        "eingabe_bis_praesentierter_frame_ms": {
+          "rohwerte": [
+            62.087,
+            63.826,
+            55.15
+          ],
+          "median": 62.087,
+          "minimum": 55.15,
+          "maximum": 63.826
+        },
+        "physik_durchsatz_sim_s_pro_wand_s": {
+          "rohwerte": [
+            0.9963594418116525,
+            0.9966853962464235,
+            0.9967832873240283
+          ],
+          "median": 0.9966853962464235,
+          "minimum": 0.9963594418116525,
+          "maximum": 0.9967832873240283
+        },
+        "rueckstand_trend_s_pro_s": {
+          "rohwerte": [
+            7.579324013253538e-05,
+            -0.0002981501423206071,
+            0.00025825915558119934
+          ],
+          "median": 7.579324013253538e-05,
+          "minimum": -0.0002981501423206071,
+          "maximum": 0.00025825915558119934
+        }
+      },
+      "automatische_ueberlastpausen": [
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "modell": "optimist",
+      "optik": "schulung",
+      "laeufe": 3,
+      "viewport_px": [
+        640,
+        480
+      ],
+      "kennwerte": {
+        "abgeschlossene_frame_fps": {
+          "rohwerte": [
+            23.35,
+            23.42,
+            25.5
+          ],
+          "median": 23.42,
+          "minimum": 23.35,
+          "maximum": 25.5
+        },
+        "frameabstand_p95_ms": {
+          "rohwerte": [
+            62.89,
+            63.24,
+            53.513
+          ],
+          "median": 62.89,
+          "minimum": 53.513,
+          "maximum": 63.24
+        },
+        "eingabe_bis_praesentierter_frame_ms": {
+          "rohwerte": [
+            50.48,
+            51.213,
+            46.971
+          ],
+          "median": 50.48,
+          "minimum": 46.971,
+          "maximum": 51.213
+        },
+        "physik_durchsatz_sim_s_pro_wand_s": {
+          "rohwerte": [
+            0.996322826310622,
+            0.9968441087450904,
+            0.9966293548476252
+          ],
+          "median": 0.9966293548476252,
+          "minimum": 0.996322826310622,
+          "maximum": 0.9968441087450904
+        },
+        "rueckstand_trend_s_pro_s": {
+          "rohwerte": [
+            0.0001357806577930122,
+            0.00028460667329620185,
+            0.0006539484375543752
+          ],
+          "median": 0.00028460667329620185,
+          "minimum": 0.0001357806577930122,
+          "maximum": 0.0006539484375543752
+        }
+      },
+      "automatische_ueberlastpausen": [
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "modell": "folkeboot",
+      "optik": "standard",
+      "laeufe": 3,
+      "viewport_px": [
+        640,
+        480
+      ],
+      "kennwerte": {
+        "abgeschlossene_frame_fps": {
+          "rohwerte": [
+            22.0,
+            22.6,
+            24.28
+          ],
+          "median": 22.6,
+          "minimum": 22.0,
+          "maximum": 24.28
+        },
+        "frameabstand_p95_ms": {
+          "rohwerte": [
+            73.252,
+            73.914,
+            68.829
+          ],
+          "median": 73.252,
+          "minimum": 68.829,
+          "maximum": 73.914
+        },
+        "eingabe_bis_praesentierter_frame_ms": {
+          "rohwerte": [
+            56.081,
+            56.159,
+            53.509
+          ],
+          "median": 56.081,
+          "minimum": 53.509,
+          "maximum": 56.159
+        },
+        "physik_durchsatz_sim_s_pro_wand_s": {
+          "rohwerte": [
+            0.996770234924677,
+            0.9969732284695025,
+            0.9997097155492555
+          ],
+          "median": 0.9969732284695025,
+          "minimum": 0.996770234924677,
+          "maximum": 0.9997097155492555
+        },
+        "rueckstand_trend_s_pro_s": {
+          "rohwerte": [
+            0.00024499528598358015,
+            0.00037708601534114237,
+            -0.004110866716054995
+          ],
+          "median": 0.00024499528598358015,
+          "minimum": -0.004110866716054995,
+          "maximum": 0.00037708601534114237
+        }
+      },
+      "automatische_ueberlastpausen": [
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "modell": "folkeboot",
+      "optik": "schulung",
+      "laeufe": 3,
+      "viewport_px": [
+        640,
+        480
+      ],
+      "kennwerte": {
+        "abgeschlossene_frame_fps": {
+          "rohwerte": [
+            28.55,
+            34.38,
+            29.64
+          ],
+          "median": 29.64,
+          "minimum": 28.55,
+          "maximum": 34.38
+        },
+        "frameabstand_p95_ms": {
+          "rohwerte": [
+            54.363,
+            46.344,
+            52.431
+          ],
+          "median": 52.431,
+          "minimum": 46.344,
+          "maximum": 54.363
+        },
+        "eingabe_bis_praesentierter_frame_ms": {
+          "rohwerte": [
+            47.101,
+            38.017,
+            46.197
+          ],
+          "median": 46.197,
+          "minimum": 38.017,
+          "maximum": 47.101
+        },
+        "physik_durchsatz_sim_s_pro_wand_s": {
+          "rohwerte": [
+            0.9968162143364335,
+            0.9997555171198289,
+            0.9966176161494991
+          ],
+          "median": 0.9968162143364335,
+          "minimum": 0.9966176161494991,
+          "maximum": 0.9997555171198289
+        },
+        "rueckstand_trend_s_pro_s": {
+          "rohwerte": [
+            5.2980434107102564e-05,
+            -3.7882834252231045e-05,
+            0.0004894628556164614
+          ],
+          "median": 5.2980434107102564e-05,
+          "minimum": -3.7882834252231045e-05,
+          "maximum": 0.0004894628556164614
+        }
+      },
+      "automatische_ueberlastpausen": [
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "modell": "yacht1",
+      "optik": "standard",
+      "laeufe": 3,
+      "viewport_px": [
+        640,
+        480
+      ],
+      "kennwerte": {
+        "abgeschlossene_frame_fps": {
+          "rohwerte": [
+            15.09,
+            16.94,
+            15.49
+          ],
+          "median": 15.49,
+          "minimum": 15.09,
+          "maximum": 16.94
+        },
+        "frameabstand_p95_ms": {
+          "rohwerte": [
+            100.265,
+            78.164,
+            98.735
+          ],
+          "median": 98.735,
+          "minimum": 78.164,
+          "maximum": 100.265
+        },
+        "eingabe_bis_praesentierter_frame_ms": {
+          "rohwerte": [
+            64.941,
+            53.826,
+            67.219
+          ],
+          "median": 64.941,
+          "minimum": 53.826,
+          "maximum": 67.219
+        },
+        "physik_durchsatz_sim_s_pro_wand_s": {
+          "rohwerte": [
+            0.7360574929066165,
+            0.9224849846931364,
+            0.7828357897552708
+          ],
+          "median": 0.7828357897552708,
+          "minimum": 0.7360574929066165,
+          "maximum": 0.9224849846931364
+        },
+        "rueckstand_trend_s_pro_s": {
+          "rohwerte": [
+            0.275321369941473,
+            0.0740137347011867,
+            0.21801812684076816
+          ],
+          "median": 0.21801812684076816,
+          "minimum": 0.0740137347011867,
+          "maximum": 0.275321369941473
+        }
+      },
+      "automatische_ueberlastpausen": [
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "modell": "yacht1",
+      "optik": "schulung",
+      "laeufe": 3,
+      "viewport_px": [
+        640,
+        480
+      ],
+      "kennwerte": {
+        "abgeschlossene_frame_fps": {
+          "rohwerte": [
+            23.99,
+            27.32,
+            23.53
+          ],
+          "median": 23.99,
+          "minimum": 23.53,
+          "maximum": 27.32
+        },
+        "frameabstand_p95_ms": {
+          "rohwerte": [
+            62.929,
+            47.813,
+            63.562
+          ],
+          "median": 62.929,
+          "minimum": 47.813,
+          "maximum": 63.562
+        },
+        "eingabe_bis_praesentierter_frame_ms": {
+          "rohwerte": [
+            50.696,
+            40.511,
+            50.635
+          ],
+          "median": 50.635,
+          "minimum": 40.511,
+          "maximum": 50.696
+        },
+        "physik_durchsatz_sim_s_pro_wand_s": {
+          "rohwerte": [
+            0.7327742507303533,
+            0.9530811057661751,
+            0.8197802769568199
+          ],
+          "median": 0.8197802769568199,
+          "minimum": 0.7327742507303533,
+          "maximum": 0.9530811057661751
+        },
+        "rueckstand_trend_s_pro_s": {
+          "rohwerte": [
+            0.2662567319233135,
+            0.0443644137177152,
+            0.18033052425875448
+          ],
+          "median": 0.18033052425875448,
+          "minimum": 0.0443644137177152,
+          "maximum": 0.2662567319233135
+        }
+      },
+      "automatische_ueberlastpausen": [
+        false,
+        false,
+        false
+      ]
+    }
+  ]
+}

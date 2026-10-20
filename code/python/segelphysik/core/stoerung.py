@@ -20,6 +20,7 @@ import math
 import numpy as np
 
 from .statisch import SolverFehler
+from .rechenpfad import rechenpfad
 
 MAX_TRANSLATION_M = 2.0
 MAX_ROTATION_RAD = math.pi
@@ -37,6 +38,12 @@ def stoerung_ziehen(rng, max_translation=MAX_TRANSLATION_M,
 
 def rotationsmatrix(winkel):
     """Rotationsmatrix: Weltachsen-Folge x -> y -> z (St-3)."""
+    from .rechenpfad import rechenpfad
+
+    if rechenpfad() == "cpp":
+        from .stationaer_hydrodynamik import _rotation
+
+        return _rotation(*(float(w) for w in winkel))
     rx, ry, rz = (float(w) for w in winkel)
     cx, sx = math.cos(rx), math.sin(rx)
     cy, sy = math.cos(ry), math.sin(ry)
@@ -53,6 +60,13 @@ def stoss_pose(position_basis, stoerung):
     Jede neue Stoerung (Taste v, beliebig oft) startet von der Basis -
     keine Drift ueber mehrere Stoerungen.
     """
+    if rechenpfad() == "cpp":
+        from .native_backend import native_laden
+
+        return native_laden().stoss_pose(
+            np.asarray(position_basis, dtype=np.float64),
+            np.asarray(stoerung["versatz"], dtype=np.float64),
+            np.asarray(stoerung["winkel"], dtype=np.float64))
     basis = np.asarray(position_basis, dtype=float)
     return (rotationsmatrix(stoerung["winkel"]),
             basis + np.asarray(stoerung["versatz"], dtype=float))
@@ -60,6 +74,12 @@ def stoss_pose(position_basis, stoerung):
 
 def projektion(position, stoerung):
     """Solver-Startwert (z, phi) aus der Stoerpose (St-6, Option A)."""
+    if rechenpfad() == "cpp":
+        from .native_backend import native_laden
+
+        return native_laden().projektion(
+            np.asarray(position, dtype=np.float64),
+            np.asarray(stoerung["winkel"], dtype=np.float64))
     z = float(np.asarray(position, dtype=float)[2])
     phi = float(stoerung["winkel"][0])
     return z, phi
@@ -71,6 +91,23 @@ def kontakt_start(funktion, z_start, phi, schritt=0.5, max_schritte=40):
     V_tauch = 0 -> z senken bis Kontakt; Volltauchung -> z anheben bis
     V_tauch abnimmt. Ohne Erfolg: saubere SolverFehler-Meldung (Z5).
     """
+    if rechenpfad() == "cpp":
+        from .native_backend import native_laden, statikkontext_vorbereiten
+
+        kontext = statikkontext_vorbereiten(funktion)
+        if kontext is not None:
+            status, z = kontext.kontakt_start(
+                float(z_start), float(phi), float(schritt), int(max_schritte),
+                native_laden().Abbruch())
+            if status == 0:
+                return z, float(phi)
+            if status == 1:
+                raise SolverFehler(
+                    "St-8: voll getaucht, keine Oberflaeche innerhalb %.1f m"
+                    % (max_schritte * schritt))
+            raise SolverFehler(
+                "St-8: kein Wasserkontakt innerhalb %.1f m" % (max_schritte * schritt))
+
     def v_tauch(z):
         return float(funktion((float(z), float(phi), 0.0)).V_tauch)
 
@@ -111,6 +148,19 @@ def beste_loesung(loesungen):
        quer - GM = 0 ist dort Physik).
     4. Ohne beides: None.
     """
+    if rechenpfad() == "cpp":
+        from .native_backend import native_laden
+
+        daten = []
+        for loesung in loesungen:
+            gm = loesung.get("gm")
+            gm = None if gm is None else float(gm)
+            stabil = loesung.get("stabil") is True
+            neutral = loesung.get("neutral") is True
+            aktiv = gm is not None and gm > 0. or stabil or neutral
+            daten.append((float(loesung["z"]) if aktiv else None, gm, stabil, neutral))
+        index = native_laden().beste_loesung(daten)
+        return None if index is None else loesungen[index]
     stabile = [L for L in loesungen
                if L.get("gm") is not None and float(L["gm"]) > 0.0]
     if stabile:

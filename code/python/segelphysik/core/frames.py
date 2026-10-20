@@ -5,6 +5,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from .rechenpfad import nativer_kern, rechenpfad
+
 from .dynamik_6dof import (
     quaternion_aus_matrix,
     quaternion_matrix,
@@ -22,6 +24,13 @@ class Pose:
     rotation_quaternion_wxyz: tuple[float, float, float, float]
 
     def __post_init__(self):
+        if rechenpfad() == "cpp":
+            pose = self._native_pose()
+            object.__setattr__(self, "translation_m", tuple(pose.translation_m))
+            object.__setattr__(
+                self, "rotation_quaternion_wxyz",
+                tuple(pose.rotation_quaternion_wxyz))
+            return
         if not isinstance(self.ziel_frame, str) or not self.ziel_frame:
             raise ValueError("Ziel-Frame muss ein nichtleerer Name sein")
         if not isinstance(self.quell_frame, str) or not self.quell_frame:
@@ -44,18 +53,27 @@ class Pose:
         return quaternion_matrix(self.rotation_quaternion_wxyz)
 
     def punkt_transformieren(self, punkt):
+        if rechenpfad() == "cpp":
+            return self._native_pose().punkt_transformieren(
+                np.asarray(punkt, dtype=np.float64))
         vektor = np.asarray(punkt, dtype=np.float64)
         if vektor.shape != (3,) or not np.isfinite(vektor).all():
             raise ValueError("Punkt muss drei endliche Werte enthalten")
         return self.rotationsmatrix @ vektor + self.translation_m
 
     def vektor_transformieren(self, vektor):
+        if rechenpfad() == "cpp":
+            return self._native_pose().vektor_transformieren(
+                np.asarray(vektor, dtype=np.float64))
         array = np.asarray(vektor, dtype=np.float64)
         if array.shape != (3,) or not np.isfinite(array).all():
             raise ValueError("Vektor muss drei endliche Werte enthalten")
         return self.rotationsmatrix @ array
 
     def punkte_transformieren(self, punkte):
+        if rechenpfad() == "cpp":
+            return self._native_pose().punkte_transformieren(
+                np.asarray(punkte, dtype=np.float64))
         array = np.asarray(punkte, dtype=np.float64)
         if (array.ndim != 2 or array.shape[1] != 3
                 or not np.isfinite(array).all()):
@@ -63,6 +81,8 @@ class Pose:
         return array @ self.rotationsmatrix.T + self.translation_m
 
     def invers(self):
+        if rechenpfad() == "cpp":
+            return self._aus_native(self._native_pose().invers())
         rotation = self.rotationsmatrix.T
         translation = -(rotation @ np.asarray(self.translation_m))
         return Pose(
@@ -76,6 +96,9 @@ class Pose:
         """Komponiert ``T_A<-B`` mit ``T_B<-C`` zu ``T_A<-C``."""
         if not isinstance(innen, Pose):
             raise TypeError("Komposition erwartet eine Pose")
+        if rechenpfad() == "cpp":
+            return self._aus_native(
+                self._native_pose().komponieren(innen._native_pose()))
         if self.quell_frame != innen.ziel_frame:
             raise ValueError(
                 "Pose-Frames passen nicht: %s != %s"
@@ -91,6 +114,20 @@ class Pose:
             quaternion_aus_matrix(rotation),
         )
 
+    def _native_pose(self):
+        from .native_backend import native_laden
+
+        return native_laden().Pose(
+            self.ziel_frame, self.quell_frame,
+            np.asarray(self.translation_m, dtype=np.float64),
+            np.asarray(self.rotation_quaternion_wxyz, dtype=np.float64))
+
+    @staticmethod
+    def _aus_native(pose):
+        return Pose(
+            pose.ziel_frame, pose.quell_frame, tuple(pose.translation_m),
+            tuple(pose.rotation_quaternion_wxyz))
+
 
 def pose_aus_modellpose(pose, ziel_frame, quell_frame):
     """Erzeugt eine benannte Pose aus der unveränderlichen Manifestpose."""
@@ -105,6 +142,7 @@ def pose_aus_modellpose(pose, ziel_frame, quell_frame):
     )
 
 
+@nativer_kern("rotationsmatrix_achsenwinkel", skalare=(1,))
 def rotationsmatrix_achsenwinkel(achse, winkel_rad):
     achse = np.asarray(achse, dtype=np.float64)
     winkel = float(winkel_rad)
@@ -126,6 +164,10 @@ def rotationsmatrix_achsenwinkel(achse, winkel_rad):
 
 def pose_mit_gelenkwinkel(pose, gelenk, winkel_rad=None):
     """Faltet die Rotation um die Elternframe-Achse in eine lokale Pose."""
+    if rechenpfad() == "cpp":
+        from .native_backend import pose_mit_gelenkwinkel as nativ
+
+        return Pose._aus_native(nativ(pose, gelenk, winkel_rad))
     basis = pose_aus_modellpose(pose, "eltern", "knoten")
     if gelenk is None:
         return basis

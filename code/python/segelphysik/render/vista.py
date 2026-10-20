@@ -22,10 +22,20 @@ v0.3f: Koerper-Darstellung nach Spec SS6:
 - Status-HUD unten rechts: Position, v, Eintauchtiefe, Tauchfraktion,
   Kraftvektor des zuletzt gewaehlten Koerpers (Plan-Issue 14).
 """
+import operator
+
 import numpy as np
+
+from ..core.rechenpfad import rechenpfad
 
 
 def _surface_polydata(pv, X, Y, Z):
+    if rechenpfad() == "cpp":
+        from ..core.native_backend import native_laden
+        punkte, faces = native_laden().wasser_flaeche(
+            np.asarray(X, dtype=np.float64), np.asarray(Y, dtype=np.float64),
+            np.asarray(Z, dtype=np.float64))
+        return pv.PolyData(punkte, faces=faces.ravel())
     ny, nx = X.shape
     pts = np.column_stack([X.ravel(), Y.ravel(), Z.ravel()]).astype(np.float64)
     I, J = np.meshgrid(np.arange(nx - 1), np.arange(ny - 1), indexing="ij")
@@ -40,6 +50,9 @@ def _bilinear_upsample(Z, f):
     f = max(1, int(f))
     if f == 1:
         return Z
+    if rechenpfad() == "cpp":
+        from ..core.native_backend import native_laden
+        return native_laden().wasser_upsample(np.asarray(Z, dtype=np.float64), f)
     ny, nx = Z.shape
     xi = np.linspace(0.0, nx - 1.0, (nx - 1) * f + 1)
     yi = np.linspace(0.0, ny - 1.0, (ny - 1) * f + 1)
@@ -53,11 +66,20 @@ def _bilinear_upsample(Z, f):
 
 
 def _unit_circle(n=48):
+    if rechenpfad() == "cpp":
+        from ..core.native_backend import native_laden
+        n = operator.index(n)
+        if n < 0:
+            raise ValueError("Number of samples, %s, must be non-negative." % n)
+        return native_laden().wasser_kreis(n)
     a = np.linspace(0.0, 2.0 * np.pi, n, endpoint=False)
     return np.column_stack([np.cos(a), np.sin(a)])
 
 
 def _unit_square():
+    if rechenpfad() == "cpp":
+        from ..core.native_backend import native_laden
+        return native_laden().wasser_quadrat()
     c = [(-1.0, -1.0), (1.0, -1.0), (1.0, 1.0), (-1.0, 1.0), (-1.0, -1.0)]
     return np.array(c)
 
@@ -104,6 +126,12 @@ class IsoSurfaceWater:
     def _calibrate(self, g):
         """Normierung aus ungestoertem Tiefwasser (Median der belegten
         Zellen im unteren Drittel, weg vom Rand)."""
+        if rechenpfad() == "cpp":
+            from ..core.native_backend import native_laden
+            median = native_laden().wasser_kalibrieren(g)
+            if median is not None:
+                self._norm_eff = median
+            return
         nx, ny, nz = self.nx, self.ny, self.nz
         sub = g[3:max(4, nx - 3), 3:max(4, ny - 3), :max(2, nz // 3)]
         vals = sub[sub > 0.0]
@@ -117,6 +145,11 @@ class IsoSurfaceWater:
         Sequenziell ueber die akkumulierte Liste => an Kanten/Ecken
         entstehen automatisch alle Kombinationen. Nur Partikel nahe
         der jeweiligen Wand werden gespiegelt (kr + 1 Zelle)."""
+        if rechenpfad() == "cpp":
+            from ..core.native_backend import native_laden
+            return native_laden().wasser_spiegeln(
+                np.asarray(pos, dtype=np.float64), self.lx, self.ly,
+                self.depth, self.cell, self.kr)
         kr = self.kr
         out = [pos]
         cur = pos
@@ -150,6 +183,14 @@ class IsoSurfaceWater:
         if len(pos) == 0:
             return
         pos = self._mirrored(pos)
+        if rechenpfad() == "cpp":
+            from ..core.native_backend import native_laden
+            g[...] = native_laden().wasser_splat(
+                pos, self._off, self.nx, self.ny, self.nz, self.lx,
+                self.ly, self.depth, self.cell, self.kr)
+            if self._norm_eff is None:
+                self._calibrate(g)
+            return
         inv = 1.0 / self.cell
         nx, ny, nz = self.nx, self.ny, self.nz
         fx = (pos[:, 0] + self.lx * 0.5) * inv
@@ -262,6 +303,10 @@ class PyVistaRenderer:
         bad = ~np.isfinite(Z)
         if bad.all():
             return np.zeros_like(Z)
+        if rechenpfad() == "cpp":
+            from ..core.native_backend import native_laden
+            return native_laden().wasser_glaetten(
+                Z, float(self.dx), operator.index(self.smooth_passes))
         def _shift(a, dy, dx):
             p = np.pad(a, 1, mode="edge")
             if dy == -1:   p = p[2:, :]

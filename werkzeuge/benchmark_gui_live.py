@@ -84,7 +84,8 @@ def _fenster_schliessen(app, fenster, hauptfenster_mod):
 def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
               measure_parameter_change=False, worker_profile=None,
               cpu_profile_batches=0, cpu_profile=False,
-              render_options=None, measure_lifecycle=False, screenshot=None):
+              render_options=None, measure_lifecycle=False, screenshot=None,
+              viewport_size=None, callback_profile=False, measure_memory=False):
     from PySide6.QtCore import QObject, Qt, QTimer, Signal
     from PySide6.QtWidgets import QApplication
 
@@ -134,6 +135,8 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
         first_scene_presented_s[0] = time.perf_counter() - startup_start
 
     bridge._plotter.frameSwapped.connect(first_scene_presented)
+    if viewport_size is not None:
+        bridge._plotter.setFixedSize(*viewport_size)
     fenster.show()
     app.processEvents()
     gui_bedienbar_s = time.perf_counter() - startup_start
@@ -156,10 +159,13 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
     fehler = []
     render_alt = bridge.render
     pose_alt = bridge.physik_pose_6dof_setzen
+    from werkzeuge.migration_baseline import CallbackProfil
+    callback_profil = CallbackProfil()
 
     def render_messen():
         start = time.perf_counter()
-        erfolgreich = render_alt()
+        erfolgreich = (callback_profil.aufrufen(render_alt)
+                       if callback_profile else render_alt())
         dauer = time.perf_counter() - start
         if erfolgreich:
             renderzeiten.append(dauer)
@@ -167,7 +173,8 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
 
     def pose_messen(*args):
         start = time.perf_counter()
-        erfolgreich = pose_alt(*args)
+        erfolgreich = (callback_profil.aufrufen(pose_alt, *args)
+                       if callback_profile else pose_alt(*args))
         posezeiten.append(time.perf_counter() - start)
         return erfolgreich
 
@@ -217,6 +224,12 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
     render_fenster.AddObserver(
         "EndEvent", lambda _obj, _event: end_events.append(time.perf_counter()))
     _warte(app, round(warmup_s * 1000))
+    viewport_start = list(render_fenster.GetSize())
+    if viewport_size is not None and viewport_start != list(viewport_size):
+        _fenster_schliessen(app, fenster, hauptfenster_mod)
+        raise RuntimeError(
+            "Angeforderter Benchmark-Viewport nicht erreicht: %s statt %s"
+            % (viewport_start, viewport_size))
     if measure_parameter_change:
         from segelphysik.gui.baum import finde
 
@@ -374,6 +387,7 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
     praesentiert.clear()
     end_events.clear()
     vtk_frames.clear()
+    callback_profil.messen = callback_profile
     gui_profil = cProfile.Profile() if cpu_profile else None
     if gui_profil is not None:
         gui_profil.enable()
@@ -383,6 +397,7 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
     fenster._btn_echtzeit.click()
     laufzeit_start = time.perf_counter()
     rueckstand_zeitreihe = []
+    speicher_zeitreihe = []
 
     def rueckstand_aufnehmen():
         rueckstand_zeitreihe.append((
@@ -390,6 +405,21 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
             fenster._echtzeit_rueckstand_s(),
             fenster._echtzeit_angefordert_s,
             fenster._echtzeit_berechnet_s))
+        if measure_memory:
+            from werkzeuge.migration_baseline import windows_prozessspeicher
+
+            executor = fenster._echtzeit_prozess_executor
+            prozesse = executor._processes if executor is not None else {}
+            try:
+                speicher_zeitreihe.append({
+                    "wandzeit_s": time.perf_counter() - laufzeit_start,
+                    "gui": windows_prozessspeicher(),
+                    "worker": [
+                        windows_prozessspeicher(pid) for pid in sorted(prozesse)],
+                })
+            except OSError as speicherfehler:
+                fehlertext = "Speichermessung fehlgeschlagen: " + str(speicherfehler)
+                fehler.append(fehlertext)
 
     rueckstand_timer = QTimer(fenster)
     rueckstand_timer.setInterval(1000)
@@ -444,6 +474,7 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
     eingabe_timer.timeout.connect(eingabe_senden)
     eingabe_timer.start()
     _warte(app, round(duration_s * 1000))
+    callback_profil.messen = False
     if gui_profil is not None:
         gui_profil.disable()
     eingabe_timer.stop()
@@ -621,6 +652,8 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
             "wasser_glanz": oberflaeche.GetProperty().GetSpecular() if oberflaeche else None,
             "autoupdate_ms": plotter.render_timer.interval(),
         },
+        "viewport_start_px": viewport_start,
+        "viewport_vorgabe_px": viewport_size,
         "wiederholung": 1,
         "messfall": "lebenszyklus" if measure_lifecycle else "echtzeit_1x",
         "lebenszyklus": lebenszyklus,
@@ -632,12 +665,17 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
             "worker_roundtrip_s": worker_roundtrips.copy(),
             "eingabelatenz_s": reaktionen.copy(),
             "event_dispatch_s": verspaetungen.copy(),
+            "speicher_zeitreihe": speicher_zeitreihe,
         },
         "worker_ipc_hinweis": (
             "Roundtrip umfasst Qt-Worker, Prozess-Queue, Pickle/IPC und "
             "Workerberechnung. Differenz zu Workerzeit ist nicht reine IPC; "
             "Dateiprotokollierung/Profiloverhead und Queue sind enthalten."),
     }
+    if (viewport_size is not None
+            and status["renderzustand"]["fenstergroesse_px"] != viewport_start):
+        _fenster_schliessen(app, fenster, hauptfenster_mod)
+        raise RuntimeError("Benchmark-Viewport waehrend des Messlaufs veraendert")
     if screenshot:
         if not fenster.grab().save(screenshot):
             raise RuntimeError("Fensteraufnahme konnte nicht gespeichert werden.")
@@ -648,6 +686,13 @@ def benchmark(scene, warmup_s, duration_s, backend="exakt_union",
     echtzeit_prozess.schritte_berechnen = original_worker
     if gui_profil is not None:
         status["gui_cpu_hotspots"] = cpu_statistik(gui_profil, limit=50)
+    if callback_profile:
+        status["gui_callback_profil"] = callback_profil.bericht()
+        status["gui_callback_profil_aufrufe"] = callback_profil.aufrufe
+        status["gui_callback_profil_hinweis"] = (
+            "Nur synchrone Render-/Poseaufrufe im Messfenster. "
+            "Keine Profilierung der Qt-Ereignisschleife, Workerthreads oder "
+            "vollstaendigen GUI-CPU-Zeit; instrumentierter Diagnoselauf.")
     if worker_profile:
         status["worker_profil"] = worker_bericht(
             worker_profile, status["rohwerte"]["worker_roundtrip_s"])
@@ -668,10 +713,16 @@ def main(argv=None):
         "--measure-parameter-change", action="store_true",
         help="Misst Material-/Masseneigenschaft bis zum konsistenten 3D-Frame")
     parser.add_argument("--output", help="UTF-8-JSON ohne stdout/Windows-Umkodierung")
+    parser.add_argument("--viewport-width", type=int)
+    parser.add_argument("--viewport-height", type=int)
     parser.add_argument("--screenshot", help="PNG des Anwendungsfensters nach dem Messfenster")
     parser.add_argument("--worker-profile", help="Neue JSONL-Rohdatei für Komponentenprofil")
     parser.add_argument("--cpu-profile-batches", type=int, default=0)
     parser.add_argument("--cpu-profile", action="store_true", help="GUI-cProfile, nur Diagnoselauf")
+    parser.add_argument("--callback-profile", action="store_true",
+                        help="Isolierte synchrone Render-/Poseprofile ohne Qt-Ereignisschleife")
+    parser.add_argument("--measure-memory", action="store_true",
+                        help="Sekündliche Working-Set-/Private-Bytes-Messung von GUI und Physikprozessen")
     parser.add_argument("--ohne-ssao", action="store_true")
     parser.add_argument("--ohne-wasseroptik", action="store_true")
     parser.add_argument("--ohne-wasser", action="store_true")
@@ -690,14 +741,23 @@ def main(argv=None):
         parser.error("--cpu-profile-batches benötigt --worker-profile.")
     if args.measure_lifecycle and args.duration < 9:
         parser.error("--measure-lifecycle benötigt mindestens 9 s Dauer.")
+    if ((args.viewport_width is None) != (args.viewport_height is None)
+            or (args.viewport_width is not None
+                and min(args.viewport_width, args.viewport_height) <= 0)):
+        parser.error("Viewportbreite und -hoehe gemeinsam positiv angeben.")
     ergebnis = benchmark(
         args.scene, args.warmup, args.duration, backend=args.backend,
         measure_parameter_change=args.measure_parameter_change,
         worker_profile=args.worker_profile,
         cpu_profile_batches=args.cpu_profile_batches,
         cpu_profile=args.cpu_profile,
+        callback_profile=args.callback_profile,
+        measure_memory=args.measure_memory,
         measure_lifecycle=args.measure_lifecycle,
         screenshot=args.screenshot,
+        viewport_size=(
+            (args.viewport_width, args.viewport_height)
+            if args.viewport_width is not None else None),
         render_options={
             **{name: False for name, gesetzt in (
                 ("ssao", args.ohne_ssao), ("wasseroptik", args.ohne_wasseroptik),

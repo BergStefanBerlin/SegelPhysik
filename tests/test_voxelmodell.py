@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 from segelphysik.core import auftrieb, koerper_formen, voxelmodell as vm
+from segelphysik.core.rechenpfad import python_referenz
 
 
 @pytest.fixture
@@ -168,3 +169,61 @@ def test_offenes_mesh_und_ungueltige_rasterparameter_werden_abgelehnt(quader):
             [(punkte, dreiecke[:-2])], aufloesung=0.5)
     with pytest.raises(vm.VoxelmodellFehler, match="Auflösung"):
         vm.KoerperfestesVoxelmodell([quader], aufloesung=0.0)
+
+
+def test_nativer_koerperfester_voxelkontext_gegen_pythonreferenz(
+        quader, monkeypatch):
+    from segelphysik.core.dynamik_6dof import quaternion_matrix
+
+    monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", "cpp")
+    raster = vm.KoerperfestesVoxelmodell([quader], aufloesung=0.2)
+    rng = np.random.default_rng(30026)
+    for _ in range(100):
+        z, phi = rng.uniform(-1.5, 1.5), rng.uniform(-np.pi, np.pi)
+        with python_referenz():
+            erwartet = raster.auswerten(z, phi)
+        erhalten = raster.auswerten(z, phi)
+        assert erhalten[0] == erwartet[0]
+        np.testing.assert_allclose(erhalten[1], erwartet[1], rtol=0., atol=1e-14)
+
+        position = rng.uniform(-1.5, 1.5, size=3)
+        quaternion = rng.normal(size=4)
+        rotation = quaternion_matrix(quaternion)
+        with python_referenz():
+            erwartet = raster._auswerten_wasserhalbebene(rotation, position)
+        erhalten = raster._auswerten_wasserhalbebene(rotation, position)
+        assert erhalten[0] == erwartet[0]
+        np.testing.assert_allclose(erhalten[1], erwartet[1], rtol=0., atol=1e-14)
+    assert raster._native_kontext is not None
+
+
+@pytest.mark.parametrize("werte", [[], [1.], [1., 2.], [1., 2., 3.],
+                                    [0., 1., 2., 3., 4.], list(range(8))])
+def test_native_voxel_paarbildung_behaelt_tangentenvertrag(werte, monkeypatch):
+    monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", "cpp")
+    with python_referenz():
+        erwartet = auftrieb._paare_bereit(werte)
+    assert auftrieb._paare_bereit(werte) == erwartet
+
+
+def test_native_voxel_saulenintervalle_gegen_pythonreferenz(quader, monkeypatch):
+    monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", "cpp")
+    punkte, dreiecke = quader
+    schnitt_p, schnitt_f = auftrieb._unterwasser_teile(
+        punkte + np.array((.13, -.21, -.37)), dreiecke)
+    rng = np.random.default_rng(31026)
+    for _ in range(300):
+        x, z = rng.uniform(-1.2, 1.2, size=2)
+        with python_referenz():
+            erwartet = auftrieb._y_intervalle_saeule_v(
+                schnitt_p, schnitt_f, x, z)
+        erhalten = auftrieb._y_intervalle_saeule_v(
+            schnitt_p, schnitt_f, x, z)
+        assert len(erhalten) == len(erwartet)
+        np.testing.assert_allclose(erhalten, erwartet, rtol=0., atol=1e-14)
+        with python_referenz():
+            erwartet = vm._intervalle_saeule(
+                schnitt_p, schnitt_f, x, z)
+        erhalten = vm._intervalle_saeule(schnitt_p, schnitt_f, x, z)
+        assert len(erhalten) == len(erwartet)
+        np.testing.assert_allclose(erhalten, erwartet, rtol=0., atol=1e-14)

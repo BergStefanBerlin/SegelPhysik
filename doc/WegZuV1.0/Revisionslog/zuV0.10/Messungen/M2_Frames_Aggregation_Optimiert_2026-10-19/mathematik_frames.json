@@ -1,0 +1,1748 @@
+{
+  "faelle": [
+    {
+      "funktion": "quaternion_normalisieren",
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ],
+        "translation": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      },
+      "aufrufe_pro_wiederholung": 2000,
+      "python_s": [
+        3.4012999967671932e-06,
+        4.9754499923437835e-06,
+        6.091100018238649e-06,
+        6.151950015919283e-06,
+        6.0768499970436095e-06,
+        6.067700014682486e-06,
+        6.127500004367903e-06
+      ],
+      "cpp_s": [
+        6.852000078652055e-07,
+        6.823500152677297e-07,
+        6.630000134464354e-07,
+        6.476999842561781e-07,
+        3.8184999721124767e-07,
+        3.4615001641213893e-07,
+        3.501499886624515e-07
+      ],
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 6.0768499970436095e-06,
+          "p95_s": 6.144615012453869e-06,
+          "minimum_s": 3.4012999967671932e-06,
+          "maximum_s": 6.151950015919283e-06,
+          "spannweite_s": 2.75065001915209e-06,
+          "standardabweichung_s": 9.62214168507836e-07,
+          "rohwerte_s": [
+            3.4012999967671932e-06,
+            4.9754499923437835e-06,
+            6.091100018238649e-06,
+            6.151950015919283e-06,
+            6.0768499970436095e-06,
+            6.067700014682486e-06,
+            6.127500004367903e-06
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 6.476999842561781e-07,
+          "p95_s": 6.843450100859627e-07,
+          "minimum_s": 3.4615001641213893e-07,
+          "maximum_s": 6.852000078652055e-07,
+          "spannweite_s": 3.390499914530665e-07,
+          "standardabweichung_s": 1.542852459444449e-07,
+          "rohwerte_s": [
+            6.852000078652055e-07,
+            6.823500152677297e-07,
+            6.630000134464354e-07,
+            6.476999842561781e-07,
+            3.8184999721124767e-07,
+            3.4615001641213893e-07,
+            3.501499886624515e-07
+          ]
+        },
+        "ersparnis_s": 5.4291500127874315e-06,
+        "ersparnis_prozent": 89.34151765188733,
+        "beschleunigungsfaktor": 9.382198772202063,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "max_abs_abweichung": 0.0,
+      "paritaetsgrenze": {
+        "rtol": 0.0,
+        "atol": 1e-12,
+        "quelle": "tests/test_frames.py"
+      },
+      "produktiv_freigegeben": false,
+      "hinweis": "Diagnostischer Einzelaufruf einschliesslich pybind-/Arrayuebergabe und genannter Ausgabeaufbereitung. Keine GUI-/Physikbatch-Abnahme."
+    },
+    {
+      "funktion": "quaternion_matrix",
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ],
+        "translation": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      },
+      "aufrufe_pro_wiederholung": 2000,
+      "python_s": [
+        1.0919099993770942e-05,
+        7.132650003768504e-06,
+        6.969249981921166e-06,
+        1.1901749996468425e-05,
+        1.3583149993792176e-05,
+        1.3448349985992536e-05,
+        8.536899986211211e-06
+      ],
+      "cpp_s": [
+        7.533000025432557e-07,
+        4.946000117342919e-07,
+        5.102500144857913e-07,
+        4.918499907944351e-07,
+        4.922999942209571e-07,
+        4.847499949391932e-07,
+        4.822500050067902e-07
+      ],
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.0919099993770942e-05,
+          "p95_s": 1.3542709991452285e-05,
+          "minimum_s": 6.969249981921166e-06,
+          "maximum_s": 1.3583149993792176e-05,
+          "spannweite_s": 6.6139000118710095e-06,
+          "standardabweichung_s": 2.614594637059126e-06,
+          "rohwerte_s": [
+            1.0919099993770942e-05,
+            7.132650003768504e-06,
+            6.969249981921166e-06,
+            1.1901749996468425e-05,
+            1.3583149993792176e-05,
+            1.3448349985992536e-05,
+            8.536899986211211e-06
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 4.922999942209571e-07,
+          "p95_s": 6.803850061260162e-07,
+          "minimum_s": 4.822500050067902e-07,
+          "maximum_s": 7.533000025432557e-07,
+          "spannweite_s": 2.710499975364655e-07,
+          "standardabweichung_s": 9.158164261900477e-08,
+          "rohwerte_s": [
+            7.533000025432557e-07,
+            4.946000117342919e-07,
+            5.102500144857913e-07,
+            4.918499907944351e-07,
+            4.922999942209571e-07,
+            4.847499949391932e-07,
+            4.822500050067902e-07
+          ]
+        },
+        "ersparnis_s": 1.0426799999549985e-05,
+        "ersparnis_prozent": 95.49138670310006,
+        "beschleunigungsfaktor": 22.1797686815941,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "max_abs_abweichung": 0.0,
+      "paritaetsgrenze": {
+        "rtol": 0.0,
+        "atol": 1e-12,
+        "quelle": "tests/test_frames.py"
+      },
+      "produktiv_freigegeben": false,
+      "hinweis": "Diagnostischer Einzelaufruf einschliesslich pybind-/Arrayuebergabe und genannter Ausgabeaufbereitung. Keine GUI-/Physikbatch-Abnahme."
+    },
+    {
+      "funktion": "quaternion_aus_matrix",
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ],
+        "translation": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      },
+      "aufrufe_pro_wiederholung": 2000,
+      "python_s": [
+        4.608994998852722e-05,
+        6.127229999401607e-05,
+        5.979699999443255e-05,
+        5.25970500020776e-05,
+        5.451250000623986e-05,
+        5.8728899981360884e-05,
+        4.928465001285076e-05
+      ],
+      "cpp_s": [
+        1.792299997759983e-06,
+        1.78089999826625e-06,
+        1.8176999874413014e-06,
+        1.7789000121410935e-06,
+        1.7917999939527363e-06,
+        1.7803999944590032e-06,
+        1.7803999944590032e-06
+      ],
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 5.451250000623986e-05,
+          "p95_s": 6.082970999414101e-05,
+          "minimum_s": 4.608994998852722e-05,
+          "maximum_s": 6.127229999401607e-05,
+          "spannweite_s": 1.518235000548885e-05,
+          "standardabweichung_s": 5.254502885915429e-06,
+          "rohwerte_s": [
+            4.608994998852722e-05,
+            6.127229999401607e-05,
+            5.979699999443255e-05,
+            5.25970500020776e-05,
+            5.451250000623986e-05,
+            5.8728899981360884e-05,
+            4.928465001285076e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 1.78089999826625e-06,
+          "p95_s": 1.810079990536906e-06,
+          "minimum_s": 1.7789000121410935e-06,
+          "maximum_s": 1.8176999874413014e-06,
+          "spannweite_s": 3.8799975300207924e-08,
+          "standardabweichung_s": 1.2861391680243905e-08,
+          "rohwerte_s": [
+            1.792299997759983e-06,
+            1.78089999826625e-06,
+            1.8176999874413014e-06,
+            1.7789000121410935e-06,
+            1.7917999939527363e-06,
+            1.7803999944590032e-06,
+            1.7803999944590032e-06
+          ]
+        },
+        "ersparnis_s": 5.273160000797361e-05,
+        "ersparnis_prozent": 96.7330428836278,
+        "beschleunigungsfaktor": 30.609523308051614,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "max_abs_abweichung": 0.0,
+      "paritaetsgrenze": {
+        "rtol": 0.0,
+        "atol": 1e-12,
+        "quelle": "tests/test_frames.py"
+      },
+      "produktiv_freigegeben": false,
+      "hinweis": "Diagnostischer Einzelaufruf einschliesslich pybind-/Arrayuebergabe und genannter Ausgabeaufbereitung. Keine GUI-/Physikbatch-Abnahme."
+    },
+    {
+      "funktion": "_quaternion_multiplizieren",
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ],
+        "translation": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      },
+      "aufrufe_pro_wiederholung": 2000,
+      "python_s": [
+        5.825400003232062e-06,
+        5.833549977978691e-06,
+        5.827250017318874e-06,
+        5.8614499866962435e-06,
+        5.80414998694323e-06,
+        5.8143000060226765e-06,
+        5.851249996339902e-06
+      ],
+      "cpp_s": [
+        7.681999995838851e-07,
+        7.362000178545713e-07,
+        7.198999810498208e-07,
+        7.189000025391579e-07,
+        7.187500013969839e-07,
+        7.183999987319112e-07,
+        7.169000164140016e-07
+      ],
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 5.827250017318874e-06,
+          "p95_s": 5.858389989589341e-06,
+          "minimum_s": 5.80414998694323e-06,
+          "maximum_s": 5.8614499866962435e-06,
+          "spannweite_s": 5.72999997530131e-08,
+          "standardabweichung_s": 1.8473859004809243e-08,
+          "rohwerte_s": [
+            5.825400003232062e-06,
+            5.833549977978691e-06,
+            5.827250017318874e-06,
+            5.8614499866962435e-06,
+            5.80414998694323e-06,
+            5.8143000060226765e-06,
+            5.851249996339902e-06
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 7.189000025391579e-07,
+          "p95_s": 7.586000050650909e-07,
+          "minimum_s": 7.169000164140016e-07,
+          "maximum_s": 7.681999995838851e-07,
+          "spannweite_s": 5.1299983169883556e-08,
+          "standardabweichung_s": 1.745365059518623e-08,
+          "rohwerte_s": [
+            7.681999995838851e-07,
+            7.362000178545713e-07,
+            7.198999810498208e-07,
+            7.189000025391579e-07,
+            7.187500013969839e-07,
+            7.183999987319112e-07,
+            7.169000164140016e-07
+          ]
+        },
+        "ersparnis_s": 5.108350014779717e-06,
+        "ersparnis_prozent": 87.66313440469258,
+        "beschleunigungsfaktor": 8.105786613905972,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "max_abs_abweichung": 0.0,
+      "paritaetsgrenze": {
+        "rtol": 0.0,
+        "atol": 1e-12,
+        "quelle": "tests/test_frames.py"
+      },
+      "produktiv_freigegeben": false,
+      "hinweis": "Diagnostischer Einzelaufruf einschliesslich pybind-/Arrayuebergabe und genannter Ausgabeaufbereitung. Keine GUI-/Physikbatch-Abnahme."
+    },
+    {
+      "funktion": "_orientierung_schritt",
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ],
+        "translation": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      },
+      "aufrufe_pro_wiederholung": 2000,
+      "python_s": [
+        1.6948400007095187e-05,
+        1.81659999943804e-05,
+        1.3232700002845376e-05,
+        9.940949996234849e-06,
+        9.14889998966828e-06,
+        1.4672899997094646e-05,
+        1.7203900002641604e-05
+      ],
+      "cpp_s": [
+        9.243499953299761e-07,
+        8.536999812349677e-07,
+        8.557499968446792e-07,
+        8.575500105507672e-07,
+        8.4449999849312e-07,
+        8.44049995066598e-07,
+        9.383499855175614e-07
+      ],
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.4672899997094646e-05,
+          "p95_s": 1.787736999685876e-05,
+          "minimum_s": 9.14889998966828e-06,
+          "maximum_s": 1.81659999943804e-05,
+          "spannweite_s": 9.01710000471212e-06,
+          "standardabweichung_s": 3.3191572294684165e-06,
+          "rohwerte_s": [
+            1.6948400007095187e-05,
+            1.81659999943804e-05,
+            1.3232700002845376e-05,
+            9.940949996234849e-06,
+            9.14889998966828e-06,
+            1.4672899997094646e-05,
+            1.7203900002641604e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 8.557499968446792e-07,
+          "p95_s": 9.341499884612858e-07,
+          "minimum_s": 8.44049995066598e-07,
+          "maximum_s": 9.383499855175614e-07,
+          "spannweite_s": 9.429999045096337e-08,
+          "standardabweichung_s": 3.6759920243645004e-08,
+          "rohwerte_s": [
+            9.243499953299761e-07,
+            8.536999812349677e-07,
+            8.557499968446792e-07,
+            8.575500105507672e-07,
+            8.4449999849312e-07,
+            8.44049995066598e-07,
+            9.383499855175614e-07
+          ]
+        },
+        "ersparnis_s": 1.3817150000249967e-05,
+        "ersparnis_prozent": 94.16781960611655,
+        "beschleunigungsfaktor": 17.14624604288233,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "max_abs_abweichung": 0.0,
+      "paritaetsgrenze": {
+        "rtol": 0.0,
+        "atol": 1e-12,
+        "quelle": "tests/test_frames.py"
+      },
+      "produktiv_freigegeben": false,
+      "hinweis": "Diagnostischer Einzelaufruf einschliesslich pybind-/Arrayuebergabe und genannter Ausgabeaufbereitung. Keine GUI-/Physikbatch-Abnahme."
+    },
+    {
+      "funktion": "rotationsmatrix_achsenwinkel",
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ],
+        "translation": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      },
+      "aufrufe_pro_wiederholung": 2000,
+      "python_s": [
+        1.3224349997472018e-05,
+        1.3243649998912587e-05,
+        1.3324049999937414e-05,
+        1.3181849993998185e-05,
+        1.3247549999505282e-05,
+        1.3146349985618145e-05,
+        1.3229400006821379e-05
+      ],
+      "cpp_s": [
+        9.488000068813563e-07,
+        9.87749983323738e-07,
+        9.979000024031847e-07,
+        9.483000030741096e-07,
+        9.454500104766339e-07,
+        9.469499927945435e-07,
+        1.017750008031726e-06
+      ],
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.3229400006821379e-05,
+          "p95_s": 1.3301099999807775e-05,
+          "minimum_s": 1.3146349985618145e-05,
+          "maximum_s": 1.3324049999937414e-05,
+          "spannweite_s": 1.7770001431926986e-07,
+          "standardabweichung_s": 5.1636576414220656e-08,
+          "rohwerte_s": [
+            1.3224349997472018e-05,
+            1.3243649998912587e-05,
+            1.3324049999937414e-05,
+            1.3181849993998185e-05,
+            1.3247549999505282e-05,
+            1.3146349985618145e-05,
+            1.3229400006821379e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 9.488000068813563e-07,
+          "p95_s": 1.0117950063431636e-06,
+          "minimum_s": 9.454500104766339e-07,
+          "maximum_s": 1.017750008031726e-06,
+          "spannweite_s": 7.229999755509205e-08,
+          "standardabweichung_s": 2.784310190884555e-08,
+          "rohwerte_s": [
+            9.488000068813563e-07,
+            9.87749983323738e-07,
+            9.979000024031847e-07,
+            9.483000030741096e-07,
+            9.454500104766339e-07,
+            9.469499927945435e-07,
+            1.017750008031726e-06
+          ]
+        },
+        "ersparnis_s": 1.2280599999940022e-05,
+        "ersparnis_prozent": 92.82809495221149,
+        "beschleunigungsfaktor": 13.943296702015795,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "max_abs_abweichung": 0.0,
+      "paritaetsgrenze": {
+        "rtol": 0.0,
+        "atol": 1e-12,
+        "quelle": "tests/test_frames.py"
+      },
+      "produktiv_freigegeben": false,
+      "hinweis": "Diagnostischer Einzelaufruf einschliesslich pybind-/Arrayuebergabe und genannter Ausgabeaufbereitung. Keine GUI-/Physikbatch-Abnahme."
+    },
+    {
+      "funktion": "Pose.__post_init__",
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ],
+        "translation": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      },
+      "aufrufe_pro_wiederholung": 2000,
+      "python_s": [
+        1.3154900021618232e-05,
+        1.328035001643002e-05,
+        1.0182300000451505e-05,
+        7.642600015969948e-06,
+        7.98354999278672e-06,
+        1.3053200003923849e-05,
+        1.3267400005133822e-05
+      ],
+      "cpp_s": [
+        2.851800003554672e-06,
+        2.532599988626316e-06,
+        2.187750011216849e-06,
+        1.7063999839592726e-06,
+        2.487799996742979e-06,
+        2.9170500056352465e-06,
+        2.2527499822899698e-06
+      ],
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.3053200003923849e-05,
+          "p95_s": 1.3276465013041161e-05,
+          "minimum_s": 7.642600015969948e-06,
+          "maximum_s": 1.328035001643002e-05,
+          "spannweite_s": 5.637750000460073e-06,
+          "standardabweichung_s": 2.3871826055940785e-06,
+          "rohwerte_s": [
+            1.3154900021618232e-05,
+            1.328035001643002e-05,
+            1.0182300000451505e-05,
+            7.642600015969948e-06,
+            7.98354999278672e-06,
+            1.3053200003923849e-05,
+            1.3267400005133822e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 2.487799996742979e-06,
+          "p95_s": 2.897475005011074e-06,
+          "minimum_s": 1.7063999839592726e-06,
+          "maximum_s": 2.9170500056352465e-06,
+          "spannweite_s": 1.210650021675974e-06,
+          "standardabweichung_s": 3.8580547267931007e-07,
+          "rohwerte_s": [
+            2.851800003554672e-06,
+            2.532599988626316e-06,
+            2.187750011216849e-06,
+            1.7063999839592726e-06,
+            2.487799996742979e-06,
+            2.9170500056352465e-06,
+            2.2527499822899698e-06
+          ]
+        },
+        "ersparnis_s": 1.056540000718087e-05,
+        "ersparnis_prozent": 80.9410719517426,
+        "beschleunigungsfaktor": 5.246884806259773,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "max_abs_abweichung": 0.0,
+      "paritaetsgrenze": {
+        "rtol": 0.0,
+        "atol": 1e-12,
+        "quelle": "tests/test_frames.py"
+      },
+      "produktiv_freigegeben": false,
+      "hinweis": "Diagnostischer Einzelaufruf einschliesslich pybind-/Arrayuebergabe und genannter Ausgabeaufbereitung. Keine GUI-/Physikbatch-Abnahme."
+    },
+    {
+      "funktion": "Pose.rotationsmatrix",
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ],
+        "translation": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      },
+      "aufrufe_pro_wiederholung": 2000,
+      "python_s": [
+        9.917449991917238e-06,
+        6.641649990342557e-06,
+        7.65754998428747e-06,
+        6.496100017102435e-06,
+        6.79759998456575e-06,
+        7.266200002050027e-06,
+        6.726599996909499e-06
+      ],
+      "cpp_s": [
+        5.215499841142446e-07,
+        5.072500207461416e-07,
+        5.051500047557056e-07,
+        8.037500083446503e-07,
+        5.436000064946712e-07,
+        5.079499969724565e-07,
+        5.065000150352716e-07
+      ],
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 6.79759998456575e-06,
+          "p95_s": 9.239479989628306e-06,
+          "minimum_s": 6.496100017102435e-06,
+          "maximum_s": 9.917449991917238e-06,
+          "spannweite_s": 3.4213499748148033e-06,
+          "standardabweichung_s": 1.1095484017967434e-06,
+          "rohwerte_s": [
+            9.917449991917238e-06,
+            6.641649990342557e-06,
+            7.65754998428747e-06,
+            6.496100017102435e-06,
+            6.79759998456575e-06,
+            7.266200002050027e-06,
+            6.726599996909499e-06
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 5.079499969724565e-07,
+          "p95_s": 7.257050077896564e-07,
+          "minimum_s": 5.051500047557056e-07,
+          "maximum_s": 8.037500083446503e-07,
+          "spannweite_s": 2.9860000358894465e-07,
+          "standardabweichung_s": 1.0172789678959935e-07,
+          "rohwerte_s": [
+            5.215499841142446e-07,
+            5.072500207461416e-07,
+            5.051500047557056e-07,
+            8.037500083446503e-07,
+            5.436000064946712e-07,
+            5.079499969724565e-07,
+            5.065000150352716e-07
+          ]
+        },
+        "ersparnis_s": 6.289649987593293e-06,
+        "ersparnis_prozent": 92.52750973688096,
+        "beschleunigungsfaktor": 13.38241957885935,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "max_abs_abweichung": 0.0,
+      "paritaetsgrenze": {
+        "rtol": 0.0,
+        "atol": 1e-12,
+        "quelle": "tests/test_frames.py"
+      },
+      "produktiv_freigegeben": false,
+      "hinweis": "Diagnostischer Einzelaufruf einschliesslich pybind-/Arrayuebergabe und genannter Ausgabeaufbereitung. Keine GUI-/Physikbatch-Abnahme."
+    },
+    {
+      "funktion": "Pose.punkt_transformieren",
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ],
+        "translation": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      },
+      "aufrufe_pro_wiederholung": 2000,
+      "python_s": [
+        1.0170050023589282e-05,
+        1.0338150023017079e-05,
+        9.586300002411008e-06,
+        1.6312849998939783e-05,
+        1.3706450001336635e-05,
+        1.9764000026043504e-05,
+        1.798659999622032e-05
+      ],
+      "cpp_s": [
+        8.019499946385622e-07,
+        8.022499969229102e-07,
+        7.936999900266528e-07,
+        7.885500090196729e-07,
+        7.872999995015561e-07,
+        7.892499852459877e-07,
+        9.050000226125121e-07
+      ],
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.3706450001336635e-05,
+          "p95_s": 1.9230780017096548e-05,
+          "minimum_s": 9.586300002411008e-06,
+          "maximum_s": 1.9764000026043504e-05,
+          "spannweite_s": 1.0177700023632496e-05,
+          "standardabweichung_s": 3.819272659456768e-06,
+          "rohwerte_s": [
+            1.0170050023589282e-05,
+            1.0338150023017079e-05,
+            9.586300002411008e-06,
+            1.6312849998939783e-05,
+            1.3706450001336635e-05,
+            1.9764000026043504e-05,
+            1.798659999622032e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 7.936999900266528e-07,
+          "p95_s": 8.741750149056315e-07,
+          "minimum_s": 7.872999995015561e-07,
+          "maximum_s": 9.050000226125121e-07,
+          "spannweite_s": 1.1770002311095595e-07,
+          "standardabweichung_s": 3.93172873169908e-08,
+          "rohwerte_s": [
+            8.019499946385622e-07,
+            8.022499969229102e-07,
+            7.936999900266528e-07,
+            7.885500090196729e-07,
+            7.872999995015561e-07,
+            7.892499852459877e-07,
+            9.050000226125121e-07
+          ]
+        },
+        "ersparnis_s": 1.2912750011309981e-05,
+        "ersparnis_prozent": 94.20929569692187,
+        "beschleunigungsfaktor": 17.269056537189027,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "max_abs_abweichung": 0.0,
+      "paritaetsgrenze": {
+        "rtol": 0.0,
+        "atol": 1e-12,
+        "quelle": "tests/test_frames.py"
+      },
+      "produktiv_freigegeben": false,
+      "hinweis": "Diagnostischer Einzelaufruf einschliesslich pybind-/Arrayuebergabe und genannter Ausgabeaufbereitung. Keine GUI-/Physikbatch-Abnahme."
+    },
+    {
+      "funktion": "Pose.vektor_transformieren",
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ],
+        "translation": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      },
+      "aufrufe_pro_wiederholung": 2000,
+      "python_s": [
+        1.7299150000326337e-05,
+        1.7056849988875912e-05,
+        1.7357400007313117e-05,
+        1.4864750002743676e-05,
+        9.990799997467547e-06,
+        1.7267849994823335e-05,
+        1.7256249993806704e-05
+      ],
+      "cpp_s": [
+        7.911499997135251e-07,
+        7.890500128269195e-07,
+        7.884499791543931e-07,
+        7.935500179883092e-07,
+        8.038499800022692e-07,
+        7.933500164654106e-07,
+        7.932499866001308e-07
+      ],
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.7256249993806704e-05,
+          "p95_s": 1.7339925005217084e-05,
+          "minimum_s": 9.990799997467547e-06,
+          "maximum_s": 1.7357400007313117e-05,
+          "spannweite_s": 7.36660000984557e-06,
+          "standardabweichung_s": 2.5386901558673604e-06,
+          "rohwerte_s": [
+            1.7299150000326337e-05,
+            1.7056849988875912e-05,
+            1.7357400007313117e-05,
+            1.4864750002743676e-05,
+            9.990799997467547e-06,
+            1.7267849994823335e-05,
+            1.7256249993806704e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 7.932499866001308e-07,
+          "p95_s": 8.007599913980812e-07,
+          "minimum_s": 7.884499791543931e-07,
+          "maximum_s": 8.038499800022692e-07,
+          "spannweite_s": 1.5400000847876055e-08,
+          "standardabweichung_s": 4.744143079814944e-09,
+          "rohwerte_s": [
+            7.911499997135251e-07,
+            7.890500128269195e-07,
+            7.884499791543931e-07,
+            7.935500179883092e-07,
+            8.038499800022692e-07,
+            7.933500164654106e-07,
+            7.932499866001308e-07
+          ]
+        },
+        "ersparnis_s": 1.6463000007206575e-05,
+        "ersparnis_prozent": 95.40311488947583,
+        "beschleunigungsfaktor": 21.75386105932001,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "max_abs_abweichung": 0.0,
+      "paritaetsgrenze": {
+        "rtol": 0.0,
+        "atol": 1e-12,
+        "quelle": "tests/test_frames.py"
+      },
+      "produktiv_freigegeben": false,
+      "hinweis": "Diagnostischer Einzelaufruf einschliesslich pybind-/Arrayuebergabe und genannter Ausgabeaufbereitung. Keine GUI-/Physikbatch-Abnahme."
+    },
+    {
+      "funktion": "Pose.invers",
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ],
+        "translation": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      },
+      "aufrufe_pro_wiederholung": 2000,
+      "python_s": [
+        0.00010558085000957362,
+        0.0001058727000199724,
+        5.907594997552224e-05,
+        0.00010017790002166294,
+        0.00010277675001998432,
+        5.838365000090562e-05,
+        7.886395000969059e-05
+      ],
+      "cpp_s": [
+        1.051200000802055e-06,
+        1.424699992639944e-06,
+        1.065849995939061e-06,
+        1.051500003086403e-06,
+        1.040400005877018e-06,
+        1.6660999972373248e-06,
+        1.8419500265736133e-06
+      ],
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.00010017790002166294,
+          "p95_s": 0.00010578514501685277,
+          "minimum_s": 5.838365000090562e-05,
+          "maximum_s": 0.0001058727000199724,
+          "spannweite_s": 4.748905001906678e-05,
+          "standardabweichung_s": 1.9958544991243592e-05,
+          "rohwerte_s": [
+            0.00010558085000957362,
+            0.0001058727000199724,
+            5.907594997552224e-05,
+            0.00010017790002166294,
+            0.00010277675001998432,
+            5.838365000090562e-05,
+            7.886395000969059e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 1.065849995939061e-06,
+          "p95_s": 1.7891950177727268e-06,
+          "minimum_s": 1.040400005877018e-06,
+          "maximum_s": 1.8419500265736133e-06,
+          "spannweite_s": 8.015500206965953e-07,
+          "standardabweichung_s": 3.1371342330699295e-07,
+          "rohwerte_s": [
+            1.051200000802055e-06,
+            1.424699992639944e-06,
+            1.065849995939061e-06,
+            1.051500003086403e-06,
+            1.040400005877018e-06,
+            1.6660999972373248e-06,
+            1.8419500265736133e-06
+          ]
+        },
+        "ersparnis_s": 9.911205002572387e-05,
+        "ersparnis_prozent": 98.93604278417837,
+        "beschleunigungsfaktor": 93.98874175854527,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "max_abs_abweichung": 0.0,
+      "paritaetsgrenze": {
+        "rtol": 0.0,
+        "atol": 1e-12,
+        "quelle": "tests/test_frames.py"
+      },
+      "produktiv_freigegeben": false,
+      "hinweis": "Diagnostischer Einzelaufruf einschliesslich pybind-/Arrayuebergabe und genannter Ausgabeaufbereitung. Keine GUI-/Physikbatch-Abnahme."
+    },
+    {
+      "funktion": "Pose.komponieren",
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ],
+        "translation": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      },
+      "aufrufe_pro_wiederholung": 2000,
+      "python_s": [
+        0.00011523825000040233,
+        0.00012381535000167786,
+        0.00011213794999639504,
+        0.00013775724999140948,
+        0.0001054909999947995,
+        0.00013948939999681897,
+        0.00013698040001327173
+      ],
+      "cpp_s": [
+        2.000500011490658e-06,
+        1.959249988431111e-06,
+        2.082849998259917e-06,
+        1.8921000009868294e-06,
+        2.2443000052589924e-06,
+        1.9460500043351203e-06,
+        1.7703500052448362e-06
+      ],
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.00012381535000167786,
+          "p95_s": 0.00013896975499519613,
+          "minimum_s": 0.0001054909999947995,
+          "maximum_s": 0.00013948939999681897,
+          "spannweite_s": 3.399840000201947e-05,
+          "standardabweichung_s": 1.2853896008778758e-05,
+          "rohwerte_s": [
+            0.00011523825000040233,
+            0.00012381535000167786,
+            0.00011213794999639504,
+            0.00013775724999140948,
+            0.0001054909999947995,
+            0.00013948939999681897,
+            0.00013698040001327173
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 1.959249988431111e-06,
+          "p95_s": 2.1958650031592695e-06,
+          "minimum_s": 1.7703500052448362e-06,
+          "maximum_s": 2.2443000052589924e-06,
+          "spannweite_s": 4.739500000141562e-07,
+          "standardabweichung_s": 1.3832494750063656e-07,
+          "rohwerte_s": [
+            2.000500011490658e-06,
+            1.959249988431111e-06,
+            2.082849998259917e-06,
+            1.8921000009868294e-06,
+            2.2443000052589924e-06,
+            1.9460500043351203e-06,
+            1.7703500052448362e-06
+          ]
+        },
+        "ersparnis_s": 0.00012185610001324676,
+        "ersparnis_prozent": 98.41760331945551,
+        "beschleunigungsfaktor": 63.19527917967439,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "max_abs_abweichung": 2.7755575615628914e-17,
+      "paritaetsgrenze": {
+        "rtol": 0.0,
+        "atol": 1e-12,
+        "quelle": "tests/test_frames.py"
+      },
+      "produktiv_freigegeben": false,
+      "hinweis": "Diagnostischer Einzelaufruf einschliesslich pybind-/Arrayuebergabe und genannter Ausgabeaufbereitung. Keine GUI-/Physikbatch-Abnahme."
+    },
+    {
+      "funktion": "Pose.punkte_transformieren",
+      "eingabe": {
+        "form": [
+          1,
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "a98f19b846866e8fd938de7a5ae7287927c4eb69ea528b7eb8091067b6864246",
+        "seed": 1010,
+        "groessenfolge": [
+          1,
+          1000,
+          100000
+        ]
+      },
+      "aufrufe_pro_wiederholung": 2000,
+      "python_s": [
+        1.9157699978677556e-05,
+        1.8988049996551128e-05,
+        1.8991599994478747e-05,
+        1.915730000473559e-05,
+        1.912974999868311e-05,
+        1.909499999601394e-05,
+        1.9062700012000278e-05
+      ],
+      "cpp_s": [
+        1.0820000024978072e-06,
+        1.017649978166446e-06,
+        1.0134500043932349e-06,
+        1.015899993944913e-06,
+        1.0684500157367438e-06,
+        1.037450012518093e-06,
+        1.0319499997422099e-06
+      ],
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.909499999601394e-05,
+          "p95_s": 1.9157579986494967e-05,
+          "minimum_s": 1.8988049996551128e-05,
+          "maximum_s": 1.9157699978677556e-05,
+          "spannweite_s": 1.6964998212642843e-07,
+          "standardabweichung_s": 6.677416162509507e-08,
+          "rohwerte_s": [
+            1.9157699978677556e-05,
+            1.8988049996551128e-05,
+            1.8991599994478747e-05,
+            1.915730000473559e-05,
+            1.912974999868311e-05,
+            1.909499999601394e-05,
+            1.9062700012000278e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 1.0319499997422099e-06,
+          "p95_s": 1.0779350064694881e-06,
+          "minimum_s": 1.0134500043932349e-06,
+          "maximum_s": 1.0820000024978072e-06,
+          "spannweite_s": 6.854999810457231e-08,
+          "standardabweichung_s": 2.5086255178290366e-08,
+          "rohwerte_s": [
+            1.0820000024978072e-06,
+            1.017649978166446e-06,
+            1.0134500043932349e-06,
+            1.015899993944913e-06,
+            1.0684500157367438e-06,
+            1.037450012518093e-06,
+            1.0319499997422099e-06
+          ]
+        },
+        "ersparnis_s": 1.806304999627173e-05,
+        "ersparnis_prozent": 94.59570568233764,
+        "beschleunigungsfaktor": 18.503803479610482,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "max_abs_abweichung": 2.220446049250313e-16,
+      "paritaetsgrenze": {
+        "rtol": 0.0,
+        "atol": 1e-12,
+        "quelle": "tests/test_frames.py"
+      },
+      "produktiv_freigegeben": false,
+      "hinweis": "Diagnostischer Einzelaufruf einschliesslich pybind-/Arrayuebergabe und genannter Ausgabeaufbereitung. Keine GUI-/Physikbatch-Abnahme."
+    },
+    {
+      "funktion": "Pose.punkte_transformieren",
+      "eingabe": {
+        "form": [
+          1000,
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "945dbf183689a9e5da5b37f893ed1b1da4c49708d411685a0783c91bb0c0fec3",
+        "seed": 1010,
+        "groessenfolge": [
+          1,
+          1000,
+          100000
+        ]
+      },
+      "aufrufe_pro_wiederholung": 100,
+      "python_s": [
+        4.151800007093698e-05,
+        3.948300029151142e-05,
+        3.928999998606742e-05,
+        4.1678999550640584e-05,
+        3.9345999830402434e-05,
+        4.091900016646832e-05,
+        4.0006000199355184e-05
+      ],
+      "cpp_s": [
+        2.6823999942280352e-05,
+        2.7037999825552105e-05,
+        2.665499981958419e-05,
+        2.641499973833561e-05,
+        2.6427000411786138e-05,
+        2.690100052859634e-05,
+        2.645300002768636e-05
+      ],
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 4.0006000199355184e-05,
+          "p95_s": 4.16306997067295e-05,
+          "minimum_s": 3.928999998606742e-05,
+          "maximum_s": 4.1678999550640584e-05,
+          "spannweite_s": 2.388999564573166e-06,
+          "standardabweichung_s": 9.59882861234578e-07,
+          "rohwerte_s": [
+            4.151800007093698e-05,
+            3.948300029151142e-05,
+            3.928999998606742e-05,
+            4.1678999550640584e-05,
+            3.9345999830402434e-05,
+            4.091900016646832e-05,
+            4.0006000199355184e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 2.665499981958419e-05,
+          "p95_s": 2.6996900036465377e-05,
+          "minimum_s": 2.641499973833561e-05,
+          "maximum_s": 2.7037999825552105e-05,
+          "spannweite_s": 6.230000872164963e-07,
+          "standardabweichung_s": 2.3415911909845623e-07,
+          "rohwerte_s": [
+            2.6823999942280352e-05,
+            2.7037999825552105e-05,
+            2.665499981958419e-05,
+            2.641499973833561e-05,
+            2.6427000411786138e-05,
+            2.690100052859634e-05,
+            2.645300002768636e-05
+          ]
+        },
+        "ersparnis_s": 1.3351000379770994e-05,
+        "ersparnis_prozent": 33.372494908866656,
+        "beschleunigungsfaktor": 1.5008816533535159,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "max_abs_abweichung": 8.881784197001252e-16,
+      "paritaetsgrenze": {
+        "rtol": 0.0,
+        "atol": 1e-12,
+        "quelle": "tests/test_frames.py"
+      },
+      "produktiv_freigegeben": false,
+      "hinweis": "Diagnostischer Einzelaufruf einschliesslich pybind-/Arrayuebergabe und genannter Ausgabeaufbereitung. Keine GUI-/Physikbatch-Abnahme."
+    },
+    {
+      "funktion": "Pose.punkte_transformieren",
+      "eingabe": {
+        "form": [
+          100000,
+          3
+        ],
+        "dtype": "float64",
+        "sha256": "f83e6db82deee059b75ba690e1924db3fe3083952710a14f1c23b7dc6b217a77",
+        "seed": 1010,
+        "groessenfolge": [
+          1,
+          1000,
+          100000
+        ]
+      },
+      "aufrufe_pro_wiederholung": 10,
+      "python_s": [
+        0.0024228999973274767,
+        0.0025124600040726365,
+        0.002144199999747798,
+        0.0024238399986643345,
+        0.002417520002927631,
+        0.002068600000347942,
+        0.00240580000099726
+      ],
+      "cpp_s": [
+        0.0031422700034454466,
+        0.003200539998942986,
+        0.003142950002802536,
+        0.0030146799981594086,
+        0.0031548600003588946,
+        0.003162030002567917,
+        0.0030955899972468616
+      ],
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.002417520002927631,
+          "p95_s": 0.002485874002450146,
+          "minimum_s": 0.002068600000347942,
+          "maximum_s": 0.0025124600040726365,
+          "spannweite_s": 0.0004438600037246945,
+          "standardabweichung_s": 0.00015396895322505636,
+          "rohwerte_s": [
+            0.0024228999973274767,
+            0.0025124600040726365,
+            0.002144199999747798,
+            0.0024238399986643345,
+            0.002417520002927631,
+            0.002068600000347942,
+            0.00240580000099726
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.003142950002802536,
+          "p95_s": 0.0031889870000304655,
+          "minimum_s": 0.0030146799981594086,
+          "maximum_s": 0.003200539998942986,
+          "spannweite_s": 0.00018586000078357756,
+          "standardabweichung_s": 5.5316777026582505e-05,
+          "rohwerte_s": [
+            0.0031422700034454466,
+            0.003200539998942986,
+            0.003142950002802536,
+            0.0030146799981594086,
+            0.0031548600003588946,
+            0.003162030002567917,
+            0.0030955899972468616
+          ]
+        },
+        "ersparnis_s": -0.0007254299998749048,
+        "ersparnis_prozent": -30.007197417039144,
+        "beschleunigungsfaktor": 0.7691881833220234,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "max_abs_abweichung": 8.881784197001252e-16,
+      "paritaetsgrenze": {
+        "rtol": 0.0,
+        "atol": 1e-12,
+        "quelle": "tests/test_frames.py"
+      },
+      "produktiv_freigegeben": false,
+      "hinweis": "Diagnostischer Einzelaufruf einschliesslich pybind-/Arrayuebergabe und genannter Ausgabeaufbereitung. Keine GUI-/Physikbatch-Abnahme."
+    }
+  ],
+  "produktiv_freigegeben": false,
+  "aggregation": [
+    {
+      "funktion": "Koerper._baue_verband (vorbereiteter numerischer Block)",
+      "teile": 1,
+      "punkte": 8,
+      "dreiecke": 12,
+      "aufrufe_pro_wiederholung": 100,
+      "python_s": [
+        0.00016270500025711954,
+        0.00016362199967261403,
+        0.0001499799999874085,
+        0.00016108400013763456,
+        0.00015692599990870803,
+        0.00016178899968508632,
+        0.00015864700020756572
+      ],
+      "cpp_vorbereitet_s": [
+        2.6628999621607362e-05,
+        2.637099998537451e-05,
+        2.6355000445619227e-05,
+        2.94249999569729e-05,
+        2.6561999693512916e-05,
+        2.6470000157132746e-05,
+        2.637900004629046e-05
+      ],
+      "cpp_mit_neuaufbau_s": [
+        3.643600037321448e-05,
+        3.417500003706664e-05,
+        3.4765999880619345e-05,
+        3.501300001516938e-05,
+        3.327499958686531e-05,
+        3.4993999870494006e-05,
+        3.530100046191364e-05
+      ],
+      "vorbereitet_vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.00016108400013763456,
+          "p95_s": 0.00016334689984796568,
+          "minimum_s": 0.0001499799999874085,
+          "maximum_s": 0.00016362199967261403,
+          "spannweite_s": 1.364199968520552e-05,
+          "standardabweichung_s": 4.351665821295194e-06,
+          "rohwerte_s": [
+            0.00016270500025711954,
+            0.00016362199967261403,
+            0.0001499799999874085,
+            0.00016108400013763456,
+            0.00015692599990870803,
+            0.00016178899968508632,
+            0.00015864700020756572
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 2.6470000157132746e-05,
+          "p95_s": 2.8586199856363237e-05,
+          "minimum_s": 2.6355000445619227e-05,
+          "maximum_s": 2.94249999569729e-05,
+          "spannweite_s": 3.0699995113536717e-06,
+          "standardabweichung_s": 1.041620938231908e-06,
+          "rohwerte_s": [
+            2.6628999621607362e-05,
+            2.637099998537451e-05,
+            2.6355000445619227e-05,
+            2.94249999569729e-05,
+            2.6561999693512916e-05,
+            2.6470000157132746e-05,
+            2.637900004629046e-05
+          ]
+        },
+        "ersparnis_s": 0.0001346139999805018,
+        "ersparnis_prozent": 83.56757956437879,
+        "beschleunigungsfaktor": 6.085530758647465,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "neuaufbau_vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.00016108400013763456,
+          "p95_s": 0.00016334689984796568,
+          "minimum_s": 0.0001499799999874085,
+          "maximum_s": 0.00016362199967261403,
+          "spannweite_s": 1.364199968520552e-05,
+          "standardabweichung_s": 4.351665821295194e-06,
+          "rohwerte_s": [
+            0.00016270500025711954,
+            0.00016362199967261403,
+            0.0001499799999874085,
+            0.00016108400013763456,
+            0.00015692599990870803,
+            0.00016178899968508632,
+            0.00015864700020756572
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 3.4993999870494006e-05,
+          "p95_s": 3.609550039982423e-05,
+          "minimum_s": 3.327499958686531e-05,
+          "maximum_s": 3.643600037321448e-05,
+          "spannweite_s": 3.161000786349175e-06,
+          "standardabweichung_s": 9.031212980675591e-07,
+          "rohwerte_s": [
+            3.643600037321448e-05,
+            3.417500003706664e-05,
+            3.4765999880619345e-05,
+            3.501300001516938e-05,
+            3.327499958686531e-05,
+            3.4993999870494006e-05,
+            3.530100046191364e-05
+          ]
+        },
+        "ersparnis_s": 0.00012609000026714057,
+        "ersparnis_prozent": 78.27593066934384,
+        "beschleunigungsfaktor": 4.6031891391031365,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "native_vorbereitung_s": [
+        4.726999904960394e-06,
+        4.690999630838632e-06,
+        4.6780001139268275e-06,
+        4.682000144384801e-06,
+        4.673000075854361e-06,
+        4.6959996689111e-06,
+        4.673000075854361e-06
+      ],
+      "kontextaufbau_s": [
+        1.354999840259552e-06,
+        1.3450003461912275e-06,
+        1.3459997717291116e-06,
+        1.341000315733254e-06,
+        1.3479997869580984e-06,
+        1.3449997641146182e-06,
+        1.379000023007393e-06
+      ],
+      "reiner_kern_s": [
+        2.795999753288925e-06,
+        2.6100000832229852e-06,
+        2.665999927558005e-06,
+        2.71500030066818e-06,
+        3.2379996264353397e-06,
+        3.252000315114856e-06,
+        2.929999609477818e-06
+      ],
+      "produktiv_freigegeben": false,
+      "hinweis": "Unveraenderte native NumPy-Eigenwertvalidierung ausserhalb der Aggregation; keine Python-Kraftcallbacks. Vorbereitete Kontexte kopieren Modelldaten nicht je Rechnung. Neuaufbau separat einschliesslich aller Konvertierungen und Ausgabearrays. Noch keine vollstaendige Koerper-/GUI-/Snapshotintegration."
+    },
+    {
+      "funktion": "Koerper._baue_verband (vorbereiteter numerischer Block)",
+      "teile": 30,
+      "punkte": 240,
+      "dreiecke": 360,
+      "aufrufe_pro_wiederholung": 100,
+      "python_s": [
+        0.00324141499993857,
+        0.00284157200017944,
+        0.002502354999887757,
+        0.0021838859998388215,
+        0.0026340579998213797,
+        0.00356614799995441,
+        0.003417141999816522
+      ],
+      "cpp_vorbereitet_s": [
+        5.0757999997586015e-05,
+        4.895699967164546e-05,
+        5.0211999914608894e-05,
+        4.907299997285008e-05,
+        5.7478999951854345e-05,
+        4.9502000329084695e-05,
+        4.920499981380999e-05
+      ],
+      "cpp_mit_neuaufbau_s": [
+        0.0001662219996796921,
+        0.00012371999968308956,
+        0.0001269890001276508,
+        0.00012329699995461852,
+        0.00013133600004948675,
+        0.00018787399982102217,
+        0.00019522099988535048
+      ],
+      "vorbereitet_vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.00284157200017944,
+          "p95_s": 0.0035214461999130437,
+          "minimum_s": 0.0021838859998388215,
+          "maximum_s": 0.00356614799995441,
+          "spannweite_s": 0.0013822620001155885,
+          "standardabweichung_s": 0.0004738538385273341,
+          "rohwerte_s": [
+            0.00324141499993857,
+            0.00284157200017944,
+            0.002502354999887757,
+            0.0021838859998388215,
+            0.0026340579998213797,
+            0.00356614799995441,
+            0.003417141999816522
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 4.9502000329084695e-05,
+          "p95_s": 5.5462699965573843e-05,
+          "minimum_s": 4.895699967164546e-05,
+          "maximum_s": 5.7478999951854345e-05,
+          "spannweite_s": 8.522000280208884e-06,
+          "standardabweichung_s": 2.8167882246360797e-06,
+          "rohwerte_s": [
+            5.0757999997586015e-05,
+            4.895699967164546e-05,
+            5.0211999914608894e-05,
+            4.907299997285008e-05,
+            5.7478999951854345e-05,
+            4.9502000329084695e-05,
+            4.920499981380999e-05
+          ]
+        },
+        "ersparnis_s": 0.002792069999850355,
+        "ersparnis_prozent": 98.25793608868757,
+        "beschleunigungsfaktor": 57.40317525128143,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "neuaufbau_vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.00284157200017944,
+          "p95_s": 0.0035214461999130437,
+          "minimum_s": 0.0021838859998388215,
+          "maximum_s": 0.00356614799995441,
+          "spannweite_s": 0.0013822620001155885,
+          "standardabweichung_s": 0.0004738538385273341,
+          "rohwerte_s": [
+            0.00324141499993857,
+            0.00284157200017944,
+            0.002502354999887757,
+            0.0021838859998388215,
+            0.0026340579998213797,
+            0.00356614799995441,
+            0.003417141999816522
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.00013133600004948675,
+          "p95_s": 0.000193016899866052,
+          "minimum_s": 0.00012329699995461852,
+          "maximum_s": 0.00019522099988535048,
+          "spannweite_s": 7.192399993073196e-05,
+          "standardabweichung_s": 2.9328120849202642e-05,
+          "rohwerte_s": [
+            0.0001662219996796921,
+            0.00012371999968308956,
+            0.0001269890001276508,
+            0.00012329699995461852,
+            0.00013133600004948675,
+            0.00018787399982102217,
+            0.00019522099988535048
+          ]
+        },
+        "ersparnis_s": 0.0027102360001299533,
+        "ersparnis_prozent": 95.37805130254688,
+        "beschleunigungsfaktor": 21.635895711067413,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "native_vorbereitung_s": [
+        0.00013180799956899136,
+        0.00013037400029134005,
+        0.00013049200002569707,
+        0.00016064099967479705,
+        0.00011163300019688905,
+        0.00011776600033044815,
+        0.00010261300019919872
+      ],
+      "kontextaufbau_s": [
+        1.0222000419162214e-05,
+        1.6961999936029315e-05,
+        1.597299997229129e-05,
+        1.3312000082805753e-05,
+        6.303999689407647e-06,
+        7.97600019723177e-06,
+        1.332599960733205e-05
+      ],
+      "reiner_kern_s": [
+        2.3064000415615738e-05,
+        2.3205999750643967e-05,
+        2.3185000172816218e-05,
+        2.3192999651655555e-05,
+        2.3157999967224894e-05,
+        2.5479000178165735e-05,
+        2.4395000073127447e-05
+      ],
+      "produktiv_freigegeben": false,
+      "hinweis": "Unveraenderte native NumPy-Eigenwertvalidierung ausserhalb der Aggregation; keine Python-Kraftcallbacks. Vorbereitete Kontexte kopieren Modelldaten nicht je Rechnung. Neuaufbau separat einschliesslich aller Konvertierungen und Ausgabearrays. Noch keine vollstaendige Koerper-/GUI-/Snapshotintegration."
+    },
+    {
+      "funktion": "Koerper._baue_verband (vorbereiteter numerischer Block)",
+      "teile": 300,
+      "punkte": 2400,
+      "dreiecke": 3600,
+      "aufrufe_pro_wiederholung": 10,
+      "python_s": [
+        0.02257415999774821,
+        0.03538011999917216,
+        0.035167969996109605,
+        0.03324239000212401,
+        0.03425117000006139,
+        0.033575869997730476,
+        0.02745693000033498
+      ],
+      "cpp_vorbereitet_s": [
+        0.00012384000001475215,
+        0.00012098000152036548,
+        0.00012820999836549163,
+        0.00014654999831691383,
+        0.00017826000112108886,
+        0.00016602000105194747,
+        0.00012080000014975667
+      ],
+      "cpp_mit_neuaufbau_s": [
+        0.0010803000011947006,
+        0.00106598999700509,
+        0.0016389299998991191,
+        0.0017590400006156416,
+        0.0017970799992326647,
+        0.001771849999204278,
+        0.0018027100013568997
+      ],
+      "vorbereitet_vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.033575869997730476,
+          "p95_s": 0.0353164749982534,
+          "minimum_s": 0.02257415999774821,
+          "maximum_s": 0.03538011999917216,
+          "spannweite_s": 0.012805960001423953,
+          "standardabweichung_s": 0.004460172854971792,
+          "rohwerte_s": [
+            0.02257415999774821,
+            0.03538011999917216,
+            0.035167969996109605,
+            0.03324239000212401,
+            0.03425117000006139,
+            0.033575869997730476,
+            0.02745693000033498
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.00012820999836549163,
+          "p95_s": 0.00017458800110034645,
+          "minimum_s": 0.00012080000014975667,
+          "maximum_s": 0.00017826000112108886,
+          "spannweite_s": 5.7460000971332195e-05,
+          "standardabweichung_s": 2.1749280656969475e-05,
+          "rohwerte_s": [
+            0.00012384000001475215,
+            0.00012098000152036548,
+            0.00012820999836549163,
+            0.00014654999831691383,
+            0.00017826000112108886,
+            0.00016602000105194747,
+            0.00012080000014975667
+          ]
+        },
+        "ersparnis_s": 0.033447659999364984,
+        "ersparnis_prozent": 99.6181483953382,
+        "beschleunigungsfaktor": 261.8818378112357,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "neuaufbau_vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.033575869997730476,
+          "p95_s": 0.0353164749982534,
+          "minimum_s": 0.02257415999774821,
+          "maximum_s": 0.03538011999917216,
+          "spannweite_s": 0.012805960001423953,
+          "standardabweichung_s": 0.004460172854971792,
+          "rohwerte_s": [
+            0.02257415999774821,
+            0.03538011999917216,
+            0.035167969996109605,
+            0.03324239000212401,
+            0.03425117000006139,
+            0.033575869997730476,
+            0.02745693000033498
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.0017590400006156416,
+          "p95_s": 0.0018010210007196293,
+          "minimum_s": 0.00106598999700509,
+          "maximum_s": 0.0018027100013568997,
+          "spannweite_s": 0.0007367200043518097,
+          "standardabweichung_s": 0.0003116770146365683,
+          "rohwerte_s": [
+            0.0010803000011947006,
+            0.00106598999700509,
+            0.0016389299998991191,
+            0.0017590400006156416,
+            0.0017970799992326647,
+            0.001771849999204278,
+            0.0018027100013568997
+          ]
+        },
+        "ersparnis_s": 0.03181682999711483,
+        "ersparnis_prozent": 94.76099948941146,
+        "beschleunigungsfaktor": 19.087610279458882,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "native_vorbereitung_s": [
+        0.0013460799993481487,
+        0.0013222699984908105,
+        0.0013482899987138808,
+        0.0013321599981281906,
+        0.0012827400001697241,
+        0.0013118999951984734,
+        0.001323209999827668
+      ],
+      "kontextaufbau_s": [
+        0.0001278500014450401,
+        0.00012094999547116459,
+        0.0001225200016051531,
+        0.0001208100002259016,
+        0.00012064999900758266,
+        0.00012072999961674214,
+        0.0001209900015965104
+      ],
+      "reiner_kern_s": [
+        0.0001972500002011657,
+        0.00018934999825432898,
+        0.0001859600015450269,
+        0.00018284000107087194,
+        0.00018279999494552612,
+        0.0002259700035210699,
+        0.0001861099968664348
+      ],
+      "produktiv_freigegeben": false,
+      "hinweis": "Unveraenderte native NumPy-Eigenwertvalidierung ausserhalb der Aggregation; keine Python-Kraftcallbacks. Vorbereitete Kontexte kopieren Modelldaten nicht je Rechnung. Neuaufbau separat einschliesslich aller Konvertierungen und Ausgabearrays. Noch keine vollstaendige Koerper-/GUI-/Snapshotintegration."
+    }
+  ],
+  "hinweis": "M2-Kandidatenmikromessungen, keine abgeschlossene U5-/End-to-End-Abnahme."
+}

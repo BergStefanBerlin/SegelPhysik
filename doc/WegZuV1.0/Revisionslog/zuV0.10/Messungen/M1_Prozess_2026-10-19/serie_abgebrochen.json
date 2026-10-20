@@ -1,0 +1,6 @@
+{
+  "status": "Teilserie abgebrochen, kein Gesamtabschluss",
+  "ursache": "Bestehende Folkeboot-Plausibilitaetsmeldung auf stdout stoerte JSON-Protokoll. Meldungen im Kindprozess nun explizit auf stderr, nicht unterdrueckt.",
+  "ersatzserie": "M1_Prozess_Verifiziert_2026-10-19",
+  "m1_freigegeben": false
+}

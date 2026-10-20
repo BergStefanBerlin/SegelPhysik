@@ -9,10 +9,28 @@ Das Feld kennt nur Weltkoordinaten. Spaeter lassen sich Wellen ueber
 ``hoehe(x, y)`` (Punkt-z) einbinden.
 """
 import numpy as np
+from .rechenpfad import rechenpfad
+
+
+def _gitterarrays(*werte):
+    arrays = np.broadcast_arrays(*werte)
+    for array in arrays:
+        if array.dtype.kind not in "iu":
+            raise TypeError("Wassergitterindizes muessen ganzzahlig sein")
+        if array.dtype.kind == "u" and np.any(array > np.iinfo(np.int64).max):
+            raise OverflowError("Wassergitterindex liegt ausserhalb des Int64-Bereichs")
+    gitter = np.stack([a.astype(np.int64, copy=False) for a in arrays], axis=-1)
+    return gitter.reshape(-1, len(werte)), arrays[0].shape
 
 
 def _hash01(ix, iy, salz):
     """Deterministischer Pseudozufall in [0, 1) je Gitterzelle."""
+    if rechenpfad() == "cpp":
+        from .native_backend import native_laden
+
+        gitter, form = _gitterarrays(ix, iy, salz)
+        ergebnis = native_laden().wasser_hash(gitter).reshape(form)
+        return ergebnis.item() if not form else ergebnis
     h = (ix * 73856093) ^ (iy * 19349663) ^ (salz * 83492791)
     h = (h ^ (h >> 13)) * 1274126177
     return ((h ^ (h >> 16)) & 0xFFFF) / 65536.0
@@ -26,6 +44,13 @@ KACHEL_METER = KACHEL_ZELLEN * ABSTAND
 def punktlage(gx, gy, abstand=ABSTAND):
     """Weltposition des Punkts der Zelle (gx, gy); periodisch in der
     Kachel, damit Textur und Spuren dieselben Punkte meinen."""
+    if rechenpfad() == "cpp":
+        from .native_backend import native_laden
+
+        gitter, form = _gitterarrays(gx, gy)
+        xy = native_laden().punktlage(gitter, float(abstand))
+        x, y = xy[:, 0].reshape(form), xy[:, 1].reshape(form)
+        return (x.item(), y.item()) if not form else (x, y)
     hx = _hash01(gx % KACHEL_ZELLEN, gy % KACHEL_ZELLEN, 1)
     hy = _hash01(gx % KACHEL_ZELLEN, gy % KACHEL_ZELLEN, 2)
     return ((gx + 0.8 * (hx - 0.5)) * abstand,
@@ -40,6 +65,20 @@ def dunst_gitter(r_innen=30.0, r_aussen=2000.0, hoehe=600.0, ringe=28,
     """Dunstverlauf: Ring auf dem Wasser (transparent -> Dunstfarbe zum
     Horizont) plus Wand am Horizont, die nach oben in den Himmel ausblendet.
     Liefert (punkte (N,3), flaechen (M,4), rgba (N,4) uint8)."""
+    if rechenpfad() == "cpp":
+        from .native_backend import native_laden
+
+        radien = np.geomspace(r_innen, r_aussen, ringe)
+        t = np.log(radien / r_innen) / np.log(r_aussen / r_innen)
+        wasser = np.column_stack((radien, z_basis + .0005 * radien, .97 * t ** .8))
+        h = np.linspace(0., 1., hoehenstufen + 1)[1:]
+        wand = np.column_stack((
+            np.full(len(h), r_aussen), z_basis + .0005 * r_aussen + h * hoehe,
+            .97 * (1. - h) ** 1.5))
+        return native_laden().dunst_gitter(
+            np.vstack((wasser, wand)),
+            np.linspace(0., 2. * np.pi, segmente, endpoint=False),
+            np.asarray(farbe, dtype=np.uint8))
     zeilen = []   # (radius, z, alpha)
     radien = np.geomspace(r_innen, r_aussen, ringe)
     for r in radien:
@@ -84,6 +123,15 @@ class WasserPunktFeld:
 
     def punkte_welt(self, zentrum):
         """Weltfeste Punkte im Quadrat um ``zentrum`` und Randtransparenz."""
+        if rechenpfad() == "cpp":
+            from .native_backend import native_laden
+
+            punkte, rand = native_laden().wasserpunkte(
+                np.asarray((zentrum[0], zentrum[1]), dtype=np.float64),
+                self.radius, self.abstand, self.z0)
+            if self.hoehe is not None:
+                punkte[:, 2] += np.asarray(self.hoehe(punkte[:, 0], punkte[:, 1]), dtype=float)
+            return punkte, rand
         a, r = self.abstand, self.radius
         cx, cy = float(zentrum[0]), float(zentrum[1])
         ix = np.arange(int(np.floor((cx - r) / a)), int(np.ceil((cx + r) / a)) + 1)
@@ -109,6 +157,12 @@ class WasserPunktFeld:
         if len(self._verlauf) > self.historie:
             self._verlauf.pop(0)
         punkte, rand = self.punkte_welt(c)
+        if rechenpfad() == "cpp":
+            from .native_backend import native_laden
+
+            spuren, alpha = native_laden().wasserspuren(
+                punkte, rand, np.asarray(self._verlauf, dtype=np.float64), self.spur_punkte)
+            return punkte, spuren, alpha
         n = len(self._verlauf)
         s = self.spur_punkte
         # S Stuetzstellen im Verlauf, 0 = jetzt, letzter = aeltester Eintrag

@@ -1,0 +1,2610 @@
+{
+  "faelle": [
+    {
+      "funktion_oder_elternblock": "quaternion_normalisieren",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 6.446499901358038e-06,
+          "p95_s": 6.59095001174137e-06,
+          "minimum_s": 6.413999944925308e-06,
+          "maximum_s": 6.620500062126666e-06,
+          "spannweite_s": 2.0650011720135832e-07,
+          "standardabweichung_s": 6.949660587133085e-08,
+          "rohwerte_s": [
+            6.4539999584667385e-06,
+            6.620500062126666e-06,
+            6.425500032491982e-06,
+            6.521999894175678e-06,
+            6.419499986805022e-06,
+            6.446499901358038e-06,
+            6.413999944925308e-06
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 9.82600002316758e-06,
+          "p95_s": 1.0068550007417798e-05,
+          "minimum_s": 9.796000085771084e-06,
+          "maximum_s": 1.0096000041812658e-05,
+          "spannweite_s": 2.99999956041574e-07,
+          "standardabweichung_s": 1.0711700154782358e-07,
+          "rohwerte_s": [
+            9.918500145431608e-06,
+            9.817999962251633e-06,
+            9.82600002316758e-06,
+            1.0096000041812658e-05,
+            9.796000085771084e-06,
+            9.811999916564673e-06,
+            1.0004499927163124e-05
+          ]
+        },
+        "ersparnis_s": -3.379500121809542e-06,
+        "ersparnis_prozent": -52.42379854993261,
+        "beschleunigungsfaktor": 0.6560655288172794,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "quaternion_matrix",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.407850009854883e-05,
+          "p95_s": 1.4278000016929583e-05,
+          "minimum_s": 1.1142999865114689e-05,
+          "maximum_s": 1.4336500025819987e-05,
+          "spannweite_s": 3.1935001607052987e-06,
+          "standardabweichung_s": 1.0484517269861437e-06,
+          "rohwerte_s": [
+            1.1142999865114689e-05,
+            1.4336500025819987e-05,
+            1.4050499885343015e-05,
+            1.4104500005487352e-05,
+            1.407850009854883e-05,
+            1.4141499996185302e-05,
+            1.4055999927222728e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 1.0224999859929085e-05,
+          "p95_s": 1.0273699939716607e-05,
+          "minimum_s": 1.0124499967787414e-05,
+          "maximum_s": 1.0278499976266176e-05,
+          "spannweite_s": 1.540000084787614e-07,
+          "standardabweichung_s": 6.081768099317193e-08,
+          "rohwerte_s": [
+            1.0278499976266176e-05,
+            1.0132499737665057e-05,
+            1.0262499854434282e-05,
+            1.0124499967787414e-05,
+            1.0141499806195498e-05,
+            1.0238999966531992e-05,
+            1.0224999859929085e-05
+          ]
+        },
+        "ersparnis_s": 3.853500238619745e-06,
+        "ersparnis_prozent": 27.371525458290492,
+        "beschleunigungsfaktor": 1.3768704441475141,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "quaternion_aus_matrix",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 5.876200011698529e-05,
+          "p95_s": 6.168440010515041e-05,
+          "minimum_s": 5.582949990639463e-05,
+          "maximum_s": 6.198050017701462e-05,
+          "spannweite_s": 6.151000270619989e-06,
+          "standardabweichung_s": 2.075417312267988e-06,
+          "rohwerte_s": [
+            5.582949990639463e-05,
+            6.198050017701462e-05,
+            5.8129499957431105e-05,
+            5.6388500088360164e-05,
+            6.0993499937467276e-05,
+            5.918699986068532e-05,
+            5.876200011698529e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 1.2003000010736287e-05,
+          "p95_s": 1.2082899833330883e-05,
+          "minimum_s": 5.4305000230669975e-06,
+          "maximum_s": 1.2086499773431569e-05,
+          "spannweite_s": 6.655999750364571e-06,
+          "standardabweichung_s": 2.824059854081152e-06,
+          "rohwerte_s": [
+            1.2011000071652234e-05,
+            1.2086499773431569e-05,
+            6.148499960545451e-06,
+            5.4305000230669975e-06,
+            1.2074499973095953e-05,
+            1.195349992485717e-05,
+            1.2003000010736287e-05
+          ]
+        },
+        "ersparnis_s": 4.6759000106249005e-05,
+        "ersparnis_prozent": 79.5735339388715,
+        "beschleunigungsfaktor": 4.8956094363429665,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "_quaternion_multiplizieren",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 6.189999985508621e-06,
+          "p95_s": 7.444150018272921e-06,
+          "minimum_s": 6.154000002425164e-06,
+          "maximum_s": 7.471000135410577e-06,
+          "spannweite_s": 1.317000132985413e-06,
+          "standardabweichung_s": 5.598086784345857e-07,
+          "rohwerte_s": [
+            6.154000002425164e-06,
+            7.381499744951725e-06,
+            7.471000135410577e-06,
+            6.266999989748001e-06,
+            6.160999764688313e-06,
+            6.189999985508621e-06,
+            6.180499913170933e-06
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 1.1265499924775213e-05,
+          "p95_s": 1.2969600124051794e-05,
+          "minimum_s": 1.0201999975834041e-05,
+          "maximum_s": 1.3290000206325203e-05,
+          "spannweite_s": 3.0880002304911615e-06,
+          "standardabweichung_s": 1.1077295864863028e-06,
+          "rohwerte_s": [
+            1.1265499924775213e-05,
+            1.2221999932080506e-05,
+            1.3290000206325203e-05,
+            1.1986000172328204e-05,
+            1.0318499989807606e-05,
+            1.0221999837085604e-05,
+            1.0201999975834041e-05
+          ]
+        },
+        "ersparnis_s": -5.0754999392665924e-06,
+        "ersparnis_prozent": -81.99515268414896,
+        "beschleunigungsfaktor": 0.5494651836884312,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "_orientierung_schritt",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.951950020156801e-05,
+          "p95_s": 2.113350000581704e-05,
+          "minimum_s": 9.640500065870583e-06,
+          "maximum_s": 2.1789000020362436e-05,
+          "spannweite_s": 1.2148499954491853e-05,
+          "standardabweichung_s": 5.094615364113832e-06,
+          "rohwerte_s": [
+            1.9563000241760163e-05,
+            1.0320000001229346e-05,
+            9.640500065870583e-06,
+            9.850499918684363e-06,
+            2.1789000020362436e-05,
+            1.9603999971877785e-05,
+            1.951950020156801e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 1.2018500128760934e-05,
+          "p95_s": 1.2590500060468912e-05,
+          "minimum_s": 5.663999763783067e-06,
+          "maximum_s": 1.2781000114046037e-05,
+          "spannweite_s": 7.11700035026297e-06,
+          "standardabweichung_s": 2.822605116805506e-06,
+          "rohwerte_s": [
+            1.2018500128760934e-05,
+            1.1234999983571469e-05,
+            6.0744999791495505e-06,
+            5.663999763783067e-06,
+            1.2781000114046037e-05,
+            1.214599993545562e-05,
+            1.2042000016663223e-05
+          ]
+        },
+        "ersparnis_s": 7.501000072807074e-06,
+        "ersparnis_prozent": 38.42823840440605,
+        "beschleunigungsfaktor": 1.6241211459370681,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Pose.__post_init__",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.572900015162304e-05,
+          "p95_s": 1.669804999255575e-05,
+          "minimum_s": 7.697500113863499e-06,
+          "maximum_s": 1.701200002571568e-05,
+          "spannweite_s": 9.31449991185218e-06,
+          "standardabweichung_s": 3.7491594162158445e-06,
+          "rohwerte_s": [
+            1.701200002571568e-05,
+            7.854500145185739e-06,
+            7.697500113863499e-06,
+            1.596549991518259e-05,
+            1.5627499960828574e-05,
+            1.572900015162304e-05,
+            1.5765999851282686e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 8.390999864786863e-06,
+          "p95_s": 1.779035001527518e-05,
+          "minimum_s": 7.610500033479184e-06,
+          "maximum_s": 1.8273500027135016e-05,
+          "spannweite_s": 1.0662999993655831e-05,
+          "standardabweichung_s": 4.472498509093078e-06,
+          "rohwerte_s": [
+            8.231000101659447e-06,
+            7.610500033479184e-06,
+            8.390999864786863e-06,
+            1.8273500027135016e-05,
+            1.6662999987602232e-05,
+            1.587400009157136e-05,
+            7.804000051692129e-06
+          ]
+        },
+        "ersparnis_s": 7.338000286836176e-06,
+        "ersparnis_prozent": 46.6526811373893,
+        "beschleunigungsfaktor": 1.874508450134812,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Pose.rotationsmatrix",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.4676999999210239e-05,
+          "p95_s": 1.6331649996573106e-05,
+          "minimum_s": 8.008499862626196e-06,
+          "maximum_s": 1.6547499981243164e-05,
+          "spannweite_s": 8.539000118616968e-06,
+          "standardabweichung_s": 2.6067627383974794e-06,
+          "rohwerte_s": [
+            8.008499862626196e-06,
+            1.4898500230628997e-05,
+            1.4640500012319535e-05,
+            1.4676999999210239e-05,
+            1.4608000055886805e-05,
+            1.6547499981243164e-05,
+            1.582800003234297e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 1.0614000202622265e-05,
+          "p95_s": 1.1013000068487599e-05,
+          "minimum_s": 1.0503500234335661e-05,
+          "maximum_s": 1.1095500085502862e-05,
+          "spannweite_s": 5.919998511672009e-07,
+          "standardabweichung_s": 1.875836865958755e-07,
+          "rohwerte_s": [
+            1.0614000202622265e-05,
+            1.0576499917078764e-05,
+            1.1095500085502862e-05,
+            1.0503500234335661e-05,
+            1.066149998223409e-05,
+            1.0586499993223697e-05,
+            1.0820500028785318e-05
+          ]
+        },
+        "ersparnis_s": 4.0629997965879734e-06,
+        "ersparnis_prozent": 27.68276757379983,
+        "beschleunigungsfaktor": 1.382796280292531,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Pose.punkt_transformieren",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.0711000068113207e-05,
+          "p95_s": 1.8471549876267085e-05,
+          "minimum_s": 1.0316499974578619e-05,
+          "maximum_s": 2.0892999891657383e-05,
+          "spannweite_s": 1.0576499917078764e-05,
+          "standardabweichung_s": 3.5389423649549196e-06,
+          "rohwerte_s": [
+            2.0892999891657383e-05,
+            1.282149984035641e-05,
+            1.0316499974578619e-05,
+            1.0711000068113207e-05,
+            1.042449992382899e-05,
+            1.1943000135943293e-05,
+            1.037000009091571e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 6.7239999771118165e-06,
+          "p95_s": 1.3162450195522978e-05,
+          "minimum_s": 6.325500144157559e-06,
+          "maximum_s": 1.3523500238079577e-05,
+          "spannweite_s": 7.198000093922019e-06,
+          "standardabweichung_s": 2.8141027686090465e-06,
+          "rohwerte_s": [
+            1.3523500238079577e-05,
+            1.2320000096224248e-05,
+            8.761000062804669e-06,
+            6.456999981310218e-06,
+            6.7239999771118165e-06,
+            6.325500144157559e-06,
+            6.580500048585236e-06
+          ]
+        },
+        "ersparnis_s": 3.9870000910013905e-06,
+        "ersparnis_prozent": 37.22341579355175,
+        "beschleunigungsfaktor": 1.5929506401803917,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Pose.vektor_transformieren",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.9558500207494943e-05,
+          "p95_s": 1.9799449859419838e-05,
+          "minimum_s": 9.911000088322908e-06,
+          "maximum_s": 1.984699978493154e-05,
+          "spannweite_s": 9.935999696608632e-06,
+          "standardabweichung_s": 3.3690527265687766e-06,
+          "rohwerte_s": [
+            9.911000088322908e-06,
+            1.7091000045184047e-05,
+            1.9635000207927077e-05,
+            1.9688500033225863e-05,
+            1.939300011144951e-05,
+            1.984699978493154e-05,
+            1.9558500207494943e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 1.3013500138185919e-05,
+          "p95_s": 1.3926299929153174e-05,
+          "minimum_s": 6.499500013887882e-06,
+          "maximum_s": 1.424099988071248e-05,
+          "spannweite_s": 7.741499866824598e-06,
+          "standardabweichung_s": 3.090844814076996e-06,
+          "rohwerte_s": [
+            6.540500035043806e-06,
+            6.499500013887882e-06,
+            1.3063499936833978e-05,
+            1.3192000042181462e-05,
+            1.424099988071248e-05,
+            1.3013500138185919e-05,
+            1.3012000126764178e-05
+          ]
+        },
+        "ersparnis_s": 6.545000069309024e-06,
+        "ersparnis_prozent": 33.46371142916642,
+        "beschleunigungsfaktor": 1.502939255374027,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Pose.invers",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 9.474499995121733e-05,
+          "p95_s": 9.925250001833775e-05,
+          "minimum_s": 5.669000005582348e-05,
+          "maximum_s": 9.984650008846075e-05,
+          "spannweite_s": 4.315650003263727e-05,
+          "standardabweichung_s": 1.9874409631342633e-05,
+          "rohwerte_s": [
+            9.78664998547174e-05,
+            9.474499995121733e-05,
+            9.589249995769933e-05,
+            5.7633499964140355e-05,
+            5.679900001268834e-05,
+            5.669000005582348e-05,
+            9.984650008846075e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 3.0105500190984457e-05,
+          "p95_s": 3.071474999887869e-05,
+          "minimum_s": 1.4968999894335866e-05,
+          "maximum_s": 3.080700000282377e-05,
+          "spannweite_s": 1.5838000108487905e-05,
+          "standardabweichung_s": 6.854874580021349e-06,
+          "rohwerte_s": [
+            3.0105500190984457e-05,
+            3.0317500059027225e-05,
+            3.0499499989673494e-05,
+            2.915349992690608e-05,
+            1.5109499800018967e-05,
+            1.4968999894335866e-05,
+            3.080700000282377e-05
+          ]
+        },
+        "ersparnis_s": 6.463949976023287e-05,
+        "ersparnis_prozent": 68.22470820994745,
+        "beschleunigungsfaktor": 3.147099345640174,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Pose.komponieren",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.00012770300003467127,
+          "p95_s": 0.0001298559998976998,
+          "minimum_s": 0.0001018374998238869,
+          "maximum_s": 0.00013000449980609118,
+          "spannweite_s": 2.8166999982204275e-05,
+          "standardabweichung_s": 9.85130525850177e-06,
+          "rohwerte_s": [
+            0.00013000449980609118,
+            0.00012950950011145324,
+            0.00012815950001822784,
+            0.00011351499997545034,
+            0.0001018374998238869,
+            0.0001252304998342879,
+            0.00012770300003467127
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 4.0078500169329346e-05,
+          "p95_s": 4.03176000691019e-05,
+          "minimum_s": 3.893850021995604e-05,
+          "maximum_s": 4.0407000051345675e-05,
+          "spannweite_s": 1.4684998313896363e-06,
+          "standardabweichung_s": 4.6864399876939173e-07,
+          "rohwerte_s": [
+            3.9390000165440145e-05,
+            4.010900011053309e-05,
+            4.0078500169329346e-05,
+            3.98924999171868e-05,
+            3.893850021995604e-05,
+            4.010250006103888e-05,
+            4.0407000051345675e-05
+          ]
+        },
+        "ersparnis_s": 8.762449986534192e-05,
+        "ersparnis_prozent": 68.61585071732999,
+        "beschleunigungsfaktor": 3.186321830785421,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "rotationsmatrix_achsenwinkel",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.512099988758564e-05,
+          "p95_s": 1.5289350179955365e-05,
+          "minimum_s": 7.436499872710556e-06,
+          "maximum_s": 1.5309000154957175e-05,
+          "spannweite_s": 7.872500282246619e-06,
+          "standardabweichung_s": 2.7211425695773277e-06,
+          "rohwerte_s": [
+            1.512099988758564e-05,
+            1.5309000154957175e-05,
+            1.5167499950621278e-05,
+            1.5243500238284468e-05,
+            1.5040499856695533e-05,
+            7.436499872710556e-06,
+            1.2410000199452042e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 1.1991999926976859e-05,
+          "p95_s": 1.2879749876447022e-05,
+          "minimum_s": 7.043500081636012e-06,
+          "maximum_s": 1.300199975958094e-05,
+          "spannweite_s": 5.958499677944928e-06,
+          "standardabweichung_s": 1.871646702854969e-06,
+          "rohwerte_s": [
+            1.1847499990835786e-05,
+            1.300199975958094e-05,
+            1.1906499858014285e-05,
+            1.2328000157140195e-05,
+            1.2594500149134546e-05,
+            7.043500081636012e-06,
+            1.1991999926976859e-05
+          ]
+        },
+        "ersparnis_s": 3.1289999606087802e-06,
+        "ersparnis_prozent": 20.69307574810376,
+        "beschleunigungsfaktor": 1.2609239476035912,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "pose_aus_modellpose",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.4671999961137772e-05,
+          "p95_s": 1.4953099889680743e-05,
+          "minimum_s": 1.4533500070683658e-05,
+          "maximum_s": 1.5042499871924519e-05,
+          "spannweite_s": 5.089998012408607e-07,
+          "standardabweichung_s": 1.5843875677436607e-07,
+          "rohwerte_s": [
+            1.4571499777957797e-05,
+            1.4592499937862157e-05,
+            1.4706999936606735e-05,
+            1.4744499931111931e-05,
+            1.5042499871924519e-05,
+            1.4671999961137772e-05,
+            1.4533500070683658e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 1.4919500099495053e-05,
+          "p95_s": 1.5494850144023075e-05,
+          "minimum_s": 1.4843999815639109e-05,
+          "maximum_s": 1.5688500134274364e-05,
+          "spannweite_s": 8.44500318635255e-07,
+          "standardabweichung_s": 2.755528486691311e-07,
+          "rohwerte_s": [
+            1.4881000097375364e-05,
+            1.4843999815639109e-05,
+            1.4919500099495053e-05,
+            1.4943999995011836e-05,
+            1.504300016677007e-05,
+            1.488399982918054e-05,
+            1.5688500134274364e-05
+          ]
+        },
+        "ersparnis_s": -2.475001383572811e-07,
+        "ersparnis_prozent": -1.686887534166052,
+        "beschleunigungsfaktor": 0.9834109630546095,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "pose_mit_gelenkwinkel",
+      "anforderungen": [
+        "A-V0.10-00006",
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "quaternion": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ]
+      },
+      "aufrufe_pro_wiederholung": 200,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.4913000050000847e-05,
+          "p95_s": 1.5503400005400182e-05,
+          "minimum_s": 1.4801000070292502e-05,
+          "maximum_s": 1.560750009957701e-05,
+          "spannweite_s": 8.065000292845072e-07,
+          "standardabweichung_s": 2.709978001384047e-07,
+          "rohwerte_s": [
+            1.48535001790151e-05,
+            1.5078499855007976e-05,
+            1.4801000070292502e-05,
+            1.560750009957701e-05,
+            1.4913000050000847e-05,
+            1.5260499785654248e-05,
+            1.4852999884169549e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 2.934899996034801e-05,
+          "p95_s": 2.9820700030541047e-05,
+          "minimum_s": 2.72469999617897e-05,
+          "maximum_s": 2.9969500028528275e-05,
+          "spannweite_s": 2.722500066738576e-06,
+          "standardabweichung_s": 8.069648232340105e-07,
+          "rohwerte_s": [
+            2.9331999830901622e-05,
+            2.9969500028528275e-05,
+            2.934899996034801e-05,
+            2.9208499763626606e-05,
+            2.9441000078804793e-05,
+            2.72469999617897e-05,
+            2.947350003523752e-05
+          ]
+        },
+        "ersparnis_s": -1.4435999910347162e-05,
+        "ersparnis_prozent": -96.8014474749924,
+        "beschleunigungsfaktor": 0.5081263440031711,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Pose.punkte_transformieren",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "punkte": 1
+      },
+      "aufrufe_pro_wiederholung": 20,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.0155001655220986e-05,
+          "p95_s": 1.0830499813891948e-05,
+          "minimum_s": 1.0050000855699182e-05,
+          "maximum_s": 1.1029999586753548e-05,
+          "spannweite_s": 9.799987310543656e-07,
+          "standardabweichung_s": 3.166561377741509e-07,
+          "rohwerte_s": [
+            1.1029999586753548e-05,
+            1.0365000343881548e-05,
+            1.0090001160278916e-05,
+            1.0214999201707542e-05,
+            1.0155001655220986e-05,
+            1.0125001426786185e-05,
+            1.0050000855699182e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 5.67499955650419e-06,
+          "p95_s": 6.033500249031931e-06,
+          "minimum_s": 5.589998909272253e-06,
+          "maximum_s": 6.155000301077962e-06,
+          "spannweite_s": 5.650013918057089e-07,
+          "standardabweichung_s": 1.7803958507490503e-07,
+          "rohwerte_s": [
+            6.155000301077962e-06,
+            5.750000127591193e-06,
+            5.709999823011458e-06,
+            5.614999099634588e-06,
+            5.67499955650419e-06,
+            5.589998909272253e-06,
+            5.65999944228679e-06
+          ]
+        },
+        "ersparnis_s": 4.480002098716796e-06,
+        "ersparnis_prozent": 44.11621239287041,
+        "beschleunigungsfaktor": 1.7894277442862894,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Pose.punkte_transformieren",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "punkte": 1000
+      },
+      "aufrufe_pro_wiederholung": 20,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 1.8659999477677046e-05,
+          "p95_s": 2.5654501223471014e-05,
+          "minimum_s": 1.8244999228045345e-05,
+          "maximum_s": 2.7015001978725196e-05,
+          "spannweite_s": 8.77000275067985e-06,
+          "standardabweichung_s": 3.047927353994211e-06,
+          "rohwerte_s": [
+            2.7015001978725196e-05,
+            2.2479999461211265e-05,
+            1.8610002007335426e-05,
+            1.8659999477677046e-05,
+            1.850999833550304e-05,
+            1.8809997709468006e-05,
+            1.8244999228045345e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 2.2384998737834393e-05,
+          "p95_s": 2.701800054637715e-05,
+          "minimum_s": 2.2340001305565237e-05,
+          "maximum_s": 2.8664999990724028e-05,
+          "spannweite_s": 6.3249986851587905e-06,
+          "standardabweichung_s": 2.170539315383459e-06,
+          "rohwerte_s": [
+            2.8664999990724028e-05,
+            2.235999854747206e-05,
+            2.317500184290111e-05,
+            2.2384998737834393e-05,
+            2.2369998623616995e-05,
+            2.2340001305565237e-05,
+            2.2445002105087043e-05
+          ]
+        },
+        "ersparnis_s": -3.7249992601573467e-06,
+        "ersparnis_prozent": -19.9624831962807,
+        "beschleunigungsfaktor": 0.8335939481711261,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Pose.punkte_transformieren",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "punkte": 100000
+      },
+      "aufrufe_pro_wiederholung": 5,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.0013048199936747551,
+          "p95_s": 0.0018271339975763112,
+          "minimum_s": 0.0011443599942140281,
+          "maximum_s": 0.0018907999969087542,
+          "spannweite_s": 0.0007464400026947261,
+          "standardabweichung_s": 0.0002680739177652935,
+          "rohwerte_s": [
+            0.0016785799991339446,
+            0.0018907999969087542,
+            0.001209299999754876,
+            0.0011443599942140281,
+            0.0012354200007393956,
+            0.0013048199936747551,
+            0.0016456000041216612
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.004663240001536906,
+          "p95_s": 0.004706379999406636,
+          "minimum_s": 0.0032043599989265204,
+          "maximum_s": 0.0047073399997316304,
+          "spannweite_s": 0.00150298000080511,
+          "standardabweichung_s": 0.0005549987798719785,
+          "rohwerte_s": [
+            0.0047073399997316304,
+            0.0047041399986483155,
+            0.004538660007528961,
+            0.0046799200004898015,
+            0.0032043599989265204,
+            0.004663240001536906,
+            0.003755400003865361
+          ]
+        },
+        "ersparnis_s": -0.003358420007862151,
+        "ersparnis_prozent": -257.38569489603367,
+        "beschleunigungsfaktor": 0.27980974456487634,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Koerper.snapshot",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "modell": "optimist"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.00014912000042386354,
+          "p95_s": 0.00019720799964852625,
+          "minimum_s": 9.032599977217615e-05,
+          "maximum_s": 0.00021624599932692945,
+          "spannweite_s": 0.0001259199995547533,
+          "standardabweichung_s": 3.3835653680328376e-05,
+          "rohwerte_s": [
+            0.00014918599976226687,
+            0.00021624599932692945,
+            0.00014912000042386354,
+            9.032599977217615e-05,
+            0.00015278600039891899,
+            0.00014262799988500773,
+            0.00014901799964718522
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.0007695120002608746,
+          "p95_s": 0.0008359086000127718,
+          "minimum_s": 0.0007183560007251799,
+          "maximum_s": 0.0008430059999227524,
+          "spannweite_s": 0.00012464999919757256,
+          "standardabweichung_s": 4.453651908788736e-05,
+          "rohwerte_s": [
+            0.00077928000013344,
+            0.0007292219996452332,
+            0.0007287200004793703,
+            0.0007695120002608746,
+            0.0008430059999227524,
+            0.0008193480002228171,
+            0.0007183560007251799
+          ]
+        },
+        "ersparnis_s": -0.0006203919998370111,
+        "ersparnis_prozent": -416.03540643346884,
+        "beschleunigungsfaktor": 0.19378515263350007,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Koerper.punkte_in_welt",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "modell": "optimist"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 6.361400010064244e-05,
+          "p95_s": 6.499240035191178e-05,
+          "minimum_s": 6.290800054557621e-05,
+          "maximum_s": 6.51760003529489e-05,
+          "spannweite_s": 2.267999807372686e-06,
+          "standardabweichung_s": 7.73740348222778e-07,
+          "rohwerte_s": [
+            6.339399958960713e-05,
+            6.456400034949184e-05,
+            6.303200032562018e-05,
+            6.361400010064244e-05,
+            6.290800054557621e-05,
+            6.51760003529489e-05,
+            6.417199969291687e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 8.451200090348721e-05,
+          "p95_s": 8.694759989157319e-05,
+          "minimum_s": 8.446000050753355e-05,
+          "maximum_s": 8.7622000137344e-05,
+          "spannweite_s": 3.161999629810452e-06,
+          "standardabweichung_s": 1.0709267584648848e-06,
+          "rohwerte_s": [
+            8.537399931810796e-05,
+            8.449599961750209e-05,
+            8.451200090348721e-05,
+            8.446000050753355e-05,
+            8.475400041788816e-05,
+            8.7622000137344e-05,
+            8.450599969364703e-05
+          ]
+        },
+        "ersparnis_s": -2.0898000802844772e-05,
+        "ersparnis_prozent": -32.8512603668728,
+        "beschleunigungsfaktor": 0.7527215001487149,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Modellaufbau einschliesslich Koerper.verband/_baue_verband",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "modell": "optimist"
+      },
+      "aufrufe_pro_wiederholung": 1,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.024221599975135177,
+          "p95_s": 0.024371439981041475,
+          "minimum_s": 0.01627230003941804,
+          "maximum_s": 0.02438109996728599,
+          "spannweite_s": 0.008108799927867949,
+          "standardabweichung_s": 0.0033289918254185108,
+          "rohwerte_s": [
+            0.02434890001313761,
+            0.02392530004726723,
+            0.024299300042912364,
+            0.024221599975135177,
+            0.02438109996728599,
+            0.017550799995660782,
+            0.01627230003941804
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.023893299978226423,
+          "p95_s": 0.02669704997097142,
+          "minimum_s": 0.01512719999300316,
+          "maximum_s": 0.02788219996728003,
+          "spannweite_s": 0.01275499997427687,
+          "standardabweichung_s": 0.0035575442621605777,
+          "rohwerte_s": [
+            0.023382000043056905,
+            0.023893299978226423,
+            0.023931699979584664,
+            0.023912500008009374,
+            0.0226259000482969,
+            0.02788219996728003,
+            0.01512719999300316
+          ]
+        },
+        "ersparnis_s": 0.0003282999969087541,
+        "ersparnis_prozent": 1.3554017787667716,
+        "beschleunigungsfaktor": 1.0137402534270246,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "baue_kraftfunktion_6dof: vorbereitete exakte Union/Ebenenschnitt",
+      "anforderungen": [
+        "A-V0.10-00012",
+        "A-V0.10-00013",
+        "A-V0.10-00014"
+      ],
+      "eingabe": {
+        "modell": "optimist"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.0003696999989915639,
+          "p95_s": 0.000492048800457269,
+          "minimum_s": 0.00034867399954237045,
+          "maximum_s": 0.0005108480004128069,
+          "spannweite_s": 0.00016217400087043644,
+          "standardabweichung_s": 5.655471979135391e-05,
+          "rohwerte_s": [
+            0.0004481840005610138,
+            0.0005108480004128069,
+            0.0003793520003091544,
+            0.0003696999989915639,
+            0.00034902799990959465,
+            0.00034867399954237045,
+            0.0003634120000060648
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 3.8201999850571155e-05,
+          "p95_s": 4.879279946908354e-05,
+          "minimum_s": 3.613600041717291e-05,
+          "maximum_s": 5.142199923284352e-05,
+          "spannweite_s": 1.5285998815670607e-05,
+          "standardabweichung_s": 4.917180098988985e-06,
+          "rohwerte_s": [
+            5.142199923284352e-05,
+            3.8547998992726204e-05,
+            4.265800002031028e-05,
+            3.762599895708263e-05,
+            3.7466000067070125e-05,
+            3.613600041717291e-05,
+            3.8201999850571155e-05
+          ]
+        },
+        "ersparnis_s": 0.00033149799914099275,
+        "ersparnis_prozent": 89.66675684209486,
+        "beschleunigungsfaktor": 9.67750380706932,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "wasserlinien_querschnitt/_ringe_aus_mesh/_ringmomente",
+      "anforderungen": [
+        "A-V0.10-00016"
+      ],
+      "eingabe": {
+        "modell": "optimist"
+      },
+      "aufrufe_pro_wiederholung": 2,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.05131144999177195,
+          "p95_s": 0.05199054498516489,
+          "minimum_s": 0.04867155000101775,
+          "maximum_s": 0.051998449984239414,
+          "spannweite_s": 0.003326899983221665,
+          "standardabweichung_s": 0.0013843570498261934,
+          "rohwerte_s": [
+            0.04867155000101775,
+            0.04895905000739731,
+            0.051998449984239414,
+            0.051797399995848536,
+            0.05131144999177195,
+            0.05197209998732433,
+            0.04949309999938123
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.008832849998725578,
+          "p95_s": 0.008893065000302158,
+          "minimum_s": 0.006123950006440282,
+          "maximum_s": 0.008917350001865998,
+          "spannweite_s": 0.002793399995425716,
+          "standardabweichung_s": 0.0009486136928494649,
+          "rohwerte_s": [
+            0.006123950006440282,
+            0.008832850027829409,
+            0.008917350001865998,
+            0.008819849987048656,
+            0.00875179999275133,
+            0.008832849998725578,
+            0.0088363999966532
+          ]
+        },
+        "ersparnis_s": 0.04247859999304637,
+        "ersparnis_prozent": 82.78581096394281,
+        "beschleunigungsfaktor": 5.809161255899882,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "schneide_am_wasser mit Deckel: Elternblock inklusive Konturketten",
+      "anforderungen": [
+        "A-V0.10-00015"
+      ],
+      "eingabe": {
+        "modell": "optimist"
+      },
+      "aufrufe_pro_wiederholung": 5,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.000977679993957281,
+          "p95_s": 0.0017578180017881091,
+          "minimum_s": 0.000944519997574389,
+          "maximum_s": 0.001967920002061874,
+          "spannweite_s": 0.0010234000044874849,
+          "standardabweichung_s": 0.00034804192881804884,
+          "rohwerte_s": [
+            0.001967920002061874,
+            0.0012675800011493266,
+            0.0009493199991993606,
+            0.0010137800010852516,
+            0.000944519997574389,
+            0.0009641400072723627,
+            0.000977679993957281
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.0001463599968701601,
+          "p95_s": 0.00022335200337693094,
+          "minimum_s": 0.00012404000153765082,
+          "maximum_s": 0.0002300000051036477,
+          "spannweite_s": 0.00010596000356599689,
+          "standardabweichung_s": 3.796245832250774e-05,
+          "rohwerte_s": [
+            0.0002300000051036477,
+            0.00020783999934792519,
+            0.0001484000007621944,
+            0.00012806000886484982,
+            0.00014341999776661395,
+            0.00012404000153765082,
+            0.0001463599968701601
+          ]
+        },
+        "ersparnis_s": 0.0008313199970871209,
+        "ersparnis_prozent": 85.02986685062974,
+        "beschleunigungsfaktor": 6.679967305715422,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "HydrodynamikModell.aus_koerper einschliesslich nativer Vorbereitung",
+      "anforderungen": [
+        "A-V0.10-00011"
+      ],
+      "eingabe": {
+        "modell": "optimist"
+      },
+      "aufrufe_pro_wiederholung": 5,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.00029337999876588583,
+          "p95_s": 0.00032393400091677903,
+          "minimum_s": 0.0002833400038070977,
+          "maximum_s": 0.00032981999684125187,
+          "spannweite_s": 4.647999303415419e-05,
+          "standardabweichung_s": 1.4598601411486787e-05,
+          "rohwerte_s": [
+            0.00031020001042634247,
+            0.00029769999673590064,
+            0.0002833400038070977,
+            0.00032981999684125187,
+            0.0002927200053818524,
+            0.00029337999876588583,
+            0.00028900000033900143
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.0003823600010946393,
+          "p95_s": 0.0004083559988066554,
+          "minimum_s": 0.00037518000463023784,
+          "maximum_s": 0.0004153999965637922,
+          "spannweite_s": 4.021999193355437e-05,
+          "standardabweichung_s": 1.2613371675700638e-05,
+          "rohwerte_s": [
+            0.00039192000404000284,
+            0.00037920000031590464,
+            0.0004153999965637922,
+            0.0003823600010946393,
+            0.00037518000463023784,
+            0.0003793200012296438,
+            0.00038881999207660554
+          ]
+        },
+        "ersparnis_s": -8.898000232875346e-05,
+        "ersparnis_prozent": -30.329266719971105,
+        "beschleunigungsfaktor": 0.7672873677319357,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "HydrodynamikModell.beitraege_erzeugen: alle vorhandenen Rollen",
+      "anforderungen": [
+        "A-V0.10-00009",
+        "A-V0.10-00010"
+      ],
+      "eingabe": {
+        "modell": "optimist"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.0003979780001100153,
+          "p95_s": 0.0004153296003350988,
+          "minimum_s": 0.00038623000029474496,
+          "maximum_s": 0.00042030600016005335,
+          "spannweite_s": 3.407599986530839e-05,
+          "standardabweichung_s": 1.0401052253025543e-05,
+          "rohwerte_s": [
+            0.00040371800074353817,
+            0.00042030600016005335,
+            0.00040202599950134755,
+            0.00038623000029474496,
+            0.0003979780001100153,
+            0.00039322199998423455,
+            0.00039036799920722843
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.00013844800065271557,
+          "p95_s": 0.0001443394002271816,
+          "minimum_s": 0.00013482399983331562,
+          "maximum_s": 0.00014560600044205785,
+          "spannweite_s": 1.078200060874223e-05,
+          "standardabweichung_s": 3.3169017643125768e-06,
+          "rohwerte_s": [
+            0.00014080799999646843,
+            0.00014138399972580374,
+            0.00014560600044205785,
+            0.00013482399983331562,
+            0.00013738599955104291,
+            0.00013680799980647862,
+            0.00013844800065271557
+          ]
+        },
+        "ersparnis_s": 0.00025952999945729973,
+        "ersparnis_prozent": 65.2121472507416,
+        "beschleunigungsfaktor": 2.8745666115345903,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Kraftmodell.mit_hydrostatik: Widerstand, Rollen und Gesamtwrench",
+      "anforderungen": [
+        "A-V0.10-00007",
+        "A-V0.10-00008"
+      ],
+      "eingabe": {
+        "modell": "optimist"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.0011850660003256052,
+          "p95_s": 0.0012038951996946707,
+          "minimum_s": 0.0006201859994325787,
+          "maximum_s": 0.0012052979995496572,
+          "spannweite_s": 0.0005851120001170785,
+          "standardabweichung_s": 0.00028305083692219715,
+          "rohwerte_s": [
+            0.0006297700002323836,
+            0.0006264539994299412,
+            0.0006201859994325787,
+            0.0012006220000330358,
+            0.0012052979995496572,
+            0.0011982100002933293,
+            0.0011850660003256052
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.0004927939991466701,
+          "p95_s": 0.0005257832001661882,
+          "minimum_s": 0.00030045800027437506,
+          "maximum_s": 0.0005275160004384816,
+          "spannweite_s": 0.00022705800016410656,
+          "standardabweichung_s": 0.00010584737985238975,
+          "rohwerte_s": [
+            0.00030045800027437506,
+            0.0003024840005673468,
+            0.0003036520001478493,
+            0.0004927939991466701,
+            0.0005275160004384816,
+            0.0005217399995308369,
+            0.0005184039997402579
+          ]
+        },
+        "ersparnis_s": 0.0006922720011789352,
+        "ersparnis_prozent": 58.41632457506405,
+        "beschleunigungsfaktor": 2.4047898358699262,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Koerper.snapshot",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "modell": "folkeboot"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 8.501200005412102e-05,
+          "p95_s": 9.001759975217283e-05,
+          "minimum_s": 8.246800047345459e-05,
+          "maximum_s": 9.044599952176213e-05,
+          "spannweite_s": 7.977999048307537e-06,
+          "standardabweichung_s": 2.854499962594066e-06,
+          "rohwerte_s": [
+            8.246800047345459e-05,
+            8.901800028979779e-05,
+            8.271600003354252e-05,
+            8.550600032322108e-05,
+            8.501200005412102e-05,
+            8.37559998035431e-05,
+            9.044599952176213e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.0004291119996923953,
+          "p95_s": 0.0004478157996200025,
+          "minimum_s": 0.00037654199986718594,
+          "maximum_s": 0.0004506699997000396,
+          "spannweite_s": 7.412799983285367e-05,
+          "standardabweichung_s": 3.0198081603987878e-05,
+          "rohwerte_s": [
+            0.00037654199986718594,
+            0.00044115599943324925,
+            0.00038162800017744303,
+            0.0004314159997738898,
+            0.0003774920001160353,
+            0.0004291119996923953,
+            0.0004506699997000396
+          ]
+        },
+        "ersparnis_s": -0.0003440999996382743,
+        "ersparnis_prozent": -404.7663852388023,
+        "beschleunigungsfaktor": 0.1981114490274358,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Koerper.punkte_in_welt",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "modell": "folkeboot"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 4.2957999976351854e-05,
+          "p95_s": 4.649640060961246e-05,
+          "minimum_s": 4.205799894407392e-05,
+          "maximum_s": 4.688400076702237e-05,
+          "spannweite_s": 4.826001822948453e-06,
+          "standardabweichung_s": 1.770154230458484e-06,
+          "rohwerte_s": [
+            4.218399990350008e-05,
+            4.304800066165626e-05,
+            4.205799894407392e-05,
+            4.688400076702237e-05,
+            4.215200082398951e-05,
+            4.2957999976351854e-05,
+            4.559200024232268e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 3.889600047841668e-05,
+          "p95_s": 4.06326005468145e-05,
+          "minimum_s": 3.844600054435432e-05,
+          "maximum_s": 4.064400098286569e-05,
+          "spannweite_s": 2.198000438511371e-06,
+          "standardabweichung_s": 8.834483509990826e-07,
+          "rohwerte_s": [
+            3.86399996932596e-05,
+            4.0605999529361725e-05,
+            3.879599971696734e-05,
+            3.844600054435432e-05,
+            4.064400098286569e-05,
+            3.889600047841668e-05,
+            4.00019995868206e-05
+          ]
+        },
+        "ersparnis_s": 4.061999497935176e-06,
+        "ersparnis_prozent": 9.455746310748369,
+        "beschleunigungsfaktor": 1.1044323181811244,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Modellaufbau einschliesslich Koerper.verband/_baue_verband",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "modell": "folkeboot"
+      },
+      "aufrufe_pro_wiederholung": 1,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.011613800015766174,
+          "p95_s": 0.012883109995163976,
+          "minimum_s": 0.011146400007419288,
+          "maximum_s": 0.013118400005623698,
+          "spannweite_s": 0.00197199999820441,
+          "standardabweichung_s": 0.0006435850830518873,
+          "rohwerte_s": [
+            0.011146400007419288,
+            0.011493800033349544,
+            0.011259700055234134,
+            0.011631400033365935,
+            0.013118400005623698,
+            0.011613800015766174,
+            0.012334099970757961
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.01159339997684583,
+          "p95_s": 0.012402269977610557,
+          "minimum_s": 0.011232199962250888,
+          "maximum_s": 0.012660599953960627,
+          "spannweite_s": 0.001428399991709739,
+          "standardabweichung_s": 0.00042673715712990935,
+          "rohwerte_s": [
+            0.011232199962250888,
+            0.011387799982912838,
+            0.01159339997684583,
+            0.012660599953960627,
+            0.011588399996981025,
+            0.011655299982521683,
+            0.01179950003279373
+          ]
+        },
+        "ersparnis_s": 2.0400038920342922e-05,
+        "ersparnis_prozent": 0.1756534372268258,
+        "beschleunigungsfaktor": 1.0017596252144398,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "baue_kraftfunktion_6dof: vorbereitete exakte Union/Ebenenschnitt",
+      "anforderungen": [
+        "A-V0.10-00012",
+        "A-V0.10-00013",
+        "A-V0.10-00014"
+      ],
+      "eingabe": {
+        "modell": "folkeboot"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.0004056699993088841,
+          "p95_s": 0.0004310024001169949,
+          "minimum_s": 0.0003968080005142838,
+          "maximum_s": 0.00044061799999326465,
+          "spannweite_s": 4.3809999478980875e-05,
+          "standardabweichung_s": 1.343855926594817e-05,
+          "rohwerte_s": [
+            0.00040856600040569904,
+            0.0004056699993088841,
+            0.00040518400026485325,
+            0.00044061799999326465,
+            0.00040003800066187975,
+            0.00040588999981991945,
+            0.0003968080005142838
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 4.03439998626709e-05,
+          "p95_s": 4.3257199460640546e-05,
+          "minimum_s": 3.92319995444268e-05,
+          "maximum_s": 4.4293999671936035e-05,
+          "spannweite_s": 5.062000127509236e-06,
+          "standardabweichung_s": 1.521025030888215e-06,
+          "rohwerte_s": [
+            4.083799896761775e-05,
+            3.92319995444268e-05,
+            4.03439998626709e-05,
+            4.0122000500559805e-05,
+            4.4293999671936035e-05,
+            3.9906000019982456e-05,
+            4.052400006912649e-05
+          ]
+        },
+        "ersparnis_s": 0.00036532599944621324,
+        "ersparnis_prozent": 90.05497080597468,
+        "beschleunigungsfaktor": 10.055274655209349,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "wasserlinien_querschnitt/_ringe_aus_mesh/_ringmomente",
+      "anforderungen": [
+        "A-V0.10-00016"
+      ],
+      "eingabe": {
+        "modell": "folkeboot"
+      },
+      "aufrufe_pro_wiederholung": 2,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.010912500001722947,
+          "p95_s": 0.010994744981871918,
+          "minimum_s": 0.007382649986539036,
+          "maximum_s": 0.011001899983966723,
+          "spannweite_s": 0.003619249997427687,
+          "standardabweichung_s": 0.0012436688455759674,
+          "rohwerte_s": [
+            0.011001899983966723,
+            0.010971150011755526,
+            0.01087135000852868,
+            0.010869149991776794,
+            0.010978049976984039,
+            0.010912500001722947,
+            0.007382649986539036
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.002453850000165403,
+          "p95_s": 0.002523730002576485,
+          "minimum_s": 0.0013926500105299056,
+          "maximum_s": 0.00252984999679029,
+          "spannweite_s": 0.0011371999862603843,
+          "standardabweichung_s": 0.0003749801437631863,
+          "rohwerte_s": [
+            0.00252984999679029,
+            0.002356400014832616,
+            0.002453850000165403,
+            0.002509450016077608,
+            0.0024651499988976866,
+            0.0024008500040508807,
+            0.0013926500105299056
+          ]
+        },
+        "ersparnis_s": 0.008458650001557544,
+        "ersparnis_prozent": 77.5134020638903,
+        "beschleunigungsfaktor": 4.447093343516264,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "schneide_am_wasser mit Deckel: Elternblock inklusive Konturketten",
+      "anforderungen": [
+        "A-V0.10-00015"
+      ],
+      "eingabe": {
+        "modell": "folkeboot"
+      },
+      "aufrufe_pro_wiederholung": 5,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.00048235999420285223,
+          "p95_s": 0.0004936660011298954,
+          "minimum_s": 0.000472780002746731,
+          "maximum_s": 0.0004957000026479363,
+          "spannweite_s": 2.291999990120528e-05,
+          "standardabweichung_s": 7.88509974050678e-06,
+          "rohwerte_s": [
+            0.0004957000026479363,
+            0.0004889199975878,
+            0.0004792999941855669,
+            0.0004885199945420027,
+            0.0004735200083814561,
+            0.00048235999420285223,
+            0.000472780002746731
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 5.420000525191426e-05,
+          "p95_s": 5.9354001423344015e-05,
+          "minimum_s": 4.746000049635768e-05,
+          "maximum_s": 5.984000163152814e-05,
+          "spannweite_s": 1.2380001135170462e-05,
+          "standardabweichung_s": 5.129534565955e-06,
+          "rohwerte_s": [
+            5.420000525191426e-05,
+            4.754000110551715e-05,
+            5.822000093758106e-05,
+            4.7699990682303904e-05,
+            5.752000724896788e-05,
+            4.746000049635768e-05,
+            5.984000163152814e-05
+          ]
+        },
+        "ersparnis_s": 0.00042815998895093796,
+        "ersparnis_prozent": 88.76357784573634,
+        "beschleunigungsfaktor": 8.899630026988161,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "HydrodynamikModell.aus_koerper einschliesslich nativer Vorbereitung",
+      "anforderungen": [
+        "A-V0.10-00011"
+      ],
+      "eingabe": {
+        "modell": "folkeboot"
+      },
+      "aufrufe_pro_wiederholung": 5,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.00020867999410256743,
+          "p95_s": 0.00021667200140655041,
+          "minimum_s": 0.00020510000176727773,
+          "maximum_s": 0.00021989999804645778,
+          "spannweite_s": 1.479999627918005e-05,
+          "standardabweichung_s": 4.597611376417687e-06,
+          "rohwerte_s": [
+            0.00021989999804645778,
+            0.00020823999075219034,
+            0.00020510000176727773,
+            0.00020914000924676657,
+            0.00020867999410256743,
+            0.00020895999623462557,
+            0.00020525999134406446
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.00026383999502286313,
+          "p95_s": 0.0002766020002309233,
+          "minimum_s": 0.0002569000003859401,
+          "maximum_s": 0.00027980000013485553,
+          "spannweite_s": 2.2899999748915434e-05,
+          "standardabweichung_s": 7.352673216852e-06,
+          "rohwerte_s": [
+            0.00026760000037029386,
+            0.00026383999502286313,
+            0.00027980000013485553,
+            0.00026914000045508146,
+            0.0002618600032292306,
+            0.0002569000003859401,
+            0.0002573200035840273
+          ]
+        },
+        "ersparnis_s": -5.5160000920295694e-05,
+        "ersparnis_prozent": -26.432816982534625,
+        "beschleunigungsfaktor": 0.7909338919009766,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "HydrodynamikModell.beitraege_erzeugen: alle vorhandenen Rollen",
+      "anforderungen": [
+        "A-V0.10-00009",
+        "A-V0.10-00010"
+      ],
+      "eingabe": {
+        "modell": "folkeboot"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.000374940000474453,
+          "p95_s": 0.00037696660053916273,
+          "minimum_s": 0.00036632400006055834,
+          "maximum_s": 0.0003772480005864054,
+          "spannweite_s": 1.0924000525847045e-05,
+          "standardabweichung_s": 4.198346422805264e-06,
+          "rohwerte_s": [
+            0.00037631000042892993,
+            0.0003772480005864054,
+            0.00036632400006055834,
+            0.00036912400042638183,
+            0.000374940000474453,
+            0.00036791799939237533,
+            0.00037563599995337426
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 9.299600031226874e-05,
+          "p95_s": 9.994319966062903e-05,
+          "minimum_s": 9.023799910210073e-05,
+          "maximum_s": 0.00010176599957048893,
+          "spannweite_s": 1.1528000468388202e-05,
+          "standardabweichung_s": 3.5661074207998548e-06,
+          "rohwerte_s": [
+            0.00010176599957048893,
+            9.023799910210073e-05,
+            9.251000010408461e-05,
+            9.299600031226874e-05,
+            9.499000036157668e-05,
+            9.121200069785118e-05,
+            9.568999987095594e-05
+          ]
+        },
+        "ersparnis_s": 0.00028194400016218424,
+        "ersparnis_prozent": 75.1970981504799,
+        "beschleunigungsfaktor": 4.031786304953462,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Kraftmodell.mit_hydrostatik: Widerstand, Rollen und Gesamtwrench",
+      "anforderungen": [
+        "A-V0.10-00007",
+        "A-V0.10-00008"
+      ],
+      "eingabe": {
+        "modell": "folkeboot"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.0006157460005488247,
+          "p95_s": 0.0006265272004529834,
+          "minimum_s": 0.0006020720000378787,
+          "maximum_s": 0.0006296460004523396,
+          "spannweite_s": 2.7574000414460936e-05,
+          "standardabweichung_s": 8.93937994202428e-06,
+          "rohwerte_s": [
+            0.0006192500004544854,
+            0.0006163719994947314,
+            0.0006026060006115585,
+            0.0006157460005488247,
+            0.0006020720000378787,
+            0.0006114800006616861,
+            0.0006296460004523396
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.0002595879998989403,
+          "p95_s": 0.00026580739999189975,
+          "minimum_s": 0.00025305400020442904,
+          "maximum_s": 0.00026707399985753,
+          "spannweite_s": 1.4019999653100954e-05,
+          "standardabweichung_s": 4.752734325001066e-06,
+          "rohwerte_s": [
+            0.00026093999971635637,
+            0.0002554160007275641,
+            0.0002628520003054291,
+            0.00025392199982889,
+            0.00026707399985753,
+            0.00025305400020442904,
+            0.0002595879998989403
+          ]
+        },
+        "ersparnis_s": 0.00035615800064988436,
+        "ersparnis_prozent": 57.841707511284646,
+        "beschleunigungsfaktor": 2.372012576808402,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Koerper.snapshot",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "modell": "yacht1"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.00015707800048403442,
+          "p95_s": 0.0002496295999735593,
+          "minimum_s": 0.00015106800012290478,
+          "maximum_s": 0.00028745600022375586,
+          "spannweite_s": 0.00013638800010085109,
+          "standardabweichung_s": 4.5906687341638586e-05,
+          "rohwerte_s": [
+            0.00015106800012290478,
+            0.00015628800028935074,
+            0.00016136799938976765,
+            0.00015884599997662008,
+            0.00015707800048403442,
+            0.00015462399926036597,
+            0.00028745600022375586
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.0009001679997891188,
+          "p95_s": 0.0010185410000849516,
+          "minimum_s": 0.0008727939997334033,
+          "maximum_s": 0.0010222400003112853,
+          "spannweite_s": 0.00014944600057788195,
+          "standardabweichung_s": 6.201254229499411e-05,
+          "rohwerte_s": [
+            0.0008777500002179295,
+            0.000987869999371469,
+            0.0010099099995568394,
+            0.0008727939997334033,
+            0.0010222400003112853,
+            0.0009001679997891188,
+            0.0008844459999818355
+          ]
+        },
+        "ersparnis_s": -0.0007430899993050844,
+        "ersparnis_prozent": -473.0707018266462,
+        "beschleunigungsfaktor": 0.17449853862927017,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Koerper.punkte_in_welt",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "modell": "yacht1"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 7.838799967430532e-05,
+          "p95_s": 8.013699995353818e-05,
+          "minimum_s": 3.4971999702975154e-05,
+          "maximum_s": 8.042800007387996e-05,
+          "spannweite_s": 4.5456000370904804e-05,
+          "standardabweichung_s": 1.8145863861212113e-05,
+          "rohwerte_s": [
+            8.042800007387996e-05,
+            7.89679994340986e-05,
+            7.82880000770092e-05,
+            7.94579996727407e-05,
+            7.838799967430532e-05,
+            4.3612000299617646e-05,
+            3.4971999702975154e-05
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.00011678799986839295,
+          "p95_s": 0.0001181951998732984,
+          "minimum_s": 4.947199951857328e-05,
+          "maximum_s": 0.00011842199950478971,
+          "spannweite_s": 6.894999998621642e-05,
+          "standardabweichung_s": 2.3631528565442166e-05,
+          "rohwerte_s": [
+            0.00011682800017297268,
+            0.00011587799992412328,
+            0.00011766600073315203,
+            0.00011678799986839295,
+            0.00011842199950478971,
+            0.0001162180001847446,
+            4.947199951857328e-05
+          ]
+        },
+        "ersparnis_s": -3.8400000194087623e-05,
+        "ersparnis_prozent": -48.987090311828304,
+        "beschleunigungsfaktor": 0.6711990937651117,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Modellaufbau einschliesslich Koerper.verband/_baue_verband",
+      "anforderungen": [
+        "A-V0.10-00020"
+      ],
+      "eingabe": {
+        "modell": "yacht1"
+      },
+      "aufrufe_pro_wiederholung": 1,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.03021719999378547,
+          "p95_s": 0.03050307001103647,
+          "minimum_s": 0.01667839998845011,
+          "maximum_s": 0.03060240001650527,
+          "spannweite_s": 0.013924000028055161,
+          "standardabweichung_s": 0.005904817691180964,
+          "rohwerte_s": [
+            0.01757749996613711,
+            0.030271299998275936,
+            0.03026029997272417,
+            0.03060240001650527,
+            0.03021719999378547,
+            0.029500900011043996,
+            0.01667839998845011
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.02878600003896281,
+          "p95_s": 0.0291606200276874,
+          "minimum_s": 0.016480799997225404,
+          "maximum_s": 0.029174900031648576,
+          "spannweite_s": 0.012694100034423172,
+          "standardabweichung_s": 0.004314506437303745,
+          "rohwerte_s": [
+            0.0259325000224635,
+            0.02878600003896281,
+            0.029127300018444657,
+            0.029174900031648576,
+            0.028899900033138692,
+            0.028720600006636232,
+            0.016480799997225404
+          ]
+        },
+        "ersparnis_s": 0.0014311999548226595,
+        "ersparnis_prozent": 4.73637516089182,
+        "beschleunigungsfaktor": 1.0497186115780408,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "baue_kraftfunktion_6dof: vorbereitete exakte Union/Ebenenschnitt",
+      "anforderungen": [
+        "A-V0.10-00012",
+        "A-V0.10-00013",
+        "A-V0.10-00014"
+      ],
+      "eingabe": {
+        "modell": "yacht1"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.00035086399991996587,
+          "p95_s": 0.0007267174001317471,
+          "minimum_s": 0.00034529399941675366,
+          "maximum_s": 0.0007307080004829913,
+          "spannweite_s": 0.00038541400106623764,
+          "standardabweichung_s": 0.00016482962543588292,
+          "rohwerte_s": [
+            0.00035086399991996587,
+            0.0003462240006774664,
+            0.00034529399941675366,
+            0.00035049399943090973,
+            0.0005184179998468608,
+            0.0007307080004829913,
+            0.0007174059993121773
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 4.857599968090653e-05,
+          "p95_s": 6.495799985714256e-05,
+          "minimum_s": 4.103600047528744e-05,
+          "maximum_s": 6.582199945114553e-05,
+          "spannweite_s": 2.4785998975858097e-05,
+          "standardabweichung_s": 1.0435927650498459e-05,
+          "rohwerte_s": [
+            4.2880000546574595e-05,
+            4.106999957002699e-05,
+            4.857599968090653e-05,
+            4.103600047528744e-05,
+            6.282599992118776e-05,
+            6.582199945114553e-05,
+            6.2942000804469e-05
+          ]
+        },
+        "ersparnis_s": 0.0003022880002390593,
+        "ersparnis_prozent": 86.15531952779794,
+        "beschleunigungsfaktor": 7.222990823138486,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "wasserlinien_querschnitt/_ringe_aus_mesh/_ringmomente",
+      "anforderungen": [
+        "A-V0.10-00016"
+      ],
+      "eingabe": {
+        "modell": "yacht1"
+      },
+      "aufrufe_pro_wiederholung": 2,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.07983145001344383,
+          "p95_s": 0.08205801500880625,
+          "minimum_s": 0.06490339999436401,
+          "maximum_s": 0.08215190001646988,
+          "spannweite_s": 0.017248500022105873,
+          "standardabweichung_s": 0.005626648722382879,
+          "rohwerte_s": [
+            0.08215190001646988,
+            0.06490339999436401,
+            0.08183894999092445,
+            0.0768996000115294,
+            0.07983145001344383,
+            0.08167660000617616,
+            0.07825189997674897
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.014516650000587106,
+          "p95_s": 0.014727295012562536,
+          "minimum_s": 0.006880450004246086,
+          "maximum_s": 0.014786200015805662,
+          "spannweite_s": 0.007905750011559576,
+          "standardabweichung_s": 0.0026729402376206228,
+          "rohwerte_s": [
+            0.014589850004995242,
+            0.014786200015805662,
+            0.014516650000587106,
+            0.014552100008586422,
+            0.014303150004707277,
+            0.014284500008216128,
+            0.006880450004246086
+          ]
+        },
+        "ersparnis_s": 0.06531480001285672,
+        "ersparnis_prozent": 81.8158758257022,
+        "beschleunigungsfaktor": 5.499302525735287,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "schneide_am_wasser mit Deckel: Elternblock inklusive Konturketten",
+      "anforderungen": [
+        "A-V0.10-00015"
+      ],
+      "eingabe": {
+        "modell": "yacht1"
+      },
+      "aufrufe_pro_wiederholung": 5,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.003389219997916371,
+          "p95_s": 0.0034535900002811105,
+          "minimum_s": 0.003028279996942729,
+          "maximum_s": 0.003457040002103895,
+          "spannweite_s": 0.000428760005161166,
+          "standardabweichung_s": 0.00013620220483825056,
+          "rohwerte_s": [
+            0.003028279996942729,
+            0.003457040002103895,
+            0.0034455399960279464,
+            0.003389219997916371,
+            0.003385919996071607,
+            0.003403239999897778,
+            0.0033633399987593295
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.0005074999993667006,
+          "p95_s": 0.0005431839963421226,
+          "minimum_s": 0.0004893400007858872,
+          "maximum_s": 0.0005512599949724972,
+          "spannweite_s": 6.191999418661e-05,
+          "standardabweichung_s": 1.961897082115528e-05,
+          "rohwerte_s": [
+            0.0005512599949724972,
+            0.0005074999993667006,
+            0.000512800004798919,
+            0.0004893400007858872,
+            0.000524339999537915,
+            0.0004909000010229648,
+            0.0005073999986052513
+          ]
+        },
+        "ersparnis_s": 0.00288171999854967,
+        "ersparnis_prozent": 85.0260532016599,
+        "beschleunigungsfaktor": 6.678266014080221,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "HydrodynamikModell.aus_koerper einschliesslich nativer Vorbereitung",
+      "anforderungen": [
+        "A-V0.10-00011"
+      ],
+      "eingabe": {
+        "modell": "yacht1"
+      },
+      "aufrufe_pro_wiederholung": 5,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.001934720005374402,
+          "p95_s": 0.001952551999129355,
+          "minimum_s": 0.00180189999518916,
+          "maximum_s": 0.001955299999099225,
+          "spannweite_s": 0.00015340000391006491,
+          "standardabweichung_s": 4.8842906825831295e-05,
+          "rohwerte_s": [
+            0.0019461399991996587,
+            0.001955299999099225,
+            0.00180189999518916,
+            0.001940900005865842,
+            0.001934720005374402,
+            0.0019281200016848742,
+            0.001930199994239956
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.0022782000014558434,
+          "p95_s": 0.002289710002951324,
+          "minimum_s": 0.002236960001755506,
+          "maximum_s": 0.0022903400007635356,
+          "spannweite_s": 5.337999900802961e-05,
+          "standardabweichung_s": 1.934510521250271e-05,
+          "rohwerte_s": [
+            0.002251899999100715,
+            0.0022816000040620566,
+            0.002236960001755506,
+            0.002253759989980608,
+            0.0022782000014558434,
+            0.0022903400007635356,
+            0.002288240008056164
+          ]
+        },
+        "ersparnis_s": -0.00034347999608144155,
+        "ersparnis_prozent": -17.753473118968046,
+        "beschleunigungsfaktor": 0.8492318515222778,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "HydrodynamikModell.beitraege_erzeugen: alle vorhandenen Rollen",
+      "anforderungen": [
+        "A-V0.10-00009",
+        "A-V0.10-00010"
+      ],
+      "eingabe": {
+        "modell": "yacht1"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.0022284880001097918,
+          "p95_s": 0.002279690600349568,
+          "minimum_s": 0.0020290339994244277,
+          "maximum_s": 0.002286182000534609,
+          "spannweite_s": 0.0002571480011101814,
+          "standardabweichung_s": 8.064520596946427e-05,
+          "rohwerte_s": [
+            0.002286182000534609,
+            0.0022488560003694146,
+            0.0022265420004259793,
+            0.002264543999917805,
+            0.0022284880001097918,
+            0.0020290339994244277,
+            0.002166047999635339
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.00047059000004082916,
+          "p95_s": 0.0004743215999333188,
+          "minimum_s": 0.0004400779993738979,
+          "maximum_s": 0.00047455199994146825,
+          "spannweite_s": 3.4474000567570346e-05,
+          "standardabweichung_s": 1.115041817211481e-05,
+          "rohwerte_s": [
+            0.0004721180000342429,
+            0.00046884399955160916,
+            0.00047059000004082916,
+            0.0004657699994277209,
+            0.00047455199994146825,
+            0.0004400779993738979,
+            0.0004737839999143034
+          ]
+        },
+        "ersparnis_s": 0.0017578980000689626,
+        "ersparnis_prozent": 78.88299151632657,
+        "beschleunigungsfaktor": 4.735519241625289,
+        "vorteil_groesser_als_spannweiten": true,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    },
+    {
+      "funktion_oder_elternblock": "Kraftmodell.mit_hydrostatik: Widerstand, Rollen und Gesamtwrench",
+      "anforderungen": [
+        "A-V0.10-00007",
+        "A-V0.10-00008"
+      ],
+      "eingabe": {
+        "modell": "yacht1"
+      },
+      "aufrufe_pro_wiederholung": 50,
+      "vergleich": {
+        "python": {
+          "anzahl": 7,
+          "median_s": 0.0013551499997265636,
+          "p95_s": 0.0023650280000874764,
+          "minimum_s": 0.0013441380008589476,
+          "maximum_s": 0.0027738019998651,
+          "spannweite_s": 0.0014296639990061522,
+          "standardabweichung_s": 0.0004937185379262258,
+          "rohwerte_s": [
+            0.0027738019998651,
+            0.001353506000014022,
+            0.0013535300001967698,
+            0.0013551499997265636,
+            0.0013670320005621762,
+            0.001411222000606358,
+            0.0013441380008589476
+          ]
+        },
+        "cpp": {
+          "anzahl": 7,
+          "median_s": 0.0006020939990412444,
+          "p95_s": 0.0007986492003547027,
+          "minimum_s": 0.000588761999970302,
+          "maximum_s": 0.0008278140006586909,
+          "spannweite_s": 0.00023905200068838892,
+          "standardabweichung_s": 8.487933542223609e-05,
+          "rohwerte_s": [
+            0.0007305979996453971,
+            0.000588761999970302,
+            0.0006354739994276315,
+            0.0008278140006586909,
+            0.0005972679995466023,
+            0.0005920060002245009,
+            0.0006020939990412444
+          ]
+        },
+        "ersparnis_s": 0.0007530560006853192,
+        "ersparnis_prozent": 55.56993696913756,
+        "beschleunigungsfaktor": 2.250728294725511,
+        "vorteil_groesser_als_spannweiten": false,
+        "hinweis": "Zeitvergleich allein ist keine Paritaets-/Produktivfreigabe."
+      },
+      "pfad": "produktiver oeffentlicher Pythonadapter -> C++",
+      "kosten": "Adapter, Validierung, Konvertierung und Ausgaben enthalten",
+      "paritaetsnachweis": "JUnit-Nachweis mit Hash in umgebung.json; keine Freigabe des separaten Batchkandidaten",
+      "uebernahmeschranke_performance": false
+    }
+  ],
+  "hinweis": "Tatsaechliche oeffentliche Adapter, keine reine Kernzeit. Noch kein vollstaendiger Migrations-/GUI-Live-Gesamtvergleich.",
+  "nutzervorgabe": "Produktivuebernahme auch bei Verschlechterung; Paritaet und Robustheit bleiben Pflicht."
+}

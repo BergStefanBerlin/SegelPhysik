@@ -6,6 +6,8 @@ import math
 
 import numpy as np
 
+from .rechenpfad import nativer_kern
+
 
 @dataclass(frozen=True)
 class Zustand6DOF:
@@ -28,6 +30,7 @@ def _vektor(werte, name, laenge):
     return ergebnis
 
 
+@nativer_kern("quaternion_normalisieren")
 def quaternion_normalisieren(quaternion):
     q = _vektor(quaternion, "Quaternion", 4)
     norm = float(np.linalg.norm(q))
@@ -36,6 +39,7 @@ def quaternion_normalisieren(quaternion):
     return q / norm
 
 
+@nativer_kern("quaternion_matrix")
 def quaternion_matrix(quaternion):
     w, x, y, z = quaternion_normalisieren(quaternion)
     return np.array([
@@ -48,6 +52,7 @@ def quaternion_matrix(quaternion):
     ])
 
 
+@nativer_kern("quaternion_aus_matrix", tuple_ausgabe=True)
 def quaternion_aus_matrix(rotation):
     """Wandelt eine rechtshändige 3x3-Rotation in ein Quaternion wxyz um."""
     matrix = np.asarray(rotation, dtype=np.float64)
@@ -99,6 +104,7 @@ def quaternion_aus_matrix(rotation):
     return tuple(float(x) for x in quaternion_normalisieren(quaternion))
 
 
+@nativer_kern("quaternion_slerp", skalare=(2,))
 def quaternion_slerp(anfang, ende, anteil):
     q0 = quaternion_normalisieren(anfang)
     q1 = quaternion_normalisieren(ende)
@@ -118,6 +124,47 @@ def quaternion_slerp(anfang, ende, anteil):
             + math.sin(anteil * winkel) / sinus * q1)
 
 
+def anzeige_interpolieren(verlauf, anzeigezeit, vergangen, verzoegerung):
+    """Waehlt eine monotone Anzeigepose, ohne den Physikzustand zu veraendern."""
+    from .rechenpfad import rechenpfad
+
+    if rechenpfad() == "cpp":
+        from .native_backend import native_laden, zustand_vorbereiten
+
+        zeiten = [float(t) for t, _ in verlauf]
+        zustaende = [zustand_vorbereiten(z) for _, z in verlauf]
+        zielzeit, index, pose = native_laden().anzeige_interpolieren(
+            zeiten, zustaende, float(anzeigezeit), float(vergangen), float(verzoegerung))
+        if zielzeit <= zeiten[0] or len(verlauf) == 1:
+            return zielzeit, index, verlauf[0][1]
+        werte = pose.werte
+        ende = verlauf[index + 1][1]
+        return zielzeit, index, type(ende)(
+            position=tuple(werte[:3]), quaternion=tuple(werte[3:7]),
+            geschwindigkeit_koerper=ende.geschwindigkeit_koerper,
+            winkelgeschwindigkeit_koerper=ende.winkelgeschwindigkeit_koerper)
+    zielzeit = max(verlauf[0][0], anzeigezeit)
+    puffergrenze = max(zielzeit, verlauf[-1][0] - verzoegerung)
+    zielzeit = min(verlauf[-1][0], puffergrenze, zielzeit + vergangen)
+    if zielzeit <= verlauf[0][0] or len(verlauf) == 1:
+        return zielzeit, 0, verlauf[0][1]
+    index = 1
+    while index < len(verlauf) and verlauf[index][0] < zielzeit:
+        index += 1
+    startzeit, start = verlauf[index - 1]
+    endzeit, ende = verlauf[min(index, len(verlauf) - 1)]
+    dauer = endzeit - startzeit
+    anteil = 1. if dauer <= 0. else min(1., max(0., (zielzeit - startzeit) / dauer))
+    position = np.asarray(start.position) + anteil * (
+        np.asarray(ende.position) - np.asarray(start.position))
+    return zielzeit, index - 1, type(ende)(
+        position=tuple(position),
+        quaternion=tuple(quaternion_slerp(start.quaternion, ende.quaternion, anteil)),
+        geschwindigkeit_koerper=ende.geschwindigkeit_koerper,
+        winkelgeschwindigkeit_koerper=ende.winkelgeschwindigkeit_koerper)
+
+
+@nativer_kern("quaternion_multiplizieren")
 def _quaternion_multiplizieren(q, p):
     w, x, y, z = q
     a, b, c, d = p
@@ -129,6 +176,7 @@ def _quaternion_multiplizieren(q, p):
     ])
 
 
+@nativer_kern("orientierung_schritt", skalare=(2,))
 def _orientierung_schritt(q, omega_koerper, dt):
     betrag = float(np.linalg.norm(omega_koerper))
     winkel = betrag * dt
