@@ -1,0 +1,41 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "SegelPhysik starten",
+            "type": "process",
+            "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+            "args": ["-m", "segelphysik.gui.app"],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "C++ bauen und installieren",
+            "detail": "Vor dem Start die SegelPhysik-GUI schliessen, damit Windows das native Modul freigibt.",
+            "type": "process",
+            "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+            "args": ["-m", "pip", "install", "-e", "."],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "Alle Tests – offscreen",
+            "type": "process",
+            "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+            "args": ["-m", "pytest", "-q", "-rs", "tests"],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "QT_QPA_PLATFORM": "offscreen"
+                }
+            },
+            "group": "test",
+            "problemMatcher": []
+        }
+    ]
+}
