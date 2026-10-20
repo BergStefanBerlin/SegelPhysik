@@ -5,10 +5,17 @@
   unabhängig davon, ob der Ordner versioniert ist.
 - Nur wenn der Nutzer ausdrücklich in einem Prompt die Arbeit mit konkreten
   Inhalten aus diesem Ordner verlangt, darf darauf zugegriffen werden.
-- Spezifikationspunkte erhalten dauerhafte Kennungen im Format `SpecNNNN`,
-  beginnend mit `Spec0001`. Bei Änderungen bestehende Kennungen beibehalten;
-  neue Punkte erhalten unbenutzte Kennungen und werden an ihrer sachlich
-  passenden Stelle ergänzt, ohne bestehende Punkte umzunummerieren.
+- Bei Kennungsvergabe, Spezifikationen, Umsetzungsplänen und
+  Rückverfolgbarkeit die
+  [Nummerierungs-Instruction](.github/instructions/nummerierung.instructions.md)
+  lesen und beachten. Sie enthält die vollständige Regelung. Bestehende
+  Kennungen erhalten; alte Spec-Kennungen nicht eigenständig umnummerieren.
+- Entwicklungsarbeit ist auf dem aktuellen benannten Branch erlaubt.
+  Commit, Push, Tag und Release nur auf ausdrücklichen Auftrag ausführen.
+  Vor Git-/Release-Aktionen die
+  [Release-Instruction](.github/instructions/release.instructions.md)
+  lesen und beachten. Sie enthält die vollständige Regelung; sie gilt
+  unabhängig von einer Agentenauswahl.
 - Nicht mehr gültige oder verworfene Punkte aus einer Spezifikation entfernen
   und am Dokumentende unter ihrer ursprünglichen Kennung in einem Abschnitt
   „Nicht umsetzen“ bzw. „So nicht umsetzen“ mit kurzer Begründung archivieren.

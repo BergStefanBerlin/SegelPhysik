@@ -1,23 +1,29 @@
+---
+description: "Use when assigning or checking requirement IDs, specification numbering, implementation steps, backlog transitions, traceability or CPPI interface IDs. Gilt fuer Kennungen, Spezifikationen und Umsetzungsplaene."
+applyTo: "doc/**/*.md, doc/**/*.json"
+---
 # Projektweite Anforderungs- und Umsetzungsnummerierung
 
-**Status:** Arbeitsentwurf; Kernregeln teilweise abgestimmt, finale Freigabe offen
+**Status:** Freigegeben am 20.10.2026; projektweit maßgeblich  
 **Geltungsbereich:** Projektweit für Anforderungen, Ideen im Backlog und
-Umsetzungsschritte sowie Python/C++-Interfaces. Die CPPI-Regel ist am
-20.10.2026 ausdrücklich beauftragt; der Entwurfsstatus der übrigen Regeln
-bleibt unverändert.
+Umsetzungsschritte sowie Python/C++-Interfaces.
+
+Diese Instruction enthält die vollständige Regelung; eine separate
+Nummerierungs-Anweisung wird nicht parallel gepflegt.
 
 Eine Anforderung (`A-…`) wird ausschließlich in einer Spezifikation geführt.
 Eine Idee (`I-…`) wird ausschließlich im Backlog geführt. Umsetzungsschritte
 (`U-…`) stehen im zugehörigen Umsetzungsplan. Übergänge ändern nicht
 rückwirkend die Kennung eines bestehenden Eintrags.
 
-## Verstandene Grundregeln
+## Grundregeln
 
 1. Jede Anforderung erhält eine eigene eindeutige Kennung. Eine Anforderung
    kann aus mehreren zusammengehörigen, gemeinsam abnehmbaren Details
    bestehen; einzeln prüfbare Anforderungen sollen nicht unnötig gebündelt
-   werden. Ein Spec-Punkt darf mehrere Details umfassen, sofern sie einen
-   kohärenten Anforderungsvertrag bilden und gemeinsam abgenommen werden.
+   werden. Ein Anforderungspunkt darf mehrere Details umfassen, sofern sie
+   einen kohärenten Anforderungsvertrag bilden und gemeinsam abgenommen
+   werden.
 2. Eine einmal vergebene Kennung wird nie für einen anderen Inhalt
    wiederverwendet. Sie kann zurückgezogen werden; zurückgezogene Kennungen
    bleiben als solche nachvollziehbar.
@@ -65,7 +71,7 @@ rückwirkend die Kennung eines bestehenden Eintrags.
 - Der CPPI-Zähler läuft projektweit über alle Versionen und Revisionen
   hinweg fort; er wird nicht zurückgesetzt.
 - Maßgebliche Vergabestelle ist das
-  [Schnittstellenregister Python/C++](../WegZuV1.0/Revisionsinformation/Schnittstellenregister_CPP.md).
+  [Schnittstellenregister Python/C++](../../doc/WegZuV1.0/Revisionsinformation/Schnittstellenregister_CPP.md).
   Jeder exportierte Datentyp, jede Funktion und jede qualifizierte
   Kontextmethode erhält einen eigenen Eintrag, keine Sammel-ID pro Familie.
 - Konkrete geplante Interfaces erhalten bereits vor der Implementierung
@@ -150,10 +156,10 @@ während ihrer Umsetzung ins Backlog verschoben wird:
 
 Damit ist die inhaltliche Verschiebung von A nach I gemeint, nicht eine
 Änderung der bereits vergebenen Kennung. Eine Anforderung wird niemals
-ohne vorherige Rückfrage aus einem laufenden Umsetzungsschritt ins Backlog
-verschoben. Neue Ideen, die während der Umsetzung entstehen, erhalten direkt
-eine neue `I-BL-…`-Kennung und werden im Backlog erfasst; sie werden nicht
-ohne Spezifikationsaufnahme als Anforderungen behandelt.
+ohne vorherige Rückfrage und Zustimmung aus einem laufenden Umsetzungsschritt
+ins Backlog verschoben. Neue Ideen, die während der Umsetzung entstehen,
+erhalten direkt eine neue `I-BL-…`-Kennung und werden im Backlog erfasst; sie
+werden nicht ohne Spezifikationsaufnahme als Anforderungen behandelt.
 
 ### 1a. Übergang von einem alten Nummerierungsschema
 
@@ -189,10 +195,10 @@ Logeintrag ist ein Abschlussnachweis und verschiebt die Anforderung nicht
 aus ihrer Spezifikation.
 
 Verworfene oder zurückgezogene Anforderungen und Ideen werden in
-`doc/Log/zurückgezogen.md` eingetragen. Jeder Eintrag enthält mindestens die
-ursprüngliche ID, den Anforderungstext beziehungsweise Ideentext und eine
-kurze Begründung. Bei einem Übergang von A zu I werden beide IDs und ihre
-Beziehung festgehalten: die zurückgezogene A-ID und die neu angelegte
+`doc/Log/zurückgezogen.md` eingetragen. Jeder Eintrag enthält mindestens
+die ursprüngliche ID, den Anforderungstext beziehungsweise Ideentext und
+eine kurze Begründung. Bei einem Übergang von A zu I werden beide IDs und
+ihre Beziehung festgehalten: die zurückgezogene A-ID und die neu angelegte
 I-BL-ID. Eine verworfene Anforderung erhält außerdem den beschriebenen
 Archivvermerk in ihrer Spezifikation.
 
@@ -265,12 +271,31 @@ Kennung ist. I-BL-Nummern sind projektweit fortlaufend. IDs werden nie neu
 vergeben, auch nicht nach Löschung oder Archivierung des zugehörigen
 Dokuments.
 
+## Anwendung bei Projektarbeiten
+
+- Vor jeder Neuvergabe aktive und archivierte IDs prüfen. Bestehende
+  Kennungen nicht umnummerieren oder wiederverwenden. Eine Umstellung alter
+  Spec-Kennungen nur auf ausdrücklichen Auftrag durchführen und die
+  historische Zuordnung nach Abschnitt 1a erhalten.
+- Jede Anforderung bleibt in ihrer Ursprungsspezifikation dokumentiert:
+  aktive Punkte im Anforderungsteil, zurückgezogene oder verlegte Punkte
+  unter ihrer ursprünglichen Kennung im vorgeschriebenen Archivabschnitt.
+  A-/U-Verweise und Tests konsistent verknüpfen; fehlende Zuordnungen und
+  Nachweise offen nennen.
+- Eine Anforderung während laufender Umsetzung nur nach Zustimmung des
+  Nutzers ins Backlog überführen. Fehlende Angaben nicht erraten. Den Ordner
+  `doc/Backlog/Ideen/` nicht als Informationsquelle verwenden, außer der
+  Nutzer verlangt ausdrücklich konkrete Inhalte daraus.
+- Abschließend doppelte oder fehlende IDs, Wiederverwendung, Abhängigkeiten
+  und Nachweislücken prüfen. Betroffene Dokumente und Kennungen knapp
+  benennen; keine unbelegte Vollständigkeit behaupten.
+- Bei Spezifikationsanfragen aktive Punkte nach Kennung tabellarisch
+  auflisten, sofern nicht anders gewünscht.
+
 ## Freigabe
 
-Abgestimmt sind die Zählerformate und Zählbereiche, die Trennung zwischen
-Spezifikationsanforderungen und Backlog-Ideen, der Übergang A→I mit
-Rückfrage bei laufender Umsetzung, die Protokolle in `doc/Log`, sowie
-gebündelte Umsetzungsschritte mit Reihenfolge, Meilensteinen und
-Rückverfolgbarkeit. Dieser Text ist weiterhin ein Arbeitsentwurf; weitere
-fachliche Korrekturen können vor der endgültigen Freigabe eingearbeitet
-werden.
+Der Nutzer hat diese projektweite Regelung einschließlich der am
+20.10.2026 ergänzten CPPI-Regeln ausdrücklich freigegeben. Diese Instruction
+ist die maßgebliche Regel für alle Versionen und Revisionsschritte. Änderungen
+an der Nummerierungsregel selbst benötigen eine spätere ausdrückliche
+Nutzerentscheidung; bestehende Kennungen bleiben unverändert.

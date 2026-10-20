@@ -42,7 +42,7 @@ und technischen Gates unvalidierte Kräfte produktiv einzuschalten.
 ## Ideen: Echtzeit-Berechnung und Darstellung
 
 Die folgenden Ideen verwenden die projektweite Kennung `I-BL-…` gemäß
-[Nummerierungs-Anweisung](../Anweisungen/Nummerierungs-Anweisung.md). Sie sind
+[Nummerierungs-Instruction](../../.github/instructions/nummerierung.instructions.md). Sie sind
 Vorschläge, keine Umsetzungsfreigabe. Vorher-/Nachher-Messungen müssen
 dieselben Modelle, Einstellungen, Hardware und Genauigkeitsgates verwenden.
 

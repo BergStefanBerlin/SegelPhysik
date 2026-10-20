@@ -4,7 +4,7 @@
 **Status:** In Umsetzung; die Abschlusskriterien M1–M8 sind noch nicht vollständig abgenommen  
 **Normative Grundlage:** [Hydrodynamik-Spezifikation](../Spezifikatonen/Hydrodynamik.md)  
 **Vorgänger:** [Umsetzungsplan Hydrodynamik](./Hydrodynamik.md)  
-**Nummerierung:** [Nummerierungs-Anweisung](../../../../../doc/Anweisungen/Nummerierungs-Anweisung.md)
+**Nummerierung:** [Nummerierungs-Instruction](../../../../../.github/instructions/nummerierung.instructions.md)
 
 ## Ziel und Abgrenzung
 

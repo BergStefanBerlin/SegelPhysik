@@ -1,15 +1,11 @@
 ---
-name: Release-Agent
-description: Sichert den Stand per Commit, Tag und Push und erstellt auf Zuruf ein Release.
-argument-hint: "Tagesstart", "Tagesende", "vor großer Änderung", "commit" oder "Release"
+description: "Use when committing, merging, tagging, pushing, publishing or preparing a release, Tagesstart, Tagesende or vor grosser Aenderung. Projektregeln fuer Git-Freigaben und Versionssicherung."
 ---
+# Git-, Commit- und Release-Regeln
 
-# Release-Agent
-
-Diese Anweisung dokumentiert den Release-Agenten in
-[`.github/agents/Release-Manager.agent.md`](../../.github/agents/Release-Manager.agent.md).
-Bei Änderungen beide Dateien synchron halten. Der Agent darf Entwicklungsarbeit
-nicht durch Release-Regeln blockieren.
+Diese Instruction enthält die vollständige projektweite Regelung für
+Git-/Release-Aktionen; eine separate Release-Anweisung wird nicht parallel
+gepflegt. Release-Regeln dürfen Entwicklungsarbeit nicht blockieren.
 
 Antworte kurz und auf Deutsch. Unterscheide Entwicklungsaufträge von
 ausdrücklich beauftragten Git-/Release-Aktionen.
@@ -35,7 +31,8 @@ ausdrücklich beauftragten Git-/Release-Aktionen.
 - Jeder normale Tag erhöht `Y` um 1: `0.3 → 0.4`.
 - Ein Release erhöht `X` um 1 und setzt `Y` auf 0: `0.7 → 1.0`, `1.4 → 2.0`.
 - Aktuellen Stand finden:
-  `git tag --list "[0-9]*.[0-9]" --sort=-v:refname` (erster Treffer).
+  `git tag --list --sort=-v:refname | Where-Object { $_ -match '^[0-9]+\.[0-9]+$' }`
+  (erster Treffer; berücksichtigt auch mehrstellige Werte wie `0.10`).
   Ältere Tags mit drei Stellen (`0.1.20`) sind Historie und werden ignoriert.
 - Commits tragen keine eigene Versionsnummer.
 - Startpunkt: `0.3` (gesetzt am 15.10.2026 auf den Stand nach `0.1.20`).

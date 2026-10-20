@@ -3,7 +3,7 @@
 **Arbeitsbereich:** ausschließlich zuV0.8  
 **Status:** teilweise umgesetzt; Yacht1-Referenzfall bestanden, Modellvalidierung und Profilabdeckung offen  
 **Normative Grundlage:** [Hydrodynamik-Spezifikation](../Spezifikatonen/Hydrodynamik.md)  
-**Nummerierung:** [Nummerierungs-Anweisung](../../../../../doc/Anweisungen/Nummerierungs-Anweisung.md)
+**Nummerierung:** [Nummerierungs-Instruction](../../../../../.github/instructions/nummerierung.instructions.md)
 
 ## Ziel und Vorgehen
 

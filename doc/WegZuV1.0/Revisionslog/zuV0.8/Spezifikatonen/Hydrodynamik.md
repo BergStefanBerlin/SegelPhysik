@@ -3,7 +3,7 @@
 **Arbeitsbereich:** ausschließlich zuV0.8  
 **Status:** Arbeitsfassung zur Abstimmung; aktive Anforderungen, Umsetzung offen  
 **Geltungsbereich:** Hydrodynamik, stationäres Gleichgewicht und zugehörige Darstellung  
-**Grundlage:** [Nummerierungs-Anweisung](../../../../../doc/Anweisungen/Nummerierungs-Anweisung.md), [Hydrodynamik-Anleitung](../hydrodynamik_anleitung.md), [kritische Bewertung](../hydrodynamik_spezifikation_entwurf.md) und aktueller Projektcode.
+**Grundlage:** [Nummerierungs-Instruction](../../../../../.github/instructions/nummerierung.instructions.md), [Hydrodynamik-Anleitung](../hydrodynamik_anleitung.md), [kritische Bewertung](../hydrodynamik_spezifikation_entwurf.md) und aktueller Projektcode.
 
 ## Ziel
 

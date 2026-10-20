@@ -52,7 +52,7 @@ maßgeblich sind dessen Statusdefinitionen und Pflegehinweise.
   Stilllegung. Umbenennungen derselben Schnittstelle mit bisherigem Namen
   unter derselben ID dokumentieren; Ersatzschnittstellen erhalten neue IDs
   und einen Verweis. Die maßgebliche Kennungsregel steht in
-  `doc/Anweisungen/Nummerierungs-Anweisung.md`.
+  der [Nummerierungs-Instruction](nummerierung.instructions.md).
 - Neue, geänderte, ersetzte oder stillgelegte Schnittstellen im selben
   Arbeitsschritt im Register nachführen. Bestehende Einträge nicht allein
   wegen eines Umbaus löschen; Status und Begründung nachvollziehbar
@@ -70,10 +70,13 @@ maßgeblich sind dessen Statusdefinitionen und Pflegehinweise.
   bearbeiteten Versionen (aktuell `V0.10`) pflegen. Neue Versionsspalten erst
   bei Bearbeitung der betreffenden Version ergänzen. Vorhandene freigegebene
   Messstände nicht durch neuere Werte überschreiben.
-- Vergleichbare Messfälle mit festgelegtem Referenz-/Quellstand,
+- Laufzeitmedian und Faktor Python/C++ nur bei einer gültigen, vergleichbaren
+  Messung des betreffenden Interfaces ausweisen (Faktor über 1 schneller,
+  unter 1 langsamer). Messfall mit festgelegtem Referenz-/Quellstand,
   Eingabegröße, Hardware/Build, Wiederholungen und Rohdaten verlinken.
-  Laufzeitmedian und Faktor Python/C++ ausweisen (über 1 schneller,
-  unter 1 langsamer). Adapter-/Gesamtpfadkosten ausdrücklich kennzeichnen.
-  Verschachtelte Zeiten weder addieren noch als isolierte Einzelgewinne
-  beteiligter Interfaces ausgeben. Ohne Einzelmessung `nicht separat
-  gemessen` eintragen; vorhandene Elternblocknachweise nur als solche verlinken.
+- Adapter-/Gesamtpfadkosten ausdrücklich kennzeichnen. Verschachtelte
+  Zeiten weder addieren noch als isolierte Einzelgewinne beteiligter
+  Interfaces ausgeben. Ist keine direkte Einzelmessung vorhanden, exakt
+  `nicht separat gemessen` angeben; Laufzeit oder Faktor nicht mit Null
+  auffüllen und nicht aus einem Elternblock ableiten. Elternblocknachweise
+  ausschließlich als solche verlinken.
