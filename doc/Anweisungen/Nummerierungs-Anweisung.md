@@ -2,7 +2,9 @@
 
 **Status:** Arbeitsentwurf; Kernregeln teilweise abgestimmt, finale Freigabe offen
 **Geltungsbereich:** Projektweit für Anforderungen, Ideen im Backlog und
-Umsetzungsschritte
+Umsetzungsschritte sowie Python/C++-Interfaces. Die CPPI-Regel ist am
+20.10.2026 ausdrücklich beauftragt; der Entwurfsstatus der übrigen Regeln
+bleibt unverändert.
 
 Eine Anforderung (`A-…`) wird ausschließlich in einer Spezifikation geführt.
 Eine Idee (`I-…`) wird ausschließlich im Backlog geführt. Umsetzungsschritte
@@ -54,6 +56,32 @@ rückwirkend die Kennung eines bestehenden Eintrags.
    Meilensteine nachgewiesen sein. Umsetzungsschritte sind so zu ordnen,
    dass ihre Abhängigkeiten eingehalten werden und sie nacheinander
    erarbeitet und integriert werden können.
+
+## Dauerhafte Kennungen für Python/C++-Interfaces
+
+- Jedes einzelne Interface erhält eine eindeutige Kennung `CPPI-xxxx`
+  (C++Interface), beginnend mit `CPPI-0001`. Die laufende Nummer wird
+  mindestens vierstellig mit Nullen aufgefüllt und bei Bedarf verlängert.
+- Der CPPI-Zähler läuft projektweit über alle Versionen und Revisionen
+  hinweg fort; er wird nicht zurückgesetzt.
+- Maßgebliche Vergabestelle ist das
+  [Schnittstellenregister Python/C++](../WegZuV1.0/Revisionsinformation/Schnittstellenregister_CPP.md).
+  Jeder exportierte Datentyp, jede Funktion und jede qualifizierte
+  Kontextmethode erhält einen eigenen Eintrag, keine Sammel-ID pro Familie.
+- Konkrete geplante Interfaces erhalten bereits vor der Implementierung
+  eine CPPI-ID. Noch nicht konkretisierte Arbeits- oder Abnahmebereiche
+  erhalten keine Interface-Kennung.
+- Vor einer Vergabe aktive und archivierte Einträge prüfen. Neue Nummern
+  liegen oberhalb der höchsten jemals vergebenen Nummer; Lücken werden
+  nicht aufgefüllt. Bestehende IDs niemals umnummerieren oder für andere
+  Schnittstellen wiederverwenden.
+- Statusänderungen und Umbenennungen derselben Schnittstelle behalten die
+  CPPI-ID; den bisherigen Namen nachvollziehbar dokumentieren. Eine neue
+  Ersatzschnittstelle erhält eine neue ID mit Verweis auf die ersetzte ID.
+  Stillgelegte oder verworfene Einträge bleiben mit ursprünglicher ID,
+  Begründung und gegebenenfalls Ersatz im Register erhalten.
+- CPPI-IDs ergänzen A-/U-Verweise und ersetzen weder Anforderungs- noch
+  Umsetzungsschrittkennungen.
 
 ## Ablauf und Beziehungen
 
