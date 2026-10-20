@@ -130,7 +130,11 @@ def test_inventar_loest_alle_spec_funktionen_und_closures_auf():
     zeilen = daten["eintraege"]
     geplant = list(spezifikationseintraege(SPEC.read_text(encoding="utf-8")))
     assert len([z for z in zeilen if not z["erzeugte_closure"]]) == len(geplant) == 271
-    assert len(zeilen) == 298
+    # Zwei interne Closures des durch V0.11 ersetzten Kraftzeichenpfads entfallen.
+    assert len(zeilen) == 296
+    assert not any(z["funktion"] in (
+        "GrafikBruecke._kraefte_actors.kraft",
+        "GrafikBruecke._kraefte_actors.momente") for z in zeilen)
     renderer = {z["funktion"] for z in zeilen if z["modul"] == "render/vista.py"}
     assert renderer.isdisjoint({
         "PyVistaRenderer._update_ring", "PyVistaRenderer._clamp_to_bodies",
@@ -153,17 +157,65 @@ def test_inventar_loest_alle_spec_funktionen_und_closures_auf():
     gespeichert = json.loads((
         ROOT / "doc" / "WegZuV1.0" / "Revisionslog" / "zuV0.10" /
         "Umsetzungsplan" / "Funktionsinventar_V0.10.json").read_text(encoding="utf-8"))
-    assert gespeichert == daten
+    # Das historische Startinventar bleibt unveraendert; V0.11 ersetzt zwei
+    # rendererinterne Closures. Quellpositionen und Hashes gehoeren zum Messstand.
+    identitaet = lambda z: (z["anforderung"], z["modul"], z["funktion"])
+    entfallen = {
+        identitaet(z) for z in gespeichert["eintraege"]
+        if z["funktion"] in (
+            "GrafikBruecke._kraefte_actors.kraft",
+            "GrafikBruecke._kraefte_actors.momente")}
+    assert len(entfallen) == 2
+    assert {identitaet(z) for z in gespeichert["eintraege"]} - entfallen == {
+        identitaet(z) for z in zeilen}
 
 
 def test_referenzmanifest_umfasst_modelle_konfiguration_und_optik():
-    daten = referenzmanifest(native_kandidaten=True, produktive_migration=True)
+    daten = referenzmanifest(
+        native_kandidaten=True, produktive_migration=True,
+        folgeentwicklungen=(
+            "code/python/segelphysik/core/pfeilstil.py",
+            "code/python/segelphysik/core/einstellungen.py",
+            "code/python/segelphysik/demo_app.py"))
     namen = daten["dateien"]
     assert "konfigurationen/physik.json" in namen
     for modell in ("optimist", "folkeboot", "yacht1"):
         assert any(n.startswith("code/modelle/" + modell + "/") for n in namen)
     assert any(n.startswith("doc/WegZuV1.0/Revisionslog/zuV0.7/Widgets/") for n in namen)
     assert not any("Backlog" in n for n in namen)
+
+
+def test_folgeentwicklung_bewahrt_originalhash_und_bleibt_separat(monkeypatch):
+    import hashlib
+    from werkzeuge import migration_inventar as modul
+
+    name = "code/python/segelphysik/core/pfeilstil.py"
+    original = b"unveraenderter historischer Quellstand\n"
+    referenzhash = hashlib.sha256(original).hexdigest()
+    monkeypatch.setattr(modul, "referenzdateien", lambda: [name])
+    monkeypatch.setattr(modul.subprocess, "check_output", lambda *_a, **_k: original)
+    monkeypatch.setattr(modul, "texthash", lambda _p: "aktueller_hash")
+    daten = referenzmanifest(
+        produktive_migration=True, folgeentwicklungen=(name,))
+    folge = daten["abweichende_folgeentwicklungsdateien"]
+    assert len(folge) == 1
+    assert folge[0]["datei"] == name
+    assert folge[0]["referenz_sha256"] == daten["dateien"][name] == referenzhash
+    assert folge[0]["folgeentwicklung_sha256"] != folge[0]["referenz_sha256"]
+    assert daten["abweichende_produktive_migrationsdateien"] == []
+
+
+def test_referenzmanifest_bleibt_ohne_explizite_folgeentwicklung_strikt():
+    with pytest.raises(ValueError, match="einstellungen.py"):
+        referenzmanifest(native_kandidaten=True, produktive_migration=True)
+
+
+@pytest.mark.parametrize("name", [
+    "konfigurationen/physik.json", "code/python/unbekannt.py", "code/cpp/CMakeLists.txt",
+])
+def test_folgeentwicklung_erlaubt_keine_modelle_konfiguration_oder_unbekannten_quellen(name):
+    with pytest.raises(ValueError, match="Python-Referenzquellen"):
+        referenzmanifest(folgeentwicklungen=(name,))
 
 
 def test_schreiben_ueberschreibt_keine_belege(tmp_path):

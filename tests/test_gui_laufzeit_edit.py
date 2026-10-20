@@ -284,7 +284,9 @@ def test_statisch_modus_ruft_solver_auf_und_zeigt_ergebnis(
     params = _physik_stub(g=9.7, aufloesung=0.03)
     kraftaufrufe = []
     solveraufrufe = []
-    hydrostatik = lambda *_args, **_kwargs: None
+    from segelphysik.core.auftrieb import Auftriebsergebnis
+    hydrostatik = lambda *_args, **_kwargs: Auftriebsergebnis(
+        1.0, (0, 0, 0), (0, 0, koerper.masse * params.g_m_pro_s2), (0, 0, 0))
     monkeypatch.setattr(
         "segelphysik.core.konfig_lader.lade_physik",
         lambda ordner: params)
@@ -382,6 +384,10 @@ def test_echtzeit_gui_integriert_feste_physikschritte(monkeypatch, tmp_path):
             self.render_thread = threading.get_ident()
             self.renders += 1
 
+        def kraefte_snapshot_setzen(self, snapshot):
+            self.snapshot = snapshot
+            return True
+
     bruecke = Bruecke()
     fenster._bruecke = bruecke
     physik = _physik_stub()
@@ -394,8 +400,14 @@ def test_echtzeit_gui_integriert_feste_physikschritte(monkeypatch, tmp_path):
             M=Vektor((0.0, 0.0, 0.0))))
     fenster._btn_echtzeit.click()
 
-    fenster._echtzeit_letzte_wandzeit = 10.0
     fenster._echtzeit_timer.stop()
+    ende = time.monotonic() + 2.0
+    while fenster._echtzeit_aufgabe_laeuft and time.monotonic() < ende:
+        app.processEvents()
+        time.sleep(0.005)
+    assert not fenster._echtzeit_aufgabe_laeuft
+    assert fenster._echtzeit_berechnet_s == 0
+    fenster._echtzeit_letzte_wandzeit = 10.0
     monkeypatch.setattr(time, "perf_counter", lambda: 10.006)
     fenster._echtzeit_takt()
     ende = time.monotonic() + 2.0
@@ -673,6 +685,10 @@ def test_echtzeit_physik_blockiert_gui_nicht_und_verwirft_pause_ergebnis(
 
         def render(self):
             self.render_thread = threading.get_ident()
+
+        def kraefte_snapshot_setzen(self, snapshot):
+            self.snapshot = snapshot
+            return True
 
     bruecke = Bruecke()
     fenster._bruecke = bruecke

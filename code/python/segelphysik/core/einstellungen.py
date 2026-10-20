@@ -18,7 +18,7 @@ import os
 import shutil
 
 from . import pfeilstil
-SCHEMA_VERSION = "1.5"
+SCHEMA_VERSION = "1.6"
 DATEINAME = "settings.json"
 VORLAGE_DATEINAME = "settings_vorlage.json"
 
@@ -110,6 +110,51 @@ VORLAGE = {
 }
 # Seit 1.1: Darstellung der Kraft- und Momentenpfeile
 VORLAGE.update(pfeilstil.vorlage_bereiche(_eintrag, "1.1"))
+VORLAGE["kraefteanzeige"] = {
+    "koerperframe": _eintrag(
+        "bool", False, "Komponenten im Koerperframe statt im Weltframe",
+        seit="1.6"),
+    "weltursprung": _eintrag(
+        "bool", False, "Momentenbezug Weltursprung statt Koerperschwerpunkt",
+        seit="1.6"),
+    "komponenten": _eintrag(
+        "bool", False, "Momentenkomponenten zusaetzlich zum Gesamtvektor",
+        seit="1.6"),
+    "mehrkoerper": _eintrag(
+        "bool", False, "Alle verfuegbaren Koerpersnapshots getrennt anzeigen",
+        seit="1.6"),
+    "logarithmisch": _eintrag(
+        "bool", False, "Logarithmische statt linearer Kraft-/Momentenskalen",
+        seit="1.6"),
+    "kraftreferenz_N": _eintrag(
+        "float", 0.0, "Manuelle Kraftreferenz; 0: je Koerper initialisieren",
+        "N", 0.0, 1e15, 4, seit="1.6"),
+    "momentreferenz_Nm": _eintrag(
+        "float", 0.0, "Manuelle Momentenreferenz; 0: je Koerper initialisieren",
+        "N*m", 0.0, 1e15, 4, seit="1.6"),
+    "kraftmaximum_px": _eintrag(
+        "float", 180.0, "Maximale Kraftpfeillaenge", "logische px",
+        20.0, 1000.0, 1, seit="1.6"),
+    "momentmaximum_px": _eintrag(
+        "float", 48.0, "Maximaler Momentenradius", "logische px",
+        10.0, 500.0, 1, seit="1.6"),
+    "breite_px": _eintrag(
+        "float", 3.0, "Schaft-/Bogenbreite", "logische px",
+        1.0, 20.0, 1, seit="1.6"),
+    "kopflaenge_px": _eintrag(
+        "float", 10.0, "Pfeilkopflaenge", "logische px",
+        2.0, 100.0, 1, seit="1.6"),
+    "beschriftung": _eintrag(
+        "bool", True, "Auswahl und Gesamtbilanz beschriften", seit="1.6"),
+    "fensterlayout": _eintrag(
+        "fensterlayout", {}, "Gespeichertes Wertefensterlayout", seit="1.6"),
+    "sichtbarkeiten": _eintrag(
+        "sichtbarkeiten", {}, "Sichtbarkeit je stabiler Koerper-/Quell-ID",
+        seit="1.6"),
+}
+for _definition in pfeilstil.BEITRAGS_DEFINITIONEN:
+    VORLAGE["kraefteanzeige"]["farbe_" + _definition.id] = _eintrag(
+        "farbe", _definition.farbe, "Farbe: " + _definition.titel, seit="1.6")
 
 
 def version_tupel(text):
@@ -152,6 +197,36 @@ def vorlage_laden(pfad=None):
 def wert_pruefen(eintrag, wert):
     """Liefert den bereinigten Wert oder wirft ValueError."""
     typ = eintrag["typ"]
+    if typ == "sichtbarkeiten":
+        if (not isinstance(wert, dict)
+                or any(not isinstance(k, str) or not k
+                       or not isinstance(v, dict)
+                       or any(not isinstance(q, str) or not q
+                              or not isinstance(b, bool) for q, b in v.items())
+                       for k, v in wert.items())):
+            raise ValueError("Sichtbarkeiten brauchen Koerper-/Quell-IDs und Wahrheitswerte")
+        return copy.deepcopy(wert)
+    if typ == "fensterlayout":
+        if not isinstance(wert, dict):
+            raise ValueError("Fensterlayout muss ein Objekt sein")
+        if not wert:
+            return {}
+        if (set(wert) != {"geometrie", "spalten", "frei", "dock", "sichtbar"}
+                or not isinstance(wert["geometrie"], str)
+                or len(wert["geometrie"]) > 65536
+                or not isinstance(wert["frei"], bool)
+                or not isinstance(wert["sichtbar"], bool)
+                or type(wert["dock"]) is not int
+                or wert["dock"] not in (1, 2, 4, 8)
+                or not isinstance(wert["spalten"], str)
+                or len(wert["spalten"]) > 65536):
+            raise ValueError("Ungueltiges Wertefensterlayout")
+        try:
+            bytes.fromhex(wert["geometrie"])
+            bytes.fromhex(wert["spalten"])
+        except ValueError as fehler:
+            raise ValueError("Fenstergeometrie muss hexadezimal sein") from fehler
+        return copy.deepcopy(wert)
     if typ == "farbe":
         if not isinstance(wert, str) or not (
                 wert == "" or pfeilstil.FARBE_MUSTER.match(wert)):
@@ -190,7 +265,8 @@ class Einstellungen:
         for bereich, eintraege in self.vorlage.items():
             if bereich == "schema_version":
                 continue
-            daten[bereich] = {k: e["default"] for k, e in eintraege.items()}
+            daten[bereich] = {k: copy.deepcopy(e["default"])
+                              for k, e in eintraege.items()}
         return daten
 
     def _bereiche(self):
@@ -256,7 +332,7 @@ class Einstellungen:
             neu = dict(vorhanden)
             for k, e in self.vorlage[bereich].items():
                 if k not in vorhanden:
-                    neu[k] = e["default"]
+                    neu[k] = copy.deepcopy(e["default"])
                     geaendert = True
                     continue
                 try:
@@ -277,7 +353,7 @@ class Einstellungen:
 
     # --- Zugriff --------------------------------------------------------
     def get(self, bereich, schluessel):
-        return self._daten[bereich][schluessel]
+        return copy.deepcopy(self._daten[bereich][schluessel])
 
     def bereich(self, bereich):
         return dict(self._daten[bereich])
@@ -295,7 +371,7 @@ class Einstellungen:
         """Setzt auf die Defaults der Vorlage zurueck und speichert."""
         for b in ([bereich] if bereich else self._bereiche()):
             for k, e in self.vorlage[b].items():
-                self._daten[b][k] = e["default"]
+                self._daten[b][k] = copy.deepcopy(e["default"])
         self.speichern()
 
     def speichern(self):

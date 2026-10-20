@@ -135,11 +135,14 @@ def modell_vorbereiten(snapshot):
         raise TypeError("Native Modellvorbereitung erwartet einen KoerperSnapshot")
     native = native_laden()
     meshes = [
-        native.Mesh(p, f, "verdrangend_%d" % nummer, "", True)
+        native.Mesh(p, f, "verdrangend_%d" % nummer, "", True,
+                    snapshot.blatt_quell_ids[nummer])
         for nummer, (p, f) in enumerate(snapshot.blatt_meshes)]
     meshes.extend(
-        native.Mesh(p, f, name, rolle, False)
-        for rolle, name, p, f in snapshot.hydrodynamik_teile)
+        native.Mesh(p, f, name, rolle, False,
+                    snapshot.hydrodynamik_quell_ids[index]
+                    if snapshot.hydrodynamik_quell_ids else "")
+        for index, (rolle, name, p, f) in enumerate(snapshot.hydrodynamik_teile))
     return native.Modell(
         float(snapshot.masse), validiere_traegheitstensor(snapshot.traegheitstensor), meshes,
         snapshot.version, np.asarray(snapshot.r_S, dtype=np.float64))
@@ -257,6 +260,20 @@ def wrench_nach_python(wrench):
         tuple(wrench.kraft), tuple(wrench.moment))
 
 
+def beitrag_vorbereiten(beitrag):
+    return native_laden().Beitrag(
+        beitrag.name, wrench_vorbereiten(beitrag.wrench),
+        beitrag.quell_id, beitrag.originalangriff_m)
+
+
+def beitrag_nach_python(beitrag):
+    from .kraftmodell import Kraftbeitrag
+
+    return Kraftbeitrag(
+        beitrag.name, wrench_nach_python(beitrag.wrench), beitrag.quell_id,
+        None if beitrag.originalangriff is None else tuple(beitrag.originalangriff))
+
+
 def ergebnis_vorbereiten(zustand, ergebnis):
     from .kraftmodell import KraftErgebnis
 
@@ -271,13 +288,18 @@ def ergebnis_vorbereiten(zustand, ergebnis):
     return native.Ergebnis(
         zustand_vorbereiten(zustand), float(hydrostatik.V_tauch),
         hydrostatik.K.as_array(), wrench_vorbereiten(ergebnis.gesamt_wrench),
-        [native.Beitrag(b.name, wrench_vorbereiten(b.wrench)) for b in ergebnis.beitraege],
+        [beitrag_vorbereiten(b) for b in ergebnis.beitraege],
         auftrieb, np.asarray(ergebnis.added_mass_diagonal, dtype=np.float64),
         np.asarray(ergebnis.linear_widerstand, dtype=np.float64),
         np.asarray(ergebnis.quadratischer_widerstand, dtype=np.float64),
         np.asarray(ergebnis.fluidgeschwindigkeit, dtype=np.float64),
         np.asarray(ergebnis.fluidwinkelgeschwindigkeit, dtype=np.float64),
-        ergebnis.schwerkraft_beruecksichtigt)
+        ergebnis.schwerkraft_beruecksichtigt,
+        None if ergebnis.kraftpose is None else native.Zustand(np.array((
+            *ergebnis.kraftpose.translation_m,
+            *ergebnis.kraftpose.rotation_quaternion_wxyz,
+            *zustand.geschwindigkeit_koerper,
+            *zustand.winkelgeschwindigkeit_koerper), dtype=np.float64)))
 
 
 def ergebnis_nach_python(ergebnis):
@@ -295,15 +317,19 @@ def ergebnis_nach_python(ergebnis):
     hydrostatik = Auftriebsergebnis(
         ergebnis.volumen, ergebnis.auftriebsschwerpunkt,
         ergebnis.auftrieb.kraft, ergebnis.auftrieb.moment)
-    beitraege = tuple(Kraftbeitrag(
-        b.name, Wrench(b.wrench.frame, tuple(b.wrench.bezugspunkt),
-                       tuple(b.wrench.kraft), tuple(b.wrench.moment)))
-        for b in ergebnis.beitraege)
+    beitraege = tuple(beitrag_nach_python(b) for b in ergebnis.beitraege)
+    from .frames import Pose
+    kraftpose = None
+    if ergebnis.kraftzustand is not None:
+        kraftwerte = ergebnis.kraftzustand.werte
+        kraftpose = Pose("simulationsframe", "koerper",
+                         tuple(kraftwerte[:3]), tuple(kraftwerte[3:7]))
     return zustand, KraftErgebnis(
         hydrostatik, Vektor(ergebnis.gesamt.kraft), Vektor(ergebnis.gesamt.moment),
         tuple(ergebnis.added_mass), beitraege, tuple(ergebnis.gesamt.bezugspunkt),
         ergebnis.schwerkraft_beruecksichtigt, tuple(ergebnis.linear),
-        tuple(ergebnis.quadratisch), tuple(ergebnis.fluid), tuple(ergebnis.fluidrotation))
+        tuple(ergebnis.quadratisch), tuple(ergebnis.fluid),
+        tuple(ergebnis.fluidrotation), kraftpose)
 
 
 class NativeKoerperKontext:
@@ -333,7 +359,8 @@ class NativeKoerperKontext:
                 mesh = native.Mesh(
                     knoten.punkte, knoten.dreiecke,
                     str(knoten.name or knoten.knoten_id or knoten.rolle),
-                    "" if rolle is None else rolle, knoten.verdrangend)
+                    "" if rolle is None else rolle, knoten.verdrangend,
+                    knoten.quell_id)
                 blaetter.append(native.BlattKontext(mesh, rotation, translation))
             self._wachen.append((knoten, self._signatur(knoten), mesh))
 
@@ -345,17 +372,19 @@ class NativeKoerperKontext:
         self._kontext = native.SnapshotKontext(
             koerper.masse, koerper.traegheitstensor, self._version, blaetter)
         modell = self._kontext.auswerten(native.Abbruch())
-        blatt_meshes, hydrodynamik = [], []
+        blatt_meshes, hydrodynamik, hydro_ids, blatt_ids = [], [], [], []
         for mesh in modell.meshes:
             p, f = mesh.punkte, mesh.dreiecke
             if mesh.verdraengend:
                 blatt_meshes.append((p, f))
+                blatt_ids.append(mesh.quell_id)
             else:
                 hydrodynamik.append((mesh.rolle, mesh.name, p, f))
+                hydro_ids.append(mesh.quell_id)
         self._vorlage = KoerperSnapshot(
             modell.masse, modell.traegheit, tuple(blatt_meshes), (0., 0., 0.),
             koerper.zustand, self._version, self._basis_pose,
-            self._gelenke, tuple(hydrodynamik))
+            self._gelenke, tuple(hydrodynamik), tuple(hydro_ids), tuple(blatt_ids))
 
     @staticmethod
     def _signatur(knoten):
@@ -392,6 +421,7 @@ class NativeKoerperKontext:
         snapshot = KoerperSnapshot(
             v.masse, v.traegheitstensor, v.blatt_meshes, v.r_S,
             koerper.zustand, self._version, self._basis_pose,
-            self._gelenke, v.hydrodynamik_teile)
+            self._gelenke, v.hydrodynamik_teile, v.hydrodynamik_quell_ids,
+            v.blatt_quell_ids)
         quelle_pruefen()
         return snapshot

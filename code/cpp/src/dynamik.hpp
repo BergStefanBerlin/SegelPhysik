@@ -103,25 +103,39 @@ struct PhysikKontext {
         const auto drag = widerstand(parameter.linear, parameter.quadratisch, relativ);
         const Wrench auftrieb{"simulationsframe", position, hydro.kraft, hydro.moment};
         std::vector<Beitrag> beitraege{
-            {"hydrostatik", auftrieb},
+            {"hydrostatik", auftrieb, "hydrostatik", hydro.schwerpunkt},
             {"widerstand", {"simulationsframe", position,
-                {drag[0], drag[1], drag[2]}, {drag[3], drag[4], drag[5]}}}};
+                {drag[0], drag[1], drag[2]}, {drag[3], drag[4], drag[5]}},
+                "widerstand"}};
         auto hp = hydroparameter;
         hp[6] = ruderwinkel;
         auto rollen = hydrodynamik_beitraege(
             hydrodynamik.teile, rotation, position, rel_v, rel_omega,
             hp, cd_volumen, abbruch);
         beitraege.insert(beitraege.end(), rollen.begin(), rollen.end());
+        for (const auto& teil : hydrodynamik.teile) {
+            if (teil.mesh.rolle == "volumenkoerper" && !cd_volumen) {
+                continue;
+            }
+            const auto vorhanden = std::any_of(rollen.begin(), rollen.end(),
+                [&](const Beitrag& b) { return b.quell_id == teil.mesh.quell_id; });
+            if (!vorhanden) {
+                beitraege.push_back({"hydrodynamik_" + teil.mesh.rolle,
+                    {"simulationsframe", position, {}, {}}, teil.mesh.quell_id});
+            }
+        }
         if (fremdkraft) {
             auto punkt = multiplizieren(rotation, fremdkraft->second);
             for (std::size_t i = 0; i < 3; ++i) {
                 punkt[i] += position[i];
             }
             beitraege.push_back({"fremdkraft", {
-                "simulationsframe", punkt, fremdkraft->first, {}}});
+                "simulationsframe", punkt, fremdkraft->first, {}},
+                "fremdkraft", punkt});
         }
         beitraege.push_back({"schwerkraft", {
-            "simulationsframe", position, {0., 0., -gewicht.value_or(masse * parameter.g)}, {}}});
+            "simulationsframe", position, {0., 0., -gewicht.value_or(masse * parameter.g)}, {}},
+            "schwerkraft", position});
         auto aggregat = aggregiere_kraftbeitraege(beitraege, position, "simulationsframe");
         Vektor6 rate{};
         for (std::size_t i = 0; i < 6; ++i) {
@@ -181,9 +195,11 @@ struct PhysikKontext {
         std::copy(a.begin(), a.end(), beschleunigung.begin());
         std::copy(alpha.begin(), alpha.end(), beschleunigung.begin() + 3);
         const auto zusatz = added_mass_kraft(rotation, parameter.added_mass, beschleunigung);
-        if (std::any_of(zusatz.begin(), zusatz.end(), [](double wert) { return wert != 0.; })) {
+        if (std::any_of(parameter.added_mass.begin(), parameter.added_mass.end(),
+                       [](double wert) { return wert != 0.; })) {
             aggregat.second.push_back({"added_mass", {"simulationsframe", position,
-                {zusatz[0], zusatz[1], zusatz[2]}, {zusatz[3], zusatz[4], zusatz[5]}}});
+                {zusatz[0], zusatz[1], zusatz[2]}, {zusatz[3], zusatz[4], zusatz[5]}},
+                "added_mass"});
             for (std::size_t i = 0; i < 3; ++i) {
                 aggregat.first.kraft[i] += zusatz[i];
                 aggregat.first.moment[i] += zusatz[i + 3];
@@ -193,7 +209,7 @@ struct PhysikKontext {
         Ergebnis ergebnis{
             neu, hydro.volumen, hydro.schwerpunkt, aggregat.first, aggregat.second,
             auftrieb, parameter.added_mass, parameter.linear, parameter.quadratisch,
-            parameter.fluid, parameter.fluidrotation, true};
+            parameter.fluid, parameter.fluidrotation, true, zustand};
         ergebnis.pruefen();
         return ergebnis;
     }

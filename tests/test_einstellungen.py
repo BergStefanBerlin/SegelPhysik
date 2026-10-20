@@ -132,6 +132,42 @@ def test_defaults_kommen_aus_der_vorlagedatei(tmp_path):
 
 def test_doc_vorlage_entspricht_eingebauter_vorlage():
     assert ein.vorlage_laden() == VORLAGE
+    from pathlib import Path
+    pfad = Path(__file__).resolve().parents[1] / "doc" / "Vorlagen" / "settings_vorlage.json"
+    assert json.loads(pfad.read_text(encoding="utf-8")) == VORLAGE
+
+
+def test_snapshot_defaults_und_explizite_farben_bleiben_getrennt(tmp_path):
+    from segelphysik.core.pfeilstil import Stil, BEITRAGS_DEFINITIONEN
+    e = Einstellungen.laden(str(tmp_path / "s.json"))
+    stil = Stil(e.bereich)
+    assert [stil.beitragsfarbe(d) for d in BEITRAGS_DEFINITIONEN] == [
+        d.farbe for d in BEITRAGS_DEFINITIONEN]
+    gewicht = BEITRAGS_DEFINITIONEN[0]
+    e.setzen("kraftpfeile_paare", "farbe_gewicht_auftrieb", "#123456")
+    assert stil.beitragsfarbe(gewicht) == "#123456"
+    e.setzen("pfeil_f_g", "farbe", "#654321")
+    assert stil.beitragsfarbe(gewicht) == "#654321"
+    e.setzen("kraefteanzeige", "farbe_schwerkraft", "#abcdef")
+    assert stil.beitragsfarbe(gewicht) == "#abcdef"
+
+
+def test_persistenz_nur_layout_und_bool_sichtbarkeit_mit_stabilen_ids(tmp_path):
+    pfad = str(tmp_path / "s.json")
+    e = Einstellungen.laden(pfad)
+    e.setzen("kraefteanzeige", "sichtbarkeiten",
+             {"knoten:boot": {"knoten:blatt": False}})
+    assert Einstellungen.laden(pfad).get("kraefteanzeige", "sichtbarkeiten") == {
+        "knoten:boot": {"knoten:blatt": False}}
+    kopie = e.get("kraefteanzeige", "sichtbarkeiten")
+    kopie.clear()
+    assert e.get("kraefteanzeige", "sichtbarkeiten")
+    for wert in ({1: {}}, {"boot": {"quelle": 1}}, {"boot": []}):
+        with pytest.raises(ValueError):
+            e.setzen("kraefteanzeige", "sichtbarkeiten", wert)
+    for wert in ({"sequenz": 5}, {"geometrie": "ungueltig"}, None):
+        with pytest.raises(ValueError):
+            e.setzen("kraefteanzeige", "fensterlayout", wert)
 
 
 def test_migration_wird_aufgerufen(tmp_path, monkeypatch):

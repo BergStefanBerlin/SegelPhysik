@@ -224,6 +224,10 @@ def _suche_stabile_rolllage(funktion, start, m, g, tol, restarts):
                         lage, r_kandidat, 0, restarts, stag, stabil=True)
                     basis.update({
                         "neutral": False,
+                        "solverkriterien": (
+                            ("|F_z|", abs(float(r_kandidat[0])),
+                             max(tol, _STAG_ANTEIL * m * g)),
+                            ("|M_x|", abs(float(r_kandidat[1])), tol)),
                         "gm": _gm_aus_rollableitung(
                             funktion, lage, m, g),
                     })
@@ -355,6 +359,10 @@ def loese_robust(funktion, m, g=G_NORM, start=(0.0, 0.0), tol=1e-8,
             neutral = bool(abs(dM) <= neutral_toleranz * max(m * g, 1.0)
                            and abs(float(r[1])) <= 1e-6 * max(m * g, 1.0))
             basis = {**diagnose, "neutral": neutral,
+                     "solverkriterien": ((
+                         "Norm des Solverresiduums (F_z, M_x)",
+                         float(np.linalg.norm(r)),
+                         max(tol, stagnation_anteil * m * g) if stag else tol),),
                      # rev E: dM<0 ist der direkte Stabilitaetsnachweis
                      # (restaurierendes Moment). GM-Schaetzung kann an der
                      # Voxel-Treppe leer bleiben - dann traegt dieses Flag.

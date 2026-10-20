@@ -911,6 +911,19 @@ PYBIND11_MODULE(_segelphysik_native, modul)
             }
             if (ergebnis.erfolgreich) {
                 daten["gm"] = ergebnis.gm ? py::cast(*ergebnis.gm) : py::none();
+                if (robust) {
+                    if (ergebnis.rollscan) {
+                        daten["solverkriterien"] = py::make_tuple(
+                            py::make_tuple("|F_z|", std::abs(ergebnis.residuum[0]),
+                                           std::max(tol, .05 * m * g)),
+                            py::make_tuple("|M_x|", std::abs(ergebnis.residuum[1]), tol));
+                    } else {
+                        daten["solverkriterien"] = py::make_tuple(py::make_tuple(
+                            "Norm des Solverresiduums (F_z, M_x)",
+                            sp::norm2(ergebnis.residuum),
+                            ergebnis.stagnation ? std::max(tol, stagnation * m * g) : tol));
+                    }
+                }
             }
             return py::make_tuple(
                 ergebnis.erfolgreich, daten, ergebnis.status, ergebnis.meldung);
@@ -1166,11 +1179,13 @@ PYBIND11_MODULE(_segelphysik_native, modul)
 
     py::class_<sp::Mesh>(modul, "Mesh")
         .def(py::init([](const py::array& punkte, const py::array& dreiecke,
-                         std::string name, std::string rolle, bool verdraengend) {
+                         std::string name, std::string rolle, bool verdraengend,
+                         std::string quell_id) {
             const auto p = array_pruefen<double>(punkte, 2, 3, "Punkte").unchecked<2>();
             const auto f = array_pruefen<std::int64_t>(
                 dreiecke, 2, 3, "Dreiecke").unchecked<2>();
-            sp::Mesh mesh{{}, {}, std::move(name), std::move(rolle), verdraengend};
+            sp::Mesh mesh{{}, {}, std::move(name), std::move(rolle), verdraengend,
+                std::move(quell_id)};
             mesh.punkte.reserve(p.shape(0));
             mesh.dreiecke.reserve(f.shape(0));
             for (py::ssize_t i = 0; i < p.shape(0); ++i) {
@@ -1182,7 +1197,8 @@ PYBIND11_MODULE(_segelphysik_native, modul)
             mesh.pruefen();
             return mesh;
         }), py::arg("punkte").noconvert(), py::arg("dreiecke").noconvert(),
-            py::arg("name") = "", py::arg("rolle") = "", py::arg("verdraengend") = true)
+            py::arg("name") = "", py::arg("rolle") = "", py::arg("verdraengend") = true,
+            py::arg("quell_id") = "")
         .def_property_readonly("punkte", [](const sp::Mesh& m) { return mesh_array(m.punkte); })
         .def_property_readonly("dreiecke", [](const sp::Mesh& m) { return mesh_array(m.dreiecke); })
         .def("eingabe_identisch", [](const sp::Mesh& m, const py::array& punkte,
@@ -1211,6 +1227,7 @@ PYBIND11_MODULE(_segelphysik_native, modul)
             return true;
         }, py::arg("punkte").noconvert(), py::arg("dreiecke").noconvert())
         .def_readonly("name", &sp::Mesh::name)
+        .def_readonly("quell_id", &sp::Mesh::quell_id)
         .def_readonly("rolle", &sp::Mesh::rolle)
         .def_readonly("verdraengend", &sp::Mesh::verdraengend);
 
@@ -1276,12 +1293,16 @@ PYBIND11_MODULE(_segelphysik_native, modul)
         .def_property_readonly("moment", [](const sp::Wrench& w) { return ausgabe(w.moment); });
 
     py::class_<sp::Beitrag>(modul, "Beitrag")
-        .def(py::init([](std::string name, const sp::Wrench& wrench) {
-            sp::Beitrag b{std::move(name), wrench};
+        .def(py::init([](std::string name, const sp::Wrench& wrench,
+                         std::string quell_id, std::optional<sp::Vektor3> originalangriff) {
+            sp::Beitrag b{std::move(name), wrench, std::move(quell_id), originalangriff};
             b.pruefen();
             return b;
-        }), py::arg("name"), py::arg("wrench"))
+        }), py::arg("name"), py::arg("wrench"), py::arg("quell_id") = "",
+            py::arg("originalangriff") = py::none())
         .def_readonly("name", &sp::Beitrag::name)
+        .def_readonly("quell_id", &sp::Beitrag::quell_id)
+        .def_readonly("originalangriff", &sp::Beitrag::originalangriff)
         .def_property_readonly("wrench", [](const sp::Beitrag& b) { return b.wrench; });
 
     py::class_<sp::Ergebnis>(modul, "Ergebnis")
@@ -1290,21 +1311,25 @@ PYBIND11_MODULE(_segelphysik_native, modul)
                          std::vector<sp::Beitrag> beitraege, const sp::Wrench& auftrieb,
                          const py::array& added_mass, const py::array& linear,
                          const py::array& quadratisch, const py::array& fluid,
-                         const py::array& fluidrotation, bool schwerkraft_beruecksichtigt) {
+                         const py::array& fluidrotation, bool schwerkraft_beruecksichtigt,
+                         std::optional<sp::Zustand> kraftzustand) {
             sp::Ergebnis e{zustand, volumen, vektor<3>(
                 auftriebsschwerpunkt, "Auftriebsschwerpunkt"), gesamt, std::move(beitraege),
                 auftrieb, vektor<6>(added_mass, "Added Mass"), vektor<6>(linear, "Linearer Widerstand"),
                 vektor<6>(quadratisch, "Quadratischer Widerstand"),
                 vektor<3>(fluid, "Fluidgeschwindigkeit"),
-                vektor<3>(fluidrotation, "Fluidwinkelgeschwindigkeit"), schwerkraft_beruecksichtigt};
+                vektor<3>(fluidrotation, "Fluidwinkelgeschwindigkeit"),
+                schwerkraft_beruecksichtigt, kraftzustand};
             e.pruefen();
             return e;
         }), py::arg("zustand"), py::arg("volumen"), py::arg("auftriebsschwerpunkt").noconvert(),
             py::arg("gesamt"), py::arg("beitraege"), py::arg("auftrieb"),
             py::arg("added_mass").noconvert(), py::arg("linear").noconvert(),
             py::arg("quadratisch").noconvert(), py::arg("fluid").noconvert(),
-            py::arg("fluidrotation").noconvert(), py::arg("schwerkraft_beruecksichtigt"))
+            py::arg("fluidrotation").noconvert(), py::arg("schwerkraft_beruecksichtigt"),
+            py::arg("kraftzustand") = py::none())
         .def_property_readonly("zustand", [](const sp::Ergebnis& e) { return e.zustand; })
+        .def_readonly("kraftzustand", &sp::Ergebnis::kraftzustand)
         .def_readonly("volumen", &sp::Ergebnis::volumen)
         .def_property_readonly("auftriebsschwerpunkt", [](const sp::Ergebnis& e) {
             return ausgabe(e.auftriebsschwerpunkt);

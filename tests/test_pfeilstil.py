@@ -80,6 +80,83 @@ def test_alte_datei_1_0_wird_mit_neuen_bereichen_aufgefuellt(tmp_path):
     assert ps.Stil(e.bereich).paarfarbe("fremdkraft") == "#d73027"
 
 
+def test_historische_skalen_und_groessen_haben_definierte_pixelwirkung(tmp_path):
+    ein = Einstellungen(str(tmp_path / "settings.json"))
+    ein.setzen(ps.BEREICH_ALLGEMEIN, "kraftskala", .1)
+    ein.setzen(ps.BEREICH_ALLGEMEIN, "momentskala", .15)
+    ein.setzen(ps.BEREICH_ALLGEMEIN, "mindestlaenge", 6)
+    ein.setzen("pfeil_f_g", "skala", 2)
+    ein.setzen("pfeil_f_g", "dicke", 1)
+    ein.setzen("pfeil_f_g", "kopf", 1.5)
+    stil = ps.Stil(ein.bereich)
+    pixel = stil.bildschirmstil(stil.pfeil("f_g", 10), 10, .01)
+    assert pixel["kraftfaktor"] == pytest.approx(4)
+    assert pixel["momentfaktor"] == pytest.approx(6)
+    assert pixel["kleinwert_px"] == pytest.approx(3)
+    assert pixel["durchmesser"] == pytest.approx(.06)
+    assert pixel["kopf_laenge"] == pytest.approx(.15)
+    assert pixel["kopf_durchmesser"] == pytest.approx(.105)
+
+
+def test_historische_momentkomponenten_und_quellenfarbe_bleiben_wirksam(tmp_path):
+    from types import SimpleNamespace
+    ein = Einstellungen(str(tmp_path / "settings.json"))
+    ein.setzen("pfeil_m_x", "sichtbar", True)
+    ein.setzen("pfeil_m_x", "farbe", "#123456")
+    beitrag = SimpleNamespace(
+        name="hydrostatik", herkunft="Einzelbeitrag", gruppe="gewicht_auftrieb")
+    stil = ps.Stil(ein.bereich)
+    komponenten = stil.momentkomponenten(beitrag, 1)
+    assert [an for an, _ in komponenten] == [True, False, False]
+    assert komponenten[0][1]["farbe"] == "#123456"
+    ein.setzen("kraefteanzeige", "komponenten", True)
+    assert all(an for an, _ in stil.momentkomponenten(beitrag, 1))
+
+
+@pytest.mark.parametrize("pfeil_id", [p[0] for p in ps.PFEILE])
+def test_alle_historischen_pfeilfelder_ueberstehen_migration_und_neustart(
+        tmp_path, pfeil_id):
+    bereich = ps.pfeil_bereich(pfeil_id)
+    allgemein = {
+        "vordergrund": True, "dicke": .75, "kopf_durchmesser": 3.,
+        "kopf_laenge": 6., "kraftskala": .12, "momentskala": .09,
+        "mindestlaenge": 3.5, "strich_laenge": 4., "strich_luecke": 3.,
+    }
+    individuell = {
+        "sichtbar": False, "farbe": "#123456", "dicke": .8, "kopf": 1.4,
+        "gestrichelt": True, "skala": 1.3, "deckkraft": .6,
+        "vordergrund": False,
+    }
+    pfad = tmp_path / "historisch.json"
+    pfad.write_text(json.dumps({
+        "schema_version": "1.0", ps.BEREICH_ALLGEMEIN: allgemein,
+        bereich: individuell}), encoding="utf-8")
+    ein = Einstellungen.laden(str(pfad))
+    for gruppe, werte in ((ps.BEREICH_ALLGEMEIN, allgemein),
+                          (bereich, individuell)):
+        assert all(ein.get(gruppe, key) == wert for key, wert in werte.items())
+    stil = ps.Stil(ein.bereich)
+    wirkung = stil.pfeil(pfeil_id, 10.)
+    pixel = stil.bildschirmstil(wirkung, 10., .01)
+    assert wirkung["farbe"] == "#123456"
+    assert wirkung["deckkraft"] == .6
+    assert not wirkung["vordergrund"]
+    assert not wirkung["sichtbar"]
+    assert wirkung["gestrichelt"]
+    assert pixel["durchmesser"] == pytest.approx(3 * (.8 / .5) * .01)
+    assert pixel["kopf_laenge"] == pytest.approx(10 * (6 * 1.4 / 5) * .01)
+    assert pixel["kopf_durchmesser"] == pytest.approx(7 * (3 * 1.4 / 2.5) * .01)
+    assert pixel["kraftfaktor"] == pytest.approx(1.3 * .12 / .05)
+    assert pixel["momentfaktor"] == pytest.approx(1.3 * .09 / .05)
+    assert pixel["kleinwert_px"] == pytest.approx(3.5 / 2)
+    assert pixel["strich"] == pytest.approx(8 * .01 * 4 / 3)
+    assert pixel["luecke"] == pytest.approx(5 * .01 * 3 / 2)
+    ein.speichern()
+    neustart = Einstellungen.laden(str(pfad))
+    neu = ps.Stil(neustart.bereich)
+    assert neu.bildschirmstil(neu.pfeil(pfeil_id, 10.), 10., .01) == pixel
+
+
 def test_farbe_wird_geprueft(tmp_path):
     e = Einstellungen.laden(str(tmp_path / "s.json"))
     e.setzen("pfeil_f_g", "farbe", "#112233")
@@ -91,14 +168,20 @@ def test_farbe_wird_geprueft(tmp_path):
 @pytest.mark.parametrize("maske", range(32))
 def test_alle_layerkombinationen_zeichnen_ohne_fehler(maske):
     from types import SimpleNamespace
+    from vtkmodules.vtkRenderingCore import vtkCamera
     from segelphysik import grafik_bruecke as gb
     from segelphysik.core.auftrieb import Auftriebsergebnis, Vektor
-    from segelphysik.core.kraftmodell import KraftErgebnis
+    from segelphysik.core.kraefte_darstellung import KameraAbbildung
 
     gezeichnet = {}
     b = gb.GrafikBruecke()
-    b._vg_unmoeglich = True
-    b._plotter = SimpleNamespace(remove_actor=lambda *a, **k: None)
+    bereiche = ps.standard_bereiche()
+    bereiche[ps.BEREICH_ALLGEMEIN]["vordergrund"] = False
+    b._stil = ps.Stil(bereiche.__getitem__)
+    kamera = vtkCamera()
+    b._plotter = SimpleNamespace(
+        remove_actor=lambda *a, **k: None,
+        renderer=SimpleNamespace(GetActiveCamera=lambda: kamera))
     gb_mesh = gb._mesh_actor_setzen
     class Actor:
         def SetPosition(self, *position):
@@ -116,12 +199,14 @@ def test_alle_layerkombinationen_zeichnen_ohne_fehler(maske):
     try:
         hydro = Auftriebsergebnis(1.0, (0.3, 0.0, 0.0), (0.0, 0.0, 1000.0),
                                   (0.0, 0.0, 0.0))
-        erg = KraftErgebnis(hydro, Vektor((0.0, 50.0, 1000.0)),
-                            Vektor((0.0, 30.0, 0.0)), (0.0,) * 6)
+        erg = hydro
         b._koerper["boot"] = {"aktiv": True, "position": np.zeros(3),
                               "overlay_skala": (1.0, 0.05)}
         b.kraefte_daten_setzen("boot", erg, 100.0, 9.81, 0.01,
                                fremd=((0.0, 50.0, 0.0), (1.0, 0.0, 0.0)))
+        b._kraftzeichner().kamera = lambda: KameraAbbildung(
+            (0, -5, 2), (0, 0, 0), (1000, 800), True, 2, 30)
+        b._kraftzeichner()._labels = lambda *_args: None
         layer = (gb.LAYER_KRAEFTE, gb.LAYER_FREMDKRAFT, gb.LAYER_MOMENTE,
                  gb.LAYER_SCHWERPUNKT, gb.LAYER_HAUPTACHSEN)
         for i, l in enumerate(layer):
@@ -129,7 +214,7 @@ def test_alle_layerkombinationen_zeichnen_ohne_fehler(maske):
         b._kraefte_actors("boot")
     finally:
         gb._mesh_actor_setzen = gb_mesh
-    assert ("kraefte_boot_fremd" in gezeichnet) == bool(maske & 2)
-    assert ("kraefte_boot_fg" in gezeichnet) == bool(maske & 1)
-    assert ("kraefte_boot_auftriebsp" in gezeichnet) == bool(maske & 8)
-    assert ("kraefte_boot_mges_y" in gezeichnet) == bool(maske & 4)
+    assert ("kraefte_('boot', 'fremdkraft')_F" in gezeichnet) == bool(maske & 2)
+    assert ("kraefte_('boot', 'schwerkraft')_F" in gezeichnet) == bool(maske & 1)
+    assert ("kraefte_('boot', 'hydrostatik')_angriff" in gezeichnet) == bool(maske & 8)
+    assert any(n.endswith("_M") for n in gezeichnet) == bool(maske & 4)

@@ -28,6 +28,9 @@ class StationaereStufe:
     restmoment_Nm: tuple[float, float, float]
     normierte_restkraft: float
     normiertes_restmoment: float
+    solver_kriterien: tuple[tuple[str, float, float], ...] = ()
+    solver_freiheitsgrade: tuple[str, ...] = ()
+    solver_erfuellt: bool | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -124,7 +127,7 @@ def _residuum(kraftfunktion, werte, stufe, kraftskala, momentskala):
 
 
 def _stufe_ergebnis(name, werte, kraft, moment, kraftskala, momentskala,
-                    iterationen, stufe):
+                    iterationen, stufe, toleranz=1e-5, solver_konvergiert=None):
     pose, v, omega = _pose_und_bewegung(werte)
     phi = float(werte[4])
     theta = float(werte[2])
@@ -132,6 +135,8 @@ def _stufe_ergebnis(name, werte, kraft, moment, kraftskala, momentskala,
     moment_auswahl = moment[[1]] if stufe == 1 else moment
     norm_kraft = float(np.linalg.norm(kraft_auswahl) / kraftskala)
     norm_moment = float(np.linalg.norm(moment_auswahl) / momentskala)
+    norm_inf = float(np.max(np.abs(np.r_[
+        kraft_auswahl / kraftskala, moment_auswahl / momentskala])))
     return StationaereStufe(
         name=name,
         konvergiert=max(norm_kraft, norm_moment) <= 0.01,
@@ -143,6 +148,11 @@ def _stufe_ergebnis(name, werte, kraft, moment, kraftskala, momentskala,
         restmoment_Nm=tuple(float(x) for x in moment),
         normierte_restkraft=norm_kraft,
         normiertes_restmoment=norm_moment,
+        solver_kriterien=(("Maximales normiertes Solverresiduum", norm_inf, toleranz),),
+        solver_freiheitsgrade=(("x", "z", "nicken") if stufe == 1 else
+                              ("x", "y", "z", "rollen", "nicken", "gieren")),
+        solver_erfuellt=(None if solver_konvergiert is None else
+                         bool(solver_konvergiert and norm_inf <= toleranz)),
     )
 
 
@@ -224,7 +234,8 @@ def loese_stationaer(kraftfunktion, *, charakteristische_kraft_N,
                 raise StationaerSolverFehler(
                     "%s in Stufe %s" % (fehler, name), stufen=stufen)
             ergebnis = _stufe_ergebnis(
-                name, werte, kraft, moment, kraftskala, momentskala, iteration, stufe)
+                name, werte, kraft, moment, kraftskala, momentskala, iteration,
+                stufe, toleranz, konvergiert)
             stufen.append(ergebnis)
             if fortschritt is not None:
                 fortschritt(ergebnis)
@@ -287,7 +298,7 @@ def loese_stationaer(kraftfunktion, *, charakteristische_kraft_N,
                 kraftfunktion, werte, stufe, kraftskala, momentskala)
         ergebnis = _stufe_ergebnis(
             name, werte, kraft, moment, kraftskala, momentskala, iteration,
-            stufe)
+            stufe, toleranz, konvergiert)
         stufen.append(ergebnis)
         if fortschritt is not None:
             fortschritt(ergebnis)

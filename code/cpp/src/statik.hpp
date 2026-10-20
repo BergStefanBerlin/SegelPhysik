@@ -112,7 +112,7 @@ struct StatikKontext {
 struct StatikErgebnis {
     Vektor2 lage{}, residuum{};
     int iterationen{}, restarts{};
-    bool erfolgreich{}, stagnation{}, neutral{}, stabil{}, robust{};
+    bool erfolgreich{}, stagnation{}, neutral{}, stabil{}, robust{}, rollscan{};
     std::optional<double> gm;
     std::string status{"fehler"}, meldung;
     std::size_t misses{}, hits{};
@@ -412,6 +412,7 @@ class StatikSolver {
                         ergebnis.lage = lage; ergebnis.residuum = residuum;
                         ergebnis.restarts = restarts; ergebnis.robust = true;
                         ergebnis.erfolgreich = true; ergebnis.stabil = true;
+                        ergebnis.rollscan = true;
                         ergebnis.stagnation = norm2(residuum) > toleranz;
                         ergebnis.gm = gm(lage);
                         return ergebnis;

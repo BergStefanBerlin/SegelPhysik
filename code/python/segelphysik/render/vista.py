@@ -17,8 +17,8 @@ v0.3f: Koerper-Darstellung nach Spec SS6:
 - Fix Doppel-Offset: Meshes im Ursprung gebaut, Position nur am Actor.
 - Zwei-Ton-Koerper: unter z=0 blau, darueber rot -> Eintauchen sichtbar.
 - Wasserlinien-Ring an z=0 pro Koerper.
-- Kraftpfeil (orange) + Geschwindigkeitspfeil (gruen) am gewaehlten
-  Koerper (resultierende Kraefte).
+- Geschwindigkeitspfeil (gruen) am gewaehlten Koerper.
+  Kraft-/Momentenpfeile werden ausschliesslich durch GrafikBruecke dargestellt.
 - Status-HUD unten rechts: Position, v, Eintauchtiefe, Tauchfraktion,
   Kraftvektor des zuletzt gewaehlten Koerpers (Plan-Issue 14).
 """
@@ -274,7 +274,7 @@ class PyVistaRenderer:
         self._rings = {}
         self._ring_pd = {}
         self._ring_tpl = {}
-        self._arrow_f = None; self._arrow_v = None
+        self._arrow_v = None
         self._selected = None
         self._prev_n = -1
         self.off_screen = off_screen
@@ -539,27 +539,13 @@ class PyVistaRenderer:
         pd.points = pts
 
     def _refresh_arrows(self, b):
+        """Nur Geschwindigkeitsvektor; kein zweiter Kraftzeichenpfad."""
         p = self._plotter
-        for att in ("_arrow_f", "_arrow_v"):
-            a = getattr(self, att)
-            if a is not None:
-                try:
-                    p.remove_actor(a)
-                except Exception:
-                    pass
-                setattr(self, att, None)
-        g = float(self.app.world.environment.g)
-        F = np.asarray(b.force, dtype=np.float64)
+        if self._arrow_v is not None:
+            p.remove_actor(self._arrow_v)
+            self._arrow_v = None
         v = np.asarray(b.vel, dtype=np.float64)
-        fmag = float(np.linalg.norm(F))
         vmag = float(np.linalg.norm(v))
-        ref = max(abs(b.mass) * abs(g), 1.0)
-        if fmag > 0.02 * ref:
-            L = float(np.clip(fmag / ref, 0.3, 3.0))
-            d = F / max(fmag, 1e-12)
-            self._arrow_f = p.add_mesh(
-                self.pv.Arrow(start=tuple(b.pos), direction=tuple(d),
-                              scale=L), color="#e67e22", line_width=5)
         if vmag > 0.05:
             L = float(np.clip(0.4 * vmag, 0.2, 2.5))
             d = v / max(vmag, 1e-12)

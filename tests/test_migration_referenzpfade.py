@@ -156,13 +156,13 @@ def test_alter_skalarer_voxel_saeulenpfad_bleibt_separat_nachgewiesen():
     assert _y_intervalle_saeule(punkte, dreiecke, 10., 0.) == []
 
 
-def test_legacy_kraftpfeile_verwenden_bestehende_laengen_farben_und_schwellen():
+def test_legacy_renderer_zeichnet_nur_geschwindigkeit_keine_zweite_kraftanzeige():
     import pyvista as pv
 
     renderer = PyVistaRenderer.__new__(PyVistaRenderer)
     renderer.pv = pv
     renderer.app = SimpleNamespace(world=SimpleNamespace(environment=SimpleNamespace(g=10.)))
-    renderer._arrow_f = renderer._arrow_v = None
+    renderer._arrow_v = None
     meshes = []
     entfernt = []
 
@@ -174,14 +174,13 @@ def test_legacy_kraftpfeile_verwenden_bestehende_laengen_farben_und_schwellen():
     koerper = SimpleNamespace(
         mass=1., force=(10., 0., 0.), vel=(0., 1., 0.), pos=(0., 0., 0.))
     renderer._refresh_arrows(koerper)
-    assert len(meshes) == 2
-    assert meshes[0][1]["color"] == "#e67e22"
-    assert meshes[1][1]["color"] == "#27ae60"
+    assert len(meshes) == 1
+    assert meshes[0][1]["color"] == "#27ae60"
     assert np.isfinite(meshes[0][0].points).all()
     koerper.force = koerper.vel = (0., 0., 0.)
     renderer._refresh_arrows(koerper)
-    assert len(entfernt) == 2 and len(meshes) == 2
-    assert renderer._arrow_f is None and renderer._arrow_v is None
+    assert len(entfernt) == 1 and len(meshes) == 1
+    assert not hasattr(renderer, "_arrow_f") and renderer._arrow_v is None
 
 
 def test_bildschirm_zu_wasser_ohne_plotter_und_mit_echter_vtk_kamera():
@@ -259,7 +258,10 @@ def test_echte_actorgruppen_und_schwerpunkt_ohne_neue_optik():
     bruecke = GrafikBruecke()
     plotter = pv.Plotter(off_screen=True)
     bruecke._plotter = plotter
-    bruecke._vg_unmoeglich = True
+    from segelphysik.core.pfeilstil import BEREICH_ALLGEMEIN, Stil, standard_bereiche
+    bereiche = standard_bereiche()
+    bereiche[BEREICH_ALLGEMEIN]["vordergrund"] = False
+    bruecke._stil = Stil(bereiche.__getitem__)
     try:
         koerper = Koerper(
             form=build_box(1., 1., 1.), dichte=500.,

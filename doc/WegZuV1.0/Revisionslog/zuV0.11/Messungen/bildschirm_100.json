@@ -1,0 +1,711 @@
+{
+  "plattform": "windows",
+  "dpr": 1.0,
+  "swaps": 73,
+  "pixelmessungen": [
+    {
+      "parallel": false,
+      "zoom": 0.6,
+      "schaft_px": 5.0,
+      "kopfbreite_px": 7.0,
+      "kopflaenge_px": 10.227325423087905
+    },
+    {
+      "parallel": false,
+      "zoom": 1.3,
+      "schaft_px": 5.0,
+      "kopfbreite_px": 7.0,
+      "kopflaenge_px": 10.507419438142279
+    },
+    {
+      "parallel": true,
+      "zoom": 0.6,
+      "schaft_px": 5.0,
+      "kopfbreite_px": 7.0,
+      "kopflaenge_px": 10.0
+    },
+    {
+      "parallel": true,
+      "zoom": 1.3,
+      "schaft_px": 5.0,
+      "kopfbreite_px": 7.0,
+      "kopflaenge_px": 10.000000000000114
+    }
+  ],
+  "ressourcenwechsel": [
+    {
+      "wechsel": 12,
+      "fall": 0,
+      "groessen": [
+        14,
+        2,
+        2,
+        3,
+        7
+      ],
+      "python_bytes": 103896,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 229.3955999998616
+    },
+    {
+      "wechsel": 13,
+      "fall": 1,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 134381,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 252.45170000016515
+    },
+    {
+      "wechsel": 14,
+      "fall": 2,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 139263,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 289.29059999995843
+    },
+    {
+      "wechsel": 15,
+      "fall": 0,
+      "groessen": [
+        14,
+        2,
+        2,
+        3,
+        7
+      ],
+      "python_bytes": 116468,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 221.25920000007682
+    },
+    {
+      "wechsel": 16,
+      "fall": 1,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 142212,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 246.469100000013
+    },
+    {
+      "wechsel": 17,
+      "fall": 2,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 146652,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 278.67940000010094
+    },
+    {
+      "wechsel": 18,
+      "fall": 0,
+      "groessen": [
+        14,
+        2,
+        2,
+        3,
+        7
+      ],
+      "python_bytes": 123273,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 236.76240000008875
+    },
+    {
+      "wechsel": 19,
+      "fall": 1,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 148567,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 239.5329999999376
+    },
+    {
+      "wechsel": 20,
+      "fall": 2,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 152206,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 290.5459000000974
+    },
+    {
+      "wechsel": 21,
+      "fall": 0,
+      "groessen": [
+        14,
+        2,
+        2,
+        3,
+        7
+      ],
+      "python_bytes": 128834,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 223.39069999998173
+    },
+    {
+      "wechsel": 22,
+      "fall": 1,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 153969,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 240.08810000009362
+    },
+    {
+      "wechsel": 23,
+      "fall": 2,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 156749,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 287.63019999996686
+    },
+    {
+      "wechsel": 24,
+      "fall": 0,
+      "groessen": [
+        14,
+        2,
+        2,
+        3,
+        7
+      ],
+      "python_bytes": 133327,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 229.86259999993308
+    },
+    {
+      "wechsel": 25,
+      "fall": 1,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 158099,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 227.53179999995155
+    },
+    {
+      "wechsel": 26,
+      "fall": 2,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 161437,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 259.92840000003525
+    },
+    {
+      "wechsel": 27,
+      "fall": 0,
+      "groessen": [
+        14,
+        2,
+        2,
+        3,
+        7
+      ],
+      "python_bytes": 137577,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 234.6132000000125
+    },
+    {
+      "wechsel": 28,
+      "fall": 1,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 162925,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 271.8942999999854
+    },
+    {
+      "wechsel": 29,
+      "fall": 2,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 166221,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 284.04059999979836
+    },
+    {
+      "wechsel": 30,
+      "fall": 0,
+      "groessen": [
+        14,
+        2,
+        2,
+        3,
+        7
+      ],
+      "python_bytes": 142604,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 245.7057999999961
+    },
+    {
+      "wechsel": 31,
+      "fall": 1,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 167420,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 255.81880000004276
+    },
+    {
+      "wechsel": 32,
+      "fall": 2,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 170255,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 260.53539999998065
+    },
+    {
+      "wechsel": 33,
+      "fall": 0,
+      "groessen": [
+        14,
+        2,
+        2,
+        3,
+        7
+      ],
+      "python_bytes": 147119,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 249.6810000000096
+    },
+    {
+      "wechsel": 34,
+      "fall": 1,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 173513,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 236.1226999998962
+    },
+    {
+      "wechsel": 35,
+      "fall": 2,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 176901,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 254.23799999998664
+    },
+    {
+      "wechsel": 36,
+      "fall": 0,
+      "groessen": [
+        14,
+        2,
+        2,
+        3,
+        7
+      ],
+      "python_bytes": 152806,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 204.9211999999443
+    },
+    {
+      "wechsel": 37,
+      "fall": 1,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 179075,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 240.4450999999881
+    },
+    {
+      "wechsel": 38,
+      "fall": 2,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 181681,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 285.34130000002733
+    },
+    {
+      "wechsel": 39,
+      "fall": 0,
+      "groessen": [
+        14,
+        2,
+        2,
+        3,
+        7
+      ],
+      "python_bytes": 158301,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 253.04849999997714
+    },
+    {
+      "wechsel": 40,
+      "fall": 1,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 183760,
+      "python_spitze_bytes": 306824,
+      "update_render_ms": 266.9303999998647
+    },
+    {
+      "wechsel": 41,
+      "fall": 2,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 187178,
+      "python_spitze_bytes": 311310,
+      "update_render_ms": 282.3246999998901
+    },
+    {
+      "wechsel": 42,
+      "fall": 0,
+      "groessen": [
+        14,
+        2,
+        2,
+        3,
+        7
+      ],
+      "python_bytes": 163301,
+      "python_spitze_bytes": 311310,
+      "update_render_ms": 245.96130000008998
+    },
+    {
+      "wechsel": 43,
+      "fall": 1,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 188677,
+      "python_spitze_bytes": 311310,
+      "update_render_ms": 239.83659999998963
+    },
+    {
+      "wechsel": 44,
+      "fall": 2,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 191340,
+      "python_spitze_bytes": 315763,
+      "update_render_ms": 286.8605999999545
+    },
+    {
+      "wechsel": 45,
+      "fall": 0,
+      "groessen": [
+        14,
+        2,
+        2,
+        3,
+        7
+      ],
+      "python_bytes": 167304,
+      "python_spitze_bytes": 315763,
+      "update_render_ms": 246.19050000001153
+    },
+    {
+      "wechsel": 46,
+      "fall": 1,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 191831,
+      "python_spitze_bytes": 315763,
+      "update_render_ms": 254.35540000012224
+    },
+    {
+      "wechsel": 47,
+      "fall": 2,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 194324,
+      "python_spitze_bytes": 319208,
+      "update_render_ms": 273.5222999999678
+    },
+    {
+      "wechsel": 48,
+      "fall": 0,
+      "groessen": [
+        14,
+        2,
+        2,
+        3,
+        7
+      ],
+      "python_bytes": 170988,
+      "python_spitze_bytes": 319208,
+      "update_render_ms": 232.2211000000607
+    },
+    {
+      "wechsel": 49,
+      "fall": 1,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 195818,
+      "python_spitze_bytes": 319208,
+      "update_render_ms": 259.28539999995337
+    },
+    {
+      "wechsel": 50,
+      "fall": 2,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 198685,
+      "python_spitze_bytes": 322674,
+      "update_render_ms": 276.5117999999802
+    },
+    {
+      "wechsel": 51,
+      "fall": 0,
+      "groessen": [
+        14,
+        2,
+        2,
+        3,
+        7
+      ],
+      "python_bytes": 175097,
+      "python_spitze_bytes": 322674,
+      "update_render_ms": 224.3314999998347
+    },
+    {
+      "wechsel": 52,
+      "fall": 1,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 199321,
+      "python_spitze_bytes": 322674,
+      "update_render_ms": 236.56770000002325
+    },
+    {
+      "wechsel": 53,
+      "fall": 2,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 202657,
+      "python_spitze_bytes": 326930,
+      "update_render_ms": 293.43070000004445
+    },
+    {
+      "wechsel": 54,
+      "fall": 0,
+      "groessen": [
+        14,
+        2,
+        2,
+        3,
+        7
+      ],
+      "python_bytes": 178258,
+      "python_spitze_bytes": 326930,
+      "update_render_ms": 237.84389999991618
+    },
+    {
+      "wechsel": 55,
+      "fall": 1,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 202558,
+      "python_spitze_bytes": 326930,
+      "update_render_ms": 245.01090000012482
+    },
+    {
+      "wechsel": 56,
+      "fall": 2,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 205404,
+      "python_spitze_bytes": 329970,
+      "update_render_ms": 259.8884999999882
+    },
+    {
+      "wechsel": 57,
+      "fall": 0,
+      "groessen": [
+        14,
+        2,
+        2,
+        3,
+        7
+      ],
+      "python_bytes": 181232,
+      "python_spitze_bytes": 329970,
+      "update_render_ms": 235.3937999998834
+    },
+    {
+      "wechsel": 58,
+      "fall": 1,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 206097,
+      "python_spitze_bytes": 329970,
+      "update_render_ms": 255.23649999990994
+    },
+    {
+      "wechsel": 59,
+      "fall": 2,
+      "groessen": [
+        16,
+        2,
+        2,
+        4,
+        7
+      ],
+      "python_bytes": 209340,
+      "python_spitze_bytes": 333425,
+      "update_render_ms": 279.24269999994067
+    }
+  ],
+  "ressourcenhinweis": "60 wechselnde Snapshotupdates, davon 12 Aufwaermzyklen; 6 Wiedereroeffnungen. Python-Speicher instrumentiert; keine native Speicher- oder Leistungsabnahme. Updatezeit einschliesslich Qt-Events und GC.",
+  "hinweis": "QT_SCALE_FACTOR, kein physischer Monitorwechsel"
+}

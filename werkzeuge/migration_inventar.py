@@ -199,17 +199,29 @@ PRODUKTIVE_MIGRATIONSDATEIEN = frozenset({
 })
 
 
-def referenzmanifest(*, native_kandidaten=False, produktive_migration=False):
+def referenzmanifest(*, native_kandidaten=False, produktive_migration=False,
+                     folgeentwicklungen=()):
     dateien = {}
     kandidatendateien = []
     produktivdateien = []
-    for name in referenzdateien():
+    folgedateien = []
+    namen = referenzdateien()
+    folgeentwicklungen = frozenset(folgeentwicklungen)
+    if any(name not in namen or not name.startswith("code/python/")
+           or not name.endswith(".py") for name in folgeentwicklungen):
+        raise ValueError(
+            "Folgeentwicklungen muessen einzeln benannte Python-Referenzquellen sein")
+    for name in namen:
         original = subprocess.check_output(
             ["git", "show", REFERENZ + ":" + name], cwd=ROOT)
         sha = hashlib.sha256(original.replace(b"\r\n", b"\n")).hexdigest()
         aktuell = texthash(ROOT / name)
         if aktuell != sha:
-            if produktive_migration and name in PRODUKTIVE_MIGRATIONSDATEIEN:
+            if name in folgeentwicklungen:
+                folgedateien.append({
+                    "datei": name, "referenz_sha256": sha,
+                    "folgeentwicklung_sha256": aktuell})
+            elif produktive_migration and name in PRODUKTIVE_MIGRATIONSDATEIEN:
                 produktivdateien.append({
                     "datei": name, "referenz_sha256": sha,
                     "produktiv_sha256": aktuell})
@@ -234,6 +246,12 @@ def referenzmanifest(*, native_kandidaten=False, produktive_migration=False):
             "Expliziter Integrationsmodus: einzeln benannte produktive Quellen "
             "duerfen abweichen; Originalhashes bleiben unveraendert. Modelle, "
             "Konfigurationen und eingefrorene Werte bleiben strikt geprueft.")
+    if folgeentwicklungen:
+        daten["abweichende_folgeentwicklungsdateien"] = folgedateien
+        daten["hinweis_folgeentwicklungen"] = (
+            "Explizit benannte spaetere Python-Entwicklungen sind separat "
+            "ausgewiesen, keine V0.10-Migrationsnachweise. Originalhashes, "
+            "Modelle und Konfigurationen bleiben unveraendert geprueft.")
     return daten
 
 

@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QApplication
 from segelphysik.gui.hauptfenster import HauptFenster
 
 
-def test_fremdkraft_aenderung_zeichnet_statisches_kraftbild_neu():
+def test_fremdkraft_aenderung_invalidiert_statt_gui_physik_doppelt_zu_rechnen():
     app = QApplication.instance() or QApplication([])
     fenster = HauptFenster()
 
@@ -37,12 +37,13 @@ def test_fremdkraft_aenderung_zeichnet_statisches_kraftbild_neu():
     fenster._statische_arbeitsdaten["k"] = (
         lambda *a, **k: object(), Physik())
     fenster._fremd_check.setChecked(True)
-    assert bruecke.neu >= 1
-    assert bruecke.daten[-1] is not None
-    n = bruecke.neu
+    generation = fenster._statisch_generation
+    assert "Statische Berechnung laeuft" in fenster._kraefte_werte.kopf.text()
+    assert bruecke.neu == 0
+    assert bruecke.daten == []
     fenster._fremd_check.setChecked(False)
-    assert bruecke.neu == n + 1
-    assert bruecke.daten[-1] is None
+    assert fenster._statisch_generation == generation + 1
+    assert bruecke.daten == []
     fenster.close()
     app.processEvents()
 

@@ -72,6 +72,7 @@ struct Mesh {
     std::string name;
     std::string rolle;
     bool verdraengend;
+    std::string quell_id{};
 
     void pruefen() const
     {
@@ -184,11 +185,16 @@ struct Wrench {
 struct Beitrag {
     std::string name;
     Wrench wrench;
+    std::string quell_id{};
+    std::optional<Vektor3> originalangriff{};
 
     void pruefen() const
     {
         name_pruefen(name, "Beitragsname");
         wrench.pruefen();
+        if (originalangriff) {
+            endlich(*originalangriff, "Originalangriff");
+        }
     }
 };
 
@@ -205,6 +211,7 @@ struct Ergebnis {
     Vektor3 fluid;
     Vektor3 fluidrotation;
     bool schwerkraft_beruecksichtigt;
+    std::optional<Zustand> kraftzustand{};
 
     void pruefen() const
     {

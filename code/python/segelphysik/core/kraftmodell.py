@@ -1,13 +1,17 @@
 """Gemeinsames Kraftmodell fuer statischen Solver und Dynamikintegration."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import math
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from .auftrieb import Vektor
 from .rechenpfad import rechenpfad
+
+if TYPE_CHECKING:
+    from .frames import Pose
 
 
 def _vektor(werte, name, nichtnegativ=False):
@@ -93,6 +97,16 @@ class Wrench:
 class Kraftbeitrag:
     name: str
     wrench: Wrench
+    quell_id: str = ""
+    originalangriff_m: tuple[float, float, float] | None = None
+
+    def __post_init__(self):
+        if not isinstance(self.quell_id, str):
+            raise TypeError("Quell-ID muss eine Zeichenkette sein")
+        if self.originalangriff_m is not None:
+            object.__setattr__(self, "originalangriff_m", tuple(
+                float(w) for w in _flussvektor(
+                    self.originalangriff_m, "Originalangriff")))
 
 
 def aggregiere_kraftbeitraege(beitraege, bezugspunkt_m,
@@ -100,15 +114,16 @@ def aggregiere_kraftbeitraege(beitraege, bezugspunkt_m,
     """Bringt alle Beiträge einmal auf denselben Punkt und summiert sie."""
     if rechenpfad() == "cpp":
         from .native_backend import (
-            native_laden, wrench_nach_python, wrench_vorbereiten,
+            beitrag_nach_python, beitrag_vorbereiten, native_laden,
+            wrench_nach_python,
         )
 
         native = native_laden()
         gesamt, normalisiert = native.aggregiere_kraftbeitraege(
-            [native.Beitrag(b.name, wrench_vorbereiten(b.wrench)) for b in beitraege],
+            [beitrag_vorbereiten(b) for b in beitraege],
             np.asarray(bezugspunkt_m, dtype=np.float64), frame)
         return wrench_nach_python(gesamt), tuple(
-            Kraftbeitrag(b.name, wrench_nach_python(b.wrench))
+            beitrag_nach_python(b)
             for b in normalisiert)
     bezugspunkt = _flussvektor(bezugspunkt_m, "Gesamt-Wrench-Bezugspunkt")
     normalisiert = []
@@ -120,7 +135,7 @@ def aggregiere_kraftbeitraege(beitraege, bezugspunkt_m,
                 "Kraftbeitrag %r liegt im Frame %r statt %r"
                 % (beitrag.name, beitrag.wrench.frame, frame))
         wrench = beitrag.wrench.auf_bezugspunkt(bezugspunkt)
-        normalisiert.append(Kraftbeitrag(beitrag.name, wrench))
+        normalisiert.append(replace(beitrag, wrench=wrench))
         kraft += np.asarray(wrench.kraft_N)
         moment += np.asarray(wrench.moment_Nm)
     gesamt = Wrench(
@@ -147,6 +162,7 @@ class KraftErgebnis:
     quadratischer_widerstand: tuple[float, ...] = (0.0,) * 6
     fluidgeschwindigkeit: tuple[float, ...] = (0.0,) * 3
     fluidwinkelgeschwindigkeit: tuple[float, ...] = (0.0,) * 3
+    kraftpose: Pose | None = None
 
     @property
     def V_tauch(self):
@@ -196,7 +212,7 @@ class KraftErgebnis:
             zusatz = np.concatenate((
                 rotation @ zusatz_koerper[:3],
                 rotation @ zusatz_koerper[3:]))
-        if not np.any(zusatz):
+        if not np.any(zusatz) and not np.any(added_mass):
             return self
         kraft = self.F_gesamt.as_array() + zusatz[:3]
         moment = self.M_gesamt.as_array() + zusatz[3:]
@@ -204,13 +220,10 @@ class KraftErgebnis:
             "added_mass", Wrench(
                 "simulationsframe", self.bezugspunkt_m,
                 tuple(float(w) for w in zusatz[:3]),
-                tuple(float(w) for w in zusatz[3:]))),)
-        return KraftErgebnis(
-            self.hydrostatik, Vektor(kraft), Vektor(moment),
-            self.added_mass_diagonal, beitraege,
-            self.bezugspunkt_m, self.schwerkraft_beruecksichtigt,
-            self.linear_widerstand, self.quadratischer_widerstand,
-            self.fluidgeschwindigkeit, self.fluidwinkelgeschwindigkeit)
+                tuple(float(w) for w in zusatz[3:])), "added_mass"),)
+        return replace(
+            self, F_gesamt=Vektor(kraft), M_gesamt=Vektor(moment),
+            beitraege=beitraege)
 
 
 class Kraftmodell:
@@ -309,8 +322,18 @@ class Kraftmodell:
                 tuple(float(w) for w in widerstand[3:]))),
         ]
         if self.hydrodynamik is not None and lage is not None:
-            beitraege.extend(self.hydrodynamik.beitraege_erzeugen(
-                lage, v=geschwindigkeit, omega=winkelgeschwindigkeit))
+            hydrobeitraege = self.hydrodynamik.beitraege_erzeugen(
+                lage, v=geschwindigkeit, omega=winkelgeschwindigkeit)
+            beitraege.extend(hydrobeitraege)
+            vorhanden = {b.quell_id for b in hydrobeitraege}
+            for teil in self.hydrodynamik.teile:
+                if (teil.quell_id not in vorhanden
+                        and (teil.rolle != "volumenkoerper"
+                             or self.hydrodynamik.cd_volumenkoerper is not None)):
+                    beitraege.append(Kraftbeitrag(
+                        "hydrodynamik_" + teil.rolle,
+                        Wrench("simulationsframe", position, (0.0,) * 3,
+                               (0.0,) * 3), teil.quell_id))
         if self.fremdkraft is not None and lage is not None:
             kraft_f, punkt = self.fremdkraft
             q = np.asarray(lage[1], dtype=np.float64)
@@ -339,8 +362,28 @@ class Kraftmodell:
             beitraege.append(Kraftbeitrag("schwerkraft", Wrench(
                 "simulationsframe", position,
                 tuple(float(w) for w in gewicht), (0.0, 0.0, 0.0))))
+        beitraege = tuple(replace(
+            b, quell_id=b.quell_id or b.name,
+            originalangriff_m=(
+                tuple(hydro.K.as_array())
+                if b.name == "hydrostatik" and getattr(hydro, "K", None) is not None
+                else b.wrench.bezugspunkt_m
+                if b.name in ("schwerkraft", "fremdkraft")
+                else b.originalangriff_m))
+            for b in beitraege)
         gesamt, beitraege = aggregiere_kraftbeitraege(
             beitraege, position)
+        from .frames import Pose
+        from .dynamik_6dof import quaternion_aus_matrix
+        kraftpose = None
+        if lage is not None:
+            if isinstance(lage, (tuple, list)) and len(lage) == 2:
+                quaternion = tuple(float(w) for w in lage[1])
+            else:
+                from .auftrieb import pose_matrix
+                quaternion = quaternion_aus_matrix(pose_matrix(*lage)[:3, :3])
+            kraftpose = Pose(
+                "simulationsframe", "koerper", position, quaternion)
         return KraftErgebnis(
             hydro, Vektor(gesamt.kraft_N), Vektor(gesamt.moment_Nm),
             tuple(float(wert) for wert in self.added_mass_diagonal),
@@ -348,7 +391,8 @@ class Kraftmodell:
             tuple(float(wert) for wert in self.linear_widerstand),
             tuple(float(wert) for wert in self.quadratischer_widerstand),
             tuple(float(wert) for wert in self.fluidgeschwindigkeit),
-            tuple(float(wert) for wert in self.fluidwinkelgeschwindigkeit))
+            tuple(float(wert) for wert in self.fluidwinkelgeschwindigkeit),
+            kraftpose)
 
 
 class KraftmodellMitHydroCache:

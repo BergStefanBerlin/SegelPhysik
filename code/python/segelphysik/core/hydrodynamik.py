@@ -167,6 +167,7 @@ class HydrodynamikTeil:
     rolle: str
     punkte_m: np.ndarray
     dreiecke: np.ndarray
+    quell_id: str = ""
     _dreiecksecken: np.ndarray = field(
         init=False, repr=False, compare=False)
     _flaechen_m2: np.ndarray = field(
@@ -183,6 +184,11 @@ class HydrodynamikTeil:
         init=False, repr=False, compare=False)
 
     def __post_init__(self):
+        if not isinstance(self.quell_id, str):
+            raise TypeError("Hydrodynamische Quell-ID muss eine Zeichenkette sein")
+        if not self.quell_id:
+            from uuid import uuid4
+            object.__setattr__(self, "quell_id", "hydroteil:" + str(uuid4()))
         if not isinstance(self.name, str) or not self.name.strip():
             raise ValueError("Hydrodynamikteil braucht einen Namen")
         if self.rolle not in _ROLLEN_AKTIV:
@@ -272,12 +278,16 @@ def hydrodynamik_teile_aus_koerper(koerper):
             rolle,
             punkte,
             np.asarray(knoten.dreiecke, dtype=np.int64),
+            knoten.quell_id,
         ))
 
     if hasattr(koerper, "hydrodynamik_teile"):
+        ids = koerper.hydrodynamik_quell_ids
         return tuple(
-            HydrodynamikTeil(name, rolle, punkte, dreiecke)
-            for rolle, name, punkte, dreiecke in koerper.hydrodynamik_teile
+            HydrodynamikTeil(name, rolle, punkte, dreiecke,
+                            ids[index] if ids else "")
+            for index, (rolle, name, punkte, dreiecke)
+            in enumerate(koerper.hydrodynamik_teile)
             if rolle in _ROLLEN_AKTIV)
     if not hasattr(koerper, "teile"):
         return ()
@@ -322,7 +332,8 @@ def _generische_teile_aus_koerper(koerper):
             HydrodynamikTeil(
                 "volumenkoerper" if index == 0
                 else "volumenkoerper_%d" % (index + 1),
-                ROLLE_VOLUMENKOERPER, punkte, dreiecke)
+                ROLLE_VOLUMENKOERPER, punkte, dreiecke,
+                koerper.blatt_quell_ids[index])
             for index, (punkte, dreiecke) in enumerate(meshes))
     if hasattr(koerper, "punkte") and hasattr(koerper, "dreiecke"):
         return (HydrodynamikTeil(
@@ -346,6 +357,8 @@ class HydrodynamikModell:
                for teil in self.teile):
             raise TypeError(
                 "HydrodynamikModell benoetigt HydrodynamikTeil-Instanzen")
+        if len({t.quell_id for t in self.teile}) != len(self.teile):
+            raise ValueError("Hydrodynamische Quellinstanz-IDs sind nicht eindeutig")
         self.rho = float(rho_kg_m3)
         self.nu = float(nu_m2_s)
         self.formfaktor_rumpf = float(formfaktor_rumpf)
@@ -389,7 +402,8 @@ class HydrodynamikModell:
         native = native_laden()
         self._native_teile = native.HydroKontext([
             native.HydroTeil(native.Mesh(
-                teil.punkte_m, teil.dreiecke, teil.name, teil.rolle))
+                teil.punkte_m, teil.dreiecke, teil.name, teil.rolle,
+                quell_id=teil.quell_id))
             for teil in self.teile])
         self._native_quellen = self.teile
 
@@ -461,10 +475,8 @@ class HydrodynamikModell:
                     self.wirkungsgrad, self.cd0_profil, self.ruderwinkel_rad],
                     dtype=np.float64),
                 self.cd_volumenkoerper, native.Abbruch())
-            return tuple(Kraftbeitrag(b.name, Wrench(
-                b.wrench.frame, tuple(b.wrench.bezugspunkt),
-                tuple(b.wrench.kraft), tuple(b.wrench.moment)))
-                for b in beitraege)
+            from .native_backend import beitrag_nach_python
+            return tuple(beitrag_nach_python(b) for b in beitraege)
         beitraege = []
         for teil in self.teile:
             ecken = teil._dreiecksecken @ rotation.T + position
@@ -566,5 +578,5 @@ class HydrodynamikModell:
                 tuple(float(x) for x in (
                     moment if teil.rolle == ROLLE_VOLUMENKOERPER
                     else (0.0, 0.0, 0.0))),
-            )))
+            ), teil.quell_id))
         return tuple(beitraege)

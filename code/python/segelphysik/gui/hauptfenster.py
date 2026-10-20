@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 import os
 import time
+from dataclasses import replace
 
 import numpy as np
 from PySide6.QtCore import (
@@ -77,17 +78,17 @@ class _EchtzeitAufgabe(QRunnable):
         self.prozess_executor = prozess_executor
 
     def run(self):
-        if hasattr(self.kraftfunktion, "aktualisieren"):
-            self.kraftfunktion.aktualisieren()
-        if hasattr(self.kraftfunktion, "ruderwinkel_setzen"):
-            try:
+        try:
+            if hasattr(self.kraftfunktion, "aktualisieren"):
+                self.kraftfunktion.aktualisieren()
+            if hasattr(self.kraftfunktion, "ruderwinkel_setzen"):
                 self.kraftfunktion.ruderwinkel_setzen(
                     self.ruderwinkel_rad)
-            except ValueError as fehler:
-                self.signale.abgeschlossen.emit(
-                    self.generation, self.sequenz, self.koerper_name,
-                    None, None, fehler, 0.0)
-                return
+        except (ArithmeticError, AttributeError, KeyError, TypeError, ValueError) as fehler:
+            self.signale.abgeschlossen.emit(
+                self.generation, self.sequenz, self.koerper_name,
+                None, None, fehler, 0.0)
+            return
         if self.prozess_executor is not None:
             from concurrent.futures import CancelledError
             from concurrent.futures.process import BrokenProcessPool
@@ -124,12 +125,22 @@ class _EchtzeitAufgabe(QRunnable):
             if hasattr(self.kraftfunktion, "ruderwinkel_setzen"):
                 self.kraftfunktion.ruderwinkel_setzen(
                     self.ruderwinkel_rad)
+            if self.anzahl_schritte == 0:
+                from ..core.dynamik_6dof import quaternion_matrix
+                rotation = quaternion_matrix(self.zustand.quaternion)
+                ergebnis = self.kraftfunktion(
+                    (self.zustand.position, self.zustand.quaternion),
+                    v=rotation @ np.asarray(self.zustand.geschwindigkeit_koerper),
+                    omega=rotation @ np.asarray(
+                        self.zustand.winkelgeschwindigkeit_koerper))
+                if ergebnis is None:
+                    raise ValueError("Kraftauswertung hat keine Daten geliefert")
             for _ in range(self.anzahl_schritte):
                 self.zustand, ergebnis = schritt(
                     self.zustand, self.kraftfunktion, self.koerper.masse,
                     self.koerper.traegheitstensor, self.dt,
                     self.physik.g_m_pro_s2)
-        except (ArithmeticError, KeyError, ValueError) as fehler:
+        except (ArithmeticError, AttributeError, KeyError, TypeError, ValueError) as fehler:
             self.signale.abgeschlossen.emit(
                 self.generation, self.sequenz, self.koerper_name,
                 None, None, fehler,
@@ -289,7 +300,27 @@ class _StatischeAufgabe(QRunnable):
                             dt_s=physik.dt_s,
                             g_m_pro_s2=physik.g_m_pro_s2))
                 ergebnis["stationaer_hydrodynamik"] = stationaer
-        except (ImportError, OSError, ValueError, SolverFehler,
+            stationaer = ergebnis.get("stationaer_hydrodynamik")
+            stufe = (next((s for s in reversed(stationaer.stufen) if s.konvergiert), None)
+                     if stationaer is not None else None)
+            if stufe is None:
+                kraft_ergebnis = kraftfunktion((ergebnis["z"], ergebnis["phi"], 0.0))
+                kriterien = ergebnis.get("solverkriterien", ())
+                ergebnis["kraft_solver"] = (
+                    "statisch_robust.loese_robust", ("z", "rollen"),
+                    kriterien, True, False) if kriterien else None
+            else:
+                pose, v, omega, _rotation = _stationaere_kraftlage(stufe)
+                kraft_ergebnis = kraftfunktion(pose, v=v, omega=omega)
+                ergebnis["kraft_solver"] = (
+                    "stationaer_hydrodynamik: " + stufe.name,
+                    stufe.solver_freiheitsgrade, stufe.solver_kriterien,
+                    stufe.solver_erfuellt, True
+                ) if getattr(stufe, "solver_erfuellt", None) is not None else None
+            if hasattr(kraft_ergebnis, "mit_beschleunigung"):
+                kraft_ergebnis = kraft_ergebnis.mit_beschleunigung((0.0,) * 6)
+            ergebnis["kraft_ergebnis"] = kraft_ergebnis
+        except (AttributeError, ImportError, OSError, TypeError, ValueError, SolverFehler,
                 ArithmeticError, RuntimeError) as fehler:
             self.signale.abgeschlossen.emit(
                 self.generation, self.name, None, None, fehler)
@@ -306,6 +337,10 @@ class HauptFenster(QMainWindow):
         from ..core.einstellungen import Einstellungen
         self._einstellungen = Einstellungen.laden()
         self._einstellungen_dialoge = {}
+        self._kraftanzeige_snapshots = {}
+        self._kraftanzeige_generation = 0
+        self._kraftanzeige_kontext = None
+        self._kraftanzeige_sequenz = 0
         self._baue_menues()
         self._baue_steuerzeile()
         self._baue_docks()
@@ -330,6 +365,7 @@ class HauptFenster(QMainWindow):
         self._laufzeit_schwerpunkt = {}
         self._echtzeit_generation = 0
         self._echtzeit_aufgabe_laeuft = False
+        self._echtzeit_kraftauswertung_ausstehend = False
         self._echtzeit_schritte_laufend = 0
         self._echtzeit_auftragssequenz = 0
         self._echtzeit_aufgabe_sequenz_laufend = None
@@ -349,6 +385,8 @@ class HauptFenster(QMainWindow):
         self._echtzeit_signale.abgeschlossen.connect(
             self._echtzeit_aufgabe_abgeschlossen)
         self._statisch_generation = 0
+        self._statische_aufgaben = {}
+        self._statische_aufgaben_ausstehend = {}
         self._statisch_signale = _StatischeAufgabeSignale()
         self._statisch_signale.abgeschlossen.connect(
             self._statische_aufgabe_abgeschlossen)
@@ -414,6 +452,12 @@ class HauptFenster(QMainWindow):
     def _kraftpfeil_menue_bauen(self, menue):
         from ..core import pfeilstil as ps
         m = menue.addMenu("Kraftpfeildarstellung")
+        m.addAction("Skalen und Bildschirmgroessen …", lambda: self._pfeil_dialog(
+            "kp_snapshot", "Skalen und Bildschirmgroessen", [
+                ("kraefteanzeige", [k for k, e in
+                 self._einstellungen.vorlage["kraefteanzeige"].items()
+                 if e["typ"] not in ("fensterlayout", "sichtbarkeiten")])]))
+        m.addAction("Neu einpassen", self._kraftanzeige_neu_einpassen)
         m.addAction("Allgemein …", lambda: self._pfeil_dialog(
             "kp_allgemein", "Allgemein", [(ps.BEREICH_ALLGEMEIN, None)]))
         for pid, titel, _farbe in ps.PAARE:
@@ -461,6 +505,7 @@ class HauptFenster(QMainWindow):
             lambda: self._einstellungen_dialog("anzeigen"))
         self._kraftpfeil_menue_bauen(m_einst)
         m_ansicht = self.menuBar().addMenu("&Ansicht")
+        self._menue_ansicht = m_ansicht
         m_ansicht.addAction(
             "Navigationsanzeigen",
             self._navigationsfenster_anzeigen)
@@ -618,6 +663,27 @@ class HauptFenster(QMainWindow):
                 status, [schluessel, wert])
         status.setRootIsDecorated(False)
         self._laufzeit_koerper = {}
+        self._laufzeit_weltnamen = set()
+        from .kraefte_werte import KraefteWerteFenster
+        self._kraefte_werte = KraefteWerteFenster(self)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self._kraefte_werte)
+        self._kraefte_werte.setFloating(True)
+        self._kraefte_werte.hide()
+        self._kraefte_werte.auswahl_geaendert.connect(self._kraftauswahl_setzen)
+        self._kraefte_werte.sichtbarkeit_geaendert.connect(
+            self._kraftsichtbarkeit_setzen)
+        self._kraefte_werte.neu_einpassen.connect(self._kraftanzeige_neu_einpassen)
+        self._kraefte_werte.ansicht_geaendert.connect(self._kraftansicht_setzen)
+        self._kraefte_werte.koerperumfang_geaendert.connect(self._kraftumfang_setzen)
+        self._kraefte_werte.zuruecksetzen.connect(self._kraftanzeige_zuruecksetzen)
+        self._kraftanzeige_koerperquellen = {}
+        try:
+            self._kraefte_werte.layout_anwenden(
+                self._einstellungen.get("kraefteanzeige", "fensterlayout"))
+        except ValueError as fehler:
+            self._einstellungen.meldungen.append(str(fehler))
+        self._menue_ansicht.addAction(self._kraefte_werte.toggleViewAction())
+        self._stil_anwenden()
 
         dock_layer = QDockWidget("Layer", self)
         dock_layer.setWidget(layer)
@@ -744,13 +810,33 @@ class HauptFenster(QMainWindow):
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, dock_log)
         self._dock_protokoll = dock_log
 
+    def _kraftansicht_abkoppeln(self):
+        plotter_alt = getattr(self, "_kraft_frame_plotter", None)
+        if plotter_alt is not None:
+            plotter_alt.frameSwapped.disconnect(self._schulungsframe_fertig)
+            self._kraft_frame_plotter = None
+        filter_alt = getattr(self, "_kraftauswahl_filter", None)
+        if filter_alt is not None:
+            filter_alt.ansicht.removeEventFilter(filter_alt)
+            filter_alt.deleteLater()
+            self._kraftauswahl_filter = None
+
     def bruecke_setzen(self, bruecke):
         """Referenz auf die GrafikBruecke (G3-Kopplung der Docks)."""
+        alt = getattr(self, "_bruecke", None)
+        self._kraftansicht_abkoppeln()
+        if alt is not bruecke and hasattr(alt, "kraefte_anzeige_beenden"):
+            alt.kraefte_anzeige_beenden()
         self._bruecke = bruecke
-        if (getattr(bruecke, "_plotter", None) is not None
+        if isinstance(getattr(bruecke, "_plotter", None), QWidget):
+            from .kraefte_auswahl import KraefteAuswahlFilter
+            self._kraftauswahl_filter = KraefteAuswahlFilter(
+                bruecke._plotter, bruecke, self._kraefte_werte)
+        if (isinstance(getattr(bruecke, "_plotter", None), QWidget)
                 and hasattr(bruecke._plotter, "frameSwapped")):
             bruecke._plotter.frameSwapped.connect(
                 self._schulungsframe_fertig)
+            self._kraft_frame_plotter = bruecke._plotter
         if self._navigationsfenster is None:
             from .navigationswidgets import NavigationsWidgetFenster
             self._navigationsfenster = NavigationsWidgetFenster(self)
@@ -767,13 +853,102 @@ class HauptFenster(QMainWindow):
     def _stil_anwenden(self):
         """Gibt den Pfeilstil aus den Einstellungen an die Bruecke."""
         bruecke = getattr(self, "_bruecke", None)
+        from ..core.pfeilstil import Stil
+        self._kraefte_werte.modell.stil_setzen(Stil(self._einstellungen.bereich))
+        self._kraefte_werte.ansicht_setzen(
+            self._einstellungen.bereich("kraefteanzeige"))
         if bruecke is None or not hasattr(bruecke, "stil_setzen"):
             return
-        from ..core.pfeilstil import Stil
         bruecke.stil_setzen(Stil(self._einstellungen.bereich))
-        if self._btn_echtzeit.isChecked():
-            self._aktuelles_kraftbild_aktualisieren()
-            bruecke.render()
+        self._kraftsichtbarkeiten_abgleichen()
+        self._kraftlegende_aktualisieren()
+
+    def _kraftansicht_setzen(self, schluessel, wert):
+        self._einstellungen.setzen("kraefteanzeige", schluessel, wert)
+        self._stil_anwenden()
+
+    def _kraftumfang_setzen(self, koerper_ids):
+        bruecke = getattr(self, "_bruecke", None)
+        if bruecke is not None and hasattr(bruecke, "kraefte_koerperumfang_setzen"):
+            bruecke.kraefte_koerperumfang_setzen(koerper_ids)
+        self._kraftsichtbarkeiten_abgleichen(neu_zeichnen=False)
+
+    def _kraftanzeige_zuruecksetzen(self):
+        from ..core import pfeilstil as ps
+        layout = self._einstellungen.get("kraefteanzeige", "fensterlayout")
+        for bereich in ("kraefteanzeige", *ps.standard_bereiche()):
+            self._einstellungen.zuruecksetzen(bereich)
+        self._einstellungen.setzen("kraefteanzeige", "fensterlayout", layout)
+        for name, dialog in self._einstellungen_dialoge.items():
+            if name.startswith("kp_"):
+                dialog.neu_laden()
+        bruecke = getattr(self, "_bruecke", None)
+        zeichner = getattr(bruecke, "_kraefte_zeichner", None)
+        if zeichner is not None and hasattr(zeichner, "sichtbar"):
+            zeichner.sichtbar.clear()
+            zeichner.skalen.clear()
+            zeichner.skalen_parameter.clear()
+        self._stil_anwenden()
+
+    def _kraftsichtbarkeiten_abgleichen(self, bruecke=None, *, neu_zeichnen=True):
+        from ..core.pfeilstil import Stil
+        stil = Stil(self._einstellungen.bereich)
+        gespeichert = self._einstellungen.get("kraefteanzeige", "sichtbarkeiten")
+        sichtbar = {}
+        for name, snapshot in self._kraftanzeige_snapshots.items():
+            quelle = self._kraftanzeige_koerperquellen.get(name)
+            for b in (*snapshot.beitraege, *snapshot.gruppen, snapshot.bilanz):
+                sichtbar[b.instanz_id] = gespeichert.get(quelle, {}).get(
+                    b.instanz_id[1], stil.beitragsstil(b, 1)["sichtbar"])
+        self._kraefte_werte.modell.sichtbarkeiten_setzen(sichtbar)
+        bruecke = bruecke or getattr(self, "_bruecke", None)
+        zeichner = getattr(bruecke, "_kraefte_zeichner", None)
+        if zeichner is not None and hasattr(zeichner, "sichtbar"):
+            zeichner.sichtbar.update(sichtbar)
+            if neu_zeichnen:
+                bruecke.kraefte_neu_zeichnen()
+
+    def _kraftanzeige_neu_einpassen(self):
+        bruecke = getattr(self, "_bruecke", None)
+        if bruecke is not None and hasattr(bruecke, "kraefte_neu_einpassen"):
+            bruecke.kraefte_neu_einpassen()
+            self._kraftlegende_aktualisieren()
+
+    def _kraftlegende_aktualisieren(self):
+        zeichner = getattr(getattr(self, "_bruecke", None), "_kraefte_zeichner", None)
+        if zeichner is not None and hasattr(zeichner, "skalen"):
+            from ..core.pfeilstil import Stil
+            stil = Stil(self._einstellungen.bereich)
+            hinweise = [
+                "Werte schreibgeschuetzt; Ausblenden aendert keine Physik.",
+                "Koerperbezogene Skalen; zum Vergleich gemeinsame manuelle "
+                "Kraft-/Momentenreferenzen einstellen.",
+                ("Vordergrund: durch Koerper sichtbar" if
+                 stil.allgemein(1)["vordergrund"] else
+                 "Raeumlich: verdeckte Pfeile bleiben im Wertefenster auswaehlbar.")]
+            for name, snapshot in self._kraftanzeige_snapshots.items():
+                for b in (*snapshot.beitraege, *snapshot.gruppen, snapshot.bilanz):
+                    s = stil.bildschirmstil(stil.beitragsstil(b, 1), 1, 1)
+                    if s["kraftfaktor"] != 1 or s["momentfaktor"] != 1:
+                        hinweise.append(
+                            f"{name} / {b.instanz_id[1]}: Anzeigefaktor "
+                            f"F x{s['kraftfaktor']:.4g}, M x{s['momentfaktor']:.4g}")
+            self._kraefte_werte.legende_setzen(zeichner.skalen, hinweise)
+
+    def _kraftauswahl_setzen(self, instanz_id):
+        bruecke = getattr(self, "_bruecke", None)
+        if bruecke is not None and hasattr(bruecke, "kraefte_auswahl_setzen"):
+            bruecke.kraefte_auswahl_setzen(instanz_id)
+
+    def _kraftsichtbarkeit_setzen(self, instanz_id, sichtbar):
+        quelle = self._kraftanzeige_koerperquellen.get(instanz_id[0])
+        if quelle is not None:
+            optionen = self._einstellungen.get("kraefteanzeige", "sichtbarkeiten")
+            optionen.setdefault(quelle, {})[instanz_id[1]] = bool(sichtbar)
+            self._einstellungen.setzen("kraefteanzeige", "sichtbarkeiten", optionen)
+        bruecke = getattr(self, "_bruecke", None)
+        if bruecke is not None and hasattr(bruecke, "kraefte_sichtbarkeit_setzen"):
+            bruecke.kraefte_sichtbarkeit_setzen(instanz_id, sichtbar)
 
     def _layer_setzen(self, layer, aktiviert):
         bruecke = getattr(self, "_bruecke", None)
@@ -1207,6 +1382,7 @@ class HauptFenster(QMainWindow):
 
     def _laufzeit_objekte_aktualisieren(self, grund="auswahl"):
         self._statisch_generation += 1
+        self._kraftanzeige_verwerfen("Koerperdaten werden aktualisiert")
         bruecke = getattr(self, "_bruecke", None)
         welt = self.baum._welt
         konfiguration = getattr(welt, "konfiguration", None)
@@ -1216,9 +1392,22 @@ class HauptFenster(QMainWindow):
         from ..core.fabriken import baue_summenkoerper
         from .baum import aktive_blaetter, summenkoerper
 
+        hauptkoerper = tuple(summenkoerper(welt))
+        vorhandene_namen = {knoten.name for knoten in hauptkoerper}
+        entfernte_namen = (
+            self._laufzeit_weltnamen | self._laufzeit_koerper.keys()) - vorhandene_namen
+        self._laufzeit_weltnamen = vorhandene_namen
+        for name in entfernte_namen:
+            bruecke.koerper_entfernen(name)
+            self._laufzeit_koerper.pop(name, None)
+            self._laufzeit_schwerpunkt.pop(name, None)
+            self._statische_ergebnisse.pop(name, None)
+            self._statische_arbeitsdaten.pop(name, None)
+            self._statische_aufgaben_ausstehend.pop(name, None)
+            self._kraftanzeige_koerperquellen.pop(name, None)
         laufzeit_bereit = True
         schwerpunkt_alt = {}
-        for knoten in summenkoerper(welt):
+        for knoten in hauptkoerper:
             if not knoten.sichtbar or knoten.eintrag is None:
                 bruecke.sichtbar_setzen(knoten.name, False)
                 self._laufzeit_koerper.pop(knoten.name, None)
@@ -1252,6 +1441,7 @@ class HauptFenster(QMainWindow):
                 nachricht = ("Laufzeitkoerper %s konnte nicht aktualisiert "
                              "werden: %s" % (knoten.name, fehler))
                 self.protokoll_schreiben(nachricht)
+        self._kraefte_werte.koerper_setzen(self._laufzeit_koerper)
         if laufzeit_bereit:
             auswahl = next(
                 (knoten for knoten in summenkoerper(welt)
@@ -1325,6 +1515,7 @@ class HauptFenster(QMainWindow):
             self._statische_simulation_ausfuehren()
         else:
             self._statisch_generation += 1
+            self._statische_aufgaben_ausstehend.clear()
             self._statusoverlay(None)
             self._wasserpunkte_fuer_modus(False)
             bruecke = getattr(self, "_bruecke", None)
@@ -1341,6 +1532,8 @@ class HauptFenster(QMainWindow):
 
     def _statische_simulation_ausfuehren(self):
         self._statisch_generation += 1
+        self._statische_aufgaben_ausstehend.clear()
+        self._kraftanzeige_verwerfen("Statische Berechnung laeuft")
         generation = self._statisch_generation
         fremdkraft = self._fremdkraft_aktuell()
         self._statische_fremdkraft = fremdkraft
@@ -1350,31 +1543,57 @@ class HauptFenster(QMainWindow):
         if konfiguration is None:
             return
         from .baum import summenkoerper
-        hauptkoerper = next(
-            (knoten for knoten in summenkoerper(welt) if knoten.sichtbar), None)
-        if hauptkoerper is None:
+        sichtbare = [knoten for knoten in summenkoerper(welt) if knoten.sichtbar]
+        if not sichtbare:
             self._solver_status_aktualisieren(
                 {"Lösungstyp": "Kein Hauptkörper ausgewählt"})
             self._statusoverlay(statusanzeige.KEIN_HAUPTKOERPER)
             return
-        koerper = self._laufzeit_koerper.get(hauptkoerper.name)
         bruecke = getattr(self, "_bruecke", None)
-        if koerper is None or bruecke is None:
+        if bruecke is None:
             self._statusoverlay(statusanzeige.KOERPER_FEHLT)
             return
 
         self._solver_status_aktualisieren(
             {"Lösungstyp": "Statische Berechnung läuft"})
         self._statusoverlay(statusanzeige.BERECHNUNG_LAEUFT)
-        aufgabe = _StatischeAufgabe(
-            generation, hauptkoerper.name, koerper,
-            konfiguration.ordner, konfiguration.wasser_dichte(),
-            self._statisch_signale,
-            self._einstellungen.bereich("statisch"),
-            fremdkraft=fremdkraft,
-            ruderwinkel_rad=math.radians(
-                self._ruderwinkel_feld.value()))
-        QThreadPool.globalInstance().start(aufgabe)
+        for knoten in sichtbare:
+            koerper = self._laufzeit_koerper.get(knoten.name)
+            if koerper is None:
+                self.protokoll_schreiben(
+                    "Statischer Solver (%s): Laufzeitkoerper fehlt" % knoten.name)
+                self._statusoverlay(statusanzeige.KOERPER_FEHLT)
+                continue
+            aufgabe = _StatischeAufgabe(
+                generation, knoten.name, koerper,
+                konfiguration.ordner, konfiguration.wasser_dichte(),
+                self._statisch_signale,
+                self._einstellungen.bereich("statisch"),
+                fremdkraft=fremdkraft,
+                ruderwinkel_rad=math.radians(
+                    self._ruderwinkel_feld.value()))
+            self._statische_aufgabe_starten(aufgabe)
+
+    def _statische_aufgabe_starten(self, aufgabe):
+        self._statische_aufgaben_ausstehend[aufgabe.name] = aufgabe
+        self._statische_folgeaufgaben_starten()
+
+    def _statische_folgeaufgaben_starten(self):
+        if not self._btn_statisch.isChecked():
+            self._statische_aufgaben_ausstehend.clear()
+            return
+        pool = QThreadPool.globalInstance()
+        for name, aufgabe in tuple(self._statische_aufgaben_ausstehend.items()):
+            if aufgabe.generation != self._statisch_generation:
+                self._statische_aufgaben_ausstehend.pop(name)
+                continue
+            if name in self._statische_aufgaben:
+                continue
+            if len(self._statische_aufgaben) >= max(1, pool.maxThreadCount()):
+                break
+            self._statische_aufgaben_ausstehend.pop(name)
+            self._statische_aufgaben[name] = aufgabe.generation
+            pool.start(aufgabe)
 
     def _statische_aufgabe_fortschritt(self, generation, name, stufe):
         if (generation != self._statisch_generation
@@ -1409,6 +1628,15 @@ class HauptFenster(QMainWindow):
 
     def _statische_aufgabe_abgeschlossen(
             self, generation, name, ergebnis, arbeitsdaten, fehler):
+        if self._statische_aufgaben.get(name) == generation:
+            self._statische_aufgaben.pop(name)
+            self._statische_folgeaufgaben_starten()
+        if fehler is not None and (
+                generation != self._statisch_generation
+                or not self._btn_statisch.isChecked()):
+            self.protokoll_schreiben(
+                "Veralteter statischer Auftrag (%s, Generation %s): %s"
+                % (name, generation, fehler))
         if (generation != self._statisch_generation
                 or not self._btn_statisch.isChecked()):
             return
@@ -1484,16 +1712,19 @@ class HauptFenster(QMainWindow):
                     {"Lösungstyp": "Körper in 3D-Ansicht fehlt"})
                 self._statusoverlay(statusanzeige.KOERPER_FEHLT)
                 return
-            kraft_ergebnis = kraftfunktion(pose, v=v, omega=omega)
+            kraft_ergebnis = ergebnis.get("kraft_ergebnis")
             self._kraftbild_daten_setzen(
                 bruecke, name, koerper, kraftfunktion, physik,
-                stufe.pose[2], stufe.pose[3], ergebnis=kraft_ergebnis)
+                stufe.pose[2], stufe.pose[3], ergebnis=kraft_ergebnis,
+                solverdiagnose=ergebnis.get("kraft_solver"))
             ergebnis["z"], ergebnis["phi"] = (
                 float(stufe.pose[2]), float(stufe.pose[3]))
         else:
             self._kraftbild_daten_setzen(
                 bruecke, name, koerper, kraftfunktion, physik,
-                ergebnis["z"], ergebnis["phi"])
+                ergebnis["z"], ergebnis["phi"],
+                ergebnis=ergebnis.get("kraft_ergebnis"),
+                solverdiagnose=ergebnis.get("kraft_solver"))
             if not bruecke.statische_pose_setzen(
                     name, ergebnis["z"], ergebnis["phi"]):
                 self._solver_status_aktualisieren(
@@ -1595,6 +1826,7 @@ class HauptFenster(QMainWindow):
                 or self._echtzeit_schritte_laufend):
             self._zeit_pausieren()
         self._echtzeit_generation += 1
+        self._kraftanzeige_verwerfen("Dynamische Initialisierung laeuft")
         self._echtzeit_letzte_wandzeit = None
         welt = self.baum._welt
         konfiguration = getattr(welt, "konfiguration", None)
@@ -1712,19 +1944,7 @@ class HauptFenster(QMainWindow):
         self._echtzeit_koerper_version = koerper_snapshot.version
         self._echtzeit_aktiver_prozess_executor = prozess_executor
         self._echtzeit_kraefteresultat = None
-        if (bruecke.layer_ist_an(LAYER_KRAEFTE)
-                or bruecke.layer_ist_an(LAYER_MOMENTE)
-                or bruecke.layer_ist_an(LAYER_FREMDKRAFT)
-                or bruecke.layer_ist_an(LAYER_SCHWERPUNKT)):
-            self._echtzeit_kraefteresultat = kraftfunktion(
-                (zustand.position, zustand.quaternion),
-                v=quaternion_matrix(zustand.quaternion)
-                @ np.asarray(zustand.geschwindigkeit_koerper),
-                omega=quaternion_matrix(zustand.quaternion)
-                @ np.asarray(zustand.winkelgeschwindigkeit_koerper))
-            self._kraftbild_daten_setzen(
-                bruecke, hauptkoerper.name, koerper, kraftfunktion, physik,
-                0.0, 0.0, ergebnis=self._echtzeit_kraefteresultat)
+        self._aktuelles_kraftbild_aktualisieren()
         if not self._echtzeit_pose_anzeigen(zustand, render=True):
             self._solver_status_aktualisieren(
                 {"Lösungstyp": "Körper in 3D-Ansicht fehlt"})
@@ -1774,6 +1994,10 @@ class HauptFenster(QMainWindow):
                 0.0, jetzt - self._echtzeit_letzte_wandzeit)
             self._echtzeit_akkumulator += vergangen
             self._echtzeit_angefordert_s += vergangen
+        if (self._echtzeit_aufgabe_laeuft
+                and self._echtzeit_schritte_laufend == 0
+                and self._echtzeit_kraefteresultat is None):
+            self._echtzeit_kraftauswertung_ausstehend = True
         self._echtzeit_generation += 1
         if war_laufend:
             self._echtzeit_timer.stop()
@@ -1927,6 +2151,9 @@ class HauptFenster(QMainWindow):
             return
         if self._echtzeit_aufgabe_laeuft:
             return
+        if self._echtzeit_kraftauswertung_ausstehend:
+            self._aktuelles_kraftbild_aktualisieren()
+            return
         anzahl_schritte = min(
             int((self._echtzeit_akkumulator + 1e-12) / dt),
             (self._dyn("max_schritte_nachholen")
@@ -1969,6 +2196,12 @@ class HauptFenster(QMainWindow):
     def _echtzeit_aufgabe_abgeschlossen(
             self, generation, sequenz, koerper_name, zustand,
             kraefteresultat, fehler, _dauer_s):
+        if fehler is not None and (
+                sequenz != self._echtzeit_aufgabe_sequenz_laufend
+                or generation != self._echtzeit_generation):
+            self.protokoll_schreiben(
+                "Veralteter Echtzeitauftrag (%s, Generation %s, Sequenz %s): %s"
+                % (koerper_name, generation, sequenz, fehler))
         if sequenz != self._echtzeit_aufgabe_sequenz_laufend:
             return
         self._echtzeit_aufgabe_laeuft = False
@@ -1978,8 +2211,13 @@ class HauptFenster(QMainWindow):
         if (generation != self._echtzeit_generation
                 or koerper_name != self._echtzeit_name
                 or not self._btn_echtzeit.isChecked()):
+            if self._echtzeit_kraftauswertung_ausstehend:
+                self._aktuelles_kraftbild_aktualisieren()
             return
+        if fehler is None and kraefteresultat is None:
+            fehler = ValueError("Echtzeitauftrag lieferte kein Kraftergebnis")
         if fehler is not None:
+            self._kraftanzeige_verwerfen("Kraftauswertung fehlgeschlagen")
             if self._echtzeit_physik is not None:
                 self._echtzeit_akkumulator += (
                     self._echtzeit_physik.dt_s * anzahl_schritte)
@@ -1990,17 +2228,26 @@ class HauptFenster(QMainWindow):
                 "Echtzeit-Simulation (%s): %s"
                 % (self._echtzeit_name, fehler))
             return
+        if anzahl_schritte == 0:
+            self._echtzeit_kraefteresultat = kraefteresultat
+            self._echtzeit_kraftzeit_s = self._echtzeit_berechnet_s
+            self._aktuelles_kraftbild_aktualisieren()
+            return
         self._echtzeit_berechnet_s += (
             anzahl_schritte * self._echtzeit_physik.dt_s)
         koerper = self._laufzeit_koerper.get(koerper_name)
         if koerper is None:
+            self._kraftanzeige_verwerfen("Laufzeitkoerper fehlt")
             self._zeit_pausieren()
             self._solver_status_aktualisieren(
                 {"Lösungstyp": "Fehler: Laufzeitkörper fehlt"})
+            self.protokoll_schreiben(
+                "Echtzeit-Simulation (%s): Laufzeitkoerper fehlt" % koerper_name)
             return
         try:
             koerper.zustand = zustand
         except ValueError as state_error:
+            self._kraftanzeige_verwerfen("Ungueltiger Koerperzustand")
             self._zeit_pausieren()
             self._solver_status_aktualisieren(
                 {"Lösungstyp": "Fehler: ungültiger Körperzustand"})
@@ -2012,6 +2259,8 @@ class HauptFenster(QMainWindow):
         self._echtzeit_zustand = koerper.zustand
         self._navigationsanzeigen_aktualisieren()
         self._echtzeit_kraefteresultat = kraefteresultat
+        self._echtzeit_kraftzeit_s = max(
+            0.0, self._echtzeit_berechnet_s - self._echtzeit_physik.dt_s)
         self._echtzeit_anzeige_verlauf.append(
             (self._echtzeit_berechnet_s, zustand))
         bruecke = getattr(self, "_bruecke", None)
@@ -2024,6 +2273,8 @@ class HauptFenster(QMainWindow):
                 koerper = self._laufzeit_koerper.get(self._echtzeit_name)
             else:
                 koerper = None
+            if kraefteresultat is not None:
+                koerper = self._laufzeit_koerper.get(self._echtzeit_name)
             if koerper is not None and kraefteresultat is not None:
                 self._kraftbild_daten_setzen(
                     bruecke, self._echtzeit_name, koerper,
@@ -2049,37 +2300,57 @@ class HauptFenster(QMainWindow):
     def _ruderwinkel_geaendert(self, winkel_grad):
         """Uebergibt den festen Ruderwinkel an das aktive Kraftmodell."""
         winkel_rad = math.radians(float(winkel_grad))
+        war_laufend = self._echtzeit_timer.isActive()
+        self._kraftanzeige_verwerfen("Ruderwinkel geaendert; neue Berechnung ausstehend")
+        if war_laufend:
+            self._zeit_pausieren()
+        else:
+            self._echtzeit_generation += 1
         kraftfunktion = self._echtzeit_kraftfunktion
-        if kraftfunktion is not None:
+        if kraftfunktion is not None and not self._echtzeit_aufgabe_laeuft:
             try:
                 kraftfunktion.ruderwinkel_setzen(winkel_rad)
             except (AttributeError, ValueError) as fehler:
                 self.protokoll_schreiben(
                     "Ruderwinkel konnte nicht gesetzt werden: %s" % fehler)
+                if war_laufend:
+                    self._zeit_fortsetzen()
                 return
         if self._btn_statisch.isChecked():
             self._statische_simulation_ausfuehren()
         elif not self._echtzeit_timer.isActive():
             self._echtzeit_kraefteresultat = None
             self._aktuelles_kraftbild_aktualisieren()
+        if war_laufend:
+            self._zeit_fortsetzen()
 
     def _fremdkraft_geaendert(self, *_):
         if self._btn_statisch.isChecked():
             fremdkraft = self._fremdkraft_aktuell()
             if fremdkraft == self._statische_fremdkraft:
                 return
-            self._statisches_kraftbild_aktualisieren()
             self._statische_simulation_ausfuehren()
             return
         if self._echtzeit_kraftfunktion is None:
             return
+        war_laufend = self._echtzeit_timer.isActive()
+        self._kraftanzeige_verwerfen("Fremdkraft geaendert; neue Berechnung ausstehend")
+        if war_laufend:
+            self._zeit_pausieren()
+        else:
+            self._echtzeit_generation += 1
         try:
-            self._echtzeit_kraftfunktion.fremdkraft_setzen(
-                self._fremdkraft_aktuell())
+            if not self._echtzeit_aufgabe_laeuft:
+                self._echtzeit_kraftfunktion.fremdkraft_setzen(
+                    self._fremdkraft_aktuell())
         except (AttributeError, ValueError) as fehler:
             self.protokoll_schreiben("Fremdkraft: %s" % fehler)
+            if war_laufend:
+                self._zeit_fortsetzen()
             return
-        if self._echtzeit_timer.isActive():
+        if war_laufend:
+            self._echtzeit_kraefteresultat = None
+            self._zeit_fortsetzen()
             return
         # Pausiert: Kraftbild sofort mit der neuen Kraft neu zeichnen
         self._echtzeit_kraefteresultat = None
@@ -2093,74 +2364,153 @@ class HauptFenster(QMainWindow):
         bruecke = getattr(self, "_bruecke", None)
         if bruecke is None:
             return
-        for name, ergebnis in self._statische_ergebnisse.items():
-            daten = self._statische_arbeitsdaten.get(name)
-            koerper = self._laufzeit_koerper.get(name)
-            if daten is None or koerper is None:
-                continue
-            stationaer = ergebnis.get("stationaer_hydrodynamik")
-            if stationaer is not None:
-                stufe = stationaer.stufen[-1]
-                pose, v, omega, _rotation = _stationaere_kraftlage(stufe)
-                kraefteresultat = daten[0](pose, v=v, omega=omega)
-                self._kraftbild_daten_setzen(
-                    bruecke, name, koerper, daten[0], daten[1],
-                    stufe.pose[2], stufe.pose[3],
-                    ergebnis=kraefteresultat)
-                continue
-            self._kraftbild_daten_setzen(
-                bruecke, name, koerper, daten[0], daten[1],
-                ergebnis["z"], ergebnis["phi"])
         if hasattr(bruecke, "kraefte_neu_zeichnen"):
             bruecke.kraefte_neu_zeichnen()
+            self._kraftlegende_aktualisieren()
 
     def _aktuelles_kraftbild_aktualisieren(self):
-        if (self._echtzeit_name is None or self._echtzeit_zustand is None
+        if (not self._btn_echtzeit.isChecked()
+                or self._echtzeit_name is None or self._echtzeit_zustand is None
                 or self._echtzeit_physik is None
                 or self._echtzeit_kraftfunktion is None):
             return
         koerper = self._laufzeit_koerper.get(self._echtzeit_name)
         bruecke = getattr(self, "_bruecke", None)
         if koerper is not None and bruecke is not None:
-            pose = self._echtzeit_zustand
             ergebnis = self._echtzeit_kraefteresultat
             if ergebnis is None:
-                from ..core.dynamik_6dof import quaternion_matrix
-                rotation = quaternion_matrix(pose.quaternion)
-                ergebnis = self._echtzeit_kraftfunktion(
-                    (pose.position, pose.quaternion),
-                    v=rotation @ np.asarray(pose.geschwindigkeit_koerper),
-                    omega=rotation @ np.asarray(
-                        pose.winkelgeschwindigkeit_koerper))
+                self._echtzeit_kraftauswertung_ausstehend = True
+                if self._echtzeit_aufgabe_laeuft:
+                    return
+                self._echtzeit_auftragssequenz += 1
+                sequenz = self._echtzeit_auftragssequenz
+                aufgabe = _EchtzeitAufgabe(
+                    self._echtzeit_generation, sequenz, self._echtzeit_name,
+                    self._echtzeit_zustand, self._echtzeit_kraftfunktion,
+                    koerper, self._echtzeit_physik,
+                    self._echtzeit_physik.dt_s, 0, self._echtzeit_signale,
+                    fremdkraft=self._fremdkraft_aktuell(),
+                    ruderwinkel_rad=math.radians(self._ruderwinkel_feld.value()))
+                self._echtzeit_kraftauswertung_ausstehend = False
+                self._echtzeit_aufgabe_laeuft = True
+                self._echtzeit_aufgabe_sequenz_laufend = sequenz
+                self._echtzeit_schritte_laufend = 0
+                QThreadPool.globalInstance().start(aufgabe)
+                return
+            self._echtzeit_kraftauswertung_ausstehend = False
             self._kraftbild_daten_setzen(
                 bruecke, self._echtzeit_name, koerper,
                 self._echtzeit_kraftfunktion, self._echtzeit_physik,
                 0.0, 0.0, ergebnis=ergebnis)
 
+    def _kraftanzeige_verwerfen(self, grund):
+        hat_daten = bool(self._kraftanzeige_snapshots)
+        bruecke = getattr(self, "_bruecke", None)
+        for name in self._kraftanzeige_snapshots:
+            if bruecke is not None and hasattr(bruecke, "kraefte_daten_veralten"):
+                bruecke.kraefte_daten_veralten(name)
+            elif bruecke is not None and hasattr(bruecke, "kraefte_daten_entfernen"):
+                bruecke.kraefte_daten_entfernen(name)
+        self._kraftanzeige_snapshots.clear()
+        self._kraftanzeige_kontext = None
+        self._kraefte_werte.snapshots_setzen(())
+        self._kraefte_werte.kopf.setText(grund + " | keine gueltigen Anzeigedaten")
+        self._kraefte_werte.legende_setzen({})
+        if hat_daten and bruecke is not None and hasattr(bruecke, "render"):
+            bruecke.render()
+
     def _kraftbild_daten_setzen(self, bruecke, name, koerper, kraftfunktion,
                                 physik, z, phi, v_z=0.0, omega_x=0.0,
-                                ergebnis=None):
-        if (not callable(kraftfunktion)
-                or not hasattr(bruecke, "kraefte_daten_setzen")):
-            return
+                                ergebnis=None, solverdiagnose=None):
         try:
-            from ..core.kraefte_bild import skala_waehlen
             erg = ergebnis
             if erg is None:
-                erg = kraftfunktion(
-                    (z, phi, 0.0), v=(0.0, 0.0, v_z),
-                    omega=(omega_x, 0.0, 0.0))
-            ausdehnung = float(np.ptp(np.asarray(koerper.punkte), axis=0).max())
-            skala = skala_waehlen(
-                koerper.masse, physik.g_m_pro_s2,
-                referenz_laenge=max(ausdehnung, 0.05))
-            bruecke.kraefte_daten_setzen(
-                name, erg, koerper.masse, physik.g_m_pro_s2, skala,
-                fremd=self._fremdkraft_aktuell())
+                raise ValueError(
+                    "Kraftergebnis fehlt; fachliche Auswertung im Worker erforderlich")
+            if hasattr(bruecke, "kraefte_snapshot_setzen"):
+                from ..core.kraefte_anzeige import KraefteAnzeigeAdapter, SolverBewertung
+                from ..core.kraftmodell import KraftErgebnis, Kraftmodell
+                if not isinstance(erg, KraftErgebnis):
+                    modell = Kraftmodell(
+                        lambda *_args, **_kwargs: erg,
+                        masse=koerper.masse, g=physik.g_m_pro_s2)
+                    modell.fremdkraft_setzen(self._fremdkraft_aktuell())
+                    erg = modell.mit_hydrostatik(erg, lage=(z, phi, 0.0))
+                kontext = (self._btn_statisch.isChecked(),
+                           self._statisch_generation,
+                           self._echtzeit_generation)
+                if kontext != self._kraftanzeige_kontext:
+                    self._kraftanzeige_generation += 1
+                    self._kraftanzeige_kontext = kontext
+                    self._kraftanzeige_snapshots.clear()
+                    self._kraftanzeige_sequenz = 0
+                self._kraftanzeige_sequenz += 1
+                zeit = (getattr(self, "_echtzeit_kraftzeit_s", self._echtzeit_berechnet_s)
+                        if ergebnis is not None
+                        and ergebnis is self._echtzeit_kraefteresultat
+                        else self._echtzeit_berechnet_s
+                        if self._btn_echtzeit.isChecked() else 0.0)
+                bewertung = None
+                if solverdiagnose is not None:
+                    quelle, freiheitsgrade, kriterien, erfuellt, stationaer = solverdiagnose
+                    quell_ids = tuple(b.quell_id for b in erg.beitraege)
+                    if not erg.schwerkraft_beruecksichtigt:
+                        quell_ids += ("schwerkraft",)
+                    if (any(erg.added_mass_diagonal)
+                            and not any(b.name == "added_mass" for b in erg.beitraege)):
+                        quell_ids += ("added_mass",)
+                    bewertung = SolverBewertung(
+                        name, self._kraftanzeige_generation, self._kraftanzeige_sequenz,
+                        quell_ids, quelle, freiheitsgrade, kriterien,
+                        erfuellt, stationaer)
+                snapshot = KraefteAnzeigeAdapter().aus_ergebnis(
+                    erg, koerper_id=name, generation=self._kraftanzeige_generation,
+                    sequenz=self._kraftanzeige_sequenz, zeit_s=zeit,
+                    masse_kg=koerper.masse, g_m_s2=physik.g_m_pro_s2,
+                    solverbewertung=bewertung)
+                if (self._btn_statisch.isChecked()
+                        and hasattr(type(bruecke), "physik_basis_position_ermitteln")):
+                    basis = bruecke.physik_basis_position_ermitteln(name)
+                    snapshot = replace(snapshot, szenenversatz_m=(
+                        float(basis[0]), float(basis[1]), 0.0))
+                if bruecke.kraefte_snapshot_setzen(snapshot) is False:
+                    self.protokoll_schreiben(
+                        "Kraeftebild (%s): veralteter Snapshot %s/%s verworfen"
+                        % (name, snapshot.generation, snapshot.sequenz))
+                    return
+                koerperquelle = getattr(koerper, "quell_id", None)
+                if koerperquelle is not None:
+                    self._kraftanzeige_koerperquellen[name] = koerperquelle
+                    sichtbar = self._einstellungen.get(
+                        "kraefteanzeige", "sichtbarkeiten").get(koerperquelle, {})
+                    for id_, aktiv in sichtbar.items():
+                        key = (name, id_)
+                        if hasattr(bruecke, "_kraftzeichner"):
+                            bruecke._kraftzeichner().sichtbar[key] = aktiv
+                self._kraftanzeige_snapshots[name] = snapshot
+                self._kraftsichtbarkeiten_abgleichen(bruecke, neu_zeichnen=False)
+                self._kraefte_werte.koerper_setzen(self._laufzeit_koerper)
+                self._kraefte_werte.snapshots_setzen(
+                    self._kraftanzeige_snapshots.values())
+                QTimer.singleShot(0, self._kraftlegende_aktualisieren)
+            else:
+                raise ValueError(
+                    "Grafikbruecke unterstuetzt den gemeinsamen Snapshotpfad nicht")
         except (ArithmeticError, AttributeError, TypeError, ValueError) as fehler:
+            self._kraftanzeige_snapshots.pop(name, None)
+            verwerfen = getattr(bruecke, "kraefte_daten_veralten", None)
+            if callable(verwerfen):
+                verwerfen(name)
+            self._kraefte_werte.snapshots_setzen(
+                self._kraftanzeige_snapshots.values())
+            self._kraefte_werte.kopf.setText(
+                "Kraeftebild (%s): ungueltige Anzeigedaten | %s" % (name, fehler))
             self.protokoll_schreiben(
                 "Kräftebild (%s) konnte nicht aktualisiert werden: %s"
                 % (name, fehler))
+            render = getattr(bruecke, "render", None)
+            if callable(render):
+                render()
 
     def _solver_status_aktualisieren(self, werte):
         for schluessel, wert in werte.items():
@@ -2174,6 +2524,12 @@ class HauptFenster(QMainWindow):
         self.protokoll.append(text)
 
     def closeEvent(self, ereignis):
+        self._statisch_generation += 1
+        self._statische_aufgaben_ausstehend.clear()
+        self._kraftansicht_abkoppeln()
+        self._einstellungen.setzen(
+            "kraefteanzeige", "fensterlayout",
+            self._kraefte_werte.layout_exportieren())
         self._navigations_timer.stop()
         if self._navigationsfenster is not None:
             self._navigationsfenster.close()
@@ -2181,6 +2537,8 @@ class HauptFenster(QMainWindow):
                 or self._echtzeit_render_timer.isActive()
                 or self._echtzeit_schritte_laufend):
             self._zeit_pausieren()
+        self._echtzeit_generation += 1
+        self._echtzeit_kraftauswertung_ausstehend = False
         rueckstand = self._echtzeit_rueckstand_s()
         if rueckstand > 0.0:
             self.protokoll_schreiben(
@@ -2192,6 +2550,9 @@ class HauptFenster(QMainWindow):
         if executor is not None:
             executor.shutdown(wait=False, cancel_futures=True)
             self._echtzeit_prozess_executor = None
+        bruecke = getattr(self, "_bruecke", None)
+        if hasattr(bruecke, "kraefte_anzeige_beenden"):
+            bruecke.kraefte_anzeige_beenden()
         super().closeEvent(ereignis)
 
     def _protokoll_umschalten(self):
@@ -2203,6 +2564,8 @@ class HauptFenster(QMainWindow):
             konfiguration.paketfabrik_aktiv = self._einstellungen.get(
                 "modell", "paketfabrik_aktiv")
         self.baum.lade(welt_knoten)
+        if getattr(self, "_bruecke", None) is not None:
+            self._laufzeit_objekte_aktualisieren("import")
 
     def _nur_aktives_bedienbar_setzen(self, aktiv):
         baum = getattr(self, "baum", None)

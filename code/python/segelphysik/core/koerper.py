@@ -35,8 +35,25 @@ class KoerperSnapshot:
     basis_pose: object = None
     gelenkzustaende: tuple = ()
     hydrodynamik_teile: tuple = ()
+    hydrodynamik_quell_ids: tuple[str, ...] = ()
+    blatt_quell_ids: tuple[str, ...] = ()
 
     def __post_init__(self):
+        from uuid import uuid4
+        ids = tuple(self.hydrodynamik_quell_ids) or tuple(
+            "hydroblatt:" + str(uuid4()) for _ in self.hydrodynamik_teile)
+        if ids and (len(ids) != len(self.hydrodynamik_teile)
+                    or len(set(ids)) != len(ids)
+                    or any(not isinstance(q, str) or not q for q in ids)):
+            raise ValueError("Hydrodynamikquellen brauchen eindeutige Blatt-IDs")
+        object.__setattr__(self, "hydrodynamik_quell_ids", ids)
+        blatt_ids = tuple(self.blatt_quell_ids) or tuple(
+            "blatt:" + str(uuid4()) for _ in self.blatt_meshes)
+        if (len(blatt_ids) != len(self.blatt_meshes)
+                or len(set(blatt_ids)) != len(blatt_ids)
+                or any(not isinstance(q, str) or not q for q in blatt_ids)):
+            raise ValueError("Verdraengende Quellen brauchen eindeutige Blatt-IDs")
+        object.__setattr__(self, "blatt_quell_ids", blatt_ids)
         traegheit = np.array(self.traegheitstensor, dtype=np.float64, copy=True)
         traegheit.setflags(write=False)
         meshes = []
@@ -116,6 +133,8 @@ class Koerper:
         self.delta_helligkeit = float(delta_helligkeit)
         self.glanz = GLANZ_DEFAULT if glanz is None else float(glanz)
         self.knoten_id = knoten_id
+        from uuid import uuid4
+        self._quell_id = "instanz:" + str(uuid4())
         self.name = name
         self.rolle = rolle
         self.rolle_default = rolle_default
@@ -531,8 +550,10 @@ class Koerper:
 
             return NativeKoerperKontext(self).snapshot(self)
         blatt_meshes = []
+        blatt_quell_ids = []
         gelenke = []
         hydrodynamik_teile = []
+        hydrodynamik_quell_ids = []
 
         def sammle(knoten, rotation, translation, rolle_default=None):
             if knoten.gelenkdefinition is not None:
@@ -553,7 +574,9 @@ class Koerper:
                 punkte = knoten.punkte @ rotation.T + translation
                 if knoten.verdrangend:
                     blatt_meshes.append((punkte, knoten.dreiecke))
+                    blatt_quell_ids.append(knoten.quell_id)
                 if rolle in ("rumpf", "kiel", "ruder"):
+                    hydrodynamik_quell_ids.append(knoten.quell_id)
                     hydrodynamik_teile.append((
                         rolle,
                         str(knoten.name or knoten.knoten_id or knoten.rolle),
@@ -572,7 +595,14 @@ class Koerper:
             self.basis_pose,
             tuple(gelenke),
             tuple(hydrodynamik_teile),
+            tuple(hydrodynamik_quell_ids),
+            tuple(blatt_quell_ids),
         )
+
+    @property
+    def quell_id(self):
+        return ("knoten:" + str(self.knoten_id)
+                if self.knoten_id else self._quell_id)
 
     def gelenkwinkel_setzen(self, knoten_id, winkel_rad):
         """Ändert nur den Gelenkzustand; Massenwerte und Auftriebsmesh bleiben fest."""

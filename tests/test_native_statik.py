@@ -43,6 +43,14 @@ def test_beide_solver_mit_exaktem_modell_nativ_und_ohne_pythonresiduum(
         rtol=0., atol=1e-6)
     assert aktuell["restkraft"] < 1e-6
     assert aktuell["restmoment"] < 1e-6
+    if solver is loese_robust:
+        assert aktuell["solverkriterien"]
+        assert [k[0] for k in aktuell["solverkriterien"]] == [
+            k[0] for k in erwartet["solverkriterien"]]
+        for _name, residuum, grenze in aktuell["solverkriterien"]:
+            assert 0 <= residuum <= grenze
+        assert [k[2] for k in aktuell["solverkriterien"]] == [
+            k[2] for k in erwartet["solverkriterien"]]
     if aktuell["gm"] is not None and erwartet["gm"] is not None:
         np.testing.assert_allclose(aktuell["gm"], erwartet["gm"], rtol=1e-6, atol=1e-6)
 

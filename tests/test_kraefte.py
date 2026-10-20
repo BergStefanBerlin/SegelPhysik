@@ -107,10 +107,7 @@ def test_r10_bridge_kraefte_api_ohne_pyvista():
     """Bruecke-API: Namen, Datenfluss und sicheres Entfernen ohne Plotter."""
     from segelphysik.grafik_bruecke import GrafikBruecke
     b = GrafikBruecke()
-    assert b._kraefte_namen("boot")[:4] == [
-        "kraefte_boot_fg", "kraefte_boot_fa",
-        "kraefte_boot_arm", "kraefte_boot_moment"]
-    assert len(b._kraefte_namen("boot")) == 19
+    b._koerper["boot"] = {"position": np.zeros(3)}
     erg = _Erg(1.0, (0, 0, 0), 981.0, (0, 0, 0))
     b.kraefte_daten_setzen("boot", erg, 100.0, 9.81, 1e-3)
     assert "boot" in b._kraefte_daten
@@ -216,7 +213,8 @@ def test_hydrodynamikkraefte_liegen_auf_bauteilwirkungslinien():
     hydro = Auftriebsergebnis(1.0, (0, 0, 0), (0, 0, 1000), (0, 0, 0))
     beitrag = Kraftbeitrag(
         "hydrodynamik_rumpf",
-        Wrench("simulationsframe", (0, 0, -1), (10, 0, 0), (0, 0, 0.25)))
+        Wrench("simulationsframe", (0, 0, -1), (10, 0, 0), (0, 0, 0.25)),
+        "rumpf")
     erg = KraftErgebnis(
         hydro, Vektor((10, 0, 1000)), Vektor((0, -0.25, 0)),
         (0.0,) * 6, (beitrag,), (0, 0, -1))
@@ -230,12 +228,18 @@ def test_hydrodynamikkraefte_liegen_auf_bauteilwirkungslinien():
         lambda _store, name, _stil, pfeil: gezeichnet.__setitem__(
             name, pfeil))
     bruecke.kraefte_daten_setzen("boot", erg, 100.0, 9.81, 0.01)
+    from segelphysik.core.kraefte_darstellung import KameraAbbildung
+    bruecke._kraftzeichner().kamera = lambda: KameraAbbildung(
+        (0, -5, 2), (0, 0, 0), (1000, 800), True, 2, 30)
+    bruecke._kraftzeichner()._labels = lambda *_args: None
+    bruecke._kraftzeichner().sichtbar[("boot", "rumpf")] = True
+    bruecke._mesh_setzen = lambda *_args, **_kwargs: None
     bruecke._layer.setzen(LAYER_HYDRO_RUMPF, True)
     bruecke._kraefte_actors("boot")
 
-    assert set(gezeichnet) == {"kraefte_boot_hydro_rumpf_0"}
+    assert "kraefte_('boot', 'rumpf')_F" in gezeichnet
     assert np.allclose(
-        gezeichnet["kraefte_boot_hydro_rumpf_0"]["start"][1:],
+        gezeichnet["kraefte_('boot', 'rumpf')_F"]["start"][1:],
         (-0.025, -1.0))
 
 
@@ -283,7 +287,7 @@ def test_fremdkraft_pfeil_startet_am_weltangriffspunkt(monkeypatch):
     from types import SimpleNamespace
     from segelphysik import grafik_bruecke as gb
     from segelphysik.core.auftrieb import Auftriebsergebnis, Vektor
-    from segelphysik.core.kraftmodell import KraftErgebnis
+    from segelphysik.core.kraefte_darstellung import KameraAbbildung
 
     import pytest
     pytest.importorskip("pyvista")
@@ -292,25 +296,35 @@ def test_fremdkraft_pfeil_startet_am_weltangriffspunkt(monkeypatch):
         gb, "_mesh_actor_setzen",
         lambda plotter, store, n, mesh, **kw: gezeichnet.__setitem__(n, mesh))
     b = gb.GrafikBruecke()
-    b._plotter = SimpleNamespace(remove_actor=lambda n: None)
+    from vtkmodules.vtkRenderingCore import vtkCamera
+    kamera = vtkCamera()
+    b._plotter = SimpleNamespace(
+        remove_actor=lambda n, **_kw: None,
+        renderer=SimpleNamespace(GetActiveCamera=lambda: kamera))
+    from segelphysik.core.pfeilstil import Stil, standard_bereiche, BEREICH_ALLGEMEIN
+    bereiche = standard_bereiche()
+    bereiche[BEREICH_ALLGEMEIN]["vordergrund"] = False
+    b._stil = Stil(bereiche.__getitem__)
     hydro = Auftriebsergebnis(1.0, (0.0, 0.0, 0.0), (0.0, 0.0, 1000.0),
                               (0.0, 0.0, 0.0))
-    erg = KraftErgebnis(hydro, Vektor((0.0, 50.0, 1000.0)),
-                        Vektor((0.0, 0.0, 0.0)), (0.0,) * 6)
+    erg = hydro
     R = np.array([[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
     b._koerper["boot"] = {
         "aktiv": True, "position": np.array([1.0, 2.0, 0.5]),
         "statisch_R": R, "overlay_skala": (1.0, 0.05)}
     b.kraefte_daten_setzen("boot", erg, 100.0, 9.81, 0.01,
                            fremd=((0.0, 50.0, 0.0), (1.0, 0.0, 0.0)))
+    b._kraftzeichner().kamera = lambda: KameraAbbildung(
+        (0, -5, 2), (0, 0, 0), (1000, 800), True, 2, 30)
+    b._kraftzeichner()._labels = lambda *_args: None
     b.layer_setzen(gb.LAYER_KRAEFTE, True)
     b.layer_setzen(gb.LAYER_FREMDKRAFT, True)
 
     b._kraefte_actors("boot")
 
-    mesh = gezeichnet["kraefte_boot_fremd"]
+    mesh = gezeichnet["kraefte_('boot', 'fremdkraft')_F"]
     # Angriffspunkt: cm + R @ (1,0,0) = (1, 3, 0.5)
-    # Pfeil zeigt in +y und beginnt bei y=3; bei Kraftskala 0,05 greift die Mindestlaenge
+    # Bildschirmbezogene Laenge; keine physikalisch irrefuehrende Mindestlaenge.
     assert mesh.bounds[2] >= 3.0 - 0.1
-    assert mesh.bounds[3] == pytest.approx(3.0364, abs=1e-3)
+    assert mesh.bounds[3] > 3.0
     assert mesh.bounds[0] <= 1.0 + 0.2 and mesh.bounds[1] >= 1.0 - 0.2

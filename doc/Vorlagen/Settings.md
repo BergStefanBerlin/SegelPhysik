@@ -62,6 +62,10 @@ Menü: Einstellungen → Kraftpfeildarstellung. Registry der Paare und Pfeile:
 - `schwerpunkte`: Radius und Farbe von S und K, Kontur.
 - `hauptachsen`: Dicke, Farben, Vordergrund.
 
+Historische Einträge wie `pfeil_hebelarm` bleiben aktiv: Farbe, Deckkraft,
+Vordergrund und Strichstil werden in der aktuellen gemeinsamen
+Snapshotdarstellung weiterhin angewendet.
+
 ## Parameter (Version 1.2: Modellfabrik)
 
 Menü: Einstellungen → Modellfabrik. `modell.paketfabrik_aktiv` wählt
@@ -115,3 +119,83 @@ vorherige SSAO-/Wasseroptik-/MSAA-Werte und der normale 33-ms-Timer wiederherges
 Der Modus garantiert keine feste FPS-Zahl; Live-Messungen und eingeschränkter
 Darstellungsstatus bleiben maßgeblich. `frameSwapped` ist kein
 Monitor-Scanout-Nachweis.
+
+## Parameter (Version 1.6: gemeinsame Kraft-/Momentenanzeige)
+
+Der zusätzliche Bereich `kraefteanzeige` wird beim Laden alter Dateien
+additiv ergänzt. Vorhandene Farben, Pfeilfelder und unbekannte Schlüssel
+bleiben erhalten; es werden keine Modell- oder Physikparameter migriert.
+
+- `logarithmisch`: lineare bzw. log1p-Abbildung beider getrennten Domänen.
+- `kraftreferenz_N`, `momentreferenz_Nm`: positive manuelle Referenzen;
+  `0` fordert eine einmalige Initialisierung je Körper an. Automatische
+  Referenzen und das Ergebnis von „Neu einpassen“ bleiben ausschließlich
+  im Arbeitsspeicher.
+- `kraftmaximum_px`, `momentmaximum_px`, `breite_px`, `kopflaenge_px`:
+  Größen in logischen Pixeln; Defaults 180, 48, 3 und 10.
+- `farbe_<quellart>`: Rollenfarben des gemeinsamen Beitragsregisters.
+  Abweichende bisherige Einzel-/Paarfarben werden weiter berücksichtigt;
+  eine abweichende neue Rollenfarbe hat Vorrang.
+- `beschriftung`: Auswahl-/Bilanzlabels ein- oder ausblenden.
+- `koerperframe`: Komponenten im Körperframe statt im Weltframe anzeigen;
+  die 3D-Geometrie verbleibt am tatsächlichen Ort in der Szene.
+- `weltursprung`: Momentenbezug Weltursprung statt Schwerpunkt.
+  Die vorhandenen Wrenches werden nur für die Anzeige verschoben.
+- `komponenten`: ergänzende x-/y-/z-Momentenbögen; Gesamtmoment
+  und Komponenten werden nicht nochmals summiert.
+- `mehrkoerper`: getrennte Zweige der vorhandenen Körpersnapshots;
+  standardmäßig genau ein Anzeigekörper. Der Schalter verändert
+  weder physische Aktivierung noch Kraftmodell und startet keinen Solver.
+- `sichtbarkeiten`: verschachtelte Wahrheitswerte nach Körper-Quell-ID
+  und Beitrags-Quell-ID, nicht nach Listenposition oder Anzeigename.
+- `fensterlayout`: geprüfte Qt-Geometrie, Dockbereich, Floating-Zustand,
+  Sichtbarkeit und Headerzustand einschließlich Spaltenreihenfolge/-breiten.
+  Eine nicht mehr erreichbare Monitorposition wird in den verfügbaren
+  Bildschirmbereich zurückgesetzt.
+
+Bedienung: *Einstellungen → Kraftpfeildarstellung → Skalen und
+Bildschirmgroessen*; „Neu einpassen“ ist auch im Wertefenster verfügbar.
+Stil-/Skalenänderungen verwenden vorhandene Snapshots und starten keinen
+Solver. Schließen des Hauptfensters speichert das Wertefensterlayout.
+Sequenzen, Kräfte, Momente, Solverentscheide und temporäre Auswahl werden
+nicht als neue Settings-Felder persistiert.
+
+Die vier zusätzlichen booleschen Optionen sind standardmäßig aus.
+Körperwahl, Optionen und „Anzeigestandard wiederherstellen“ sind im
+Wertefenster erreichbar. Der Reset setzt neue Anzeigeoptionen und alte
+Pfeilstilbereiche zurück, bewahrt das Fensterlayout und verändert keine
+Physikeinstellung.
+
+### Zuordnung historischer Pfeiloptionen in V0.11
+
+Historische Felder und gespeicherte Einheiten bleiben erhalten.
+Die neue Bildschirmabbildung verwendet deren Verhältnis zum bisherigen
+Default als Gestaltungsfaktor, nicht als zweite unabhängige Weltmaßskala:
+
+| Historisches Feld | Wirkung in der gemeinsamen Anzeige |
+| --- | --- |
+| `kraftskala`, `momentskala`, individuelle `skala` | Faktor gegenüber 0,05 cm/N bzw. 0,05 cm/Nm, multipliziert mit `skala`; abweichende Faktoren werden in der Legende genannt |
+| `dicke`, `kopf`, Kopfmaße | Relative Kopf-/Schaftgestaltung auf Basis der neuen logischen Pixelmaße; keine betragsabhängige Dicke |
+| `strich_laenge`, `luecke` | Relative Faktoren gegenüber 3 % bzw. 2 % der Körperausdehnung; Bildschirmbasis 8 bzw. 5 logische Pixel |
+| `mindestlaenge` | Kleinwert-Markierungsgrenze, mindestens ein logischer Pixel; keine künstliche Verlängerung der Kraft |
+| `m_x/y/z`, `fremd_mx/y/z`, `mges_x/y/z` | Individuelle Momentenkomponentenstile; vom historischen Default abweichende Sichtbarkeit überschreibt den neuen gemeinsamen Komponentenschalter |
+| Farben, Deckkraft, Linienart, Vordergrund | Gemeinsame wirksame Beitragsstile; Tabelle und 3D verwenden dieselben Farben |
+
+Automatische Skalen bleiben körperbezogen. Für einen belastbaren
+Größenvergleich mehrerer Körper sind gemeinsame manuelle Kraft- und
+Momentenreferenzen einzustellen. Die Legende weist darauf hin.
+Darstellungsintegration und Reset sind automatisiert geprüft. Jede registrierte
+historische Pfeil-ID wird mit individuellen Feldern und globalen Größen durch
+Schema-1.0-Migration, Speichern und Neuladen geprüft; erwartete Bildschirmmaße
+und Skalenfaktoren werden numerisch kontrolliert. Zwei echte
+Hauptfensterinstanzen prüfen den Neustart einschließlich Layout, Stil,
+Referenzen, Sichtbarkeiten und Optionen, ohne Kräfte, Snapshots, temporäre
+Auswahl oder Dynamikzustand wiederherzustellen. Die echten Stildialoge werden
+in Statik und Pause über 22 Eingabefelder geprüft, jeweils ohne Physikauftrag.
+Diese automatisierten Nachweise ersetzen keine physische Monitorwechsel-
+oder menschliche Darstellungsabnahme.
+Belege und offene Punkte stehen im
+[V0.11-Umsetzungsplan](../WegZuV1.0/Revisionslog/zuV0.11/Umsetzungsplan_V0.11.md#913-trigger--import--und-modellabschlussnachweise).
+
+GUI-Tests laden ihre Standardkonfiguration in ein temporäres Verzeichnis,
+damit ein Testlauf keine persönliche Settings-Datei anlegt oder migriert.

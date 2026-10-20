@@ -171,7 +171,7 @@ def test_markerentfernung_invalidiert_geometriecache():
     bruecke = GrafikBruecke.__new__(GrafikBruecke)
     bruecke._kugel_cache = {"marker": object()}
     bruecke._vg_actors = {}
-    bruecke._plotter = SimpleNamespace(remove_actor=lambda _name: None)
+    bruecke._plotter = SimpleNamespace(remove_actor=lambda _name, **_kw: None)
     bruecke._actor_weg("marker")
     assert bruecke._kugel_cache == {}
 

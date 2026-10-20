@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.5",
+  "schema_version": "1.6",
   "statisch": {
     "toleranz": 0.001,
     "max_iterationen": 60,
@@ -217,5 +217,49 @@
     "skala": 1.0,
     "deckkraft": 1.0,
     "vordergrund": true
+  },
+  "kraefteanzeige": {
+    "logarithmisch": false,
+    "kraftreferenz_N": 0.0,
+    "momentreferenz_Nm": 0.0,
+    "kraftmaximum_px": 180.0,
+    "momentmaximum_px": 48.0,
+    "breite_px": 3.0,
+    "kopflaenge_px": 10.0,
+    "beschriftung": true,
+    "fensterlayout": {
+      "geometrie": "01d9d0cb00030000000008530000009200000cee0000042300000853000000b100000cee0000042300000000000000000d7000000853000000b100000cee00000423",
+      "spalten": "000000ff000000000000000100000001000000000000000000000000000000000000000000000006010000000d0100000100000000000000000000000064ffffffff00000081000000000000000d0000018d0000000100000000000000280000000100000000000000640000000100000000000000640000000100000000000000640000000100000000000000640000000100000000000000640000000100000000000000640000000100000000000000640000000100000000000000640000000100000000000000640000000100000000000000640000000100000000000000640000000100000000000003e8000000006400000000000000000000000000000001",
+      "frei": true,
+      "dock": 2,
+      "sichtbar": true
+    },
+    "sichtbarkeiten": {
+      "knoten:root": {
+        "summe:gewicht_auftrieb": true,
+        "hydrostatik": true,
+        "schwerkraft": true,
+        "summe:widerstand": true,
+        "widerstand": true,
+        "knoten:rumpf": true,
+        "knoten:kiel": true,
+        "summe:fremdkraft": true,
+        "knoten:ruder": true,
+        "summe:hydrodynamik": true
+      }
+    },
+    "farbe_schwerkraft": "#2166ac",
+    "farbe_hydrostatik": "#2166ac",
+    "farbe_widerstand": "#707070",
+    "farbe_hydrodynamik_rumpf": "#e08214",
+    "farbe_hydrodynamik_kiel": "#1b7837",
+    "farbe_hydrodynamik_ruder": "#762a83",
+    "farbe_hydrodynamik_volumenkoerper": "#008b8b",
+    "farbe_fremdkraft": "#d73027",
+    "farbe_added_mass": "#8c564b",
+    "koerperframe": false,
+    "weltursprung": false,
+    "komponenten": false,
+    "mehrkoerper": true
   }
 }

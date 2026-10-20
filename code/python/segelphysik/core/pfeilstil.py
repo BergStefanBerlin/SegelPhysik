@@ -4,13 +4,14 @@ Registry der Kraeftepaare und Pfeile, Einstellungsvorlage fuer die
 Bereiche `kraftpfeile_*`, `pfeil_<id>`, `schwerpunkte`, `hauptachsen` und
 `Stil`, der aus den Einstellungen absolute Masse (Meter) je Koerper bildet.
 
-Ein Kraeftepaar besteht aus Kraft, Gegenkraft und den daraus entstehenden
-Momenten und hat eine gemeinsame Farbe. Neue Paare werden nur in PAARE und
-PFEILE eingetragen; Menue, Einstellungen und Zeichnung folgen daraus.
+Darstellungsgruppen teilen Farben, erzwingen aber kein physikalisches
+Kraeftegleichgewicht. BEITRAGS_DEFINITIONEN ordnet vorhandene Quellen den
+historischen Stil-IDs zu; PAARE und PFEILE erhalten deren Einstellungen.
 """
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass
 
 # (id, Titel, Paarfarbe)
 PAARE = (
@@ -22,7 +23,7 @@ PAARE = (
 #  gestrichelt). Art: "kraft", "moment" oder "linie".
 PFEILE = (
     ("f_g", "Gewichtskraft F_G", "gewicht_auftrieb", "kraft", None, True, False),
-    ("f_a", "Auftriebskraft F_A (Gegenkraft)", "gewicht_auftrieb", "kraft",
+    ("f_a", "Auftriebskraft F_A", "gewicht_auftrieb", "kraft",
      None, True, True),
     ("m_x", "Moment M_x (Rollen)", "gewicht_auftrieb", "moment", None,
      False, False),
@@ -42,8 +43,75 @@ PFEILE = (
     ("mges_x", "Gesamtmoment M_x", None, "moment", "#762a83", True, False),
     ("mges_y", "Gesamtmoment M_y", None, "moment", "#1b7837", True, False),
     ("mges_z", "Gesamtmoment M_z", None, "moment", "#e08214", True, False),
-    ("hebelarm", "Hebelarm K-S", None, "linie", "#000000", True, False),
+    ("hebelarm", "Senkrechter Hebelarm", None, "linie", "#000000", True, False),
 )
+
+
+@dataclass(frozen=True, slots=True)
+class BeitragsDefinition:
+    id: str
+    gruppe: str
+    kraft_id: str
+    moment_ids: tuple[str, ...]
+    titel: str
+    farbe: str
+    sichtbar: bool = False
+    gestrichelt: bool = False
+
+
+GRUPPEN_TITEL = {
+    "gewicht_auftrieb": "Gewicht und Auftrieb",
+    "hydrodynamik": "Hydrodynamik",
+    "widerstand": "Allgemeiner Widerstand",
+    "fremdkraft": "Test- / Fremdkraft",
+    "added_mass": "Added Mass",
+    "nicht_zugeordnet": "Nicht zugeordnet",
+}
+
+
+BEITRAGS_DEFINITIONEN = (
+    BeitragsDefinition(
+        "schwerkraft", "gewicht_auftrieb", "f_g", (),
+        "Gewicht F_G", "#2166ac", True),
+    BeitragsDefinition(
+        "hydrostatik", "gewicht_auftrieb", "f_a", ("m_x", "m_y", "m_z"),
+        "Auftrieb F_A", "#2166ac", True, True),
+    BeitragsDefinition(
+        "widerstand", "widerstand", "zusatz", (),
+        "Allgemeiner Widerstand", "#707070"),
+    BeitragsDefinition(
+        "hydrodynamik_rumpf", "hydrodynamik", "zusatz", (),
+        "Hydrodynamik Rumpf", "#e08214"),
+    BeitragsDefinition(
+        "hydrodynamik_kiel", "hydrodynamik", "zusatz", (),
+        "Hydrodynamik Kiel", "#1b7837"),
+    BeitragsDefinition(
+        "hydrodynamik_ruder", "hydrodynamik", "zusatz", (),
+        "Hydrodynamik Ruder", "#762a83"),
+    BeitragsDefinition(
+        "hydrodynamik_volumenkoerper", "hydrodynamik", "zusatz", (),
+        "Hydrodynamik Volumenkoerper", "#008b8b"),
+    BeitragsDefinition(
+        "fremdkraft", "fremdkraft", "fremd",
+        ("fremd_mx", "fremd_my", "fremd_mz"),
+        "Test- / Fremdkraft", "#d73027", True),
+    BeitragsDefinition(
+        "added_mass", "added_mass", "zusatz", (),
+        "Added-Mass-Korrektur", "#8c564b"),
+)
+
+
+def beitragsdefinition(quellname: str) -> BeitragsDefinition:
+    """Ordnet eine physikalische Quellart zu, nie eine Quellinstanz."""
+    if not isinstance(quellname, str) or not quellname:
+        raise ValueError("Kraftquelle braucht einen nichtleeren Namen")
+    for definition in BEITRAGS_DEFINITIONEN:
+        if definition.id == quellname:
+            return definition
+    return BeitragsDefinition(
+        quellname, "nicht_zugeordnet", "zusatz", (),
+        "Nicht zugeordnet: " + quellname, "#cc00cc")
+
 
 BEREICH_ALLGEMEIN = "kraftpfeile_allgemein"
 BEREICH_PAARE = "kraftpfeile_paare"
@@ -94,14 +162,17 @@ def vorlage_bereiche(eintrag, seit="1.1"):
                 "float", 5.0, "Pfeilkopf-Laenge (Faktor auf die Dicke)",
                 "x", 1.0, 20.0, 2),
             "kraftskala": e(
-                "float", 0.05, "Kraftskala: Pfeillaenge je Newton",
+                "float", 0.05, "Historischer Kraftfaktor: 0,05 entspricht 1x "
+                "auf die Pixelabbildung (kein Weltmassstab mehr)",
                 "cm/N", 0.0001, 100.0, 4),
             "momentskala": e(
-                "float", 0.05, "Momentskala: Bogenradius je Newtonmeter",
+                "float", 0.05, "Historischer Momentenfaktor: 0,05 entspricht 1x "
+                "auf die Pixelabbildung (kein Weltmassstab mehr)",
                 "cm/Nm", 0.0001, 100.0, 4),
             "mindestlaenge": e(
-                "float", 2.0, "Mindestlaenge sichtbarer Kraftpfeile "
-                "(Prozent der Koerperausdehnung)", "%", 0.0, 20.0, 2),
+                "float", 2.0, "Historische Mindestgroesse: 2 entspricht "
+                "1 logischem Pixel Kleinwertgrenze; keine Pfeilverlaengerung",
+                "%", 0.0, 20.0, 2),
             "strich_laenge": e(
                 "float", 3.0, "Strichlaenge gestrichelter Pfeile "
                 "(Prozent der Koerperausdehnung)", "%", 0.2, 30.0, 2),
@@ -183,6 +254,93 @@ class Stil:
         for k, v in self._standard[name].items():
             werte.setdefault(k, v)
         return werte
+
+    def anzeige(self):
+        from .einstellungen import VORLAGE
+        werte = {k: e["default"] for k, e in VORLAGE["kraefteanzeige"].items()}
+        if self._hol is not None:
+            try:
+                vorhanden = self._hol("kraefteanzeige")
+            except KeyError:
+                vorhanden = {}
+            werte.update(vorhanden)
+        return werte
+
+    def beitragsfarbe(self, definition):
+        farbe = self.anzeige()["farbe_" + definition.id] if any(
+            d.id == definition.id for d in BEITRAGS_DEFINITIONEN) else definition.farbe
+        if farbe != definition.farbe:
+            return farbe
+        pfeil = next(p for p in PFEILE if p[0] == definition.kraft_id)
+        individuell = self._b(pfeil_bereich(definition.kraft_id))["farbe"]
+        standard = self._standard[pfeil_bereich(definition.kraft_id)]["farbe"]
+        if individuell and individuell != standard:
+            return individuell
+        if pfeil[2] is not None:
+            return self.paarfarbe(pfeil[2])
+        bisher = self.pfeil(definition.kraft_id, 1)["farbe"]
+        return bisher if bisher != (standard or pfeil[4]) else farbe
+
+    def beitragsstil(self, beitrag, ausdehnung):
+        summe = beitrag.herkunft in ("Gruppensumme", "Gesamtsumme")
+        definition = beitragsdefinition(beitrag.name)
+        pfeil_id = ("hydro_sum" if beitrag.gruppe == "hydrodynamik" else "rest"
+                    ) if summe else definition.kraft_id
+        stil = self.pfeil(pfeil_id, ausdehnung)
+        stil["sichtbar"] = stil["sichtbar"] and (
+            beitrag.herkunft == "Gesamtsumme" if summe else definition.sichtbar)
+        if beitrag.herkunft == "Gruppensumme":
+            rolle = next((d for d in BEITRAGS_DEFINITIONEN
+                          if d.gruppe == beitrag.gruppe), definition)
+            stil["farbe"] = self.beitragsfarbe(rolle)
+        elif not summe:
+            stil["farbe"] = self.beitragsfarbe(definition)
+        stil["kontur"] = "#333333" if beitrag.herkunft == "Gesamtsumme" else None
+        return stil
+
+    def bildschirmstil(self, stil, ausdehnung, welt_pro_pixel):
+        optionen = self.anzeige()
+        dicke = stil["durchmesser"] / (.005 * ausdehnung)
+        kopf = stil["kopf_laenge"] / (5 * stil["durchmesser"])
+        kopfbreite = stil["kopf_durchmesser"] / (2.5 * stil["durchmesser"])
+        return {
+            **stil,
+            "durchmesser": optionen["breite_px"] * dicke * welt_pro_pixel,
+            "kopf_laenge": optionen["kopflaenge_px"] * kopf * welt_pro_pixel,
+            "kopf_durchmesser": 7 * kopfbreite * welt_pro_pixel,
+            "strich": 8 * welt_pro_pixel * stil["strich"] / (.03 * ausdehnung),
+            "luecke": 5 * welt_pro_pixel * stil["luecke"] / (.02 * ausdehnung),
+            "kraftfaktor": stil["skala"] * stil["kraftskala"] / .0005,
+            "momentfaktor": stil["skala"] * stil["momentskala"] / .0005,
+            "kleinwert_px": max(1, stil["mindestlaenge"] / (.02 * ausdehnung)),
+        }
+
+    def momentkomponenten(self, beitrag, ausdehnung, grundstil=None):
+        ids = (("mges_x", "mges_y", "mges_z")
+               if beitrag.herkunft == "Gesamtsumme"
+               else beitragsdefinition(beitrag.name).moment_ids)
+        global_an = self.anzeige()["komponenten"]
+        grundstil = grundstil or self.beitragsstil(beitrag, ausdehnung)
+        ergebnis = []
+        for i in range(3):
+            stil = grundstil
+            an = global_an
+            if ids:
+                b = pfeil_bereich(ids[i])
+                alt = self._b(b)
+                if alt["sichtbar"] != self._standard[b]["sichtbar"]:
+                    an = alt["sichtbar"]
+                if not an:
+                    ergebnis.append((False, stil))
+                    continue
+                individuell = self.pfeil(ids[i], ausdehnung)
+                individuell["kontur"] = grundstil.get("kontur")
+                # Quellenfarbe erben, ausser bei expliziter Ueberschreibung.
+                if not alt["farbe"] or alt["farbe"] == self._standard[b]["farbe"]:
+                    individuell["farbe"] = stil["farbe"]
+                stil = individuell
+            ergebnis.append((an, stil))
+        return tuple(ergebnis)
 
     def allgemein(self, ausdehnung):
         a = self._b(BEREICH_ALLGEMEIN)

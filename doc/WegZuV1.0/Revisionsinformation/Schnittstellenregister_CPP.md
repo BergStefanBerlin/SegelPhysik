@@ -408,5 +408,159 @@ Einzelfunktions- und Messbelege verbleiben in den verlinkten Prüfplänen
 und Prüfprotokollen. Die anlassbezogene Pflege ist in der
 [Registerpflege-Instruktion](../../../.github/instructions/schnittstellenregister.instructions.md)
 festgelegt; die Kennungsvergabe zusätzlich in der
-[Nummerierungs-Anweisung](../../Anweisungen/Nummerierungs-Anweisung.md).
+[Nummerierungs-Instruction](../../../.github/instructions/nummerierung.instructions.md).
 Ein unbeaufsichtigter Hintergrundprozess ist damit nicht eingerichtet.
+
+## 7. Anlassprüfung V0.11 — 20.10.2026
+
+**V0.11-Diagnoseintegration (implementiert und regressionsgeprüft;
+Gesamtabnahme der Anzeige offen):**
+CPPI-0006 (`Beitrag`) erhält additive optionale Diagnosefelder
+`quell_id` und `originalangriff`; CPPI-0007 (`Ergebnis`) erhält einen
+optionalen `kraftzustand` mit dem tatsächlichen Eingangszustand der
+Kraftauswertung. CPPI-0002 (`Mesh`) transportiert zusätzlich eine
+`quell_id`. Konstruktoren bleiben mit bisherigen Argumenten aufrufbar.
+CPPI-0048 muss Beitragsmetadaten bei der Normalisierung erhalten;
+CPPI-0112 muss die Eingangspose ohne Python-Rückruf im Batch mitführen.
+Die Änderungen verändern keine Kräfte oder Integrationsgleichungen.
+CPPI-0114 (`StatikKontext.loesen`) wird im selben Paket additiv um
+`solverkriterien` im erfolgreichen robusten Ergebnis ergänzt. Transportiert
+werden die ursprünglichen Residuen/Grenzen, einschließlich des gesonderten
+Rollscan-Entscheids; keine nachträgliche GUI-Toleranz und keine Änderung
+der bisherigen Konvergenzentscheidung.
+Erneuter nativer Build mit
+`.\.venv\Scripts\python.exe -m pip install -e . --no-deps` erfolgreich.
+Die [Integrationstests](../../../tests/test_kraefte_integration.py) prüfen
+Metadatenerhalt, native Rundreise, gleichnamige Quellinstanzen, explizite
+Nullzustände, letzte Batch-Eingangspose, gemeinsame GUI-Snapshotreferenz
+und die zum tatsächlichen Integratorschritt äquivalente Anzeigebilanz
+mit Dämpfung/Added Mass. Die
+[nativen Statiktests](../../../tests/test_native_statik.py) vergleichen
+die ursprünglichen robusten Kriterien mit der Python-Referenz.
+Gesamtregression dieses Pakets: **1386 bestanden, 1 Skip, 1 historischer
+Settings-Manifestfehler**, `QT_QPA_PLATFORM=offscreen`, 59,94 s.
+Der bekannte Fehler bleibt gemäß Nutzerentscheidung dokumentiert;
+keine Behauptung eines grünen Gesamtabschlusses.
+
+| Interface | Python-Referenz | V0.11 | Aktueller Vertrags-/Nutzungsnachweis |
+|---|---|---|---|
+| CPPI-0002 `Mesh` | nicht separat gemessen | nicht separat gemessen | Quell-ID in Hydro-/Körpervorbereitung transportiert; Integration und native Massentests |
+| CPPI-0006 `Beitrag` | nicht separat gemessen | nicht separat gemessen | Quell-ID und bestätigter Originalpunkt bleiben bei Rundreise erhalten |
+| CPPI-0007 `Ergebnis` | nicht separat gemessen | nicht separat gemessen | Tatsächlicher Kraft-Eingangszustand getrennt vom Integrator-Endzustand |
+| CPPI-0048 `aggregiere_kraftbeitraege` | nicht separat gemessen | nicht separat gemessen | Normalisierung erhält Diagnosemetadaten; Python-/C++-Integrationstests |
+| CPPI-0080 `pfeil_fest` | nicht separat gemessen | nicht separat gemessen | Produktiver Snapshotrenderer verwendet die vorhandenen absoluten Kopf-/Schaftdaten; tatsächliche Mappernetze, Normalen und vier Richtungen in den Integrationstests geprüft |
+| CPPI-0085 `moment_bogen` | nicht separat gemessen | nicht separat gemessen | Freier Snapshotbogen verwendet den bestehenden Einheitsbogenkern; Darstellungs- und Renderingtests |
+| CPPI-0112 `PhysikKontext.batch` | nicht separat gemessen | nicht separat gemessen | Letzte Eingangspose und Quell-IDs ohne Python-Rückruf im nativen Batch |
+| CPPI-0114 `StatikKontext.loesen` | nicht separat gemessen | nicht separat gemessen | Robuste Originalkriterien einschließlich Rollscan werden im Ergebnis mitgeführt |
+
+Die vorhandenen V0.10-Einzel-/Elternblockmessstände werden durch diese
+Vertragsprüfungen nicht ersetzt. Noch offene sichtbare Abnahme,
+vollständige Modell-/Modusparität und Leistungsnachweise stehen im
+[V0.11-Umsetzungsplan, Abschnitt 9.10](../Revisionslog/zuV0.11/Umsetzungsplan_V0.11.md#910-anzeigeoptionen-netzvorlagen-und-nachhermessungen).
+
+**Weitere Aufrufpfadprüfung V0.11:**
+Der zusätzliche Vista-Kraftzeichenpfad ist entfernt. Das Demo-HUD
+verwendet die gemeinsame Snapshotbilanz, nicht mehr `text_zeile` als
+separate numerische Auftriebsinterpretation. CPPI-0079 (`pfeil_daten`),
+CPPI-0081 (`kraft_paarmoment`), CPPI-0083 (`kraft_pfeile`) und
+CPPI-0084 (`zusatz_pfeile`) bleiben als verpflichtende Exporte mit
+Python-Adaptern und historischen Mess-/Regressionaufrufen erhalten.
+Diese Anbindung belegt keine Verwendung durch die neue produktive
+Kraftanzeige. Eine erneute produktive Aktivierung dieser alten
+Ableitungen ist nicht sinnvoll, weil sie den gerade abgelösten
+Parallelzeichenpfad wiederherstellen würde. Vor einer Vertragsstilllegung
+sind die historischen Messwerkzeuge und Verbraucher ausdrücklich
+abzugleichen; derzeit keine Exportlöschung oder neue CPPI-Kennung.
+CPPI-0080 und CPPI-0085 bleiben im gemeinsamen Zeichenpfad eingebunden.
+
+Die zusätzliche Netzvorlage mit Normalentransformation, dunkle
+VTK-Silhouetten, Frame-/Bezugsansicht und Anzeigenfilter ändern
+keine native Signatur oder Integrationsgleichung; hierfür kein erneuter
+nativer Build erforderlich. Die in Abschnitt 9.10 verlinkten
+Renderer-Nachhermessungen enthalten auch Adapter-/Python-/VTK-Kosten,
+sind ausdrücklich keine Einzelmessungen dieser Interfaces und ersetzen
+keine freigegebenen V0.10-Messstände.
+Gesamtlauf dieses damaligen Folgestands: **1484 bestanden, 1 Skip,
+1 bekannter Settings-Manifestfehler**, 87,45 s, beide verfügbaren
+Rechenpfade in den zugehörigen Integrationstests. Dies ist weiterhin
+keine vollständige Modell-/Modus- oder Leistungsabnahme.
+
+**Erweiterte Aufrufpfad- und Lebenszyklusprüfung V0.11:**
+Die gemeinsame Anzeige besitzt keinen synchronen GUI-Ersatzrechenpfad
+mehr. Fehlende Workerdaten invalidieren die Anzeige ausdrücklich.
+Importe erneuern Laufzeitkörper, Quellen und Generationen; entfernte
+Körper werden einschließlich bereits ausgeblendeter Modelle abgebaut.
+100 Importe mit unterschiedlichen Körpernamen prüfen die globale
+Statikauftragsbegrenzung und den letzten aktuellen Snapshot in beiden
+Backends. Auch ohne angeschlossenen Plotter werden Kraftdaten und
+Generations-/Rendercaches entfernt.
+
+Die reale Paritätsmatrix umfasst Quader und Optimist/Folkeboot/Yacht1,
+statische sowie stationäre Residuen und die äquivalente teilimplizite
+Dynamikbilanz. Stationäre Modellfälle werden mit und ohne zusätzliche
+lineare/quadratische Widerstandsparameter und Added Mass geprüft.
+Explizite Nullbeschleunigung liefert einen gültigen Nullbeitrag;
+fehlende Beschleunigungsdiagnose in Pause bleibt als Teilsumme sichtbar.
+Nichtkonvergenz wird nicht zur erfolgreichen Lösung umgedeutet.
+
+CPPI-0080/0085 bleiben produktiv im Snapshotrenderer; CPPI-0079,
+CPPI-0081, CPPI-0083 und CPPI-0084 bleiben ausschließlich in den
+historischen Adapter-/Mess-/Regressionspfaden erhalten. Die verbliebenen
+Demoaufrufe von `kraefte_daten_setzen` sind ein kompatibler Eingang in
+denselben Snapshotrenderer, kein zweiter Kraftzeichenpfad.
+Diese Python-/GUI-Änderungen benötigen keinen weiteren nativen Build
+und keine neue CPPI-ID. Die 600-Zyklen-Windowsproben erfassen zusätzlich
+den Prozessspeicher einschließlich nativer Allokationen; sie sind weder
+isolierte Interface-Performancewerte noch eine Leckfreiheitsgarantie.
+Für sämtliche hier genannten Interfaces weiterhin
+**nicht separat gemessen**. Aktuelle Befehle, Ergebnisse, Rohbelege und
+offene physische Monitor-/Leistungsabnahme:
+[Umsetzungsplan 9.13](../Revisionslog/zuV0.11/Umsetzungsplan_V0.11.md#913-trigger--import--und-modellabschlussnachweise).
+Letzter Gesamtlauf: **1620 bestanden, 1 Skip, 1 bekannter historischer
+Settings-Manifestfehler**, 150,71 s (`QT_QPA_PLATFORM=offscreen`).
+Verlangsamte GUI zusätzlich mit geöffnetem und geschlossenem
+Wertefenster geprüft: je vier erfolgreiche Fälle in offscreen und
+echten Windows-Qt-Fenstern, beide Rechenpfade, keine Workerblockierung
+und unverändertes GUI-Timerintervall.
+Keine zusätzliche Integrationsregression; weiterhin keine vollständig
+grüne Gesamtsuite und keine fachliche oder Leistungsfreigabe.
+
+Für U-V0.11-000003/000004 wurden CPPI-0005 (`Wrench`),
+CPPI-0006 (`Beitrag`), CPPI-0047 (`wrench_verschieben`) und CPPI-0048
+(`aggregiere_kraftbeitraege`) mit den tatsächlichen Python-Verträgen
+und Aufrufpfaden abgeglichen. Der neue
+[Anzeigeadapter](../../../code/python/segelphysik/core/kraefte_anzeige.py)
+verwendet vorhandene Wrench-/Aggregationsfunktionen. Die
+[Anzeigedatentests](../../../tests/test_kraefte_anzeige.py) prüfen
+explizit Python- und C++-Pfad; bisherige Status bleiben unverändert.
+Keine neuen Exporte, Signaturen oder Python-Rückrufe im nativen Batch.
+Ein nativer Neubuild ist für diese reine Python-Datenbasis nicht erforderlich.
+
+Die ursprüngliche Bestandsaufnahme zu CPPI-0112 (`PhysikKontext.batch`) und dem
+Ergebnistransport zeigt fehlende stabile Quellinstanz-IDs und fehlenden
+expliziten Kraftpose/-zeit-Bezug. Der native Schritt liefert den neuen
+Körperzustand zusammen mit an der Eingangspose ausgewerteten Kräften.
+Vor produktiver Anzeigeanbindung sind minimale Diagnoseverträge zu
+konkretisieren und gegebenenfalls neue Interfaces vor Implementierung
+mit eigenen CPPI-IDs zu registrieren. Die unveränderten bestehenden
+Pfade bleiben erhalten; kein automatischer Backendwechsel.
+
+Die [V0.11-Baselines](../Revisionslog/zuV0.11/Umsetzungsplan_V0.11.md)
+sind ausschließlich Rendering-Gesamtpfadmessungen, keine neuen
+Einzelmessungen dieser Interfaces. Alle bisherigen V0.10-Messstände
+bleiben erhalten; für die hier berührten Interfaces weiterhin
+**nicht separat gemessen**. Vollständige Anzeigeintegration und
+Solver-/Integratorparität waren zu diesem Erhebungszeitpunkt noch offen;
+der weiterentwickelte Stand ist oben getrennt dokumentiert.
+
+U-V0.11-000006 verwendet außerdem CPPI-0085 (`moment_bogen`) weiterhin
+als Geometriekern: Ein 240°-Einheitsbogen wird im rendererfreien
+[Darstellungsbaustein](../../../code/python/segelphysik/core/kraefte_darstellung.py)
+auf die tatsächliche Momentenachse ausgerichtet. Kein neuer Export und
+keine Änderung der bisherigen Signatur oder physikalischen Schwellwerte;
+die alte Achsenfunktion bleibt für ihre bisherigen Aufrufer unverändert.
+Die [Darstellungstests](../../../tests/test_kraefte_darstellung.py) prüfen
+beide Pfade einschließlich Drehsinn, Null, Vorzeichenwechsel und
+Generationscache. Die produktive Anbindung an den neuen Actorpfad ist
+inzwischen regressionsgeprüft; sichtbare Verfahrensabnahme und vollständiger
+Altpfadabbau bleiben offen. Weiterhin **nicht separat gemessen**.

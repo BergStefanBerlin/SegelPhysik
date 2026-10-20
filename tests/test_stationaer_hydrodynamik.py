@@ -91,6 +91,12 @@ def test_gestufter_solver_loest_geradeaus_und_gekoppelte_bilanz():
         ergebnis.stufen[-1].normiertes_restmoment,
     ) <= 0.01
     assert ergebnis.ruderwinkel_rad == 0.0
+    assert ergebnis.stufen[0].solver_freiheitsgrade == ("x", "z", "nicken")
+    assert len(ergebnis.stufen[-1].solver_freiheitsgrade) == 6
+    for stufe in ergebnis.stufen:
+        assert stufe.solver_erfuellt
+        assert stufe.solver_kriterien[0][2] == 1e-5
+        assert stufe.solver_kriterien[0][1] <= 1e-5
 
 
 def test_stabiles_gleichgewicht_besteht_zehnsekunden_verifikation():

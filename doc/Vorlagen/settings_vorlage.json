@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.5",
+  "schema_version": "1.6",
   "statisch": {
     "toleranz": {
       "typ": "float",
@@ -207,7 +207,7 @@
       "typ": "float",
       "default": 0.05,
       "einheit": "cm/N",
-      "beschreibung": "Kraftskala: Pfeillaenge je Newton",
+      "beschreibung": "Historischer Kraftfaktor: 0,05 entspricht 1x auf die Pixelabbildung (kein Weltmassstab mehr)",
       "seit_version": "1.1",
       "min": 0.0001,
       "max": 100.0,
@@ -217,7 +217,7 @@
       "typ": "float",
       "default": 0.05,
       "einheit": "cm/Nm",
-      "beschreibung": "Momentskala: Bogenradius je Newtonmeter",
+      "beschreibung": "Historischer Momentenfaktor: 0,05 entspricht 1x auf die Pixelabbildung (kein Weltmassstab mehr)",
       "seit_version": "1.1",
       "min": 0.0001,
       "max": 100.0,
@@ -227,7 +227,7 @@
       "typ": "float",
       "default": 2.0,
       "einheit": "%",
-      "beschreibung": "Mindestlaenge sichtbarer Kraftpfeile (Prozent der Koerperausdehnung)",
+      "beschreibung": "Historische Mindestgroesse: 2 entspricht 1 logischem Pixel Kleinwertgrenze; keine Pfeilverlaengerung",
       "seit_version": "1.1",
       "min": 0.0,
       "max": 20.0,
@@ -1140,6 +1140,76 @@
       "seit_version": "1.1"
     }
   },
+  "pfeil_hydro_sum": {
+    "sichtbar": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "Pfeil anzeigen",
+      "seit_version": "1.1"
+    },
+    "farbe": {
+      "typ": "farbe",
+      "default": "#e08214",
+      "einheit": "",
+      "beschreibung": "Farbe (leer: Paarfarbe)",
+      "seit_version": "1.1"
+    },
+    "dicke": {
+      "typ": "float",
+      "default": 0.0,
+      "einheit": "%",
+      "beschreibung": "Dicke in Prozent der Koerperausdehnung (0: Grunddicke)",
+      "seit_version": "1.1",
+      "min": 0.0,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "kopf": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Kopfgroesse (Faktor)",
+      "seit_version": "1.1",
+      "min": 0.2,
+      "max": 5.0,
+      "dezimalen": 2
+    },
+    "gestrichelt": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "gestrichelt",
+      "seit_version": "1.1"
+    },
+    "skala": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "x",
+      "beschreibung": "Skalierung (Faktor; bei Momenten auf den Bogenradius)",
+      "seit_version": "1.1",
+      "min": 0.01,
+      "max": 100.0,
+      "dezimalen": 2
+    },
+    "deckkraft": {
+      "typ": "float",
+      "default": 1.0,
+      "einheit": "",
+      "beschreibung": "Deckkraft",
+      "seit_version": "1.1",
+      "min": 0.1,
+      "max": 1.0,
+      "dezimalen": 2
+    },
+    "vordergrund": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "im Vordergrund",
+      "seit_version": "1.1"
+    }
+  },
   "pfeil_mges_x": {
     "sichtbar": {
       "typ": "bool",
@@ -1418,6 +1488,187 @@
       "einheit": "",
       "beschreibung": "im Vordergrund",
       "seit_version": "1.1"
+    }
+  },
+  "kraefteanzeige": {
+    "koerperframe": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "Komponenten im Koerperframe statt im Weltframe",
+      "seit_version": "1.6"
+    },
+    "weltursprung": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "Momentenbezug Weltursprung statt Koerperschwerpunkt",
+      "seit_version": "1.6"
+    },
+    "komponenten": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "Momentenkomponenten zusaetzlich zum Gesamtvektor",
+      "seit_version": "1.6"
+    },
+    "mehrkoerper": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "Alle verfuegbaren Koerpersnapshots getrennt anzeigen",
+      "seit_version": "1.6"
+    },
+    "logarithmisch": {
+      "typ": "bool",
+      "default": false,
+      "einheit": "",
+      "beschreibung": "Logarithmische statt linearer Kraft-/Momentenskalen",
+      "seit_version": "1.6"
+    },
+    "kraftreferenz_N": {
+      "typ": "float",
+      "default": 0.0,
+      "einheit": "N",
+      "beschreibung": "Manuelle Kraftreferenz; 0: je Koerper initialisieren",
+      "seit_version": "1.6",
+      "min": 0.0,
+      "max": 1000000000000000.0,
+      "dezimalen": 4
+    },
+    "momentreferenz_Nm": {
+      "typ": "float",
+      "default": 0.0,
+      "einheit": "N*m",
+      "beschreibung": "Manuelle Momentenreferenz; 0: je Koerper initialisieren",
+      "seit_version": "1.6",
+      "min": 0.0,
+      "max": 1000000000000000.0,
+      "dezimalen": 4
+    },
+    "kraftmaximum_px": {
+      "typ": "float",
+      "default": 180.0,
+      "einheit": "logische px",
+      "beschreibung": "Maximale Kraftpfeillaenge",
+      "seit_version": "1.6",
+      "min": 20.0,
+      "max": 1000.0,
+      "dezimalen": 1
+    },
+    "momentmaximum_px": {
+      "typ": "float",
+      "default": 48.0,
+      "einheit": "logische px",
+      "beschreibung": "Maximaler Momentenradius",
+      "seit_version": "1.6",
+      "min": 10.0,
+      "max": 500.0,
+      "dezimalen": 1
+    },
+    "breite_px": {
+      "typ": "float",
+      "default": 3.0,
+      "einheit": "logische px",
+      "beschreibung": "Schaft-/Bogenbreite",
+      "seit_version": "1.6",
+      "min": 1.0,
+      "max": 20.0,
+      "dezimalen": 1
+    },
+    "kopflaenge_px": {
+      "typ": "float",
+      "default": 10.0,
+      "einheit": "logische px",
+      "beschreibung": "Pfeilkopflaenge",
+      "seit_version": "1.6",
+      "min": 2.0,
+      "max": 100.0,
+      "dezimalen": 1
+    },
+    "beschriftung": {
+      "typ": "bool",
+      "default": true,
+      "einheit": "",
+      "beschreibung": "Auswahl und Gesamtbilanz beschriften",
+      "seit_version": "1.6"
+    },
+    "fensterlayout": {
+      "typ": "fensterlayout",
+      "default": {},
+      "einheit": "",
+      "beschreibung": "Gespeichertes Wertefensterlayout",
+      "seit_version": "1.6"
+    },
+    "sichtbarkeiten": {
+      "typ": "sichtbarkeiten",
+      "default": {},
+      "einheit": "",
+      "beschreibung": "Sichtbarkeit je stabiler Koerper-/Quell-ID",
+      "seit_version": "1.6"
+    },
+    "farbe_schwerkraft": {
+      "typ": "farbe",
+      "default": "#2166ac",
+      "einheit": "",
+      "beschreibung": "Farbe: Gewicht F_G",
+      "seit_version": "1.6"
+    },
+    "farbe_hydrostatik": {
+      "typ": "farbe",
+      "default": "#2166ac",
+      "einheit": "",
+      "beschreibung": "Farbe: Auftrieb F_A",
+      "seit_version": "1.6"
+    },
+    "farbe_widerstand": {
+      "typ": "farbe",
+      "default": "#707070",
+      "einheit": "",
+      "beschreibung": "Farbe: Allgemeiner Widerstand",
+      "seit_version": "1.6"
+    },
+    "farbe_hydrodynamik_rumpf": {
+      "typ": "farbe",
+      "default": "#e08214",
+      "einheit": "",
+      "beschreibung": "Farbe: Hydrodynamik Rumpf",
+      "seit_version": "1.6"
+    },
+    "farbe_hydrodynamik_kiel": {
+      "typ": "farbe",
+      "default": "#1b7837",
+      "einheit": "",
+      "beschreibung": "Farbe: Hydrodynamik Kiel",
+      "seit_version": "1.6"
+    },
+    "farbe_hydrodynamik_ruder": {
+      "typ": "farbe",
+      "default": "#762a83",
+      "einheit": "",
+      "beschreibung": "Farbe: Hydrodynamik Ruder",
+      "seit_version": "1.6"
+    },
+    "farbe_hydrodynamik_volumenkoerper": {
+      "typ": "farbe",
+      "default": "#008b8b",
+      "einheit": "",
+      "beschreibung": "Farbe: Hydrodynamik Volumenkoerper",
+      "seit_version": "1.6"
+    },
+    "farbe_fremdkraft": {
+      "typ": "farbe",
+      "default": "#d73027",
+      "einheit": "",
+      "beschreibung": "Farbe: Test- / Fremdkraft",
+      "seit_version": "1.6"
+    },
+    "farbe_added_mass": {
+      "typ": "farbe",
+      "default": "#8c564b",
+      "einheit": "",
+      "beschreibung": "Farbe: Added-Mass-Korrektur",
+      "seit_version": "1.6"
     }
   }
 }

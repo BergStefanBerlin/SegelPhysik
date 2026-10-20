@@ -262,7 +262,9 @@ inline std::vector<Beitrag> hydrodynamik_beitraege(
             }
         }
         endlich(kraft, "Hydrodynamikkraft"); endlich(moment, "Hydrodynamikmoment");
-        beitraege.push_back(Beitrag{name, Wrench{"simulationsframe", zentrum, kraft, moment}});
+        beitraege.push_back(Beitrag{
+            name, Wrench{"simulationsframe", zentrum, kraft, moment},
+            teil.mesh.quell_id});
     }
     return beitraege;
 }

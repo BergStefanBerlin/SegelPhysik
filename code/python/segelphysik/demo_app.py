@@ -22,6 +22,7 @@ rev C (Sichtprobe 12.10.):
 """
 from __future__ import annotations
 import random
+import math
 import sys
 import time
 
@@ -30,7 +31,7 @@ import numpy as np
 from .core import bewegung as kin
 from .core import fabriken
 from .core import auftrieb
-from .core import kraefte_bild as kb
+from .core.kraefte_darstellung import zahlenwert
 from .core import stoerung as sto
 from .core.konfig_lader import lade_konfig, lade_physik
 from .grafik_bruecke import GrafikBruecke, FARBE_UNTEN, FARBE_OBEN
@@ -87,7 +88,7 @@ def main():
     zustand = {"letzte_zeit": time.perf_counter()}
     aktuell = {"index": 0}
     erzeugt = {}
-    kraefte_cache = {}      # name -> (erg, masse, g, skala)
+    kraefte_cache = {}      # name -> (erg, masse, g)
     kraefte_start = {}      # name -> Ruhepose-Ergebnis (Restore bei r/z)
     kraftfunktionen = {}    # name -> gebundene Kraftfunktion (F19)
     statisch_info = {}      # name -> Kurzinfo der Loesung fuer die Statuszeile
@@ -127,9 +128,7 @@ def main():
                 objekt, rho_w=rho_w, g=g,
                 aufloesung=physik.voxel_aufloesung_m)
             erg = kf((0.0, 0.0, 0.0))
-            halbe = float(np.abs(np.asarray(objekt.punkte, float)).max()) or 1.0
-            skala = kb.skala_waehlen(objekt.masse, g, referenz_laenge=1.1 * halbe)
-            kraefte_cache[name] = (erg, objekt.masse, g, skala)
+            kraefte_cache[name] = (erg, objekt.masse, g)
             kraefte_start[name] = kraefte_cache[name]
             kraftfunktionen[name] = kf
         except Exception as fehler:
@@ -173,7 +172,7 @@ def main():
         if eintrag is None or kf is None:
             print("STATISCH: keine Kraefte-Daten fuer %s - Solver uebersprungen" % name)
             return
-        _erg, m, g, _sk = eintrag
+        _erg, m, g = eintrag
         print("STATISCH: Solver laeuft (%s), %d Startlage(n) ..."
               % (name, len(startliste)))
         _status_setzen("STATISCH: Solver rechnet ... (Protokoll in der Konsole)")
@@ -211,9 +210,9 @@ def main():
             erg_r = kf((0.0, 0.0, 0.0))
             kraefte_cache[name] = (auftrieb.Auftriebsergebnis(
                 erg_r.V_tauch, np.asarray(erg_r.K.as_array(), float),
-                erg_r.F_A, erg_r.M), m, g, _sk)
-            erg, mm, gg, sk2 = kraefte_cache[name]
-            bruecke.kraefte_daten_setzen(name, erg, mm, gg, sk2)
+                erg_r.F_A, erg_r.M), m, g)
+            erg, mm, gg = kraefte_cache[name]
+            bruecke.kraefte_daten_setzen(name, erg, mm, gg)
             return
         z, phi = float(beste["z"]), float(beste["phi"])
         gm = beste["gm"]
@@ -235,14 +234,13 @@ def main():
                  - np.array([0.0, 0.0, z]))
         erg_anzeige = auftrieb.Auftriebsergebnis(
             erg_l.V_tauch, K_rel, erg_l.F_A, erg_l.M)
-        # D1: Skala bleibt die feste Szene-Skala - nicht neu waehlen.
-        kraefte_cache[name] = (erg_anzeige, m, g, _sk)
+        kraefte_cache[name] = (erg_anzeige, m, g)
         kenn = " (Roll neutral)" if beste.get("neutral") else ""
         statisch_info[name] = "z*=%7.3f m  phi*=%6.2f Grad%s" \
             % (z, np.degrees(phi), kenn)
         bruecke.statische_pose_setzen(name, z, phi)
-        erg, mm, gg, sk2 = kraefte_cache[name]
-        bruecke.kraefte_daten_setzen(name, erg, mm, gg, sk2)
+        erg, mm, gg = kraefte_cache[name]
+        bruecke.kraefte_daten_setzen(name, erg, mm, gg)
         _status_setzen("STATISCH: Gleichgewicht z*=%.3f m  phi*=%.2f Grad"
                        % (z, np.degrees(phi)))
 
@@ -307,8 +305,8 @@ def main():
             bruecke.statische_pose_loeschen(name)
             if name in kraefte_start:
                 kraefte_cache[name] = kraefte_start[name]
-                erg, m, g, sk = kraefte_cache[name]
-                bruecke.kraefte_daten_setzen(name, erg, m, g, sk)
+                erg, m, g = kraefte_cache[name]
+                bruecke.kraefte_daten_setzen(name, erg, m, g)
 
     letzte_kraefte_taste = {"t": 0.0}
 
@@ -389,7 +387,20 @@ def main():
         if (bruecke.layer_ist_an(LAYER_KRAEFTE)
                 and sim.modus is not Modus.RUHEND
                 and name in kraefte_cache):
-            info += "   " + kb.text_zeile(kraefte_cache[name][0])
+            snapshot = bruecke.kraefte_snapshot_ermitteln(name)
+            if snapshot is None:
+                info += "   Keine gueltigen Kraftanzeigedaten"
+            else:
+                bilanz = snapshot.bilanz
+                wrench = bilanz.wrench
+                info += (
+                    "   |Summe F|=" + zahlenwert(
+                        None if wrench is None else math.hypot(*wrench.kraft_N),
+                        "N", status=bilanz.status)
+                    + "   |Summe M um P|=" + zahlenwert(
+                        None if wrench is None else math.hypot(*wrench.moment_Nm),
+                        "N*m", status=bilanz.status)
+                    + "   Snapshot #%s" % snapshot.sequenz)
         if sim.modus is Modus.STATISCH and name in statisch_info:
             info += "   " + statisch_info[name]
         _status_setzen(sim.text() + "   " + info)

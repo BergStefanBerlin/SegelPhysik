@@ -38,7 +38,8 @@ inline std::pair<Wrench, std::vector<Beitrag>> aggregiere_kraftbeitraege(
             gesamt.kraft[i] += wrench.kraft[i];
             gesamt.moment[i] += wrench.moment[i];
         }
-        normalisiert.push_back({beitrag.name, std::move(wrench)});
+        normalisiert.push_back({beitrag.name, std::move(wrench),
+            beitrag.quell_id, beitrag.originalangriff});
     }
     gesamt.pruefen();
     return {gesamt, normalisiert};
