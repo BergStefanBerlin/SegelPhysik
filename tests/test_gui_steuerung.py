@@ -1,6 +1,7 @@
 import os
 import time
 from types import SimpleNamespace
+from unittest.mock import Mock
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
@@ -12,6 +13,19 @@ from segelphysik.gui.hauptfenster import HauptFenster
 from segelphysik.core.overlays import (
     LAYER_SCHWERPUNKT, LAYER_HAUPTACHSEN, LAYER_KRAEFTE, LAYER_MOMENTE,
 )
+
+import pytest
+pytestmark = [pytest.mark.gui]
+
+
+def test_identische_solvertexte_werden_nicht_erneut_gesetzt():
+    eintrag = SimpleNamespace(text=lambda _spalte: "42", setText=Mock())
+    fenster = SimpleNamespace(_solver_werte={"Iterationen": eintrag})
+    HauptFenster._solver_status_aktualisieren(
+        fenster, {"Iterationen": 42, "Unbekannt": "ignorieren"})
+    eintrag.setText.assert_not_called()
+    HauptFenster._solver_status_aktualisieren(fenster, {"Iterationen": 43})
+    eintrag.setText.assert_called_once_with(1, "43")
 
 
 def test_modusknopfe_sind_gegenseitig_exklusiv():

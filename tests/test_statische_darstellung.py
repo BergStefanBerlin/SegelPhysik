@@ -6,6 +6,9 @@ from PySide6.QtWidgets import QApplication
 
 from segelphysik.gui.hauptfenster import HauptFenster
 
+import pytest
+pytestmark = [pytest.mark.gui, pytest.mark.integration]
+
 
 def test_fremdkraft_aenderung_invalidiert_statt_gui_physik_doppelt_zu_rechnen():
     app = QApplication.instance() or QApplication([])

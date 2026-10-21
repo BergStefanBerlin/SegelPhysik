@@ -1,0 +1,40 @@
+{
+  "kennung": "P-02",
+  "messfrage": "Wasserlinienschnitt-Cachetreffer gegen erneute Schnitt- und Geometrieberechnung",
+  "messart": "A/B-Gegenmessung im aktuellen Arbeitsbaum; kein historischer Vorherstand",
+  "datum": "2026-10-21",
+  "modell": "folkeboot",
+  "rechenpfad": "cpp",
+  "cpu": "AMD Ryzen 5 8600G w/ Radeon 760M Graphics",
+  "build": "CMake Release, C++17",
+  "meshgruppe": {
+    "punkte": 189,
+    "dreiecke": 374
+  },
+  "warmups_pro_variante": 3,
+  "laeufe_pro_variante": 5,
+  "aufrufe_pro_lauf": 20,
+  "einheit": "Mikrosekunden pro Aufruf",
+  "messgrenze": "_wasserlinien_actors: Cachetreffer gegen Schnittberechnung plus PolyData-Erzeugung; kein Rendering",
+  "rohwerte_us_pro_aufruf": {
+    "cache_treffer": [4.275, 4.39, 3.475, 4.24, 3.375],
+    "schnitt_neuberechnung": [271.125, 281.64, 262.74, 283.505, 265.145]
+  },
+  "median_us_pro_aufruf": {
+    "cache_treffer": 4.24,
+    "schnitt_neuberechnung": 271.125
+  },
+  "spannweite_us_pro_aufruf": {
+    "cache_treffer": [3.375, 4.39],
+    "schnitt_neuberechnung": [262.74, 283.505]
+  },
+  "faktor": 63.9446,
+  "medianzeitreduktion_prozent": 98.4361,
+  "bewertung": "Die Spannweiten ueberlappen nicht. Der gemessene absolute Vorteil betraegt 266.885 Mikrosekunden pro Cachetreffer auf dieser Meshgruppe. Das misst Cachelookup gegen erneute Schnitt-/Geometrieerzeugung, nicht den gesamten GUI-Frame.",
+  "einschraenkungen": [
+    "Kein konkurrierender Benchmark waehrend der Messung.",
+    "Eine Folkeboot-Meshgruppe mit 189 Punkten und 374 Dreiecken wurde gemessen.",
+    "Rendering, Actor-Anbindung und vollstaendige Framekosten sind nicht enthalten.",
+    "Die Cacheimplementierung lag bereits vor der Messung im uncommitted Arbeitsbaum."
+  ]
+}

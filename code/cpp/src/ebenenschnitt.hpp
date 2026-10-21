@@ -50,6 +50,12 @@ struct VolumenMoment {
     std::vector<double> determinanten;
     Vektor3 moment{};
 
+    void zuruecksetzen()
+    {
+        determinanten.clear();
+        moment = {};
+    }
+
     void dreieck(const Vektor3& a, const Vektor3& b, const Vektor3& c)
     {
         const double det = skalarprodukt(a, kreuzprodukt(b, c));
@@ -65,17 +71,38 @@ struct VolumenMoment {
     }
 };
 
+struct SchnittArbeitsbereich {
+    std::vector<double> abstaende;
+    VolumenMoment voll;
+    std::array<VolumenMoment, 2> eins;
+    std::array<VolumenMoment, 3> zwei;
+
+    void zuruecksetzen()
+    {
+        voll.zuruecksetzen();
+        for (auto& teil : eins) {
+            teil.zuruecksetzen();
+        }
+        for (auto& teil : zwei) {
+            teil.zuruecksetzen();
+        }
+    }
+};
+
 struct EbenenSchnitt {
     Mesh mesh;
 
     std::pair<double, Vektor3> auswerten(
-            const Vektor3& normale, double offset, const Abbruch& abbruch) const
+            const Vektor3& normale, double offset, const Abbruch& abbruch,
+            SchnittArbeitsbereich& arbeitsbereich) const
     {
         endlich(normale, "Ebenennormale");
         if (!std::isfinite(offset)) {
             throw std::invalid_argument("Ebenenoffset muss endlich sein");
         }
-        std::vector<double> abstaende;
+        arbeitsbereich.zuruecksetzen();
+        auto& abstaende = arbeitsbereich.abstaende;
+        abstaende.clear();
         abstaende.reserve(mesh.punkte.size());
         for (const auto& punkt : mesh.punkte) {
             abstaende.push_back(skalarprodukt(punkt, normale) - offset);
@@ -84,9 +111,9 @@ struct EbenenSchnitt {
         for (std::size_t i = 0; i < 3; ++i) {
             apex[i] = offset * normale[i];
         }
-        VolumenMoment voll;
-        std::array<VolumenMoment, 2> eins;
-        std::array<VolumenMoment, 3> zwei;
+        auto& voll = arbeitsbereich.voll;
+        auto& eins = arbeitsbereich.eins;
+        auto& zwei = arbeitsbereich.zwei;
         for (const auto& tri : mesh.dreiecke) {
             abbruch.pruefen();
             std::array<bool, 3> innen{};
@@ -160,6 +187,13 @@ struct EbenenSchnitt {
         }
         endlich(moment, "Schnittschwerpunkt");
         return {volumen, moment};
+    }
+
+    std::pair<double, Vektor3> auswerten(
+            const Vektor3& normale, double offset, const Abbruch& abbruch) const
+    {
+        SchnittArbeitsbereich arbeitsbereich;
+        return auswerten(normale, offset, abbruch, arbeitsbereich);
     }
 };
 

@@ -112,11 +112,19 @@ struct HydroKontext {
         : teile(std::move(eingabe)) {}
 };
 
-inline std::vector<Beitrag> hydrodynamik_beitraege(
+struct HydroArbeitsbereich {
+    SchnittArbeitsbereich hydrostatik;
+    std::vector<Beitrag> beitraege;
+    std::vector<double> nass;
+    std::vector<double> projektionen;
+    std::vector<Vektor3> mitten;
+};
+
+inline const std::vector<Beitrag>& hydrodynamik_beitraege(
         const std::vector<HydroTeil>& teile, const Matrix3& rotation,
         const Vektor3& position, const Vektor3& v, const Vektor3& omega,
         const std::array<double, 7>& parameter, std::optional<double> cd_volumen,
-        const Abbruch& abbruch)
+        HydroArbeitsbereich& arbeitsbereich, const Abbruch& abbruch)
 {
     const double rho = parameter[0], nu = parameter[1], form = parameter[2];
     const double cd_quer = parameter[3], eta = parameter[4], cd0 = parameter[5];
@@ -124,11 +132,16 @@ inline std::vector<Beitrag> hydrodynamik_beitraege(
     endlich(parameter, "Hydrodynamikparameter");
     positiv(rho, "Wasserdichte"); positiv(nu, "Viskositaet");
     positiv(eta, "Wirkungsgrad");
-    std::vector<Beitrag> beitraege;
+    auto& beitraege = arbeitsbereich.beitraege;
+    beitraege.clear();
     for (const auto& teil : teile) {
         abbruch.pruefen();
-        std::vector<double> nass;
-        std::vector<Vektor3> mitten;
+        auto& nass = arbeitsbereich.nass;
+        auto& mitten = arbeitsbereich.mitten;
+        auto& projektionen = arbeitsbereich.projektionen;
+        nass.clear();
+        mitten.clear();
+        projektionen.clear();
         Vektor3 zentrum{};
         for (std::size_t i = 0; i < teil.ecken.size(); ++i) {
             auto e = teil.ecken[i];
@@ -219,7 +232,7 @@ inline std::vector<Beitrag> hydrodynamik_beitraege(
             if (rolle == "rumpf") {
                 const double cf = ittc_reibungsbeiwert(tempo * teil.laenge / nu);
                 const double reibung = q * cf * nass_flaeche * (1. + form);
-                std::vector<double> projektionen;
+                projektionen.clear();
                 for (std::size_t i = 0; i < nass.size(); ++i) {
                     if (skalarprodukt(teil.normalen[i], teil.normalen[i]) > 0.) {
                         projektionen.push_back(nass[i] * std::abs(skalarprodukt(
@@ -267,6 +280,19 @@ inline std::vector<Beitrag> hydrodynamik_beitraege(
             teil.mesh.quell_id});
     }
     return beitraege;
+}
+
+inline std::vector<Beitrag> hydrodynamik_beitraege(
+        const std::vector<HydroTeil>& teile, const Matrix3& rotation,
+        const Vektor3& position, const Vektor3& v, const Vektor3& omega,
+        const std::array<double, 7>& parameter, std::optional<double> cd_volumen,
+        const Abbruch& abbruch)
+{
+    HydroArbeitsbereich arbeitsbereich;
+    hydrodynamik_beitraege(
+        teile, rotation, position, v, omega, parameter, cd_volumen,
+        arbeitsbereich, abbruch);
+    return std::move(arbeitsbereich.beitraege);
 }
 
 } // namespace segelphysik

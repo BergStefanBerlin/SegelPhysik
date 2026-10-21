@@ -1,0 +1,57 @@
+{
+  "kennungen": ["P-09", "P-10"],
+  "messfrage": "Laufzeit des exakten nativen Hydrostatikpfads als Baseline fuer Hydrostatik-Arbeitsbereiche und hierarchischen Schnitt",
+  "messart": "Gezielte einmalige Baseline; keine Codeaenderung am Messpfad",
+  "datum": "2026-10-21",
+  "modell": "folkeboot",
+  "rechenpfad": "cpp",
+  "szenario": "Fuenf feste Positionen/Neigungen mit teilweisem, randnahem und vollstaendigem Eintauchen; identische Posenfolge je Messgruppe",
+  "setup_ausgeschlossen": true,
+  "hydrodynamik_und_rendering_ausgeschlossen": true,
+  "warmups": 5,
+  "laeufe": 5,
+  "gruppen_pro_lauf": 100,
+  "aufrufe_pro_gruppe": 5,
+  "einheit": "Mikrosekunden pro HydrostatikKontext.auswerten-Aufruf",
+  "rohwerte_us_pro_aufruf": [26.9752, 26.796, 27.0974, 26.3314, 26.184],
+  "median_us_pro_aufruf": 26.796,
+  "spannweite_us_pro_aufruf": [26.184, 27.0974],
+  "bewertung": "Isoliert wiederholte exakte native Hydrostatik-Auswertungen im vorbereiteten Folkeboot-Kontext. Der Beleg begrenzt den Ausgangsaufwand, attribuiert aber keine Kosten an einzelne Hydrostatik-Allokationen und vergleicht keinen Hierarchie-Prototyp.",
+  "entscheidung": "Der native Batchpfad verwendet nun einen batchlokalen Hydrostatik-Schnitt-Arbeitsbereich. Kein hierarchischer Algorithmus aktiviert: ein alternativer Schnitt benoetigt unabhaengige exakte Gleichheits- und Grenzfallnachweise.",
+  "nachtraeglicher_worker_batch_recheck": {
+    "bezug": "P-03 Batchmessung nach dem Hydrostatik-Arbeitsbereichsumbau; Ergebnis des gesamten PhysikKontext.batch-Aufrufs, nicht isoliert der Hydrostatik",
+    "warmups_pro_batch": 3,
+    "laeufe_pro_batch": 5,
+    "batchaufrufe_pro_lauf": 10,
+    "batchgroessen": {
+      "1": {
+        "rohwerte_us_pro_schritt": [25.31, 27.0, 22.25, 22.05, 22.0],
+        "median_us_pro_schritt": 22.25,
+        "spannweite_us_pro_schritt": [22.0, 27.0]
+      },
+      "4": {
+        "rohwerte_us_pro_schritt": [23.39, 17.1325, 18.1725, 17.22, 16.8325],
+        "median_us_pro_schritt": 17.22,
+        "spannweite_us_pro_schritt": [16.8325, 23.39]
+      },
+      "16": {
+        "rohwerte_us_pro_schritt": [15.51625, 15.361875, 15.975, 15.609375, 15.408125],
+        "median_us_pro_schritt": 15.51625,
+        "spannweite_us_pro_schritt": [15.361875, 15.975]
+      },
+      "64": {
+        "rohwerte_us_pro_schritt": [15.3996875, 15.38359375, 15.2703125, 15.3325, 15.376875],
+        "median_us_pro_schritt": 15.376875,
+        "spannweite_us_pro_schritt": [15.2703125, 15.3996875]
+      }
+    },
+    "einheit": "Mikrosekunden pro Simulationsschritt",
+    "messgrenze": "PhysikKontext.batch einschliesslich Batchaufruf und Kraftkonvertierung; ohne Worker, Queue und GUI",
+    "einschraenkung": "Gesamt-Batch-Recheck nach dem Umbau, kein isolierter Hydrostatik-A/B-Vergleich. Die Eingabepose des frueheren P-03-Benchmarks ist nicht vollstaendig dokumentiert; daher wird daraus keine Vorher-/Nachher-Verbesserung abgeleitet."
+  },
+  "hinweise": [
+    "Warnung des Konfigurationsladers zur Massenplausibilitaet des Folkeboot-Kiels trat beim Setup auf und ist nicht Teil der gemessenen Aufrufe.",
+    "Die direkte Hydrostatik-Kontextmessung ruft die Einzelaufruf-API auf und nutzt nicht den im Batch wiederverwendeten Arbeitsbereich; sie ist daher kein Nachherwert fuer die Scratch-Wiederverwendung.",
+    "Kein isolierter Hydrostatik-Vorher-/Nachher-Gewinn behauptet."
+  ]
+}

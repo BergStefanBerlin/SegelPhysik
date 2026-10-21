@@ -7,6 +7,8 @@ from segelphysik.core.hydrodynamik import HydrodynamikModell, HydrodynamikTeil
 from segelphysik.core.koerper_formen import bau_quader
 from segelphysik.core.rechenpfad import python_referenz
 
+pytestmark = [pytest.mark.native]
+
 
 def beitraege_vergleichen(erwartet, aktuell):
     assert len(aktuell) == len(erwartet)

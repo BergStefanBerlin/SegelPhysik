@@ -77,6 +77,7 @@ struct PhysikKontext {
     Ergebnis schritt(const Zustand& zustand,
                      const std::optional<std::pair<Vektor3, Vektor3>>& fremdkraft,
                      double ruderwinkel, const Abbruch& abbruch,
+                     HydroArbeitsbereich& hydro_arbeitsbereich,
                      bool hydro_euler = false, std::optional<double> gewicht = {}) const
     {
         const auto& z = zustand.werte;
@@ -91,8 +92,11 @@ struct PhysikKontext {
             ? hydrostatik.auswerten(
                 euler_rotation(std::atan2(rotation[7], rotation[8]),
                     std::asin(std::clamp(-rotation[6], -1., 1.)), 0.),
-                {0., 0., position[2]}, abbruch)
-            : hydrostatik.auswerten(rotation, position, abbruch);
+                {0., 0., position[2]}, abbruch,
+                hydro_arbeitsbereich.hydrostatik)
+            : hydrostatik.auswerten(
+                rotation, position, abbruch,
+                hydro_arbeitsbereich.hydrostatik);
         Vektor6 relativ{};
         Vektor3 rel_v{}, rel_omega{};
         for (std::size_t i = 0; i < 3; ++i) {
@@ -109,9 +113,9 @@ struct PhysikKontext {
                 "widerstand"}};
         auto hp = hydroparameter;
         hp[6] = ruderwinkel;
-        auto rollen = hydrodynamik_beitraege(
+        const auto& rollen = hydrodynamik_beitraege(
             hydrodynamik.teile, rotation, position, rel_v, rel_omega,
-            hp, cd_volumen, abbruch);
+            hp, cd_volumen, hydro_arbeitsbereich, abbruch);
         beitraege.insert(beitraege.end(), rollen.begin(), rollen.end());
         for (const auto& teil : hydrodynamik.teile) {
             if (teil.mesh.rolle == "volumenkoerper" && !cd_volumen) {
@@ -212,6 +216,16 @@ struct PhysikKontext {
             parameter.fluid, parameter.fluidrotation, true, zustand};
         ergebnis.pruefen();
         return ergebnis;
+    }
+
+    Ergebnis schritt(const Zustand& zustand,
+                     const std::optional<std::pair<Vektor3, Vektor3>>& fremdkraft,
+                     double ruderwinkel, const Abbruch& abbruch,
+                     bool hydro_euler = false, std::optional<double> gewicht = {}) const
+    {
+        HydroArbeitsbereich hydro_arbeitsbereich;
+        return schritt(zustand, fremdkraft, ruderwinkel, abbruch,
+                       hydro_arbeitsbereich, hydro_euler, gewicht);
     }
 };
 

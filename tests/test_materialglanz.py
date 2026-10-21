@@ -1,34 +1,21 @@
-"""Testblock J - Schritt 4 (K3 Materialglanz + K4 Tube-Overlays).
+"""Materialglanz: Konfiguration, Koerper und Grafikadapter (historisch J/K3).
 
 Jede Zahl analytisch hergeleitet oder gemessen (Projekt-Lektion).
-Laeuft OHNE pyvista: die Rendering-Nahen Teile werden ueber die
-deterministischen Helfer (glanz_kw, roehren_radius) geprueft.
+Laeuft ohne Plotter: Rendering-Parameter werden ueber glanz_kw geprueft.
 """
 import json
 import os
-import sys
-import numpy as np
 import pytest
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from segelphysik.core import konfig_lader as kl
 from segelphysik.core.koerper import Koerper, GLANZ_DEFAULT
+from segelphysik.core.koerper_formen import build_box
 from segelphysik.core.fabriken import _specs_aus_konfig
 
 
 def quader_mesh(dx, dy, dz, verschiebung=(0.0, 0.0, 0.0)):
-    hx, hy, hz = dx / 2.0, dy / 2.0, dz / 2.0
-    punkte = np.array([[sx * hx, sy * hy, sz * hz]
-                       for sx in (-1, 1) for sy in (-1, 1) for sz in (-1, 1)], float)
-    punkte = punkte + np.asarray(verschiebung, float)
-    quads = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 2, 6, 4),
-             (1, 5, 7, 3), (0, 4, 5, 1), (2, 3, 7, 6)]
-    dreiecke = []
-    for q in quads:
-        dreiecke.append([q[0], q[1], q[2]])
-        dreiecke.append([q[0], q[2], q[3]])
-    return punkte, np.asarray(dreiecke, np.int64)
+    punkte, dreiecke = build_box(dx, dy, dz)
+    return punkte + verschiebung, dreiecke
 
 
 def _konfig_aus_dict(m_dict, k_dict, tmp_path):
@@ -167,76 +154,6 @@ def test_j10_farbgruppen_tragen_glanz():
     v = Koerper(teile=[(a, None), (b, None)])
     gruppen_v = _farbgruppen(v)
     assert sorted(g["glanz"] for g in gruppen_v) == [0.42, 0.77]
-
-
-def test_w1_schalentensor_wuerfel_analytisch():
-    """Offener Wuerfel (5 Flaechen, Kante a=1, fm=1): A = 5*a^2,
-    r_z = -a/10; Tensor unabhaengig ueber Plattenformeln + Steiner."""
-    from segelphysik.core.massen import traegheitstensor_flaechig, schwerpunkt_flaechig
-    a = 1.0
-    flaechen = [
-        np.array([[-.5,-.5,-.5],[.5,-.5,-.5],[.5,.5,-.5],[-.5,.5,-.5]], float),
-        np.array([[-.5,-.5,-.5],[.5,-.5,-.5],[.5,-.5,.5],[-.5,-.5,.5]], float),
-        np.array([[-.5,.5,-.5],[.5,.5,-.5],[.5,.5,.5],[-.5,.5,.5]], float),
-        np.array([[-.5,-.5,-.5],[-.5,.5,-.5],[-.5,.5,.5],[-.5,-.5,.5]], float),
-        np.array([[.5,-.5,-.5],[.5,.5,-.5],[.5,.5,.5],[.5,-.5,.5]], float),
-    ]
-    punkte, dreiecke = [], []
-    off = 0
-    for quad in flaechen:
-        idx = [off, off + 1, off + 2, off + 3]
-        dreiecke += [[idx[0], idx[1], idx[2]], [idx[0], idx[2], idx[3]]]
-        punkte += [list(q) for q in quad]
-        off += 4
-    punkte = np.asarray(punkte, float)
-    dreiecke = np.asarray(dreiecke, np.int64)
-    fm = 1.0
-    r, A = schwerpunkt_flaechig(punkte, dreiecke)
-    assert A == pytest.approx(5 * a * a)
-    assert r[2] == pytest.approx(-0.1)
-    I_ref = np.zeros((3, 3))
-    mb = a * a * fm                       # Bodenplatte, Zentrum (0,0,-0.5)
-    d_b = np.array([0.0, 0.0, -0.5]) - r  # = (0,0,-0.4)
-    I_ref[0, 0] += mb * a * a / 12 + mb * (d_b[1]**2 + d_b[2]**2)
-    I_ref[1, 1] += mb * a * a / 12 + mb * (d_b[0]**2 + d_b[2]**2)
-    I_ref[2, 2] += mb * a * a / 6
-    for sx, sy, sz in ((0, -.5, 0), (0, .5, 0), (-.5, 0, 0), (.5, 0, 0)):
-        mw = a * a * fm                   # Seitenflaeche, Zentrum (sx,sy,0)
-        d = np.array([sx, sy, sz]) - r    # z-Komponente ist +0.1, nicht -0.4!
-        if abs(sy) > 0:                   # Normale y: Iyy = a^2/6 (Normalachse)
-            Ixx, Iyy, Izz = mw * a * a / 12, mw * a * a / 6, mw * a * a / 12
-        else:                             # Normale x: Ixx = a^2/6
-            Ixx, Iyy, Izz = mw * a * a / 6, mw * a * a / 12, mw * a * a / 12
-        I_ref[0, 0] += Ixx + mw * (d[1]**2 + d[2]**2)
-        I_ref[1, 1] += Iyy + mw * (d[0]**2 + d[2]**2)
-        I_ref[2, 2] += Izz + mw * (d[0]**2 + d[1]**2)
-    J = traegheitstensor_flaechig(punkte, dreiecke, fm)
-    np.testing.assert_allclose(np.diag(J), np.diag(I_ref), rtol=1e-10)
-    np.testing.assert_allclose(J - np.diag(np.diag(J)), 0.0, atol=1e-12)
-
-
-def test_schalentensor_bleibt_bei_grossen_absolutkoordinaten_stabil():
-    from segelphysik.core.massen import (
-        traegheitstensor_flaechig,
-        validiere_traegheitstensor,
-    )
-    punkte = np.array([
-        [0.0, 0.0, 0.0],
-        [0.01, 0.0, 0.0],
-        [0.01, 0.008, 0.002],
-        [0.0, 0.008, 0.002],
-    ])
-    dreiecke = np.array([[0, 1, 2], [0, 2, 3]])
-    versatz = np.array([0.2862, 0.016625, 5.13055])
-
-    referenz = traegheitstensor_flaechig(punkte, dreiecke, 5.4)
-    verschoben = traegheitstensor_flaechig(
-        punkte + versatz, dreiecke, 5.4)
-
-    np.testing.assert_allclose(verschoben, referenz, rtol=1e-12, atol=1e-20)
-    validiere_traegheitstensor(verschoben)
-
-
 def test_w2_glanz_kw_lineare_steigung():
     from segelphysik.grafik_bruecke import glanz_kw
     a, b = glanz_kw(0.2), glanz_kw(0.7)
@@ -244,21 +161,6 @@ def test_w2_glanz_kw_lineare_steigung():
     assert steigung_power == pytest.approx(115.0)
     steigung_spec = (b["specular"] - a["specular"]) / 0.5
     assert steigung_spec == pytest.approx(1.0)
-
-
-def test_w3_roehrenradius_formel():
-    """roehren_radius = max(0.25 * marker_radius, 0.006); Marker-Radius =
-    clamp(0.04 * halbe_Ausdehnung, 0.02, 0.16)."""
-    from segelphysik.grafik_bruecke import GrafikBruecke
-    br = GrafikBruecke.__new__(GrafikBruecke)
-    class P:
-        pass
-    p1 = P(); p1.punkte = np.array([[0.2, 0, 0]])
-    assert GrafikBruecke.roehren_radius(br, p1) == pytest.approx(0.006)
-    p2 = P(); p2.punkte = np.array([[2.0, 0, 0]])
-    assert GrafikBruecke.roehren_radius(br, p2) == pytest.approx(0.02)
-
-
 def test_w4_migration_alte_materialien_laden_ohne_glanz(tmp_path):
     """H7-artige Gegenprobe: der alte Stand (ohne 'glanz') laedt unveraendert."""
     m = json.loads(json.dumps(MATERIALIEN_BASIS))

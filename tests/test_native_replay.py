@@ -6,6 +6,8 @@ import pytest
 from werkzeuge.migration_replay import vorlaeufig_pruefen
 from werkzeuge.pruefe_genauigkeit_v09 import ZIEL, referenzfaelle
 
+pytestmark = [pytest.mark.native, pytest.mark.integration]
+
 
 def test_vorlaeufiger_nativer_replay_gegen_unveraenderte_referenzen(monkeypatch):
     monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", "cpp")

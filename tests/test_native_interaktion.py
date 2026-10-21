@@ -9,6 +9,8 @@ from segelphysik.core.rechenpfad import python_referenz
 from segelphysik.core.statisch import SolverFehler
 from werkzeuge.migration_szenarien import koerper_laden
 
+pytestmark = [pytest.mark.native]
+
 
 def test_native_vereinfachte_dynamik_1000_zustaende(monkeypatch):
     monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", "cpp")

@@ -11,6 +11,8 @@ from segelphysik.core.koerper import Koerper
 from segelphysik.core.koerper_formen import build_box
 from segelphysik.core.rechenpfad import python_referenz
 
+pytestmark = [pytest.mark.native]
+
 
 ROOT = Path(__file__).resolve().parents[1]
 

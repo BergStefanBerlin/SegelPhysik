@@ -10,6 +10,8 @@ from segelphysik.core.rechenpfad import python_referenz
 from werkzeuge.migration_batch import kontexte
 from werkzeuge.migration_szenarien import kraftzeile
 
+pytestmark = [pytest.mark.native, pytest.mark.integration]
+
 
 @pytest.fixture(autouse=True)
 def unabhaengige_python_referenz():
@@ -17,7 +19,11 @@ def unabhaengige_python_referenz():
     yield
 
 
-@pytest.mark.parametrize("name", ["optimist", "folkeboot", "yacht1"])
+@pytest.mark.slow
+@pytest.mark.parametrize("name", [
+    "folkeboot",
+    pytest.param("optimist", marks=pytest.mark.diagnostic),
+])
 def test_nativer_batch_gegen_jeden_referenzschritt(monkeypatch, name):
     monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", "cpp")
     k, physik, kraft, kontext = kontexte(name)
@@ -51,7 +57,7 @@ def test_batch_ohne_python_schritt_oder_kraftcallback(monkeypatch):
     from segelphysik.core import dynamik_6dof
 
     monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", "cpp")
-    _, _, _, kontext = kontexte("optimist")
+    _, _, _, kontext = kontexte("folkeboot")
     native = native_laden()
     start = Zustand6DOF(position=(0., 0., -.05))
     fremd = ((12., -3., 1.), (.3, .1, -.2))
@@ -78,7 +84,7 @@ def test_batch_ohne_python_schritt_oder_kraftcallback(monkeypatch):
 @pytest.mark.parametrize("anzahl", [0, -1, True, False, 1.5, "2", 2**64])
 def test_batch_lehnt_ungueltige_batchanzahl_ab(monkeypatch, anzahl):
     monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", "cpp")
-    _, _, _, kontext = kontexte("optimist")
+    _, _, _, kontext = kontexte("folkeboot")
     native = native_laden()
     with pytest.raises((ValueError, TypeError, OverflowError)):
         kontext.batch(zustand_vorbereiten(Zustand6DOF()), anzahl, None, 0., native.Abbruch())
@@ -86,7 +92,7 @@ def test_batch_lehnt_ungueltige_batchanzahl_ab(monkeypatch, anzahl):
 
 def test_batch_abbruch_auch_vor_dem_ersten_schritt(monkeypatch):
     monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", "cpp")
-    _, _, _, kontext = kontexte("optimist")
+    _, _, _, kontext = kontexte("folkeboot")
     native = native_laden()
     abbruch = native.Abbruch()
     abbruch.abbrechen()

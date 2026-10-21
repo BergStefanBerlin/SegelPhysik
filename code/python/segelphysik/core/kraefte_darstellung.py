@@ -94,11 +94,15 @@ def zahlenwert(wert, einheit: str, *, status=Datenstatus.GUELTIG,
         raise ValueError("Nullstatus widerspricht dem Zahlenwert")
     if einheit not in ("N", "N*m", "m", "s"):
         raise ValueError("Unbekannte Anzeigeeinheit: %s" % einheit)
-    if not details and einheit in ("N", "N*m") and abs(wert) >= 1000:
-        wert /= 1000
-        einheit = "k" + einheit
-    text = "0" if wert == 0 else format(wert, ".17g" if details else ".4g")
-    return text.replace(".", ",") + " " + einheit
+    if einheit in ("N", "N*m", "m"):
+        text = format(wert, ",.2f" if einheit == "m" else ",.0f")
+        if text in ("-0", "-0.00"):
+            text = text[1:]
+        text = text.replace(",", " ").replace(".", ",")
+    else:
+        text = ("0" if wert == 0 else
+                format(wert, ".17g" if details else ".4g").replace(".", ","))
+    return text + " " + ("Nm" if einheit == "N*m" else einheit)
 
 
 @dataclass(frozen=True, slots=True)

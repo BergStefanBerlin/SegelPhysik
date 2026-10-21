@@ -1,0 +1,31 @@
+{
+  "kennung": "P-08",
+  "messfrage": "Python-Hydrodynamik-Auswertung nach einmaliger Normalenmasken-Vorbereitung",
+  "messart": "Gezielte Vorher-/Nachher-Messung im selben Quell-/Datenstand",
+  "datum": "2026-10-21",
+  "modell": "folkeboot",
+  "rechenpfad": "python_referenz",
+  "eingabe": {
+    "pose": [[0.0, 0.0, -0.08], [1.0, 0.0, 0.0, 0.0]],
+    "geschwindigkeit_m_pro_s": [1.2, 0.15, 0.04],
+    "winkelgeschwindigkeit_rad_pro_s": [0.01, 0.02, 0.03]
+  },
+  "warmups_pro_stand": 5,
+  "laeufe_pro_stand": 5,
+  "aufrufe_pro_lauf": 100,
+  "einheit": "Mikrosekunden pro Aufruf",
+  "messgrenze": "HydrodynamikModell.beitraege_erzeugen einschliesslich vorbereiteter Geometrie und Kraftbeitraege",
+  "rohwerte_vorher_us": [386.39, 389.742, 378.719, 387.833, 394.764],
+  "rohwerte_nachher_us": [375.61, 369.227, 364.524, 380.589, 378.015],
+  "median_vorher_us": 387.833,
+  "median_nachher_us": 375.61,
+  "spannweite_vorher_us": [378.719, 394.764],
+  "spannweite_nachher_us": [364.524, 380.589],
+  "medianzeitreduktion_prozent": 3.1516,
+  "bewertung": "Die Medianzeit ist 3.15 Prozent niedriger, jedoch ueberlappen die Laufspannweiten (378.719 bis 380.589 Mikrosekunden). Der Laufzeitgewinn ist daher nicht eindeutig ueber der beobachteten Streuung belegt.",
+  "aenderung": "HydrodynamikTeil berechnet die Maske gueltiger Normalen einmal bei der unveraenderlichen Geometrievorbereitung und verwendet sie im Python-Referenzpfad wieder.",
+  "einschraenkungen": [
+    "Der Vergleich umfasst den gesamten Hydrodynamik-Beitragsaufruf; der spezifische Maskenanteil ist nicht separat instrumentiert.",
+    "Keine konkurrierende Benchmark-/Testlast waehrend der Messreihen."
+  ]
+}

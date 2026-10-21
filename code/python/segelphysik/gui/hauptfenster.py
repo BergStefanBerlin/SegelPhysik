@@ -1103,7 +1103,7 @@ class HauptFenster(QMainWindow):
             np.asarray(pose.geschwindigkeit_koerper, dtype=float)))
         fenster.aktualisieren(
             werte, self._einstellungen.bereich("anzeigen"),
-            geschwindigkeit)
+            geschwindigkeit, verzoegert=self._echtzeit_timer.isActive())
 
     def _segelwinkel_ermitteln(self, koerper_name):
         knoten = getattr(self, "baum", None)
@@ -2016,6 +2016,8 @@ class HauptFenster(QMainWindow):
             self._echtzeit_anzeige_verlauf = [
                 (self._echtzeit_berechnet_s, self._echtzeit_zustand)]
         if war_laufend:
+            self._kraefte_werte.ausstehende_werte_anzeigen()
+            self._navigationsanzeigen_aktualisieren()
             self._solver_status_aktualisieren({
                 "Lösungstyp": "Pausiert",
                 **self._echtzeit_zeitbilanz_status(),
@@ -2491,7 +2493,8 @@ class HauptFenster(QMainWindow):
                 self._kraftsichtbarkeiten_abgleichen(bruecke, neu_zeichnen=False)
                 self._kraefte_werte.koerper_setzen(self._laufzeit_koerper)
                 self._kraefte_werte.snapshots_setzen(
-                    self._kraftanzeige_snapshots.values())
+                    self._kraftanzeige_snapshots.values(),
+                    verzoegert=self._echtzeit_timer.isActive())
                 QTimer.singleShot(0, self._kraftlegende_aktualisieren)
             else:
                 raise ValueError(
@@ -2516,7 +2519,9 @@ class HauptFenster(QMainWindow):
         for schluessel, wert in werte.items():
             eintrag = self._solver_werte.get(schluessel)
             if eintrag is not None:
-                eintrag.setText(1, str(wert))
+                text = str(wert)
+                if eintrag.text(1) != text:
+                    eintrag.setText(1, text)
 
     def protokoll_schreiben(self, text):
 

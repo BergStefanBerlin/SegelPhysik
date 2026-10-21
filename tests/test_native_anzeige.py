@@ -11,6 +11,8 @@ from segelphysik.core.stationaer_hydrodynamik import _rotation
 from segelphysik.core.stoerung import rotationsmatrix
 from werkzeuge.migration_worker import folgevergleich
 
+pytestmark = [pytest.mark.native]
+
 
 def test_slerp_1000_zufaellige_und_antipodale_quaternionen(monkeypatch):
     monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", "cpp")

@@ -18,8 +18,10 @@ from segelphysik.gui.baum import (
 from segelphysik.gui.baum_widget import BaumWidget
 from segelphysik.gui.hauptfenster import HauptFenster
 
+pytestmark = [pytest.mark.gui, pytest.mark.integration, pytest.mark.usefixtures("qapp")]
+
 def _qt_app():
-    return QApplication.instance() or QApplication([])
+    return QApplication.instance()
 
 
 def _koerper_stub(**werte):
@@ -610,6 +612,7 @@ def test_echtzeit_anzeige_bleibt_bei_unregelmaessigen_batches_gleichfoermig(
     fenster.close()
 
 
+@pytest.mark.slow
 def test_echtzeit_render_timer_misst_erfolgreiche_frames():
     from PySide6.QtCore import QEventLoop, QTimer
     from segelphysik.core.dynamik_6dof import Zustand6DOF
@@ -795,6 +798,7 @@ def test_solverfehler_zeigt_abbruchgrund_und_letzte_residuen(
     fenster.close()
 
 
+@pytest.mark.slow
 def test_statischer_solver_blockiert_gui_nicht_und_verwirft_altes_ergebnis(
         monkeypatch, tmp_path):
     import threading

@@ -252,6 +252,7 @@ def test_6dof_broadphase_bezieht_alle_teilmeshes_ein():
     assert result.F_A.as_array() == pytest.approx((0.0, 0.0, 78480.0))
 
 
+@pytest.mark.slow
 def test_opencl_voxel_hydrostatik_stimmt_mit_cpu_ueberein(caplog):
     from segelphysik.core.physik_backend import (
         BackendNichtVerfuegbar, OpenCLBackend,
@@ -339,3 +340,15 @@ def test_6dof_lehnt_ungueltige_dynamikparameter_ab(kwargs):
         schritt(
             Zustand6DOF(), lambda *_args, **_kw: _kraft(),
             **parameter)
+
+
+def test_6dof_validiert_geaenderten_traegheitstensor_erneut():
+    traegheit = np.eye(3)
+    parameter = (Zustand6DOF(), lambda *_args, **_kw: _kraft(),
+                 1.0, traegheit, 0.01, 9.81)
+
+    schritt(*parameter)
+    traegheit[2, 2] = 0.0
+
+    with pytest.raises(ValueError, match="positiv definit"):
+        schritt(*parameter)

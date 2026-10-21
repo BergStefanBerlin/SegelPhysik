@@ -1,5 +1,6 @@
 """Qt-Tests fuer sichtbare Baumzustaende und die C-8-Bedienbarkeit."""
 import os
+import pytest
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
@@ -12,6 +13,8 @@ from PySide6.QtWidgets import QApplication
 from segelphysik.gui.baum import sichtbarkeit_setzen, welt_aus_json
 from segelphysik.gui.hauptfenster import HauptFenster
 from segelphysik.gui.baum_widget import BaumWidget, TeilaktivDelegate
+
+pytestmark = [pytest.mark.gui, pytest.mark.usefixtures("qapp")]
 
 
 _JSON = {
@@ -33,7 +36,7 @@ _JSON = {
 
 
 def _qt_app():
-    return QApplication.instance() or QApplication([])
+    return QApplication.instance()
 
 
 def _item(widget, text):

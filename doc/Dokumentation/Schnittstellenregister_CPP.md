@@ -149,16 +149,20 @@ gleich häufig oder standardmäßig ausgeführt werden.
 
 Vorbereitetes Modell-/Frameverfahren.
 
-| Kennung | Interface | Status | Python-Referenz [µs] | V0.10 [µs / Faktor] |
-|---|---|---|---|---|
-| CPPI-0023 | `quaternion_normalisieren` | Aktiv angebunden | [6.560](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-029) | [18.093 / 0.363x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-029) |
-| CPPI-0024 | `quaternion_matrix` | Aktiv angebunden | [14.360](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-030) | [18.412 / 0.780x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-030) |
-| CPPI-0025 | `quaternion_aus_matrix` | Aktiv angebunden | [58.967](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-031) | [20.098 / 2.934x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-031) |
-| CPPI-0026 | `quaternion_multiplizieren` | Aktiv angebunden | [2.525](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-033) | [8.361 / 0.302x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-033) |
-| CPPI-0027 | `orientierung_schritt` | Aktiv angebunden | [10.231](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-034) | [9.798 / 1.044x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-034) |
-| CPPI-0028 | `rotationsmatrix_achsenwinkel` | Aktiv angebunden | [7.369](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-041) | [9.299 / 0.792x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-041) |
-| CPPI-0029 | `pose_mit_gelenkwinkel` | Aktiv angebunden | [7.674](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-043) | [21.724 / 0.353x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-043) |
-| CPPI-0030 | `verband_aggregieren` | Aktiv angebunden | nicht separat gemessen | nur Elternblock: [111](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-111), [135](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-135), [159](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-159) |
+Die V0.12-Spalte verweist auf direkte Wrapper-Mikrobenchmarks mit sieben
+Messwiederholungen und je 10.000 Aufrufen nach Warm-up. Der Faktor ist
+Python-Median/C++-Median; diese Werte belegen keine End-to-End-Wirkung.
+
+| Kennung | Interface | Status | Python-Referenz [µs] | V0.10 [µs / Faktor] | V0.12 [µs / Faktor] |
+|---|---|---|---|---|---|
+| CPPI-0023 | `quaternion_normalisieren` | Aktiv angebunden | [6.560](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-029) | [18.093 / 0.363x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-029) | [3.447 / 0.335x](../WegZuV1.0/Revisionslog/zuV0.12/Messungen/Speed_V0.12_2026-10-21/wrapper_kandidaten.json) |
+| CPPI-0024 | `quaternion_matrix` | Aktiv angebunden | [14.360](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-030) | [18.412 / 0.780x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-030) | [6.502 / 0.622x](../WegZuV1.0/Revisionslog/zuV0.12/Messungen/Speed_V0.12_2026-10-21/wrapper_kandidaten.json) |
+| CPPI-0025 | `quaternion_aus_matrix` | Aktiv angebunden | [58.967](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-031) | [20.098 / 2.934x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-031) | nicht separat gemessen |
+| CPPI-0026 | `quaternion_multiplizieren` | Aktiv angebunden | [2.525](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-033) | [8.361 / 0.302x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-033) | [2.492 / 0.237x](../WegZuV1.0/Revisionslog/zuV0.12/Messungen/Speed_V0.12_2026-10-21/wrapper_kandidaten.json) |
+| CPPI-0027 | `orientierung_schritt` | Aktiv angebunden | [10.231](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-034) | [9.798 / 1.044x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-034) | nicht separat gemessen |
+| CPPI-0028 | `rotationsmatrix_achsenwinkel` | Aktiv angebunden | [7.369](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-041) | [9.299 / 0.792x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-041) | nicht separat gemessen |
+| CPPI-0029 | `pose_mit_gelenkwinkel` | Aktiv angebunden | [7.674](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-043) | [21.724 / 0.353x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-043) | nicht separat gemessen |
+| CPPI-0030 | `verband_aggregieren` | Aktiv angebunden | nicht separat gemessen | nur Elternblock: [111](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-111), [135](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-135), [159](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-159) | nicht separat gemessen |
 
 ### Wasser-/Ebenenschnitt und Konturen
 
@@ -218,12 +222,12 @@ Nutzung hängt vom GUI-/Anzeigepfad ab.
 
 ### Navigation und Richtungswerte
 
-| Kennung | Interface | Status | Python-Referenz [µs] | V0.10 [µs / Faktor] |
-|---|---|---|---|---|
-| CPPI-0059 | `winkel_360` | Aktiv angebunden | [0.209](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-055) | [7.497 / 0.028x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-055) |
-| CPPI-0060 | `wrap_180` | Aktiv angebunden | [0.713](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-056) | [17.731 / 0.040x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-056) |
-| CPPI-0061 | `richtungssektor` | Aktiv angebunden | [0.772](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-057) | [16.542 / 0.047x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-057) |
-| CPPI-0062 | `navigationswerte` | Aktiv angebunden | [28.772](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-054) | [18.479 / 1.557x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-054) |
+| Kennung | Interface | Status | Python-Referenz [µs] | V0.10 [µs / Faktor] | V0.12 [µs / Faktor] |
+|---|---|---|---|---|---|
+| CPPI-0059 | `winkel_360` | Aktiv angebunden | [0.209](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-055) | [7.497 / 0.028x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-055) | [0.201 / 0.021x](../WegZuV1.0/Revisionslog/zuV0.12/Messungen/Speed_V0.12_2026-10-21/wrapper_kandidaten.json) |
+| CPPI-0060 | `wrap_180` | Aktiv angebunden | [0.713](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-056) | [17.731 / 0.040x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-056) | [0.236 / 0.024x](../WegZuV1.0/Revisionslog/zuV0.12/Messungen/Speed_V0.12_2026-10-21/wrapper_kandidaten.json) |
+| CPPI-0061 | `richtungssektor` | Aktiv angebunden | [0.772](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-057) | [16.542 / 0.047x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-057) | [0.269 / 0.029x](../WegZuV1.0/Revisionslog/zuV0.12/Messungen/Speed_V0.12_2026-10-21/wrapper_kandidaten.json) |
+| CPPI-0062 | `navigationswerte` | Aktiv angebunden | [28.772](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-054) | [18.479 / 1.557x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-054) | nicht separat gemessen |
 
 ### Wasserpunkte und Oberflächen
 
@@ -259,17 +263,17 @@ Ersetzt nicht die noch offene allgemeine Topologievalidierung.
 
 Qt-/VTK-Actorverwaltung bleibt Adapter.
 
-| Kennung | Interface | Status | Python-Referenz [µs] | V0.10 [µs / Faktor] |
-|---|---|---|---|---|
-| CPPI-0079 | `pfeil_daten` | Aktiv angebunden | [4.818](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-063) | [9.528 / 0.506x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-063) |
-| CPPI-0080 | `pfeil_fest` | Aktiv angebunden | [5.278](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-064) | [14.700 / 0.359x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-064) |
-| CPPI-0081 | `kraft_paarmoment` | Aktiv angebunden | [14.904](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-065)<br>[14.742](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-066) | [10.558 / 1.412x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-065)<br>[9.416 / 1.566x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-066) |
-| CPPI-0082 | `kraft_skala` | Aktiv angebunden | [0.288](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-067) | [11.464 / 0.025x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-067) |
-| CPPI-0083 | `kraft_pfeile` | Aktiv angebunden | [10.966](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-068) | [11.330 / 0.968x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-068) |
-| CPPI-0084 | `zusatz_pfeile` | Aktiv angebunden | [15.416](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-069) | [11.868 / 1.299x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-069) |
-| CPPI-0085 | `moment_bogen` | Aktiv angebunden | [18.040](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-070)<br>[17.982](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-071) | [9.798 / 1.841x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-070)<br>[9.764 / 1.842x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-071) |
-| CPPI-0086 | `strich_linien` | Aktiv angebunden | [759.136](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-072) | [19.960 / 38.033x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-072) |
-| CPPI-0087 | `wirkungslinie` | Aktiv angebunden | [203.876](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-073) | [102.872 / 1.982x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-073) |
+| Kennung | Interface | Status | Python-Referenz [µs] | V0.10 [µs / Faktor] | V0.12 [µs / Faktor] |
+|---|---|---|---|---|---|
+| CPPI-0079 | `pfeil_daten` | Aktiv angebunden | [4.818](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-063) | [9.528 / 0.506x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-063) | nicht separat gemessen |
+| CPPI-0080 | `pfeil_fest` | Aktiv angebunden | [5.278](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-064) | [14.700 / 0.359x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-064) | [4.511 / 0.283x](../WegZuV1.0/Revisionslog/zuV0.12/Messungen/Speed_V0.12_2026-10-21/wrapper_kandidaten.json) |
+| CPPI-0081 | `kraft_paarmoment` | Aktiv angebunden | [14.904](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-065)<br>[14.742](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-066) | [10.558 / 1.412x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-065)<br>[9.416 / 1.566x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-066) | nicht separat gemessen |
+| CPPI-0082 | `kraft_skala` | Aktiv angebunden | [0.288](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-067) | [11.464 / 0.025x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-067) | nicht separat gemessen |
+| CPPI-0083 | `kraft_pfeile` | Aktiv angebunden | [10.966](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-068) | [11.330 / 0.968x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-068) | nicht separat gemessen |
+| CPPI-0084 | `zusatz_pfeile` | Aktiv angebunden | [15.416](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-069) | [11.868 / 1.299x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-069) | nicht separat gemessen |
+| CPPI-0085 | `moment_bogen` | Aktiv angebunden | [18.040](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-070)<br>[17.982](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-071) | [9.798 / 1.841x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-070)<br>[9.764 / 1.842x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-071) | [17.238 / 1.493x](../WegZuV1.0/Revisionslog/zuV0.12/Messungen/Speed_V0.12_2026-10-21/wrapper_kandidaten.json) |
+| CPPI-0086 | `strich_linien` | Aktiv angebunden | [759.136](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-072) | [19.960 / 38.033x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-072) | nicht separat gemessen |
+| CPPI-0087 | `wirkungslinie` | Aktiv angebunden | [203.876](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-073) | [102.872 / 1.982x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-073) | nicht separat gemessen |
 
 ### Hauptachsen
 
@@ -285,24 +289,24 @@ Eigenlöser bleibt NumPy, VTK-Actoradapter bleibt Python.
 
 PyVista-/VTK-Objekte werden weiterhin im Adapter verwaltet.
 
-| Kennung | Interface | Status | Python-Referenz [µs] | V0.10 [µs / Faktor] |
-|---|---|---|---|---|
-| CPPI-0091 | `grafik_transformieren` | Aktiv angebunden | [45.430](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-097)<br>[36.585](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-121)<br>[52.185](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-145) | [67.565 / 0.672x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-097)<br>[63.395 / 0.577x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-121)<br>[91.050 / 0.573x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-145) |
-| CPPI-0092 | `grafik_farbgeometrie` | Aktiv angebunden | [73.330](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-094)<br>[51.970](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-118)<br>[70.310](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-142) | [74.750 / 0.981x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-094)<br>[50.400 / 1.031x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-118)<br>[81.900 / 0.858x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-142) |
-| CPPI-0093 | `grafik_meshes_vereinen` | Aktiv angebunden | [117.990](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-095)<br>[108.420](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-119)<br>[197.110](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-143) | [674.010 / 0.175x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-095)<br>[550.890 / 0.197x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-119)<br>[1211.010 / 0.163x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-143) |
-| CPPI-0094 | `grafik_dreieckszellen` | Aktiv angebunden | [89.534](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-077) | [102.280 / 0.875x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-077) |
+| Kennung | Interface | Status | Python-Referenz [µs] | V0.10 [µs / Faktor] | V0.12 [µs / Faktor] |
+|---|---|---|---|---|---|
+| CPPI-0091 | `grafik_transformieren` | Aktiv angebunden | [45.430](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-097)<br>[36.585](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-121)<br>[52.185](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-145) | [67.565 / 0.672x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-097)<br>[63.395 / 0.577x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-121)<br>[91.050 / 0.573x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-145) | [17.025 / 2.691x](../WegZuV1.0/Revisionslog/zuV0.12/Messungen/Speed_V0.12_2026-10-21/grafik_transformieren_kandidaten.json) |
+| CPPI-0092 | `grafik_farbgeometrie` | Aktiv angebunden | [73.330](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-094)<br>[51.970](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-118)<br>[70.310](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-142) | [74.750 / 0.981x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-094)<br>[50.400 / 1.031x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-118)<br>[81.900 / 0.858x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-142) | nicht separat gemessen |
+| CPPI-0093 | `grafik_meshes_vereinen` | Aktiv angebunden | [117.990](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-095)<br>[108.420](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-119)<br>[197.110](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-143) | [674.010 / 0.175x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-095)<br>[550.890 / 0.197x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-119)<br>[1211.010 / 0.163x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-143) | nicht separat gemessen |
+| CPPI-0094 | `grafik_dreieckszellen` | Aktiv angebunden | [89.534](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-077) | [102.280 / 0.875x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-077) | nicht separat gemessen |
 
 ### Kamera und Instrumente
 
 Qt, SVG/XML- und VTK-Objektverwaltung bleiben Adapter.
 
-| Kennung | Interface | Status | Python-Referenz [µs] | V0.10 [µs / Faktor] |
-|---|---|---|---|---|
-| CPPI-0095 | `kameralage` | Aktiv angebunden | [12.971](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-084) | [20.221 / 0.641x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-084) |
-| CPPI-0096 | `kamera_aktualisieren` | Aktiv angebunden | [90.646](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-083) | [77.996 / 1.162x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-083) |
-| CPPI-0097 | `instrument_aufbereitung` | Aktiv angebunden | nicht separat gemessen | nur Elternblock: [085](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-085), [086](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-086), [087](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-087) |
-| CPPI-0098 | `svg_rahmen` | Aktiv angebunden | [0.964](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-090) | [24.265 / 0.040x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-090) |
-| CPPI-0099 | `geschwindigkeitseinheiten` | Aktiv angebunden | [0.518](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-091) | [23.192 / 0.022x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-091) |
+| Kennung | Interface | Status | Python-Referenz [µs] | V0.10 [µs / Faktor] | V0.12 [µs / Faktor] |
+|---|---|---|---|---|---|
+| CPPI-0095 | `kameralage` | Aktiv angebunden | [12.971](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-084) | [20.221 / 0.641x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-084) | nicht separat gemessen |
+| CPPI-0096 | `kamera_aktualisieren` | Aktiv angebunden | [90.646](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-083) | [77.996 / 1.162x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-083) | nicht separat gemessen |
+| CPPI-0097 | `instrument_aufbereitung` | Aktiv angebunden | nicht separat gemessen | nur Elternblock: [085](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-085), [086](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-086), [087](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-087) | nicht separat gemessen |
+| CPPI-0098 | `svg_rahmen` | Aktiv angebunden | [0.964](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-090) | [24.265 / 0.040x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-090) | [0.401 / 0.038x](../WegZuV1.0/Revisionslog/zuV0.12/Messungen/Speed_V0.12_2026-10-21/wrapper_kandidaten.json) |
+| CPPI-0099 | `geschwindigkeitseinheiten` | Aktiv angebunden | [0.518](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-091) | [23.192 / 0.022x](../WegZuV1.0/Revisionslog/zuV0.10/Messungen/Abschlussbilanz_V0.10_2026-10-20.md#messfall-091) | [0.192 / 0.019x](../WegZuV1.0/Revisionslog/zuV0.12/Messungen/Speed_V0.12_2026-10-21/wrapper_kandidaten.json) |
 
 ### Grundformen und Formgeometrie
 
@@ -567,3 +571,21 @@ beide Pfade einschließlich Drehsinn, Null, Vorzeichenwechsel und
 Generationscache. Die produktive Anbindung an den neuen Actorpfad ist
 inzwischen regressionsgeprüft; sichtbare Verfahrensabnahme und vollständiger
 Altpfadabbau bleiben offen. Weiterhin **nicht separat gemessen**.
+
+**Prüfung des nativen Worker-Batches V0.12 (21.10.2026):**
+CPPI-0112 (`PhysikKontext.batch`) behält seinen öffentlichen Vertrag.
+Der produktive Batchpfad verwendet nun einen batchlokalen
+`HydroArbeitsbereich`, der Hydrodynamik-Arbeitsvektoren über mehrere
+Einzelschritte wiederverwendet; parallele Aufrufe teilen keinen Arbeitsbereich.
+Der direkte `HydroKontext.beitraege`-Adapter und der bisherige Einzelschritt-
+Aufruf bleiben vertragskompatibel. Es wurde kein neues Python/C++-Interface
+eingeführt und keine CPPI-Kennung vergeben.
+
+Die fünf Kandidatenläufe verbesserten den gemessenen Worker-Batch-Median von
+1,66495 auf 1,47140 ms; die Messgrenze enthält Python-Adapter- und Workerpfad-
+Kosten und ist kein isolierter CPPI-0112-Einzelmesswert. Deshalb bleibt die
+Interface-Laufzeit **nicht separat gemessen**; die Worker-Batch-Messung ist
+als Elternblock in der
+[V0.12-Vergleichsauswertung](../WegZuV1.0/Revisionslog/zuV0.12/Messungen/Speed_V0.12_2026-10-21/hydro_workspace_assessment_v0.12.json)
+dokumentiert. Der Build war erfolgreich; der gezielte Testlauf hatte 63
+Bestanden und denselben historischen Optimist-Paritätsfehler wie zuvor.

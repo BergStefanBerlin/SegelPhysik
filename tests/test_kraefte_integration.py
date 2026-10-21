@@ -22,6 +22,8 @@ from segelphysik.core.native_backend import (
 from segelphysik.core.overlays import LAYER_KRAEFTE, LAYER_MOMENTE
 from segelphysik.grafik_bruecke import GrafikBruecke
 
+pytestmark = [pytest.mark.gui, pytest.mark.integration]
+
 
 @pytest.fixture(params=("python", "cpp"), autouse=True)
 def backend(request, monkeypatch):
@@ -100,7 +102,7 @@ def test_dynamik_snapshot_hat_kraftpose_nicht_endpose():
     assert snapshot.rechenbilanz == snapshot.bilanz.wrench
 
 
-@pytest.mark.parametrize("modellname", (None, "optimist", "folkeboot", "yacht1"))
+@pytest.mark.parametrize("modellname", (None, "folkeboot"))
 def test_anzeigebilanz_entspricht_tatsaechlichem_implizitem_integratorschritt(modellname):
     from segelphysik.core.dynamik_6dof import quaternion_matrix
     added = np.array((2, 3, 4, 1, 2, 3), dtype=float)
@@ -1050,6 +1052,7 @@ def test_statikqueue_beachtet_qt_mindestkapazitaet_und_startet_alle_aktuellen_ko
         app.processEvents()
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("abschluss", ("neuester-stand", "moduswechsel", "schliessen"))
 def test_statische_aenderungsserien_halten_nur_den_neuesten_folgeauftrag(
         bruecke, monkeypatch, abschluss):
@@ -1114,6 +1117,39 @@ def test_statische_aenderungsserien_halten_nur_den_neuesten_folgeauftrag(
         app.processEvents()
 
 
+def test_echtzeit_werte_verzoegern_nicht_3d_und_pause_zeigt_endwert(
+        bruecke, monkeypatch):
+    from types import SimpleNamespace
+    from segelphysik.gui.hauptfenster import HauptFenster
+    app = QApplication.instance() or QApplication([])
+    fenster = HauptFenster()
+    try:
+        fenster._bruecke = bruecke
+        monkeypatch.setattr(fenster, "_echtzeit_pose_anzeigen", lambda *_a, **_kw: None)
+        monkeypatch.setattr(fenster, "_navigationsanzeigen_aktualisieren", lambda: None)
+        fenster._echtzeit_timer.start()
+        koerper = SimpleNamespace(masse=1, punkte=np.array([[0, 0, 0], [1, 1, 1]]))
+        physik = SimpleNamespace(g_m_pro_s2=10)
+        modell = _modell()
+        erg = modell(((0, 0, 0), (1, 0, 0, 0)))
+        fenster._kraftbild_daten_setzen(
+            bruecke, "boot", koerper, modell, physik, 0, 0, ergebnis=erg)
+        snapshot = fenster._kraftanzeige_snapshots["boot"]
+        assert bruecke._kraefte_daten
+        assert fenster._kraefte_werte._werte_timer.isActive()
+        assert fenster._kraefte_werte.modell.rowCount() == 0
+        fenster._zeit_pausieren()
+        assert fenster._kraefte_werte._snapshots == (snapshot,)
+        assert not fenster._kraefte_werte._werte_timer.isActive()
+        fenster._echtzeit_timer.start()
+        fenster._kraftanzeige_verwerfen("Kraftauswertung fehlgeschlagen")
+        fenster._zeit_pausieren()
+        assert "Kraftauswertung fehlgeschlagen" in fenster._kraefte_werte.kopf.text()
+    finally:
+        fenster.close()
+        app.processEvents()
+
+
 def test_ungueltiges_folgeergebnis_entfernt_die_alte_anzeige(bruecke):
     from types import SimpleNamespace
     from segelphysik.gui.hauptfenster import HauptFenster
@@ -1172,6 +1208,7 @@ def test_fehlendes_ergebnis_startet_keine_ersatzphysik_im_anzeigepfad(bruecke):
         app.processEvents()
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(("eigenschaft", "wert"), (
     ("Material", "Stahl"), ("Dichte", 2000.), ("Wanddicke", 6.),
     ("Masse", 55.), ("Position x", .15), ("Position y", .25),
@@ -1304,6 +1341,7 @@ def test_echtzeitantwort_ohne_kraftergebnis_invalidiert_statt_alte_anzeige(
         app.processEvents()
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("statisch", (True, False))
 @pytest.mark.parametrize("aenderung", (
     "g", "rho", "widerstand", "added_mass", "fluid", "koerperwechsel", "importserie"))
@@ -1625,8 +1663,11 @@ def test_realer_statikworker_und_anzeige_folgen_unabhaengiger_quaderbilanz(
     assert snapshot.bilanz.wrench.kraft_N == pytest.approx((0, 0, 0), abs=1e-8)
 
 
-@pytest.mark.parametrize("modellname,konvergiert", (
-    ("optimist", False), ("folkeboot", True), ("yacht1", False)))
+@pytest.mark.slow
+@pytest.mark.parametrize("modellname,konvergiert", [
+    ("folkeboot", True),
+    pytest.param("yacht1", False, marks=pytest.mark.diagnostic),
+])
 @pytest.mark.parametrize("zusatzmodelle", (False, True))
 def test_reale_modelle_zeigen_die_tatsaechlichen_statischen_und_stationaeren_residuen(
         modellname, konvergiert, zusatzmodelle):

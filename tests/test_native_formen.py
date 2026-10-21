@@ -4,6 +4,8 @@ import pytest
 from segelphysik.core import koerper_formen as formen
 from segelphysik.core.rechenpfad import python_referenz
 
+pytestmark = [pytest.mark.native]
+
 
 @pytest.mark.parametrize("nseg", [6, 7, 16, 48, 64, 129])
 def test_native_grundformen_behalten_punkte_dreiecke_und_aufloesung(monkeypatch, nseg):
@@ -81,6 +83,7 @@ def test_native_formzentrierung_behaelt_bisherige_volumenschwelle(monkeypatch):
         formen._volumenschwerpunkt(p, f)
 
 
+@pytest.mark.slow
 def test_native_polyeder_behalten_huellflaechen_dreiecksfans_und_zentrierung(monkeypatch):
     monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", "cpp")
     rng = np.random.default_rng(20026)

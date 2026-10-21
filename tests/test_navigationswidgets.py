@@ -2,9 +2,12 @@ import math
 from pathlib import Path
 from xml.etree import ElementTree as ET
 from types import SimpleNamespace
+from unittest.mock import Mock
 
 import numpy as np
 import pytest
+from PySide6.QtCore import Qt
+from PySide6.QtTest import QTest
 
 from segelphysik.core.dynamik_6dof import (
     quaternion_aus_matrix,
@@ -14,10 +17,11 @@ from segelphysik.core.navigationsanzeigen import (
     richtung_16,
 )
 from segelphysik.gui.navigationswidgets import (
-    NavigationsWidgetFenster,
-    SVGInstrumentWidget,
+    GeschwindigkeitsWidget, NavigationsWidgetFenster, SVGInstrumentWidget,
 )
 from segelphysik.grafik_bruecke import GrafikBruecke
+
+pytestmark = [pytest.mark.gui, pytest.mark.integration]
 
 
 def _roll_phi(winkel):
@@ -242,6 +246,111 @@ def test_fenster_zeigt_drei_widgets_stapelbar_und_settings_unabhaengig(qapp):
     }
     assert speed_values["speed_ms"] == "10.00"
     window.close()
+
+
+@pytest.fixture
+def navigationsfenster(qapp):
+    window = NavigationsWidgetFenster()
+    window.show()
+    yield window
+    window.close()
+    qapp.processEvents()
+
+
+@pytest.mark.parametrize("backend", ("python", "cpp"))
+def test_zahlen_10_hz_zeiger_sofort_und_letzter_wert_sichtbar(
+        navigationsfenster, monkeypatch, backend):
+    monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", backend)
+    window = navigationsfenster
+    alt = navigationswerte_ableiten(_roll_phi(math.radians(10)))
+    window.aktualisieren(alt, {}, 1.0)
+    roll = window.widgets[1]
+    text = roll._elemente["roll_value"].text
+    starten = Mock(wraps=window._zahlen_timer.start)
+    monkeypatch.setattr(window._zahlen_timer, "start", starten)
+    for grad in range(11, 41):
+        neu = navigationswerte_ableiten(_roll_phi(math.radians(grad)))
+        window.aktualisieren(neu, {}, 2.0, verzoegert=True)
+    assert roll._elemente["roll_value"].text == text
+    assert "rotate(-40" in roll._elemente["roll_pose"].attrib["transform"]
+    assert window.geschwindigkeit_widget._elemente["speed_ms"].text == "1.00"
+    assert window._zahlen_timer.interval() == 100
+    assert window._zahlen_timer.timerType() == Qt.TimerType.PreciseTimer
+    assert starten.call_count == 1
+    QTest.qWait(150)
+    assert roll._elemente["roll_value"].text == "+40°"
+    assert window.geschwindigkeit_widget._elemente["speed_ms"].text == "2.00"
+    assert not window._zahlen_timer.isActive()
+
+
+def test_fehler_erholung_und_pause_zeigen_werte_sofort(navigationsfenster):
+    window = navigationsfenster
+    alt = navigationswerte_ableiten(_roll_phi(math.radians(10)))
+    neu = navigationswerte_ableiten(_roll_phi(math.radians(20)))
+    fehler = navigationswerte_ableiten((0.0, 0.0, 0.0, 0.0))
+    window.aktualisieren(alt, {}, 1.0)
+    window.aktualisieren(neu, {}, 2.0, verzoegert=True)
+    window.aktualisieren(fehler, {}, float("inf"), verzoegert=True)
+    assert window.widgets[1]._elemente["roll_value"].text == "FEHLER"
+    assert window.geschwindigkeit_widget._elemente["speed_ms"].text == "FEHLER"
+    assert not window._zahlen_timer.isActive()
+    window.aktualisieren(neu, {}, 2.0, verzoegert=True)
+    assert window.widgets[1]._elemente["roll_value"].text == "+20°"
+    window.aktualisieren(neu, {}, float("inf"), verzoegert=True)
+    assert window.geschwindigkeit_widget._elemente["speed_ms"].text == "FEHLER"
+    window.aktualisieren(neu, {}, 2.0, verzoegert=True)
+    assert window.geschwindigkeit_widget._elemente["speed_ms"].text == "2.00"
+    window.aktualisieren(alt, {}, 1.0, verzoegert=True)
+    window.aktualisieren(alt, {}, 1.0)
+    assert window.widgets[1]._elemente["roll_value"].text == "+10°"
+    assert not window._zahlen_timer.isActive()
+
+
+def test_verborgenes_fenster_stoppt_timer_und_oeffnet_neuesten_wert(
+        navigationsfenster):
+    window = navigationsfenster
+    alt = navigationswerte_ableiten(_roll_phi(math.radians(10)))
+    neu = navigationswerte_ableiten(_roll_phi(math.radians(20)))
+    window.aktualisieren(alt, {}, 1.0)
+    window.aktualisieren(neu, {}, 2.0, verzoegert=True)
+    assert window._zahlen_timer.isActive()
+    window.hide()
+    assert not window._zahlen_timer.isActive()
+    window.aktualisieren(neu, {}, 3.0, verzoegert=True)
+    window.show()
+    assert window.widgets[1]._elemente["roll_value"].text == "+20°"
+    assert window.geschwindigkeit_widget._elemente["speed_ms"].text == "3.00"
+
+
+@pytest.mark.parametrize("typ", ("kompass", "kraengung", "stampfen", "speed"))
+def test_identisches_svg_wird_nicht_neu_geladen(qapp, monkeypatch, typ):
+    widget = GeschwindigkeitsWidget() if typ == "speed" else SVGInstrumentWidget(typ)
+    werte = navigationswerte_ableiten(_roll_phi(math.radians(20)))
+    argumente = (1.0,) if typ == "speed" else (werte, {})
+    widget.aktualisieren(*argumente)
+    laden = Mock(wraps=widget._renderer.load)
+    monkeypatch.setattr(widget._renderer, "load", laden)
+    widget.aktualisieren(*argumente)
+    laden.assert_not_called()
+    widget.close()
+
+
+def test_fehlgeschlagenes_svg_laden_wird_nicht_als_noop_versteckt(qapp, monkeypatch):
+    widget = GeschwindigkeitsWidget()
+    widget.aktualisieren(1.0)
+    alte_bytes = widget._rendered_bytes
+    laden = Mock(wraps=widget._renderer.load)
+    monkeypatch.setattr(widget._renderer, "load", laden)
+    laden.return_value = False
+    with pytest.raises(RuntimeError, match="nicht gerendert"):
+        widget.aktualisieren(2.0)
+    assert widget._rendered_bytes == alte_bytes
+    laden.return_value = True
+    widget.aktualisieren(2.0)
+    assert laden.call_count == 2
+    assert widget._rendered_bytes != alte_bytes
+    assert widget._angezeigte_werte[0] == "2.00"
+    widget.close()
 
 
 def test_sichtbarkeitseinstellungen_werden_unabhaengig_angewendet(qapp):

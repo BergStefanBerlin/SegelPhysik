@@ -14,11 +14,13 @@ from segelphysik.core.native_backend import (
 from segelphysik.core.rechenpfad import python_referenz
 from werkzeuge.migration_szenarien import koerper_laden, kraftzeile
 
+pytestmark = [pytest.mark.native]
+
 
 @pytest.fixture
 def worker(monkeypatch):
     monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", "cpp")
-    konfig, physik, snapshot = koerper_laden("optimist")
+    konfig, physik, snapshot = koerper_laden("folkeboot")
     echtzeit_prozess.initialisieren(snapshot, konfig.wasser_dichte(), physik)
     return snapshot, konfig.wasser_dichte(), physik
 

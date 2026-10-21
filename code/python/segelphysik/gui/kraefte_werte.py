@@ -4,7 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 import math
 
-from PySide6.QtCore import QAbstractItemModel, QByteArray, QModelIndex, Qt, Signal
+from PySide6.QtCore import QAbstractItemModel, QByteArray, QModelIndex, Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QFont, QGuiApplication
 from PySide6.QtWidgets import (
     QAbstractItemView, QCheckBox, QComboBox, QDockWidget, QHBoxLayout, QLabel, QPlainTextEdit,
@@ -26,6 +26,20 @@ SPALTEN = (
     "M_x um P", "M_y um P", "M_z um P", "|M um P|",
     "Punkt / Punktart", "Quelle", "Status",
 )
+
+
+def _text_setzen(label, text):
+    if label.text() != text:
+        label.setText(text)
+
+
+def _snapshots_pruefen(snapshots):
+    snapshots = tuple(snapshots)
+    if not all(isinstance(s, KraefteAnzeigeSnapshot) for s in snapshots):
+        raise TypeError("Wertemodell erwartet Anzeigesnapshots")
+    if len({s.koerper_id for s in snapshots}) != len(snapshots):
+        raise ValueError("Pro Koerper ist genau ein Snapshot erlaubt")
+    return snapshots
 
 
 def _punkttext(punkt, *, details=False):
@@ -127,11 +141,7 @@ class KraefteWerteModell(QAbstractItemModel):
         return replace(beitrag, wrench=wrench, originalangriff_m=angriff)
 
     def snapshots_setzen(self, snapshots):
-        snapshots = tuple(snapshots)
-        if not all(isinstance(s, KraefteAnzeigeSnapshot) for s in snapshots):
-            raise TypeError("Wertemodell erwartet Anzeigesnapshots")
-        if len({s.koerper_id for s in snapshots}) != len(snapshots):
-            raise ValueError("Pro Koerper ist genau ein Snapshot erlaubt")
+        snapshots = _snapshots_pruefen(snapshots)
         struktur = tuple((
             s.koerper_id, s.generation,
             tuple((b.instanz_id, b.gruppe) for b in s.gruppen),
@@ -454,6 +464,12 @@ class KraefteWerteFenster(QDockWidget):
         self._aktive_id: AnzeigeId | None = None
         self._in_update = False
         self._snapshots = ()
+        self._ausstehende_snapshots = None
+        self._werte_timer = QTimer(self)
+        self._werte_timer.setSingleShot(True)
+        self._werte_timer.setTimerType(Qt.TimerType.PreciseTimer)
+        self._werte_timer.setInterval(100)
+        self._werte_timer.timeout.connect(self.ausstehende_werte_anzeigen)
         self._koerper = ()
         self._mehrkoerper = False
         self._umfang = ()
@@ -483,7 +499,8 @@ class KraefteWerteFenster(QDockWidget):
                    else (self.koerperwahl.currentData(),)))
         vorhanden = {s.koerper_id for s in snapshots}
         fehlende = tuple(name for name in umfang if name not in vorhanden)
-        self.datenstatus.setText(
+        _text_setzen(
+            self.datenstatus,
             "Nicht berechnet / keine gueltigen Kraftdaten: " + ", ".join(fehlende)
             if fehlende else "")
         if umfang != self._umfang:
@@ -503,7 +520,7 @@ class KraefteWerteFenster(QDockWidget):
                     f"{koerper}: {titel}, {abbildung.modus}, Referenz "
                     + zahlenwert(abbildung.referenz, einheit) + " | " + punkte)
         zeilen.extend(hinweise)
-        self.legende.setText("\n".join(zeilen) or "Keine initialisierten 3D-Skalen")
+        _text_setzen(self.legende, "\n".join(zeilen) or "Keine initialisierten 3D-Skalen")
 
     def layout_exportieren(self):
         dock = self.parent().dockWidgetArea(self).value
@@ -562,9 +579,22 @@ class KraefteWerteFenster(QDockWidget):
             self.koerperwahl.blockSignals(blockiert)
         self._umfang_aktualisieren()
 
-    def snapshots_setzen(self, snapshots):
-        self._snapshots = tuple(snapshots)
+    def snapshots_setzen(self, snapshots, *, verzoegert=False):
+        snapshots = _snapshots_pruefen(snapshots)
+        if verzoegert and snapshots:
+            self._ausstehende_snapshots = snapshots
+            if not self._werte_timer.isActive():
+                self._werte_timer.start()
+            return
+        self._werte_timer.stop()
+        self._ausstehende_snapshots = None
+        self._snapshots = snapshots
         self._koerperwahl_aktualisieren()
+
+    def ausstehende_werte_anzeigen(self):
+        snapshots = self._ausstehende_snapshots
+        if snapshots is not None:
+            self.snapshots_setzen(snapshots)
 
     def _snapshots_anzeigen(self, snapshots):
         alte_id = self._aktive_id
@@ -631,24 +661,27 @@ class KraefteWerteFenster(QDockWidget):
     def _anzeigen(self, index):
         self._aktive_id = index.data(ID_ROLLE)
         snapshot = index.data(SNAPSHOT_ROLLE)
-        self.details.setPlainText(
-            self.modell.detailtext(self._aktive_id)
-            if self._aktive_id is not None else "Kein Beitrag ausgewaehlt")
+        details = (self.modell.detailtext(self._aktive_id)
+                   if self._aktive_id is not None else "Kein Beitrag ausgewaehlt")
+        if self.details.toPlainText() != details:
+            self.details.setPlainText(details)
         if snapshot is None:
-            self.kopf.setText("Kein Anzeigesnapshot")
+            _text_setzen(self.kopf, "Kein Anzeigesnapshot")
             for karte in self.karten:
-                karte.clear()
+                _text_setzen(karte, "")
             return
-        self.kopf.setText(self.modell.kopftext(snapshot))
+        _text_setzen(self.kopf, self.modell.kopftext(snapshot))
         bilanz = self.modell.anzeigebeitrag(snapshot, snapshot.bilanz)
-        self.karten[0].setText(
+        _text_setzen(
+            self.karten[0],
             bilanz.name + "\n|Summe F|: " + _wert(bilanz, 5)
             + "\nF(x/y/z): " + " / ".join(_wert(bilanz, s) for s in (2, 3, 4)))
-        self.karten[1].setText(
+        _text_setzen(
+            self.karten[1],
             "Moment um P\n|Summe M|: " + _wert(bilanz, 9)
             + "\nM(x/y/z): " + " / ".join(_wert(bilanz, s) for s in (6, 7, 8)))
-        self.karten[2].setText(snapshot.vollstaendigkeit + "\n"
-                               + snapshot.gleichgewichtsstatus)
+        _text_setzen(self.karten[2], snapshot.vollstaendigkeit + "\n"
+                    + snapshot.gleichgewichtsstatus)
 
     def oeffnen(self):
         self.position_erreichbar_machen()

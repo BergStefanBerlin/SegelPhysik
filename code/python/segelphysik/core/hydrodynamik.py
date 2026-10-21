@@ -174,6 +174,8 @@ class HydrodynamikTeil:
         init=False, repr=False, compare=False)
     _normalen: np.ndarray = field(
         init=False, repr=False, compare=False)
+    _normalen_gueltig: np.ndarray = field(
+        init=False, repr=False, compare=False)
     _dreiecksmittelpunkte: np.ndarray = field(
         init=False, repr=False, compare=False)
     _oberflaeche_cache_m2: float = field(
@@ -216,15 +218,17 @@ class HydrodynamikTeil:
         normalen = np.zeros_like(kreuz)
         gueltig = doppelflaechen > 1e-15
         normalen[gueltig] = kreuz[gueltig] / doppelflaechen[gueltig, None]
+        normalen_gueltig = gueltig.copy()
         mittelpunkte = ecken.mean(axis=1)
         for array in (punkte, dreiecke, ecken, flaechen, normalen,
-                      mittelpunkte):
+                      normalen_gueltig, mittelpunkte):
             array.setflags(write=False)
         object.__setattr__(self, "punkte_m", punkte)
         object.__setattr__(self, "dreiecke", dreiecke)
         object.__setattr__(self, "_dreiecksecken", ecken)
         object.__setattr__(self, "_flaechen_m2", flaechen)
         object.__setattr__(self, "_normalen", normalen)
+        object.__setattr__(self, "_normalen_gueltig", normalen_gueltig)
         object.__setattr__(self, "_dreiecksmittelpunkte", mittelpunkte)
         object.__setattr__(
             self, "_oberflaeche_cache_m2", float(flaechen.sum()))
@@ -496,7 +500,7 @@ class HydrodynamikModell:
                 if self.cd_volumenkoerper is None:
                     continue
                 normalen = teil._normalen @ rotation.T
-                gueltig = np.linalg.norm(teil._normalen, axis=1) > 0.0
+                gueltig = teil._normalen_gueltig
                 arme = mittelpunkte - position
                 lokale_geschwindigkeiten = (
                     geschwindigkeit
@@ -533,7 +537,7 @@ class HydrodynamikModell:
                 reibung = q * cf * nass_flaeche * (
                     1.0 + self.formfaktor_rumpf)
                 normalen = teil._normalen @ rotation.T
-                gueltig = np.linalg.norm(teil._normalen, axis=1) > 0.0
+                gueltig = teil._normalen_gueltig
                 projektionsflaeche = 0.5 * float(np.sum(
                     nass_flaechen[gueltig]
                     * np.abs(normalen[gueltig] @ richtung)))

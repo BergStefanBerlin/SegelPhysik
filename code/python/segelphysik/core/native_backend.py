@@ -362,7 +362,9 @@ class NativeKoerperKontext:
                     "" if rolle is None else rolle, knoten.verdrangend,
                     knoten.quell_id)
                 blaetter.append(native.BlattKontext(mesh, rotation, translation))
-            self._wachen.append((knoten, self._signatur(knoten), mesh))
+            self._wachen.append((
+                knoten, self._signatur(knoten, knoten is not koerper),
+                mesh))
 
         sammeln(koerper, np.eye(3), np.zeros(3))
         self._quelle = koerper
@@ -387,10 +389,11 @@ class NativeKoerperKontext:
             self._gelenke, tuple(hydrodynamik), tuple(hydro_ids), tuple(blatt_ids))
 
     @staticmethod
-    def _signatur(knoten):
+    def _signatur(knoten, version_beruecksichtigen=True):
         gelenk = knoten.gelenkdefinition
         return (
-            knoten._version, knoten.masse, tuple(knoten.traegheitstensor.ravel()),
+            knoten._version if version_beruecksichtigen else None,
+            knoten.masse, tuple(knoten.traegheitstensor.ravel()),
             knoten.rolle, knoten.rolle_default, knoten.name, knoten.knoten_id,
             knoten.verdrangend, knoten.gelenkwinkel_rad, knoten.basis_pose,
             None if gelenk is None else (
@@ -398,30 +401,32 @@ class NativeKoerperKontext:
             tuple((id(kind), tuple(np.asarray(r).ravel()), tuple(t))
                   for kind, (r, t) in knoten.teile))
 
+    def gueltig_fuer(self, koerper):
+        if koerper is not self._quelle:
+            return False
+        for knoten, signatur, mesh in self._wachen:
+            if self._signatur(
+                    knoten, knoten is not self._quelle) != signatur:
+                return False
+            if mesh is not None and not mesh.eingabe_identisch(
+                    np.asarray(knoten.punkte, dtype=np.float64),
+                    np.asarray(knoten.dreiecke, dtype=np.int64)):
+                return False
+        return True
+
     def snapshot(self, koerper):
         from .koerper import KoerperSnapshot
 
-        def quelle_pruefen():
-            ungueltig = koerper is not self._quelle
-            for knoten, signatur, mesh in self._wachen:
-                if self._signatur(knoten) != signatur:
-                    ungueltig = True
-                    break
-                if mesh is not None and not mesh.eingabe_identisch(
-                        np.asarray(knoten.punkte, dtype=np.float64),
-                        np.asarray(knoten.dreiecke, dtype=np.int64)):
-                    ungueltig = True
-                    break
-            if ungueltig:
-                raise NativeBackendFehler(
-                    "Nativer Koerperkontext ist veraltet; explizite Neuaufbereitung erforderlich")
-
-        quelle_pruefen()
+        if not self.gueltig_fuer(koerper):
+            raise NativeBackendFehler(
+                "Nativer Koerperkontext ist veraltet; explizite Neuaufbereitung erforderlich")
         v = self._vorlage
         snapshot = KoerperSnapshot(
             v.masse, v.traegheitstensor, v.blatt_meshes, v.r_S,
-            koerper.zustand, self._version, self._basis_pose,
+            koerper.zustand, koerper._version, self._basis_pose,
             self._gelenke, v.hydrodynamik_teile, v.hydrodynamik_quell_ids,
             v.blatt_quell_ids)
-        quelle_pruefen()
+        if not self.gueltig_fuer(koerper):
+            raise NativeBackendFehler(
+                "Nativer Koerperkontext wurde während der Snapshot-Erzeugung verändert")
         return snapshot

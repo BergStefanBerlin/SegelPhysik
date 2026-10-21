@@ -13,3 +13,17 @@ cmake.source-dir = "code/cpp"
 cmake.build-type = "Release"
 build-dir = "build/native/{wheel_tag}"
 wheel.packages = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "code/cpp/tests"]
+python_files = ["test_*.py", "paritaet_*.py", "vertrag_native.py"]
+addopts = "--strict-markers"
+markers = [
+    "integration: prueft einen Vertrag ueber mehrere Komponenten",
+    "gui: benoetigt eine Qt-Anwendung oder einen echten Renderkontext",
+    "native: benoetigt den gebauten nativen C++-Backend",
+    "slow: in der V0.12-Baseline mindestens eine Sekunde Call-Laufzeit",
+    "performance: gezielte Laufzeitmessung, keine reine Werkzeugkorrektheit",
+    "hardware: benoetigt ein reales optionales Geraet, kein Mock",
+    "diagnostic: erhaltener modellspezifischer Fehler-/Bestandsnachweis",
+]

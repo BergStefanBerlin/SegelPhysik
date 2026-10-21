@@ -1,5 +1,6 @@
 from dataclasses import replace
 from types import SimpleNamespace
+from unittest.mock import Mock
 
 import pytest
 from PySide6.QtCore import QModelIndex, Qt
@@ -19,6 +20,8 @@ from segelphysik.gui.kraefte_werte import (
     BEITRAG_ROLLE, ID_ROLLE, SNAPSHOT_ROLLE, SPALTEN,
     KraefteWerteFenster, KraefteWerteModell,
 )
+
+pytestmark = [pytest.mark.gui, pytest.mark.integration]
 
 P = (0.0, 0.0, 0.0)
 FRAME = "simulationsframe"
@@ -100,6 +103,70 @@ def fenster(app):
     app.processEvents()
 
 
+def test_echtzeitwerte_buendeln_ohne_timer_neustart(fenster, monkeypatch):
+    anzeigen = Mock(wraps=fenster._snapshots_anzeigen)
+    starten = Mock(wraps=fenster._werte_timer.start)
+    monkeypatch.setattr(fenster, "_snapshots_anzeigen", anzeigen)
+    monkeypatch.setattr(fenster._werte_timer, "start", starten)
+    for sequenz in range(4, 34):
+        neu = _snapshot(sequenz=sequenz)
+        fenster.snapshots_setzen((neu,), verzoegert=True)
+    assert fenster._werte_timer.interval() == 100
+    assert fenster._werte_timer.timerType() == Qt.TimerType.PreciseTimer
+    assert starten.call_count == 1
+    anzeigen.assert_not_called()
+    QTest.qWait(150)
+    assert anzeigen.call_count == 1
+    assert fenster._snapshots == (neu,)
+    assert not fenster._werte_timer.isActive()
+    assert fenster._ausstehende_snapshots is None
+
+
+def test_finalwert_und_invalidierung_ueberholen_ausstehende_werte(fenster):
+    neu = _snapshot(sequenz=4)
+    fenster.snapshots_setzen((neu,), verzoegert=True)
+    fenster.ausstehende_werte_anzeigen()
+    assert fenster._snapshots == (neu,)
+    assert not fenster._werte_timer.isActive()
+    fenster.snapshots_setzen((_snapshot(sequenz=5),), verzoegert=True)
+    fenster.snapshots_setzen(())
+    fenster.kopf.setText("Auswertung fehlgeschlagen")
+    fenster.ausstehende_werte_anzeigen()
+    assert not fenster._werte_timer.isActive()
+    assert fenster._ausstehende_snapshots is None
+    assert fenster.modell.rowCount() == 0
+    assert fenster.kopf.text() == "Auswertung fehlgeschlagen"
+    neu = _snapshot(generation=3)
+    fenster.snapshots_setzen((_snapshot(sequenz=6),), verzoegert=True)
+    fenster.snapshots_setzen((neu,))
+    fenster.ausstehende_werte_anzeigen()
+    assert fenster._snapshots == (neu,)
+
+
+def test_verzoegerte_snapshots_validieren_synchron(fenster):
+    with pytest.raises(TypeError, match="Anzeigesnapshots"):
+        fenster.snapshots_setzen((object(),), verzoegert=True)
+    with pytest.raises(ValueError, match="Pro Koerper"):
+        fenster.snapshots_setzen((_snapshot(), _snapshot()), verzoegert=True)
+    assert not fenster._werte_timer.isActive()
+
+
+def test_identische_texte_werden_nicht_erneut_gesetzt(fenster, monkeypatch):
+    fenster.legende_setzen({})
+    labels = (fenster.kopf, *fenster.karten, fenster.datenstatus, fenster.legende)
+    aufrufe = []
+    for label in labels:
+        spy = Mock(wraps=label.setText)
+        monkeypatch.setattr(label, "setText", spy)
+        aufrufe.append(spy)
+    details = QSignalSpy(fenster.details.textChanged)
+    fenster.snapshots_setzen((_snapshot(),))
+    fenster.legende_setzen({})
+    for aufruf in aufrufe:
+        aufruf.assert_not_called()
+    assert details.count() == 0
+
+
 def test_register_definiert_namen_farben_und_defaults():
     definitionen = {d.id: d for d in BEITRAGS_DEFINITIONEN}
     for d in definitionen.values():
@@ -144,12 +211,17 @@ def test_hierarchie_und_qt_modellvertrag(app):
 def test_komponenten_betraege_punkt_und_details(app):
     modell = _modell(app)
     id_ = ("boot", "auftrieb")
-    assert modell.index_fuer_id(id_, 4).data() == "48 kN"
-    assert modell.index_fuer_id(id_, 6).data() == "16,8 kN*m"
-    assert modell.index_fuer_id(id_, 9).data() == "16,8 kN*m"
+    assert modell.index_fuer_id(id_, 4).data() == "48 000 N"
+    assert modell.index_fuer_id(id_, 6).data() == "16 800 Nm"
+    assert modell.index_fuer_id(id_, 9).data() == "16 800 Nm"
+    for spalte in range(2, 10):
+        assert modell.index_fuer_id(id_, spalte).data(
+            Qt.ItemDataRole.TextAlignmentRole) == (
+                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter).value
     assert "realer Angriff" in modell.index_fuer_id(id_, 10).data()
+    assert "(0,00 m; 0,35 m; 0,00 m)" in modell.index_fuer_id(id_, 10).data()
     text = modell.detailtext(id_)
-    assert "48000 N" in text and "16800 N*m" in text
+    assert "48 000 N" in text and "16 800 Nm" in text
     assert "M(P) = M(A) + (A - P) x F" in text
     assert "direktes Quellenmoment" in text
     assert "kein zusaetzlicher Bilanzbeitrag" in modell.detailtext(
@@ -192,17 +264,22 @@ def test_teilsumme_fehlend_und_null_sind_unterscheidbar(app):
     assert "Im Gleichgewicht" not in modell.kopftext(snapshot)
 
 
-def test_kleinwerte_werden_nicht_zu_null_gerundet(app):
-    modell = _modell(app, _snapshot(hydro=(1e-18, 0, 0)))
-    assert modell.index_fuer_id(("boot", "auftrieb"), 2).data() == "1e-18 N"
+def test_kleinwerte_werden_nur_optisch_zu_null_gerundet(app):
+    snapshot = _snapshot(hydro=(1e-18, 0, 0))
+    modell = _modell(app, snapshot)
+    assert modell.index_fuer_id(("boot", "auftrieb"), 2).data() == "0 N"
     assert modell.index_fuer_id(("boot", "auftrieb"), 12).data() == "aktiv"
+    beitrag = modell.index_fuer_id(("boot", "auftrieb"), 2).data(BEITRAG_ROLLE)
+    assert beitrag.wrench.kraft_N[0] == 1e-18
+    assert "Gleichgewicht nicht bewertet" in modell.kopftext(snapshot)
 
 
 def test_endliche_komponenten_mit_nicht_darstellbarem_betrag(app):
     modell = _modell(app, _snapshot(hydro=(1.6e308, 1.6e308, 1.6e308)))
     assert modell.index_fuer_id(("boot", "auftrieb"), 5).data() == (
         "Betrag nicht darstellbar")
-    assert "1,6e+308 N" in modell.detailtext(("boot", "auftrieb"))
+    assert format(1.6e308, ",.0f").replace(",", " ") + " N" in modell.detailtext(
+        ("boot", "auftrieb"))
 
 
 def test_mehrkoerper_bilden_keine_neue_gesamtsumme(app):
@@ -276,7 +353,7 @@ def test_gleiche_struktur_aktualisiert_werte_ohne_neue_tabellenzeilen(app):
     assert reset.count() == 0
     assert modell.index_fuer_id(("boot", "auftrieb")).internalPointer() is zeile
     assert index.data(SNAPSHOT_ROLLE) is neu
-    assert modell.index_fuer_id(("boot", "auftrieb"), 4).data() == "47 kN"
+    assert modell.index_fuer_id(("boot", "auftrieb"), 4).data() == "47 000 N"
 
 
 def test_fensterlayout_spalten_und_erreichbarkeit_ohne_physikpersistenz(app):

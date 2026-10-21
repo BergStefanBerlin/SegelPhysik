@@ -14,14 +14,15 @@ from segelphysik.gui.hauptfenster import HauptFenster
 from segelphysik.core.stationaer_hydrodynamik import StationaereStufe
 from segelphysik.core.konfig_lader import lade_konfig
 
+pytestmark = pytest.mark.gui
+
 
 @pytest.fixture
-def fenster():
-    app = QApplication.instance() or QApplication([])
+def fenster(qapp):
     widget = HauptFenster()
     yield widget
     widget.close()
-    app.processEvents()
+    qapp.processEvents()
 
 
 def test_controls_are_discoverable_and_snapshot_is_json_serializable(fenster):

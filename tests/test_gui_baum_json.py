@@ -10,6 +10,9 @@ from segelphysik.gui.baum import (  # noqa: E402
     sichtbarkeit_setzen, blatt_setzen, finde, aktive_blaetter,
 )
 
+import pytest
+pytestmark = [pytest.mark.gui]
+
 _JSON = {
     "_beschreibung": "Test-Stellvertreter der echten Datei",
     "boot": {

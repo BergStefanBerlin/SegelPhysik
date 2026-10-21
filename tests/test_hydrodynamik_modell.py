@@ -70,6 +70,15 @@ def test_benetzung_bleibt_finit_wenn_eine_ecke_genau_auf_wasserlinie_liegt():
     assert flaeche == pytest.approx((np.sqrt(2.0) / 2.0,))
 
 
+def test_hydrodynamikteil_cached_immutable_normal_mask_matches_normal_vectors():
+    teil = _teile("rumpf")
+
+    np.testing.assert_array_equal(
+        teil._normalen_gueltig,
+        np.linalg.norm(teil._normalen, axis=1) > 0.0)
+    assert not teil._normalen_gueltig.flags.writeable
+
+
 def test_rumpfwiderstand_zeigt_entgegen_der_fahrt():
     modell = HydrodynamikModell((_teile("rumpf"),))
     beitraege = modell.beitraege_erzeugen(

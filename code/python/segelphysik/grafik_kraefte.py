@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import math
+from functools import lru_cache
 import numpy as np
 
 from .core import kraefte_bild as kb
@@ -14,6 +15,20 @@ from .core.overlays import (
     LAYER_FREMDKRAFT, LAYER_HYDRO_KIEL, LAYER_HYDRO_RUDER, LAYER_HYDRO_RUMPF,
     LAYER_KRAEFTE, LAYER_MOMENTE, LAYER_SCHWERPUNKT,
 )
+
+
+@lru_cache(maxsize=8)
+def _kugelvorlage(radius):
+    import pyvista as pv
+
+    return pv.Sphere(radius=radius, center=(0.0, 0.0, 0.0))
+
+
+def _kugel_mesh(mitte, radius):
+    vorlage = _kugelvorlage(float(radius))
+    mesh = vorlage.copy(deep=True)
+    mesh.points = vorlage.points + np.asarray(mitte, dtype=vorlage.points.dtype)
+    return mesh
 
 
 class KraefteZeichner:
@@ -205,12 +220,12 @@ class KraefteZeichner:
                     gezeichnet.add(name)
                     pick.append(np.asarray([pfeil["start"], pfeil["spitze"]]))
                     if skalenwert.abgeschnitten:
-                        mesh(prefix + "_F_grenze", lambda: pv.Sphere(
-                            radius=3 * pixel, center=pfeil["spitze"]),
+                        mesh(prefix + "_F_grenze", lambda: _kugel_mesh(
+                            pfeil["spitze"], 3 * pixel),
                             stil, pfeil["spitze"], 3 * pixel)
                 else:
-                    mesh(prefix + "_F_klein", lambda: pv.Sphere(
-                        radius=2 * pixel, center=anker), stil, anker, 2 * pixel)
+                    mesh(prefix + "_F_klein", lambda: _kugel_mesh(
+                        anker, 2 * pixel), stil, anker, 2 * pixel)
                     pick.append(np.asarray([anker]))
             def moment_zeichnen(kennung, vektor, mitte, momentstil):
                 moment = math.hypot(*vektor)
@@ -243,8 +258,8 @@ class KraefteZeichner:
                             radius=3 * moment_pixel, center=spitze),
                             momentstil, spitze, 3 * moment_pixel)
                 else:
-                    mesh(prefix + kennung + "_klein", lambda: pv.Sphere(
-                        radius=2 * moment_pixel, center=mitte),
+                    mesh(prefix + kennung + "_klein", lambda: _kugel_mesh(
+                        mitte, 2 * moment_pixel),
                         momentstil, mitte, 2 * moment_pixel)
                     pick.append(np.asarray([mitte]))
 

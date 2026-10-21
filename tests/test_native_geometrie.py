@@ -7,6 +7,8 @@ from segelphysik.core.koerper_formen import bau_quader
 from segelphysik.core.rechenpfad import python_referenz
 from segelphysik.core.volumen_union import _EbenenSchnitt
 
+pytestmark = [pytest.mark.native]
+
 
 @pytest.mark.parametrize("deckel", [False, True])
 def test_produktiver_wasserschnitt_bewahrt_arrayreihenfolge_und_werte(monkeypatch, deckel):

@@ -1,0 +1,73 @@
+{
+  "purpose": "Current V0.12 CPPI-0091 graphics transform microbenchmark; diagnostic only, not end-to-end acceptance.",
+  "python": "3.14.8",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "AMD64 Family 25 Model 117 Stepping 2, AuthenticAMD",
+  "native_binary": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\_segelphysik_native.cp314-win_amd64.pyd",
+  "native_abi": 1,
+  "inputs": [
+    {
+      "file": "code\\modelle\\folkeboot\\fock.obj",
+      "points": 6,
+      "sha256": "c41527b8833fc52647d64b3ec23961b1fb03a86d2498d6ab70ff9dfbc3644cce"
+    },
+    {
+      "file": "code\\modelle\\folkeboot\\grossbaum.obj",
+      "points": 8,
+      "sha256": "368a7d18ac436b73dd615c6bd49366b54ce71953c3298661e052a76c6a890d89"
+    },
+    {
+      "file": "code\\modelle\\folkeboot\\grosssegel.obj",
+      "points": 8,
+      "sha256": "08bf4f359155620df6bb1c7e7db3f0cce60153d57ed0f38ee86d15ad2ac0d13e"
+    },
+    {
+      "file": "code\\modelle\\folkeboot\\kiel.obj",
+      "points": 12,
+      "sha256": "635ff08d92bf6dcc6dc303d3190e6cc873a6d61b39d387705ff9fa91289e922e"
+    },
+    {
+      "file": "code\\modelle\\folkeboot\\mast.obj",
+      "points": 24,
+      "sha256": "be0ad2e4c44430e1c6a131d5e6067983d2907548c471b0ead8a2924bf4f25685"
+    },
+    {
+      "file": "code\\modelle\\folkeboot\\ruder.obj",
+      "points": 10,
+      "sha256": "2797066350b69fbb1fdedca2d123073b8500da378dfc886d9dc89f76574cbfba"
+    },
+    {
+      "file": "code\\modelle\\folkeboot\\rumpf.obj",
+      "points": 189,
+      "sha256": "da677848c44b92c5e5278f8bd5d43deac6f11797ce2affa96f6992d03558a3b0"
+    }
+  ],
+  "groups": 7,
+  "total_points": 257,
+  "warmup_calls": 1,
+  "calls_per_repeat": 500,
+  "repeats": 7,
+  "python_us": [
+    17.066000000340864,
+    16.947599999184604,
+    17.05519999995886,
+    17.024799999489915,
+    16.831799999636132,
+    18.337999999857857,
+    16.846000000441563
+  ],
+  "cpp_us": [
+    6.587599998965743,
+    6.542999999510357,
+    6.2539999998989515,
+    6.359199998769327,
+    6.326200000330573,
+    6.31979999889154,
+    6.240000000616419
+  ],
+  "python_median_us": 17.024799999489915,
+  "cpp_median_us": 6.326200000330573,
+  "cpp_over_python": 0.3715873314529459,
+  "parity": "pass",
+  "measurement": "Full adapter inputs/outputs; C++ wrapper conversion and allocations included; same arrays, rotation and translation."
+}

@@ -995,10 +995,14 @@ PYBIND11_MODULE(_segelphysik_native, modul)
                 sp::endlich(fremd->second, "Fremdkraft-Angriffspunkt");
             }
             py::gil_scoped_release frei;
-            auto ergebnis = kontext.schritt(zustand, fremd, ruder, abbruch);
+            sp::HydroArbeitsbereich hydro_arbeitsbereich;
+            auto ergebnis = kontext.schritt(
+                zustand, fremd, ruder, abbruch, hydro_arbeitsbereich);
             for (std::int64_t i = 1; i < anzahl; ++i) {
                 abbruch.pruefen();
-                ergebnis = kontext.schritt(ergebnis.zustand, fremd, ruder, abbruch);
+                ergebnis = kontext.schritt(
+                    ergebnis.zustand, fremd, ruder, abbruch,
+                    hydro_arbeitsbereich);
             }
             return ergebnis;
         }, py::arg("zustand"), py::arg("anzahl"), py::arg("fremdkraft"),

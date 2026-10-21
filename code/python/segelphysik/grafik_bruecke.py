@@ -129,6 +129,27 @@ def _mesh_actor_setzen(plotter, refs, name, mesh, **kwargs):
     actor.SetVisibility(True)
 
 
+def _wasserlinien_actors(pv, cache, punkte, dreiecke):
+    schnitt = cache.get("schnitt")
+    if (schnitt is not None
+            and np.array_equal(schnitt["punkte"], punkte)
+            and np.array_equal(schnitt["dreiecke"], dreiecke)):
+        return schnitt["actors"]
+    u_p, u_t, o_p, o_t, kontur = ws.schneide_am_wasser(
+        punkte, dreiecke, mit_deckel=True)
+    actors = (
+        _dreiecks_polydaten(pv, u_p, u_t) if len(u_t) else None,
+        _dreiecks_polydaten(pv, o_p, o_t) if len(o_t) else None,
+        pv.line_segments_from_points(kontur) if len(kontur) else None,
+    )
+    cache["schnitt"] = {
+        "punkte": np.array(punkte, dtype=np.float64, copy=True),
+        "dreiecke": np.array(dreiecke, dtype=np.int64, copy=True),
+        "actors": actors,
+    }
+    return actors
+
+
 def _farbgruppen(koerper):
     """Farbgruppen eines Koerpers (P4 nach der Material-Reform)."""
     def hat_gelenk(knoten):
@@ -314,6 +335,8 @@ class GrafikBruecke:
         self._layer = LayerRegistry()
         self._kraefte_daten = {}
         self._kraftsnapshots_ausstehend = set()
+        self._gelenk_update_timer = None
+        self._gelenk_updates_pending = set()
         self._stil = pfeilstil.Stil()
         self._vg_renderer = None
         self._vg_actors = {}
@@ -570,6 +593,37 @@ class GrafikBruecke:
         if koerper is None:
             return False
         koerper.gelenkwinkel_setzen(knoten_id, winkel_rad)
+        from PySide6.QtCore import QCoreApplication, QTimer
+
+        if (QCoreApplication.instance() is None
+                or getattr(self, "_plotter", None) is None):
+            self._gelenkgeometrie_aktualisieren(name, koerperanzeige)
+            return True
+        if self._gelenk_update_timer is None:
+            self._gelenk_update_timer = QTimer()
+            self._gelenk_update_timer.setSingleShot(True)
+            self._gelenk_update_timer.timeout.connect(
+                self._gelenk_updates_ausfuehren)
+        self._gelenk_updates_pending.add(name)
+        if not self._gelenk_update_timer.isActive():
+            self._gelenk_update_timer.start(16)
+        return True
+
+    def _gelenk_updates_ausfuehren(self):
+        ausstehend = tuple(self._gelenk_updates_pending)
+        self._gelenk_updates_pending.clear()
+        for name in ausstehend:
+            koerperanzeige = self._koerper.get(name)
+            if koerperanzeige is None:
+                continue
+            self._gelenkgeometrie_aktualisieren(name, koerperanzeige)
+        if ausstehend:
+            self.render()
+
+    def _gelenkgeometrie_aktualisieren(self, name, koerperanzeige):
+        koerper = koerperanzeige.get("koerper")
+        if koerper is None:
+            return
         neue_gruppen = _farbgruppen(koerper)
         alte_gruppen = koerperanzeige.get("gruppen", [])
         if len(neue_gruppen) != len(alte_gruppen):
@@ -587,7 +641,6 @@ class GrafikBruecke:
                 neu["punkte"], dtype=np.float64, copy=True)
         koerperanzeige["benetzte_geometrie"] = _benetzte_geometrie(koerper)
         self._statisch_anwenden(name, koerperanzeige)
-        return True
 
     def koerper_entfernen(self, name):
         """Entfernt Modell, Overlays und Anzeige-Caches eines Laufzeitkoerpers."""
@@ -628,8 +681,8 @@ class GrafikBruecke:
         farbe_o = k.get("farbe_oben", FARBE_OBEN)
         glanz = k.get("glanz")
         pd = k["pd"]
-        u_p, u_t, o_p, o_t, kontur = ws.schneide_am_wasser(welt, _gesichter(pd),
-                                  mit_deckel=True)
+        unterwasser, ueberwasser, kontur = _wasserlinien_actors(
+            pv, k, welt, _gesichter(pd))
         n_unten, n_oben, n_kontur = self._actor_namen(name)
         refs = k.setdefault("actors", {})
 
@@ -639,16 +692,13 @@ class GrafikBruecke:
             kw_basis.update(glanz_kw(glanz))
 
         _mesh_actor_setzen(
-            p, refs, n_unten,
-            _dreiecks_polydaten(pv, u_p, u_t) if len(u_t) else None,
+            p, refs, n_unten, unterwasser,
             color=farbe_u, **kw_basis)
         _mesh_actor_setzen(
-            p, refs, n_oben,
-            _dreiecks_polydaten(pv, o_p, o_t) if len(o_t) else None,
+            p, refs, n_oben, ueberwasser,
             color=farbe_o, **kw_basis)
         _mesh_actor_setzen(
-            p, refs, n_kontur,
-            pv.line_segments_from_points(kontur) if len(kontur) else None,
+            p, refs, n_kontur, kontur,
             color="black", line_width=3)
 
     def sichtbar_setzen(self, name, sichtbar):
@@ -1742,24 +1792,20 @@ class GrafikBruecke:
             n_u = "koerper_%s_g%d_unten" % (name, i)
             n_o = "koerper_%s_g%d_oben" % (name, i)
             n_k = "kontur_%s_g%d" % (name, i)
-            u_p, u_t, o_p, o_t, kontur = ws.schneide_am_wasser(
-                np.asarray(g["pd"].points, float), g["dreiecke"],
-                mit_deckel=True)
+            unterwasser, ueberwasser, kontur = _wasserlinien_actors(
+                pv, g, np.asarray(g["pd"].points, float), g["dreiecke"])
             kw_g = {"opacity": self._koerper_opazitaet(), "show_edges": False,
                     "smooth_shading": True}
             if g.get("glanz") is not None:
                 kw_g.update(glanz_kw(g["glanz"]))
             _mesh_actor_setzen(
-                p, refs, n_u,
-                _dreiecks_polydaten(pv, u_p, u_t) if len(u_t) else None,
+                p, refs, n_u, unterwasser,
                 color=g["farbe_unten"], **kw_g)
             _mesh_actor_setzen(
-                p, refs, n_o,
-                _dreiecks_polydaten(pv, o_p, o_t) if len(o_t) else None,
+                p, refs, n_o, ueberwasser,
                 color=g["farbe_oben"], **kw_g)
             _mesh_actor_setzen(
-                p, refs, n_k,
-                pv.line_segments_from_points(kontur) if len(kontur) else None,
+                p, refs, n_k, kontur,
                 color="black", line_width=3)
 
 

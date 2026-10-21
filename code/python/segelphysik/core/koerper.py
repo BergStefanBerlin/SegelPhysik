@@ -7,6 +7,7 @@ Materialtabelle); Default 0.15 (matt). Der Verband traegt selbst keinen
 Glanz (P2.5) - die Blaetter tun es."""
 import colorsys
 from dataclasses import dataclass
+from threading import RLock
 import numpy as np
 from . import massen as ma
 from .dynamik_6dof import (
@@ -19,6 +20,22 @@ from .frames import Pose, pose_aus_modellpose, pose_mit_gelenkwinkel
 
 VOLUMEN_EPS = 1e-9
 GLANZ_DEFAULT = 0.15
+
+
+def _snapshot_array(wert, dtype):
+    array = np.asarray(wert)
+    if array.dtype == np.dtype(dtype) and not array.flags.writeable:
+        basis = array
+        while isinstance(basis, np.ndarray):
+            if basis.flags.writeable:
+                break
+            basis = basis.base
+        else:
+            if isinstance(basis, bytes):
+                return array
+    array = np.ascontiguousarray(array, dtype=dtype)
+    return np.frombuffer(array.tobytes(), dtype=dtype).reshape(array.shape)
+
 
 class KoerperFehler(ValueError):
     """Verstoss gegen die Koerper-Regeln (Spec P1-P4)."""
@@ -54,21 +71,16 @@ class KoerperSnapshot:
                 or any(not isinstance(q, str) or not q for q in blatt_ids)):
             raise ValueError("Verdraengende Quellen brauchen eindeutige Blatt-IDs")
         object.__setattr__(self, "blatt_quell_ids", blatt_ids)
-        traegheit = np.array(self.traegheitstensor, dtype=np.float64, copy=True)
-        traegheit.setflags(write=False)
+        traegheit = _snapshot_array(self.traegheitstensor, np.float64)
         meshes = []
         for punkte, dreiecke in self.blatt_meshes:
-            p = np.array(punkte, dtype=np.float64, copy=True)
-            f = np.array(dreiecke, dtype=np.int64, copy=True)
-            p.setflags(write=False)
-            f.setflags(write=False)
+            p = _snapshot_array(punkte, np.float64)
+            f = _snapshot_array(dreiecke, np.int64)
             meshes.append((p, f))
         hydrodynamik_teile = []
         for rolle, name, punkte, dreiecke in self.hydrodynamik_teile:
-            p = np.array(punkte, dtype=np.float64, copy=True)
-            f = np.array(dreiecke, dtype=np.int64, copy=True)
-            p.setflags(write=False)
-            f.setflags(write=False)
+            p = _snapshot_array(punkte, np.float64)
+            f = _snapshot_array(dreiecke, np.int64)
             hydrodynamik_teile.append((rolle, name, p, f))
         object.__setattr__(self, "traegheitstensor", traegheit)
         object.__setattr__(self, "blatt_meshes", tuple(meshes))
@@ -155,6 +167,8 @@ class Koerper:
         self._orientierung = np.eye(3)
         self._zustand = None
         self._version = 0
+        self._snapshot_lock = RLock()
+        self._snapshot_native_context = None
         if zustand is not None:
             self.zustand = zustand
         self.mesh = None
@@ -427,6 +441,10 @@ class Koerper:
 
     @zustand.setter
     def zustand(self, wert):
+        with self._snapshot_lock:
+            self._zustand_setzen(wert)
+
+    def _zustand_setzen(self, wert):
         if wert is None:
             if self._zustand is not None:
                 self._position = np.asarray(
@@ -545,10 +563,16 @@ class Koerper:
         """Erzeugt einen unveränderlichen Snapshot für Solver und Worker."""
         from .rechenpfad import rechenpfad
 
-        if rechenpfad() == "cpp":
-            from .native_backend import NativeKoerperKontext
+        with self._snapshot_lock:
+            if rechenpfad() == "cpp":
+                from .native_backend import NativeKoerperKontext
 
-            return NativeKoerperKontext(self).snapshot(self)
+                kontext = self._snapshot_native_context
+                if kontext is None or not kontext.gueltig_fuer(self):
+                    kontext = NativeKoerperKontext(self)
+                    self._snapshot_native_context = kontext
+                return kontext.snapshot(self)
+
         blatt_meshes = []
         blatt_quell_ids = []
         gelenke = []
@@ -606,6 +630,10 @@ class Koerper:
 
     def gelenkwinkel_setzen(self, knoten_id, winkel_rad):
         """Ändert nur den Gelenkzustand; Massenwerte und Auftriebsmesh bleiben fest."""
+        with self._snapshot_lock:
+            self._gelenkwinkel_setzen(knoten_id, winkel_rad)
+
+    def _gelenkwinkel_setzen(self, knoten_id, winkel_rad):
         if isinstance(winkel_rad, bool):
             raise ValueError("Gelenkwinkel muss eine endliche Zahl sein")
         try:

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import lru_cache
 import math
 
 import numpy as np
@@ -28,6 +29,15 @@ def _vektor(werte, name, laenge):
         raise ValueError("%s muss %d endliche Zahlen enthalten"
                          % (name, laenge))
     return ergebnis
+
+
+@lru_cache(maxsize=128)
+def _traegheit_validieren(werte):
+    inertia = np.asarray(werte, dtype=np.float64).reshape(3, 3)
+    if not np.allclose(inertia, inertia.T, rtol=0.0, atol=1e-10):
+        raise ValueError("Traegheitstensor muss symmetrisch sein")
+    if float(np.linalg.eigvalsh(inertia)[0]) <= 0.0:
+        raise ValueError("Traegheitstensor muss positiv definit sein")
 
 
 @nativer_kern("quaternion_normalisieren")
@@ -210,10 +220,7 @@ def schritt(zustand, kraftfunktion, masse, traegheit_koerper, dt, g):
     inertia = np.asarray(traegheit_koerper, dtype=np.float64)
     if inertia.shape != (3, 3) or not np.isfinite(inertia).all():
         raise ValueError("Traegheitstensor muss eine endliche 3x3-Matrix sein")
-    if not np.allclose(inertia, inertia.T, rtol=0.0, atol=1e-10):
-        raise ValueError("Traegheitstensor muss symmetrisch sein")
-    if float(np.linalg.eigvalsh(inertia)[0]) <= 0.0:
-        raise ValueError("Traegheitstensor muss positiv definit sein")
+    _traegheit_validieren(tuple(float(wert) for wert in inertia.flat))
 
     rotation = quaternion_matrix(q)
     ergebnis = kraftfunktion(

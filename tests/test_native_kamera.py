@@ -6,6 +6,8 @@ import pytest
 from segelphysik.grafik_bruecke import GrafikBruecke
 from segelphysik.core.rechenpfad import python_referenz
 
+pytestmark = [pytest.mark.native]
+
 
 class Kamera:
     def __init__(self, position, fokus, oben):

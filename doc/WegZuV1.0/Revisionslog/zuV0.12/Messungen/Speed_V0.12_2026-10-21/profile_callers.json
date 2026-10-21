@@ -1,0 +1,279 @@
+[
+  {
+    "file": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\pyvista\\core\\utilities\\geometric_objects.py",
+    "line": 383,
+    "function": "Sphere",
+    "primitive_calls": 4,
+    "calls": 4,
+    "self_s": 2.51e-05,
+    "cumulative_s": 0.0055815000000000005,
+    "callers": [
+      {
+        "caller": {
+          "file": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\pyvista\\_deprecate_positional_args.py",
+          "line": 200,
+          "function": "inner_f"
+        },
+        "stats": [
+          3,
+          3,
+          1.8200000000000002e-05,
+          0.0055260000000000005
+        ]
+      }
+    ]
+  },
+  {
+    "file": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\grafik_kraefte.py",
+    "line": 142,
+    "function": "mesh",
+    "primitive_calls": 12,
+    "calls": 12,
+    "self_s": 0.000273,
+    "cumulative_s": 0.0359844,
+    "callers": [
+      {
+        "caller": {
+          "file": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\grafik_kraefte.py",
+          "line": 89,
+          "function": "zeichnen"
+        },
+        "stats": [
+          8,
+          8,
+          0.00011040000000000001,
+          0.0198596
+        ]
+      },
+      {
+        "caller": {
+          "file": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\code\\python\\segelphysik\\grafik_bruecke.py",
+          "line": 953,
+          "function": "render"
+        },
+        "stats": [
+          3,
+          3,
+          4.86e-05,
+          0.0088316
+        ]
+      }
+    ]
+  },
+  {
+    "file": "~",
+    "line": 0,
+    "function": "<method 'SetRenderPointsAsSpheres' of 'vtkmodules.vtkRenderingCore.vtkProperty' objects>",
+    "primitive_calls": 63,
+    "calls": 63,
+    "self_s": 1.6800000000000002e-05,
+    "cumulative_s": 1.6800000000000002e-05,
+    "callers": [
+      {
+        "caller": {
+          "file": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\pyvista\\plotting\\_property.py",
+          "line": 929,
+          "function": "render_points_as_spheres"
+        },
+        "stats": [
+          63,
+          63,
+          1.6800000000000002e-05,
+          1.6800000000000002e-05
+        ]
+      }
+    ]
+  },
+  {
+    "file": "~",
+    "line": 0,
+    "function": "<method 'SetRadius' of 'vtkmodules.vtkFiltersSources.vtkSphereSource' objects>",
+    "primitive_calls": 4,
+    "calls": 4,
+    "self_s": 3.3e-06,
+    "cumulative_s": 3.3e-06,
+    "callers": [
+      {
+        "caller": {
+          "file": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\pyvista\\core\\utilities\\geometric_sources.py",
+          "line": 1721,
+          "function": "radius"
+        },
+        "stats": [
+          4,
+          4,
+          3.3e-06,
+          3.3e-06
+        ]
+      }
+    ]
+  },
+  {
+    "file": "~",
+    "line": 0,
+    "function": "<method 'SetThetaResolution' of 'vtkmodules.vtkFiltersSources.vtkSphereSource' objects>",
+    "primitive_calls": 4,
+    "calls": 4,
+    "self_s": 1.9e-06,
+    "cumulative_s": 1.9e-06,
+    "callers": [
+      {
+        "caller": {
+          "file": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\pyvista\\core\\utilities\\geometric_sources.py",
+          "line": 1745,
+          "function": "theta_resolution"
+        },
+        "stats": [
+          4,
+          4,
+          1.9e-06,
+          1.9e-06
+        ]
+      }
+    ]
+  },
+  {
+    "file": "~",
+    "line": 0,
+    "function": "<method 'SetPhiResolution' of 'vtkmodules.vtkFiltersSources.vtkSphereSource' objects>",
+    "primitive_calls": 4,
+    "calls": 4,
+    "self_s": 1.2000000000000002e-06,
+    "cumulative_s": 1.2000000000000002e-06,
+    "callers": [
+      {
+        "caller": {
+          "file": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\pyvista\\core\\utilities\\geometric_sources.py",
+          "line": 1769,
+          "function": "phi_resolution"
+        },
+        "stats": [
+          4,
+          4,
+          1.2000000000000002e-06,
+          1.2000000000000002e-06
+        ]
+      }
+    ]
+  },
+  {
+    "file": "~",
+    "line": 0,
+    "function": "<method 'SetStartTheta' of 'vtkmodules.vtkFiltersSources.vtkSphereSource' objects>",
+    "primitive_calls": 4,
+    "calls": 4,
+    "self_s": 1.3e-06,
+    "cumulative_s": 1.3e-06,
+    "callers": [
+      {
+        "caller": {
+          "file": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\pyvista\\core\\utilities\\geometric_sources.py",
+          "line": 1793,
+          "function": "start_theta"
+        },
+        "stats": [
+          4,
+          4,
+          1.3e-06,
+          1.3e-06
+        ]
+      }
+    ]
+  },
+  {
+    "file": "~",
+    "line": 0,
+    "function": "<method 'SetEndTheta' of 'vtkmodules.vtkFiltersSources.vtkSphereSource' objects>",
+    "primitive_calls": 4,
+    "calls": 4,
+    "self_s": 1.5e-06,
+    "cumulative_s": 1.5e-06,
+    "callers": [
+      {
+        "caller": {
+          "file": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\pyvista\\core\\utilities\\geometric_sources.py",
+          "line": 1817,
+          "function": "end_theta"
+        },
+        "stats": [
+          4,
+          4,
+          1.5e-06,
+          1.5e-06
+        ]
+      }
+    ]
+  },
+  {
+    "file": "~",
+    "line": 0,
+    "function": "<method 'SetStartPhi' of 'vtkmodules.vtkFiltersSources.vtkSphereSource' objects>",
+    "primitive_calls": 4,
+    "calls": 4,
+    "self_s": 1.0000000000000002e-06,
+    "cumulative_s": 1.0000000000000002e-06,
+    "callers": [
+      {
+        "caller": {
+          "file": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\pyvista\\core\\utilities\\geometric_sources.py",
+          "line": 1841,
+          "function": "start_phi"
+        },
+        "stats": [
+          4,
+          4,
+          1.0000000000000002e-06,
+          1.0000000000000002e-06
+        ]
+      }
+    ]
+  },
+  {
+    "file": "~",
+    "line": 0,
+    "function": "<method 'SetEndPhi' of 'vtkmodules.vtkFiltersSources.vtkSphereSource' objects>",
+    "primitive_calls": 4,
+    "calls": 4,
+    "self_s": 1.3e-06,
+    "cumulative_s": 1.3e-06,
+    "callers": [
+      {
+        "caller": {
+          "file": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\pyvista\\core\\utilities\\geometric_sources.py",
+          "line": 1865,
+          "function": "end_phi"
+        },
+        "stats": [
+          4,
+          4,
+          1.3e-06,
+          1.3e-06
+        ]
+      }
+    ]
+  },
+  {
+    "file": "~",
+    "line": 0,
+    "function": "<method 'SetLatLongTessellation' of 'vtkmodules.vtkFiltersSources.vtkSphereSource' objects>",
+    "primitive_calls": 4,
+    "calls": 4,
+    "self_s": 1.3e-06,
+    "cumulative_s": 1.3e-06,
+    "callers": [
+      {
+        "caller": {
+          "file": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\pyvista\\core\\utilities\\geometric_sources.py",
+          "line": 1884,
+          "function": "tessellation"
+        },
+        "stats": [
+          4,
+          4,
+          1.3e-06,
+          1.3e-06
+        ]
+      }
+    ]
+  }
+]

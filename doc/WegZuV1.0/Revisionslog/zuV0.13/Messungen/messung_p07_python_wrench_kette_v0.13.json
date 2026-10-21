@@ -1,0 +1,23 @@
+{
+  "kennung": "P-07",
+  "messfrage": "Kosten der Python-Normalisierung und Wrench/Kraftbeitrag-Objektkette",
+  "messart": "Gezielte Baseline im aktuellen Python-Referenzpfad",
+  "datum": "2026-10-21",
+  "rechenpfad": "python_referenz",
+  "modell": "folkeboot",
+  "beitraege_pro_aufruf": 3,
+  "warmups": 5,
+  "laeufe": 5,
+  "aufrufe_pro_lauf": 1000,
+  "einheit": "Mikrosekunden pro Aufruf",
+  "messgrenze": "aggregiere_kraftbeitraege() einschliesslich Framepruefung, Wrench-Normalisierung, Summierung und Erzeugung normalisierter Kraftbeitragobjekte; ohne Erzeugung der Hydrodynamikbeitraege",
+  "rohwerte_us_pro_aufruf": [95.6606, 95.6472, 95.7445, 98.6221, 96.8816],
+  "median_us_pro_aufruf": 95.7445,
+  "spannweite_us_pro_aufruf": [95.6472, 98.6221],
+  "bewertung": "Baseline fuer die aggregierte Python-Objektkette mit drei realen Folkebootbeitraegen. Der isolierte Anteil der Umwandlungen an einem vollstaendigen Kraftschritt ist damit nicht bestimmt.",
+  "einschraenkungen": [
+    "Keine getrennte Messung der Kosten einzelner Objektkopien.",
+    "Keine Implementierung mit abweichender Aggregationssemantik oder gelockerten Validierungen.",
+    "Erzeugung der Beitraege, Hydrostatik und Rendering liegen ausserhalb der Messgrenze."
+  ]
+}

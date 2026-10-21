@@ -76,13 +76,12 @@ def test_ungueltige_skalenwerte_werden_gemeldet(ungueltig):
         anfangsreferenz((ungueltig,))
 
 
-def test_zahlenformat_schreibt_kleine_werte_deutsch_und_zustaende_als_text():
-    assert zahlenwert(1234.567, "N") == "1,235 kN"
-    assert zahlenwert(-1234.567, "N*m") == "-1,235 kN*m"
+def test_zahlenformat_rundet_nur_die_anzeige_und_erhaelt_status():
+    assert zahlenwert(1234.567, "N") == "1 235 N"
+    assert zahlenwert(-1234.567, "N*m") == "-1 235 Nm"
     assert zahlenwert(-0.0, "N") == "0 N"
-    assert zahlenwert(1e-20, "N") == "1e-20 N"
-    assert zahlenwert(1.2345678901234567, "N", details=True) == (
-        "1,2345678901234567 N")
+    assert zahlenwert(1e-20, "N") == "0 N"
+    assert zahlenwert(1.2345678901234567, "N", details=True) == "1 N"
     for status in Datenstatus:
         if status not in (Datenstatus.GUELTIG, Datenstatus.NULL):
             assert zahlenwert(None, "N", status=status) == status.value
@@ -91,6 +90,31 @@ def test_zahlenformat_schreibt_kleine_werte_deutsch_und_zustaende_als_text():
             zahlenwert(wert, "N")
     with pytest.raises(ValueError, match="Nullstatus"):
         zahlenwert(1e-30, "N", status=Datenstatus.NULL)
+
+
+@pytest.mark.parametrize("details", (False, True))
+@pytest.mark.parametrize(("wert", "einheit", "erwartet"), (
+    (16290, "N", "16 290 N"),
+    (-0.4675, "N", "0 N"),
+    (0.5698, "N", "1 N"),
+    (373.6, "N*m", "374 Nm"),
+    (-0.03933, "N*m", "0 Nm"),
+    (24.49, "m", "24,49 m"),
+    (-0.4509, "m", "-0,45 m"),
+    (-0.0001229, "m", "0,00 m"),
+    (0, "m", "0,00 m"),
+    (1.236, "m", "1,24 m"),
+    (1234.567, "m", "1 234,57 m"),
+))
+def test_feste_anzeigeeinheiten_und_nachkommastellen(
+        wert, einheit, erwartet, details):
+    assert zahlenwert(wert, einheit, details=details) == erwartet
+
+
+def test_zeitformat_bleibt_unveraendert():
+    assert zahlenwert(47.15, "s") == "47,15 s"
+    assert zahlenwert(1.2345678901234567, "s", details=True) == (
+        "1,2345678901234567 s")
 
 
 @pytest.mark.parametrize("dpi", (1.0, 1.5, 2.0))

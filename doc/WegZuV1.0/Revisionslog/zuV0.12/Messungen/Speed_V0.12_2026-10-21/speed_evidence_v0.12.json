@@ -1,0 +1,1409 @@
+{
+  "purpose": "Reproduzierbare V0.12-Speed-Auswertung; misst Diagnosekandidaten und dokumentiert den verworfenen GUI-Versuch.",
+  "date": "2026-10-21",
+  "branch": "main",
+  "base_commit": "5632ff33f0d7584409dd39d746f88b5aa34dfd58",
+  "runtime_source_worktree_status": "keine ?nderungen an code/python oder code/cpp/src",
+  "environment": {
+    "python": "3.14.8",
+    "plattform": "Windows-11-10.0.26200-SP0",
+    "prozessor": "AMD64 Family 25 Model 117 Stepping 2, AuthenticAMD",
+    "cpu_threads": 12,
+    "bibliotheken": {
+      "numpy": "2.5.4",
+      "PySide6": "6.10.3",
+      "pyvista": "0.49.1",
+      "pyvistaqt": "0.13.1",
+      "vtk": "9.7.1",
+      "manifold3d": "3.5.4"
+    },
+    "npu": {
+      "onnxruntime_installiert": false,
+      "zugriff_nachgewiesen": false,
+      "operatoren_nachgewiesen": [],
+      "hinweis": "Ohne NPU-Execution-Provider kein Operator-/Kernelnachweis."
+    }
+  },
+  "scenario": {
+    "scene": "folkeboot",
+    "backend": "exakt_union",
+    "rechenpfad": "cpp",
+    "warmup_s": 10,
+    "duration_s": 45,
+    "viewport_px": [
+      640,
+      480
+    ],
+    "render_options": {
+      "fenstergroesse_px": [
+        640,
+        480
+      ],
+      "device_pixel_ratio": 1.0,
+      "renderpass": "vtkSSAOPass",
+      "lichtanzahl": 5,
+      "multisamples": 8,
+      "offscreen": false,
+      "beckenwasser_sichtbar": false,
+      "ozean_sichtbar": true,
+      "wasser_glanz": 1.0,
+      "autoupdate_ms": 200
+    },
+    "primary_metric": "Median des Intervalls zwischen aufeinanderfolgenden Qt frameSwapped-Zeitpunkten; dies belegt Qt-Swap-Pacing, nicht physischen Monitor-Scanout.",
+    "acceptance": "mindestens 20% Reduktion (Faktor >= 1.25), Effekt oberhalb beobachteter Run-Streuung; keine relevante Verschlechterung relevanter GUI-/Physiksignale."
+  },
+  "baseline": {
+    "label": "unver?nderte V0.12-Baseline",
+    "runs": [
+      {
+        "raw_file": "gui_native_1.json",
+        "valid": true,
+        "errors": [],
+        "duration_s": 45.233,
+        "warmup_s": 10.0,
+        "qt_swap_interval_median_ms": 170.35839999994096,
+        "qt_swap_interval_p95_ms": 199.235,
+        "qt_swap_count": 303,
+        "qt_swaps_per_second": 6.69864921628015,
+        "render_request_rate_s": 20.94,
+        "render_call_median_ms": 24.921,
+        "pose_update_count": 500,
+        "pose_update_rate_s": 11.0538765945217,
+        "pose_call_median_ms": 4.447050000180752,
+        "reported_display_rate": "11.3 Render/s",
+        "worker_batch_median_ms": 1.639,
+        "worker_roundtrip_median_ms": 15.747700000247278,
+        "simulation_throughput_sim_s_per_wall_s": 0.9748540039732843,
+        "simulation_backlog_s": 1.106,
+        "input_to_swap_median_ms": 90.49259999983406,
+        "input_latency_valid": true,
+        "requested_simulation_s": 45.202280599999995,
+        "calculated_simulation_s": 44.09600000000003
+      },
+      {
+        "raw_file": "gui_native_2.json",
+        "valid": true,
+        "errors": [],
+        "duration_s": 45.164,
+        "warmup_s": 10.0,
+        "qt_swap_interval_median_ms": 162.66379999979108,
+        "qt_swap_interval_p95_ms": 203.77,
+        "qt_swap_count": 313,
+        "qt_swaps_per_second": 6.930298467806217,
+        "render_request_rate_s": 21.48,
+        "render_call_median_ms": 24.52,
+        "pose_update_count": 508,
+        "pose_update_rate_s": 11.24789655477814,
+        "pose_call_median_ms": 4.340250000041124,
+        "reported_display_rate": "10.3 Render/s",
+        "worker_batch_median_ms": 1.633,
+        "worker_roundtrip_median_ms": 14.657200000328885,
+        "simulation_throughput_sim_s_per_wall_s": 0.9777806607349296,
+        "simulation_backlog_s": 0.992,
+        "input_to_swap_median_ms": 92.69470000003821,
+        "input_latency_valid": true,
+        "requested_simulation_s": 45.15179490000037,
+        "calculated_simulation_s": 44.16000000000003
+      },
+      {
+        "raw_file": "gui_native_3.json",
+        "valid": true,
+        "errors": [],
+        "duration_s": 45.256,
+        "warmup_s": 10.0,
+        "qt_swap_interval_median_ms": 172.10909999994328,
+        "qt_swap_interval_p95_ms": 198.826,
+        "qt_swap_count": 302,
+        "qt_swaps_per_second": 6.673148311826056,
+        "render_request_rate_s": 20.88,
+        "render_call_median_ms": 25.059,
+        "pose_update_count": 497,
+        "pose_update_rate_s": 10.981969241647516,
+        "pose_call_median_ms": 4.446599999937462,
+        "reported_display_rate": "10.6 Render/s",
+        "worker_batch_median_ms": 1.644,
+        "worker_roundtrip_median_ms": 11.247299999922689,
+        "simulation_throughput_sim_s_per_wall_s": 0.977195385473212,
+        "simulation_backlog_s": 0.951,
+        "input_to_swap_median_ms": 91.5794000002279,
+        "input_latency_valid": true,
+        "requested_simulation_s": 45.17537510000011,
+        "calculated_simulation_s": 44.22400000000003
+      },
+      {
+        "raw_file": "gui_native_4.json",
+        "valid": true,
+        "errors": [],
+        "duration_s": 45.168,
+        "warmup_s": 10.0,
+        "qt_swap_interval_median_ms": 164.6266999996442,
+        "qt_swap_interval_p95_ms": 200.489,
+        "qt_swap_count": 310,
+        "qt_swaps_per_second": 6.8632660290471135,
+        "render_request_rate_s": 21.5,
+        "render_call_median_ms": 24.414,
+        "pose_update_count": 508,
+        "pose_update_rate_s": 11.246900460503012,
+        "pose_call_median_ms": 4.484499999989566,
+        "reported_display_rate": "10.7 Render/s",
+        "worker_batch_median_ms": 1.578,
+        "worker_roundtrip_median_ms": 15.791450000051555,
+        "simulation_throughput_sim_s_per_wall_s": 0.9748525178565106,
+        "simulation_backlog_s": 1.125,
+        "input_to_swap_median_ms": 88.71850000014092,
+        "input_latency_valid": true,
+        "requested_simulation_s": 45.15656040000022,
+        "calculated_simulation_s": 44.03200000000003
+      },
+      {
+        "raw_file": "gui_native_5.json",
+        "valid": true,
+        "errors": [],
+        "duration_s": 45.181,
+        "warmup_s": 10.0,
+        "qt_swap_interval_median_ms": 168.29834999998639,
+        "qt_swap_interval_p95_ms": 201.969,
+        "qt_swap_count": 307,
+        "qt_swaps_per_second": 6.794891657997831,
+        "render_request_rate_s": 21.25,
+        "render_call_median_ms": 24.92,
+        "pose_update_count": 502,
+        "pose_update_rate_s": 11.110865186693522,
+        "pose_call_median_ms": 4.325850000213904,
+        "reported_display_rate": "11.1 Render/s",
+        "worker_batch_median_ms": 1.646,
+        "worker_roundtrip_median_ms": 15.259450000257857,
+        "simulation_throughput_sim_s_per_wall_s": 0.9759846122356416,
+        "simulation_backlog_s": 1.073,
+        "input_to_swap_median_ms": 93.12260000024253,
+        "input_latency_valid": true,
+        "requested_simulation_s": 45.16944719999992,
+        "calculated_simulation_s": 44.09600000000003
+      }
+    ],
+    "median_of_run_statistics": {
+      "duration_s": 45.181,
+      "warmup_s": 10.0,
+      "qt_swap_interval_median_ms": 168.29834999998639,
+      "qt_swap_interval_p95_ms": 200.489,
+      "qt_swap_count": 307,
+      "qt_swaps_per_second": 6.794891657997831,
+      "render_request_rate_s": 21.25,
+      "render_call_median_ms": 24.92,
+      "pose_update_count": 502,
+      "pose_update_rate_s": 11.110865186693522,
+      "pose_call_median_ms": 4.446599999937462,
+      "worker_batch_median_ms": 1.639,
+      "worker_roundtrip_median_ms": 15.259450000257857,
+      "simulation_throughput_sim_s_per_wall_s": 0.9759846122356416,
+      "simulation_backlog_s": 1.073,
+      "input_to_swap_median_ms": 91.5794000002279,
+      "requested_simulation_s": 45.16944719999992,
+      "calculated_simulation_s": 44.09600000000003
+    },
+    "range_of_run_statistics": {
+      "duration_s": [
+        45.164,
+        45.256
+      ],
+      "warmup_s": [
+        10.0,
+        10.0
+      ],
+      "qt_swap_interval_median_ms": [
+        162.66379999979108,
+        172.10909999994328
+      ],
+      "qt_swap_interval_p95_ms": [
+        198.826,
+        203.77
+      ],
+      "qt_swap_count": [
+        302,
+        313
+      ],
+      "qt_swaps_per_second": [
+        6.673148311826056,
+        6.930298467806217
+      ],
+      "render_request_rate_s": [
+        20.88,
+        21.5
+      ],
+      "render_call_median_ms": [
+        24.414,
+        25.059
+      ],
+      "pose_update_count": [
+        497,
+        508
+      ],
+      "pose_update_rate_s": [
+        10.981969241647516,
+        11.24789655477814
+      ],
+      "pose_call_median_ms": [
+        4.325850000213904,
+        4.484499999989566
+      ],
+      "worker_batch_median_ms": [
+        1.578,
+        1.646
+      ],
+      "worker_roundtrip_median_ms": [
+        11.247299999922689,
+        15.791450000051555
+      ],
+      "simulation_throughput_sim_s_per_wall_s": [
+        0.9748525178565106,
+        0.9777806607349296
+      ],
+      "simulation_backlog_s": [
+        0.951,
+        1.125
+      ],
+      "input_to_swap_median_ms": [
+        88.71850000014092,
+        93.12260000024253
+      ],
+      "requested_simulation_s": [
+        45.15179490000037,
+        45.202280599999995
+      ],
+      "calculated_simulation_s": [
+        44.03200000000003,
+        44.22400000000003
+      ]
+    },
+    "all_valid": true
+  },
+  "rejected_candidate_backpressure_only": {
+    "label": "Versuch 1: Backpressure f?r alle Modi",
+    "runs": [
+      {
+        "raw_file": "gui_candidate_1.json",
+        "valid": true,
+        "errors": [],
+        "duration_s": 45.157,
+        "warmup_s": 10.0,
+        "qt_swap_interval_median_ms": 98.13579999990907,
+        "qt_swap_interval_p95_ms": 164.407,
+        "qt_swap_count": 448,
+        "qt_swaps_per_second": 9.920942489536507,
+        "render_request_rate_s": 14.28,
+        "render_call_median_ms": 26.679,
+        "pose_update_count": 176,
+        "pose_update_rate_s": 3.897513120889342,
+        "pose_call_median_ms": 30.669400000078895,
+        "reported_display_rate": "3.4 Render/s",
+        "worker_batch_median_ms": 1.033,
+        "worker_roundtrip_median_ms": 9.863999999652151,
+        "simulation_throughput_sim_s_per_wall_s": 0.9807599492253889,
+        "simulation_backlog_s": 0.809,
+        "input_to_swap_median_ms": 61.22990000039863,
+        "input_latency_valid": true,
+        "requested_simulation_s": 45.096596899999895,
+        "calculated_simulation_s": 44.28800000000003
+      },
+      {
+        "raw_file": "gui_candidate_2.json",
+        "valid": true,
+        "errors": [],
+        "duration_s": 45.17,
+        "warmup_s": 10.0,
+        "qt_swap_interval_median_ms": 92.10405000021638,
+        "qt_swap_interval_p95_ms": 160.326,
+        "qt_swap_count": 465,
+        "qt_swaps_per_second": 10.294443214522913,
+        "render_request_rate_s": 14.04,
+        "render_call_median_ms": 26.921,
+        "pose_update_count": 166,
+        "pose_update_rate_s": 3.6750055346468895,
+        "pose_call_median_ms": 30.611600000156614,
+        "reported_display_rate": "2.0 Render/s",
+        "worker_batch_median_ms": 1.018,
+        "worker_roundtrip_median_ms": 9.685399999852962,
+        "simulation_throughput_sim_s_per_wall_s": 0.9804798088461253,
+        "simulation_backlog_s": 0.818,
+        "input_to_swap_median_ms": 65.06330000047456,
+        "input_latency_valid": true,
+        "requested_simulation_s": 45.105902100000094,
+        "calculated_simulation_s": 44.28800000000003
+      },
+      {
+        "raw_file": "gui_candidate_3.json",
+        "valid": true,
+        "errors": [],
+        "duration_s": 45.126,
+        "warmup_s": 10.0,
+        "qt_swap_interval_median_ms": 101.69820000010077,
+        "qt_swap_interval_p95_ms": 158.35,
+        "qt_swap_count": 452,
+        "qt_swaps_per_second": 10.016398528564464,
+        "render_request_rate_s": 14.29,
+        "render_call_median_ms": 26.37,
+        "pose_update_count": 185,
+        "pose_update_rate_s": 4.099632141115986,
+        "pose_call_median_ms": 30.686799999784853,
+        "reported_display_rate": "3.6 Render/s",
+        "worker_batch_median_ms": 1.025,
+        "worker_roundtrip_median_ms": 9.514600000329665,
+        "simulation_throughput_sim_s_per_wall_s": 0.9800149633109552,
+        "simulation_backlog_s": 0.812,
+        "input_to_swap_median_ms": 66.75664999966102,
+        "input_latency_valid": true,
+        "requested_simulation_s": 45.03553800000009,
+        "calculated_simulation_s": 44.22400000000003
+      },
+      {
+        "raw_file": "gui_candidate_4.json",
+        "valid": true,
+        "errors": [],
+        "duration_s": 45.175,
+        "warmup_s": 10.0,
+        "qt_swap_interval_median_ms": 96.9953999997415,
+        "qt_swap_interval_p95_ms": 165.767,
+        "qt_swap_count": 447,
+        "qt_swaps_per_second": 9.89485334809076,
+        "render_request_rate_s": 14.21,
+        "render_call_median_ms": 26.512,
+        "pose_update_count": 184,
+        "pose_update_rate_s": 4.073049252905368,
+        "pose_call_median_ms": 30.565900000510737,
+        "reported_display_rate": "2.8 Render/s",
+        "worker_batch_median_ms": 1.036,
+        "worker_roundtrip_median_ms": 9.219900000061898,
+        "simulation_throughput_sim_s_per_wall_s": 0.9817829935333882,
+        "simulation_backlog_s": 0.823,
+        "input_to_swap_median_ms": 70.59100000060425,
+        "input_latency_valid": true,
+        "requested_simulation_s": 45.17485889999989,
+        "calculated_simulation_s": 44.35200000000003
+      },
+      {
+        "raw_file": "gui_candidate_5.json",
+        "valid": true,
+        "errors": [],
+        "duration_s": 45.098,
+        "warmup_s": 10.0,
+        "qt_swap_interval_median_ms": 97.58499999998094,
+        "qt_swap_interval_p95_ms": 167.16,
+        "qt_swap_count": 447,
+        "qt_swaps_per_second": 9.911747749345869,
+        "render_request_rate_s": 14.04,
+        "render_call_median_ms": 27.134,
+        "pose_update_count": 178,
+        "pose_update_rate_s": 3.946959953878221,
+        "pose_call_median_ms": 31.364799999664683,
+        "reported_display_rate": "3.5 Render/s",
+        "worker_batch_median_ms": 1.031,
+        "worker_roundtrip_median_ms": 10.125299999344861,
+        "simulation_throughput_sim_s_per_wall_s": 0.9820303458330804,
+        "simulation_backlog_s": 0.81,
+        "input_to_swap_median_ms": 68.42500000038854,
+        "input_latency_valid": true,
+        "requested_simulation_s": 45.09833020000042,
+        "calculated_simulation_s": 44.28800000000003
+      }
+    ],
+    "median_of_run_statistics": {
+      "duration_s": 45.157,
+      "warmup_s": 10.0,
+      "qt_swap_interval_median_ms": 97.58499999998094,
+      "qt_swap_interval_p95_ms": 164.407,
+      "qt_swap_count": 448,
+      "qt_swaps_per_second": 9.920942489536507,
+      "render_request_rate_s": 14.21,
+      "render_call_median_ms": 26.679,
+      "pose_update_count": 178,
+      "pose_update_rate_s": 3.946959953878221,
+      "pose_call_median_ms": 30.669400000078895,
+      "worker_batch_median_ms": 1.031,
+      "worker_roundtrip_median_ms": 9.685399999852962,
+      "simulation_throughput_sim_s_per_wall_s": 0.9807599492253889,
+      "simulation_backlog_s": 0.812,
+      "input_to_swap_median_ms": 66.75664999966102,
+      "requested_simulation_s": 45.09833020000042,
+      "calculated_simulation_s": 44.28800000000003
+    },
+    "range_of_run_statistics": {
+      "duration_s": [
+        45.098,
+        45.175
+      ],
+      "warmup_s": [
+        10.0,
+        10.0
+      ],
+      "qt_swap_interval_median_ms": [
+        92.10405000021638,
+        101.69820000010077
+      ],
+      "qt_swap_interval_p95_ms": [
+        158.35,
+        167.16
+      ],
+      "qt_swap_count": [
+        447,
+        465
+      ],
+      "qt_swaps_per_second": [
+        9.89485334809076,
+        10.294443214522913
+      ],
+      "render_request_rate_s": [
+        14.04,
+        14.29
+      ],
+      "render_call_median_ms": [
+        26.37,
+        27.134
+      ],
+      "pose_update_count": [
+        166,
+        185
+      ],
+      "pose_update_rate_s": [
+        3.6750055346468895,
+        4.099632141115986
+      ],
+      "pose_call_median_ms": [
+        30.565900000510737,
+        31.364799999664683
+      ],
+      "worker_batch_median_ms": [
+        1.018,
+        1.036
+      ],
+      "worker_roundtrip_median_ms": [
+        9.219900000061898,
+        10.125299999344861
+      ],
+      "simulation_throughput_sim_s_per_wall_s": [
+        0.9800149633109552,
+        0.9820303458330804
+      ],
+      "simulation_backlog_s": [
+        0.809,
+        0.823
+      ],
+      "input_to_swap_median_ms": [
+        61.22990000039863,
+        70.59100000060425
+      ],
+      "requested_simulation_s": [
+        45.03553800000009,
+        45.17485889999989
+      ],
+      "calculated_simulation_s": [
+        44.22400000000003,
+        44.35200000000003
+      ]
+    },
+    "all_valid": true
+  },
+  "rejected_candidate_frame_swap_paced": {
+    "label": "Versuch 2: Backpressure plus Aktualisierung nach Qt-Swap",
+    "runs": [
+      {
+        "raw_file": "gui_candidate2_1.json",
+        "valid": true,
+        "errors": [],
+        "duration_s": 45.119,
+        "warmup_s": 10.0,
+        "qt_swap_interval_median_ms": 98.07515000011335,
+        "qt_swap_interval_p95_ms": 163.338,
+        "qt_swap_count": 451,
+        "qt_swaps_per_second": 9.995788913761386,
+        "render_request_rate_s": 15.47,
+        "render_call_median_ms": 25.598,
+        "pose_update_count": 268,
+        "pose_update_rate_s": 5.939847957623174,
+        "pose_call_median_ms": 28.503700000328536,
+        "reported_display_rate": "3.7 Render/s",
+        "worker_batch_median_ms": 1.037,
+        "worker_roundtrip_median_ms": 10.856300000341434,
+        "simulation_throughput_sim_s_per_wall_s": 0.9801557794754736,
+        "simulation_backlog_s": 0.833,
+        "input_to_swap_median_ms": 70.99980000020878,
+        "input_latency_valid": true,
+        "requested_simulation_s": 45.05721850000009,
+        "calculated_simulation_s": 44.22400000000003
+      },
+      {
+        "raw_file": "gui_candidate2_2.json",
+        "valid": true,
+        "errors": [],
+        "duration_s": 45.119,
+        "warmup_s": 10.0,
+        "qt_swap_interval_median_ms": 102.12649999994028,
+        "qt_swap_interval_p95_ms": 164.327,
+        "qt_swap_count": 444,
+        "qt_swaps_per_second": 9.840643631286154,
+        "render_request_rate_s": 15.34,
+        "render_call_median_ms": 25.506,
+        "pose_update_count": 267,
+        "pose_update_rate_s": 5.917684345840998,
+        "pose_call_median_ms": 30.39230000013049,
+        "reported_display_rate": "4.2 Render/s",
+        "worker_batch_median_ms": 1.04,
+        "worker_roundtrip_median_ms": 9.957100000065111,
+        "simulation_throughput_sim_s_per_wall_s": 0.9787441505076653,
+        "simulation_backlog_s": 0.913,
+        "input_to_swap_median_ms": 64.27809999968304,
+        "input_latency_valid": true,
+        "requested_simulation_s": 45.07289189999938,
+        "calculated_simulation_s": 44.16000000000003
+      },
+      {
+        "raw_file": "gui_candidate2_3.json",
+        "valid": true,
+        "errors": [],
+        "duration_s": 45.145,
+        "warmup_s": 10.0,
+        "qt_swap_interval_median_ms": 104.04160000007323,
+        "qt_swap_interval_p95_ms": 171.351,
+        "qt_swap_count": 433,
+        "qt_swaps_per_second": 9.591316867870196,
+        "render_request_rate_s": 15.0,
+        "render_call_median_ms": 26.404,
+        "pose_update_count": 266,
+        "pose_update_rate_s": 5.8921253737955475,
+        "pose_call_median_ms": 31.3394499999049,
+        "reported_display_rate": "5.1 Render/s",
+        "worker_batch_median_ms": 1.064,
+        "worker_roundtrip_median_ms": 10.50519999989774,
+        "simulation_throughput_sim_s_per_wall_s": 0.9781843405667472,
+        "simulation_backlog_s": 0.984,
+        "input_to_swap_median_ms": 73.92770000024029,
+        "input_latency_valid": true,
+        "requested_simulation_s": 45.14374969999972,
+        "calculated_simulation_s": 44.16000000000003
+      },
+      {
+        "raw_file": "gui_candidate2_4.json",
+        "valid": true,
+        "errors": [],
+        "duration_s": 45.159,
+        "warmup_s": 10.0,
+        "qt_swap_interval_median_ms": 102.91525000047841,
+        "qt_swap_interval_p95_ms": 163.781,
+        "qt_swap_count": 449,
+        "qt_swaps_per_second": 9.942647091388206,
+        "render_request_rate_s": 15.41,
+        "render_call_median_ms": 26.085,
+        "pose_update_count": 274,
+        "pose_update_rate_s": 6.067450563564295,
+        "pose_call_median_ms": 29.638449999765726,
+        "reported_display_rate": "8.1 Render/s",
+        "worker_batch_median_ms": 1.037,
+        "worker_roundtrip_median_ms": 10.331499999665539,
+        "simulation_throughput_sim_s_per_wall_s": 0.9778758013629638,
+        "simulation_backlog_s": 0.998,
+        "input_to_swap_median_ms": 78.86020000023564,
+        "input_latency_valid": true,
+        "requested_simulation_s": 45.15820170000006,
+        "calculated_simulation_s": 44.16000000000003
+      },
+      {
+        "raw_file": "gui_candidate2_5.json",
+        "valid": true,
+        "errors": [],
+        "duration_s": 45.135,
+        "warmup_s": 10.0,
+        "qt_swap_interval_median_ms": 101.93510000044625,
+        "qt_swap_interval_p95_ms": 166.392,
+        "qt_swap_count": 449,
+        "qt_swaps_per_second": 9.947933975850228,
+        "render_request_rate_s": 15.49,
+        "render_call_median_ms": 26.064,
+        "pose_update_count": 273,
+        "pose_update_rate_s": 6.048521103356597,
+        "pose_call_median_ms": 30.158200000187207,
+        "reported_display_rate": "5.4 Render/s",
+        "worker_batch_median_ms": 1.041,
+        "worker_roundtrip_median_ms": 10.592300000098476,
+        "simulation_throughput_sim_s_per_wall_s": 0.9783981042331537,
+        "simulation_backlog_s": 0.973,
+        "input_to_swap_median_ms": 74.67020000058255,
+        "input_latency_valid": true,
+        "requested_simulation_s": 45.13344760000018,
+        "calculated_simulation_s": 44.16000000000003
+      }
+    ],
+    "median_of_run_statistics": {
+      "duration_s": 45.135,
+      "warmup_s": 10.0,
+      "qt_swap_interval_median_ms": 102.12649999994028,
+      "qt_swap_interval_p95_ms": 164.327,
+      "qt_swap_count": 449,
+      "qt_swaps_per_second": 9.942647091388206,
+      "render_request_rate_s": 15.41,
+      "render_call_median_ms": 26.064,
+      "pose_update_count": 268,
+      "pose_update_rate_s": 5.939847957623174,
+      "pose_call_median_ms": 30.158200000187207,
+      "worker_batch_median_ms": 1.04,
+      "worker_roundtrip_median_ms": 10.50519999989774,
+      "simulation_throughput_sim_s_per_wall_s": 0.9783981042331537,
+      "simulation_backlog_s": 0.973,
+      "input_to_swap_median_ms": 73.92770000024029,
+      "requested_simulation_s": 45.13344760000018,
+      "calculated_simulation_s": 44.16000000000003
+    },
+    "range_of_run_statistics": {
+      "duration_s": [
+        45.119,
+        45.159
+      ],
+      "warmup_s": [
+        10.0,
+        10.0
+      ],
+      "qt_swap_interval_median_ms": [
+        98.07515000011335,
+        104.04160000007323
+      ],
+      "qt_swap_interval_p95_ms": [
+        163.338,
+        171.351
+      ],
+      "qt_swap_count": [
+        433,
+        451
+      ],
+      "qt_swaps_per_second": [
+        9.591316867870196,
+        9.995788913761386
+      ],
+      "render_request_rate_s": [
+        15.0,
+        15.49
+      ],
+      "render_call_median_ms": [
+        25.506,
+        26.404
+      ],
+      "pose_update_count": [
+        266,
+        274
+      ],
+      "pose_update_rate_s": [
+        5.8921253737955475,
+        6.067450563564295
+      ],
+      "pose_call_median_ms": [
+        28.503700000328536,
+        31.3394499999049
+      ],
+      "worker_batch_median_ms": [
+        1.037,
+        1.064
+      ],
+      "worker_roundtrip_median_ms": [
+        9.957100000065111,
+        10.856300000341434
+      ],
+      "simulation_throughput_sim_s_per_wall_s": [
+        0.9778758013629638,
+        0.9801557794754736
+      ],
+      "simulation_backlog_s": [
+        0.833,
+        0.998
+      ],
+      "input_to_swap_median_ms": [
+        64.27809999968304,
+        78.86020000023564
+      ],
+      "requested_simulation_s": [
+        45.05721850000009,
+        45.15820170000006
+      ],
+      "calculated_simulation_s": [
+        44.16000000000003,
+        44.22400000000003
+      ]
+    },
+    "all_valid": true
+  },
+  "comparison": {
+    "baseline_swap_interval_median_ms": 168.29834999998639,
+    "frame_swap_paced_swap_interval_median_ms": 102.12649999994028,
+    "swap_interval_speedup": 1.6479400547368686,
+    "swap_interval_reduction_pct": 39.318181075483785,
+    "baseline_reported_animation_rate_median_s": 10.7,
+    "candidate_reported_animation_rate_median_s": 5.1,
+    "candidate_animation_rate_reduction_pct": 52.33644859813084,
+    "decision": "rejected and reverted: swap pacing improved >20%, but the benchmark-reported pose/display update rate fell materially, so the candidate does not satisfy the no-relevant-degradation condition."
+  },
+  "wrapper_microbenchmarks": {
+    "raw_file": "wrapper_kandidaten.json",
+    "measurement_method": "current V0.12 wrapper diagnostics; not end-to-end proof or approved register measurement",
+    "repeats_per_interface": 7,
+    "warmup_runs": 1,
+    "calls_per_repeat": 10000,
+    "interfaces": [
+      {
+        "interface": "CPPI-0023 quaternion_normalisieren",
+        "calls_per_repeat": 10000,
+        "warmup_calls": 1,
+        "repeats": 7,
+        "python_us": [
+          3.44727,
+          3.4188400000000003,
+          3.51609,
+          3.47373,
+          3.43449,
+          3.42616,
+          3.5132
+        ],
+        "cpp_us": [
+          10.27683,
+          10.39434,
+          10.395010000000001,
+          10.049,
+          10.01037,
+          9.895280000000001,
+          10.40396
+        ],
+        "python_median_us": 3.44727,
+        "cpp_median_us": 10.27683,
+        "cpp_over_python": 2.9811503015429603,
+        "parity": "pass",
+        "input": {
+          "q": [
+            2.0,
+            -0.3,
+            0.2,
+            0.4
+          ],
+          "p": [
+            0.7,
+            0.1,
+            -0.2,
+            0.4
+          ],
+          "v": [
+            0.7,
+            0.1,
+            -0.2
+          ],
+          "translation": [
+            1.0,
+            2.0,
+            3.0
+          ]
+        },
+        "cpp_over_python_factor": 2.9811503015429603
+      },
+      {
+        "interface": "CPPI-0024 quaternion_matrix",
+        "calls_per_repeat": 10000,
+        "warmup_calls": 1,
+        "repeats": 7,
+        "python_us": [
+          6.46512,
+          6.5015600000000004,
+          6.5158000000000005,
+          6.53162,
+          6.53676,
+          6.397810000000001,
+          6.47576
+        ],
+        "cpp_us": [
+          10.57901,
+          10.42824,
+          10.15091,
+          10.39676,
+          10.50059,
+          10.45068,
+          10.710899999999999
+        ],
+        "python_median_us": 6.5015600000000004,
+        "cpp_median_us": 10.45068,
+        "cpp_over_python": 1.6074111444022665,
+        "parity": "pass",
+        "input": {
+          "q": [
+            2.0,
+            -0.3,
+            0.2,
+            0.4
+          ],
+          "p": [
+            0.7,
+            0.1,
+            -0.2,
+            0.4
+          ],
+          "v": [
+            0.7,
+            0.1,
+            -0.2
+          ],
+          "translation": [
+            1.0,
+            2.0,
+            3.0
+          ]
+        },
+        "cpp_over_python_factor": 1.6074111444022665
+      },
+      {
+        "interface": "CPPI-0026 _quaternion_multiplizieren",
+        "calls_per_repeat": 10000,
+        "warmup_calls": 1,
+        "repeats": 7,
+        "python_us": [
+          2.4822800000000003,
+          2.56318,
+          2.53464,
+          2.53164,
+          2.46041,
+          2.492,
+          2.4693899999999998
+        ],
+        "cpp_us": [
+          10.47836,
+          10.38666,
+          10.48043,
+          10.62883,
+          10.525030000000001,
+          10.63806,
+          10.66301
+        ],
+        "python_median_us": 2.492,
+        "cpp_median_us": 10.525030000000001,
+        "cpp_over_python": 4.223527287319422,
+        "parity": "pass",
+        "input": {
+          "q": [
+            2.0,
+            -0.3,
+            0.2,
+            0.4
+          ],
+          "p": [
+            0.7,
+            0.1,
+            -0.2,
+            0.4
+          ],
+          "v": [
+            0.7,
+            0.1,
+            -0.2
+          ],
+          "translation": [
+            1.0,
+            2.0,
+            3.0
+          ]
+        },
+        "cpp_over_python_factor": 4.223527287319422
+      },
+      {
+        "interface": "CPPI-0059 winkel_360",
+        "calls_per_repeat": 10000,
+        "warmup_calls": 1,
+        "repeats": 7,
+        "python_us": [
+          0.2032,
+          0.20282,
+          0.20079,
+          0.19957,
+          0.19908,
+          0.19854,
+          0.29504
+        ],
+        "cpp_us": [
+          9.667159999999999,
+          9.65877,
+          9.74754,
+          9.575629999999999,
+          9.69979,
+          9.58498,
+          9.59948
+        ],
+        "python_median_us": 0.20079,
+        "cpp_median_us": 9.65877,
+        "cpp_over_python": 48.103839832660995,
+        "parity": "pass",
+        "input": {
+          "q": [
+            2.0,
+            -0.3,
+            0.2,
+            0.4
+          ],
+          "p": [
+            0.7,
+            0.1,
+            -0.2,
+            0.4
+          ],
+          "v": [
+            0.7,
+            0.1,
+            -0.2
+          ],
+          "translation": [
+            1.0,
+            2.0,
+            3.0
+          ]
+        },
+        "cpp_over_python_factor": 48.103839832660995
+      },
+      {
+        "interface": "CPPI-0060 wrap_180",
+        "calls_per_repeat": 10000,
+        "warmup_calls": 1,
+        "repeats": 7,
+        "python_us": [
+          0.23415,
+          0.23875,
+          0.23581,
+          0.23462,
+          0.23364,
+          0.23961000000000002,
+          0.2376
+        ],
+        "cpp_us": [
+          9.71409,
+          9.929440000000001,
+          9.8301,
+          9.711559999999999,
+          10.48583,
+          9.47329,
+          9.432559999999999
+        ],
+        "python_median_us": 0.23581,
+        "cpp_median_us": 9.71409,
+        "cpp_over_python": 41.194563419702305,
+        "parity": "pass",
+        "input": {
+          "q": [
+            2.0,
+            -0.3,
+            0.2,
+            0.4
+          ],
+          "p": [
+            0.7,
+            0.1,
+            -0.2,
+            0.4
+          ],
+          "v": [
+            0.7,
+            0.1,
+            -0.2
+          ],
+          "translation": [
+            1.0,
+            2.0,
+            3.0
+          ]
+        },
+        "cpp_over_python_factor": 41.194563419702305
+      },
+      {
+        "interface": "CPPI-0061 richtung_16",
+        "calls_per_repeat": 10000,
+        "warmup_calls": 1,
+        "repeats": 7,
+        "python_us": [
+          0.27276,
+          0.26550999999999997,
+          0.26291000000000003,
+          0.27903,
+          0.2691,
+          0.2692,
+          0.26818000000000003
+        ],
+        "cpp_us": [
+          9.29424,
+          9.40247,
+          9.18511,
+          9.24624,
+          9.157680000000001,
+          9.003219999999999,
+          9.006170000000001
+        ],
+        "python_median_us": 0.2691,
+        "cpp_median_us": 9.18511,
+        "cpp_over_python": 34.13270159791899,
+        "parity": "pass",
+        "input": {
+          "q": [
+            2.0,
+            -0.3,
+            0.2,
+            0.4
+          ],
+          "p": [
+            0.7,
+            0.1,
+            -0.2,
+            0.4
+          ],
+          "v": [
+            0.7,
+            0.1,
+            -0.2
+          ],
+          "translation": [
+            1.0,
+            2.0,
+            3.0
+          ]
+        },
+        "cpp_over_python_factor": 34.13270159791899
+      },
+      {
+        "interface": "CPPI-0080 pfeil_fest",
+        "calls_per_repeat": 5000,
+        "warmup_calls": 1,
+        "repeats": 7,
+        "python_us": [
+          4.5267,
+          4.5041199999999995,
+          4.74674,
+          4.51074,
+          4.508100000000001,
+          4.507479999999999,
+          4.75066
+        ],
+        "cpp_us": [
+          15.95444,
+          16.09514,
+          16.067899999999998,
+          15.88394,
+          16.36466,
+          15.943760000000001,
+          15.64384
+        ],
+        "python_median_us": 4.51074,
+        "cpp_median_us": 15.95444,
+        "cpp_over_python": 3.5369894961802273,
+        "parity": "pass",
+        "input": {
+          "q": [
+            2.0,
+            -0.3,
+            0.2,
+            0.4
+          ],
+          "p": [
+            0.7,
+            0.1,
+            -0.2,
+            0.4
+          ],
+          "v": [
+            0.7,
+            0.1,
+            -0.2
+          ],
+          "translation": [
+            1.0,
+            2.0,
+            3.0
+          ]
+        },
+        "cpp_over_python_factor": 3.5369894961802273
+      },
+      {
+        "interface": "CPPI-0085 moment_bogen_achse",
+        "calls_per_repeat": 3000,
+        "warmup_calls": 1,
+        "repeats": 7,
+        "python_us": [
+          17.568466666666666,
+          18.2333,
+          17.238333333333333,
+          17.136066666666665,
+          17.151433333333333,
+          17.6941,
+          17.148866666666667
+        ],
+        "cpp_us": [
+          11.562233333333333,
+          11.524466666666667,
+          11.6081,
+          11.5449,
+          11.577399999999999,
+          11.490533333333333,
+          11.524433333333333
+        ],
+        "python_median_us": 17.238333333333333,
+        "cpp_median_us": 11.5449,
+        "cpp_over_python": 0.669722517644784,
+        "parity": "pass",
+        "input": {
+          "q": [
+            2.0,
+            -0.3,
+            0.2,
+            0.4
+          ],
+          "p": [
+            0.7,
+            0.1,
+            -0.2,
+            0.4
+          ],
+          "v": [
+            0.7,
+            0.1,
+            -0.2
+          ],
+          "translation": [
+            1.0,
+            2.0,
+            3.0
+          ]
+        },
+        "cpp_over_python_factor": 0.669722517644784
+      },
+      {
+        "interface": "CPPI-0098 svg_rahmen",
+        "calls_per_repeat": 10000,
+        "warmup_calls": 1,
+        "repeats": 7,
+        "python_us": [
+          0.4036,
+          0.40124,
+          0.40517000000000003,
+          0.39364,
+          0.44786000000000004,
+          0.39302,
+          0.39465
+        ],
+        "cpp_us": [
+          10.50807,
+          10.40988,
+          10.23293,
+          10.296700000000001,
+          10.64185,
+          10.42206,
+          10.472610000000001
+        ],
+        "python_median_us": 0.40124,
+        "cpp_median_us": 10.42206,
+        "cpp_over_python": 25.974628651181337,
+        "parity": "pass",
+        "input": {
+          "q": [
+            2.0,
+            -0.3,
+            0.2,
+            0.4
+          ],
+          "p": [
+            0.7,
+            0.1,
+            -0.2,
+            0.4
+          ],
+          "v": [
+            0.7,
+            0.1,
+            -0.2
+          ],
+          "translation": [
+            1.0,
+            2.0,
+            3.0
+          ]
+        },
+        "cpp_over_python_factor": 25.974628651181337
+      },
+      {
+        "interface": "CPPI-0099 geschwindigkeitseinheiten",
+        "calls_per_repeat": 10000,
+        "warmup_calls": 1,
+        "repeats": 7,
+        "python_us": [
+          0.19771,
+          0.19244,
+          0.19219,
+          0.19138999999999998,
+          0.19407,
+          0.20173,
+          0.19203
+        ],
+        "cpp_us": [
+          10.12476,
+          10.09251,
+          10.01323,
+          9.91653,
+          9.9848,
+          10.16706,
+          10.3158
+        ],
+        "python_median_us": 0.19244,
+        "cpp_median_us": 10.09251,
+        "cpp_over_python": 52.44496986073582,
+        "parity": "pass",
+        "input": {
+          "q": [
+            2.0,
+            -0.3,
+            0.2,
+            0.4
+          ],
+          "p": [
+            0.7,
+            0.1,
+            -0.2,
+            0.4
+          ],
+          "v": [
+            0.7,
+            0.1,
+            -0.2
+          ],
+          "translation": [
+            1.0,
+            2.0,
+            3.0
+          ]
+        },
+        "cpp_over_python_factor": 52.44496986073582
+      }
+    ]
+  },
+  "graphics_transform_candidate": {
+    "purpose": "Current V0.12 CPPI-0091 graphics transform microbenchmark; diagnostic only, not end-to-end acceptance.",
+    "python": "3.14.8",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 25 Model 117 Stepping 2, AuthenticAMD",
+    "native_binary": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\_segelphysik_native.cp314-win_amd64.pyd",
+    "native_abi": 1,
+    "inputs": [
+      {
+        "file": "code\\modelle\\folkeboot\\fock.obj",
+        "points": 6,
+        "sha256": "c41527b8833fc52647d64b3ec23961b1fb03a86d2498d6ab70ff9dfbc3644cce"
+      },
+      {
+        "file": "code\\modelle\\folkeboot\\grossbaum.obj",
+        "points": 8,
+        "sha256": "368a7d18ac436b73dd615c6bd49366b54ce71953c3298661e052a76c6a890d89"
+      },
+      {
+        "file": "code\\modelle\\folkeboot\\grosssegel.obj",
+        "points": 8,
+        "sha256": "08bf4f359155620df6bb1c7e7db3f0cce60153d57ed0f38ee86d15ad2ac0d13e"
+      },
+      {
+        "file": "code\\modelle\\folkeboot\\kiel.obj",
+        "points": 12,
+        "sha256": "635ff08d92bf6dcc6dc303d3190e6cc873a6d61b39d387705ff9fa91289e922e"
+      },
+      {
+        "file": "code\\modelle\\folkeboot\\mast.obj",
+        "points": 24,
+        "sha256": "be0ad2e4c44430e1c6a131d5e6067983d2907548c471b0ead8a2924bf4f25685"
+      },
+      {
+        "file": "code\\modelle\\folkeboot\\ruder.obj",
+        "points": 10,
+        "sha256": "2797066350b69fbb1fdedca2d123073b8500da378dfc886d9dc89f76574cbfba"
+      },
+      {
+        "file": "code\\modelle\\folkeboot\\rumpf.obj",
+        "points": 189,
+        "sha256": "da677848c44b92c5e5278f8bd5d43deac6f11797ce2affa96f6992d03558a3b0"
+      }
+    ],
+    "groups": 7,
+    "total_points": 257,
+    "warmup_calls": 1,
+    "calls_per_repeat": 500,
+    "repeats": 7,
+    "python_us": [
+      17.066000000340864,
+      16.947599999184604,
+      17.05519999995886,
+      17.024799999489915,
+      16.831799999636132,
+      18.337999999857857,
+      16.846000000441563
+    ],
+    "cpp_us": [
+      6.587599998965743,
+      6.542999999510357,
+      6.2539999998989515,
+      6.359199998769327,
+      6.326200000330573,
+      6.31979999889154,
+      6.240000000616419
+    ],
+    "python_median_us": 17.024799999489915,
+    "cpp_median_us": 6.326200000330573,
+    "cpp_over_python": 0.3715873314529459,
+    "parity": "pass",
+    "measurement": "Full adapter inputs/outputs; C++ wrapper conversion and allocations included; same arrays, rotation and translation."
+  },
+  "profile_diagnostics": {
+    "cpu_profile_raw": "profil_diagnose_native.json",
+    "callback_profile_raw": "callback_diagnose_native.json",
+    "callback_hotspots": [
+      {
+        "interface": "CPPI-0080 pfeil_fest",
+        "calls": 506,
+        "inclusive_s": 0.004223800003728684,
+        "context": "30 s instrumentierter GUI-Diagnoselauf"
+      },
+      {
+        "interface": "CPPI-0085 moment_bogen_achse",
+        "calls": 506,
+        "self_s": 0.005199700007779029,
+        "inclusive_s": 0.05234190011924511,
+        "context": "30 s instrumentierter GUI-Diagnoselauf"
+      }
+    ],
+    "notes": "Instrumentierte Zeiten nicht als uninstrumentierte End-to-End-Zeiten verwenden."
+  },
+  "source_and_build_identity": {
+    "source_sha256": {
+      "werkzeuge/benchmark_gui_live.py": "99569cab865a3934b4168ffc86e6029d7fd033936ecd4ea3aba0b96b2cb76bf3",
+      "code/python/segelphysik/gui/hauptfenster.py": "e11f7760baeee05e433508bb591819e14047f1e27ba4b5f840bf0c660ca0409b",
+      "code/python/segelphysik/grafik_bruecke.py": "5875204c467ff1e8ffe576d0130b455bcd607c766b1913f51599620bd2116df6",
+      "code/python/segelphysik/grafik_kraefte.py": "530594f21341556fb08d5a96e1ffb24b3876e3d706b9a5180f883fdbfabbc599",
+      "code/python/segelphysik/core/kraefte_bild.py": "28b0e304a3bc2b58bdbeaee602fae9c6bf22138f26d32833e396fc10b8bd1508",
+      "code/python/segelphysik/core/rechenpfad.py": "507a3329ca752bee5fc46c71bb27f1acbb0cf71c2d17737381683aac23aa8138",
+      "code/python/segelphysik/core/native_backend.py": "2f67f1bdabd46663907c014a87374c62e098279aa79b2ccad8fe901ee4b66b3e",
+      "konfigurationen/koerper.json": "94d33ff8aa2a8f90b3dd2421c87ae3be1164348394dab55ef8ca81a51dff20f6",
+      "konfigurationen/settings.json": "45f9c732a3e57c289e01bb15c4270ba28b970f12c058fa9b9e936e37190843c0"
+    },
+    "folkeboot_model_file_sha256": {
+      "code\\modelle\\folkeboot\\fock.obj": "c41527b8833fc52647d64b3ec23961b1fb03a86d2498d6ab70ff9dfbc3644cce",
+      "code\\modelle\\folkeboot\\generiere_meshes.py": "56010fc1e298825d4de165c06ca0e2eb415e2b3996328659f162abf7c0f9b2b9",
+      "code\\modelle\\folkeboot\\grossbaum.obj": "368a7d18ac436b73dd615c6bd49366b54ce71953c3298661e052a76c6a890d89",
+      "code\\modelle\\folkeboot\\grosssegel.obj": "08bf4f359155620df6bb1c7e7db3f0cce60153d57ed0f38ee86d15ad2ac0d13e",
+      "code\\modelle\\folkeboot\\kiel.obj": "635ff08d92bf6dcc6dc303d3190e6cc873a6d61b39d387705ff9fa91289e922e",
+      "code\\modelle\\folkeboot\\mast.obj": "be0ad2e4c44430e1c6a131d5e6067983d2907548c471b0ead8a2924bf4f25685",
+      "code\\modelle\\folkeboot\\modell.json": "3103bbceaf61258b78886c2520a3ea29630165a12cb88e036c8e185e3e74bbce",
+      "code\\modelle\\folkeboot\\NAEHERUNG.md": "9b2800004d2c4976f619fda25e0a013c61049b4c1372e55f45d27f80efeeecf7",
+      "code\\modelle\\folkeboot\\ruder.obj": "2797066350b69fbb1fdedca2d123073b8500da378dfc886d9dc89f76574cbfba",
+      "code\\modelle\\folkeboot\\rumpf.obj": "da677848c44b92c5e5278f8bd5d43deac6f11797ce2affa96f6992d03558a3b0"
+    },
+    "native_binary_path": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\_segelphysik_native.cp314-win_amd64.pyd",
+    "native_binary_sha256": "60ec4e7e4014d9bb8c3efacb67659db4f6c037ec2efe83a36c6e791c67b8a1a7",
+    "native_abi": 1,
+    "compiler_identity": "nicht verf?gbar; kein CMakeCache/Buildmanifest am ausgef?hrten Build. Die tats?chlich geladene Bin?rdatei ist durch Pfad und SHA-256 fixiert.",
+    "note": "Die laufzeitrelevanten Quellpfade waren zum Messzeitpunkt unver?ndert gegen?ber base_commit. Konfiguration wurde durch effektive Renderzustandswerte und Hashes dokumentiert."
+  },
+  "tests": {
+    "wrapper_and_graphics_related": "384 passed in 93.24 s (gezielte Schnittstellen-/Anzeige-Parit?t, offscreen).",
+    "temporary_candidate": "4 passed in 2.43 s (Frame-Swap-Taktung/Backpressure; Candidate danach wegen GUI-Update-Ratenregression verworfen).",
+    "full_suite": "nicht ausgef?hrt; keine Code?nderung im finalen Stand, bestehende ?nderungen im Arbeitsbaum."
+  },
+  "final_product_change": "keine; verworfene Versuchsaenderungen sind zur?ckgenommen.",
+  "open_acceptance": "A-V0.12-00006 bleibt unerf?llt: keine Optimierung erf?llt gleichzeitig mindestens 20% End-to-End-Ziel und die Qualit?ts-/Verhaltensbedingungen."
+}

@@ -6,6 +6,8 @@ import pytest
 from segelphysik.core import navigationsanzeigen as navi
 from segelphysik.core.rechenpfad import python_referenz
 
+pytestmark = [pytest.mark.native]
+
 
 def test_native_navigationswerte_1000_quaternionen_und_kameralagen(monkeypatch):
     monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", "cpp")

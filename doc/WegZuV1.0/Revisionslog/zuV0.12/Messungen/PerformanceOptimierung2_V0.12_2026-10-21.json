@@ -1,0 +1,313 @@
+{
+  "date": "2026-10-21",
+  "purpose": "Gezielte Nachmessung nach Aktivierung der drei Kandidaten aus PerformanceOptimierung2.md.",
+  "revision": "5632ff3 plus uncommitted working-tree changes",
+  "runtime": {
+    "python": "3.14.8",
+    "platform": "Windows 11",
+    "processor": "AMD64 Family 25 Model 117 Stepping 2, AuthenticAMD",
+    "rechenpfad": "cpp",
+    "viewport_px": [
+      640,
+      480
+    ],
+    "gui_display": "offscreen für die isolierten Wasserlinien- und Gelenk-Arbeitslasten",
+    "models": {
+      "p01": "yacht1 Folkeboot",
+      "p02": "yacht1 Folkeboot",
+      "p05": "synthetischer Körper mit einem echten Modellgelenk; Geometrie-/Renderarbeit gemockt"
+    }
+  },
+  "method": {
+    "warmup": "Eine ungemessene Initialisierung je Arbeitslast",
+    "measured_runs": 5,
+    "concurrent_test_or_benchmark_load": false,
+    "duration_unit": "ms",
+    "statistics": "Median, Minimum, Maximum und alle fünf Laufwerte",
+    "baseline_policy": "Keine historischen Baseline-Läufe wiederholt; Vergleiche sind gleichstandige Cache-Miss-/Frischaufbau-Kontrollen."
+  },
+  "p01_snapshot_per_realtime_task": {
+    "model": "yacht1 Folkeboot",
+    "iterations_per_run": {
+      "cached_snapshot": 500,
+      "fresh_context_rebuild_and_snapshot": 50
+    },
+    "cached_snapshot_ms_per_call": {
+      "samples": [
+        0.147768,
+        0.147759,
+        0.146613,
+        0.148104,
+        0.146276
+      ],
+      "median": 0.147759,
+      "min": 0.146276,
+      "max": 0.148104
+    },
+    "fresh_context_rebuild_and_snapshot_ms_per_call": {
+      "samples": [
+        0.700382,
+        0.755484,
+        0.640938,
+        0.761018,
+        0.64148
+      ],
+      "median": 0.700382,
+      "min": 0.640938,
+      "max": 0.761018
+    },
+    "cache_hit_rate": 1.0,
+    "cached_snapshot_identity_reused": true,
+    "relative_change_vs_same_revision_fresh_context_control_percent": -78.9015,
+    "historical_context": {
+      "worker_batch_median_ms": 1.639,
+      "worker_roundtrip_median_ms": 15.25945,
+      "throughput_simulation_seconds_per_wall_second": 0.9759846122,
+      "max_backlog_seconds": 1.1767361,
+      "status": "Unverändert übernommene historische Werte; kein Kandidaten-Vorher/Nachher-Messpaar."
+    }
+  },
+  "p05_gui_joint_updates": {
+    "model": "synthetischer Körper mit einem echten Modellgelenk; GUI offscreen",
+    "events_per_run": 500,
+    "geometry_refreshes_per_run": [
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "geometry_refresh_reduction_within_burst_percent": 99.8,
+    "queued_event_burst_ms": {
+      "samples": [
+        8.6962,
+        3.0957,
+        3.1384,
+        3.3991,
+        2.5479
+      ],
+      "median": 3.1384,
+      "min": 2.5479,
+      "max": 8.6962
+    },
+    "input_to_coalesced_render_request_ms": {
+      "samples": [
+        10.1174,
+        16.5579,
+        16.5236,
+        16.023,
+        16.8087
+      ],
+      "median": 16.5236,
+      "min": 10.1174,
+      "max": 16.8087
+    },
+    "requested_final_angle_rad": 0.998,
+    "actual_final_angle_rad": 0.998,
+    "final_angle_error_rad": 0.0,
+    "measurement_limits": [
+      "Geometrieaktualisierung und Renderaufruf für die isolierte Zeitmessung gemockt.",
+      "Kein echtes frameSwapped-Intervall oder physischer Monitor-Scanout gemessen.",
+      "Kein historischer Slider-Baseline-Lauf vorhanden."
+    ]
+  },
+  "p02_unchanged_pose_waterline": {
+    "model": "yacht1 Folkeboot Mesh; exakter bestehender Wasserlinienschnitt",
+    "iterations_per_run": {
+      "unchanged_pose_cache_hit": 1000,
+      "cache_miss": 30,
+      "changed_pose_recompute": 30
+    },
+    "unchanged_pose_cache_hit_ms_per_call": {
+      "samples": [
+        0.006399,
+        0.007189,
+        0.00645,
+        0.006813,
+        0.006702
+      ],
+      "median": 0.006702,
+      "min": 0.006399,
+      "max": 0.007189
+    },
+    "same_revision_cache_miss_ms_per_call": {
+      "samples": [
+        0.691157,
+        0.701443,
+        0.722473,
+        0.693337,
+        0.69655
+      ],
+      "median": 0.69655,
+      "min": 0.691157,
+      "max": 0.722473
+    },
+    "changed_pose_recompute_ms_per_call": {
+      "samples": [
+        0.71431,
+        0.71294,
+        0.73023,
+        0.754283,
+        0.729123
+      ],
+      "median": 0.729123,
+      "min": 0.71294,
+      "max": 0.754283
+    },
+    "relative_change_vs_same_revision_cache_miss_control_percent": -99.0383,
+    "changed_pose_causes_recompute": true,
+    "measurement_limits": [
+      "Isolierter Schnitt- und Anzeigedaten-Aufbau, kein vollständiger GUI-Frame.",
+      "Kein historischer isolierter Schnitt-Vorherwert vorhanden."
+    ]
+  },
+  "end_to_end_gui_candidate_runs": {
+    "scenario": {
+      "scene": "yacht1 Folkeboot",
+      "backend": "exakt_union",
+      "warmup_s": 10,
+      "duration_s": 45,
+      "viewport_px": [
+        640,
+        480
+      ],
+      "renderpass": "vtkSSAOPass",
+      "lights": 5,
+      "multisamples": 8,
+      "offscreen": false,
+      "worker_process": true
+    },
+    "run_reports": [
+      "PerformanceOptimierung2_V0.12_2026-10-21/gui_candidate_1.json",
+      "PerformanceOptimierung2_V0.12_2026-10-21/gui_candidate_2.json",
+      "PerformanceOptimierung2_V0.12_2026-10-21/gui_candidate_3.json",
+      "PerformanceOptimierung2_V0.12_2026-10-21/gui_candidate_4.json",
+      "PerformanceOptimierung2_V0.12_2026-10-21/gui_candidate_5.json"
+    ],
+    "valid_runs": 5,
+    "run_median_samples": {
+      "qt_frame_interval_median_ms": [
+        184.48355,
+        175.1228,
+        171.4775,
+        174.0576,
+        177.07305
+      ],
+      "qt_frame_interval_p95_ms": [
+        220.106,
+        210.285,
+        203.658,
+        216.881,
+        209.268
+      ],
+      "input_to_swap_median_ms": [
+        103.009,
+        96.109,
+        96.777,
+        92.259,
+        97.687
+      ],
+      "render_median_ms": [
+        23.517,
+        23.517,
+        23.002,
+        24.136,
+        23.456
+      ],
+      "pose_median_ms": [
+        29.797,
+        6.574,
+        23.195,
+        6.597,
+        27.873
+      ],
+      "worker_batch_median_ms": [
+        7.946,
+        7.644,
+        7.723,
+        7.74,
+        7.622
+      ],
+      "worker_roundtrip_median_ms": [
+        18.3238,
+        16.0221,
+        18.0164,
+        16.5797,
+        15.8712
+      ],
+      "throughput_simulation_seconds_per_wall_second": [
+        0.975787,
+        0.975472,
+        0.976031,
+        0.97563,
+        0.975622
+      ],
+      "backlog_max_seconds": [
+        1.217027,
+        1.201348,
+        1.138247,
+        1.179429,
+        1.206862
+      ]
+    },
+    "summary_median_and_range": {
+      "qt_frame_interval_median_ms": {
+        "median": 175.1228,
+        "min": 171.4775,
+        "max": 184.48355
+      },
+      "qt_frame_interval_p95_ms": {
+        "median": 210.285,
+        "min": 203.658,
+        "max": 220.106
+      },
+      "input_to_swap_median_ms": {
+        "median": 96.777,
+        "min": 92.259,
+        "max": 103.009
+      },
+      "render_median_ms": {
+        "median": 23.517,
+        "min": 23.002,
+        "max": 24.136
+      },
+      "pose_median_ms": {
+        "median": 23.195,
+        "min": 6.574,
+        "max": 29.797
+      },
+      "worker_batch_median_ms": {
+        "median": 7.723,
+        "min": 7.622,
+        "max": 7.946
+      },
+      "worker_roundtrip_median_ms": {
+        "median": 16.5797,
+        "min": 15.8712,
+        "max": 18.3238
+      },
+      "throughput_simulation_seconds_per_wall_second": {
+        "median": 0.97563,
+        "min": 0.975472,
+        "max": 0.976031
+      },
+      "backlog_max_seconds": {
+        "median": 1.201348,
+        "min": 1.138247,
+        "max": 1.217027
+      }
+    },
+    "historical_reference": {
+      "qt_frame_interval_median_ms": 168.29835,
+      "input_to_swap_median_ms": 91.579,
+      "render_median_ms": 24.91965,
+      "pose_median_ms": 4.4466,
+      "worker_batch_median_ms": 1.639,
+      "worker_roundtrip_median_ms": 15.25945,
+      "throughput_simulation_seconds_per_wall_second": 0.9759846122,
+      "backlog_max_seconds": 1.1767361,
+      "status": "Original values retained; historic raw files do not identify exact working-tree source. Current user worktree contained pre-existing uncommitted source changes, so end-to-end differences are not attributable solely to these three changes."
+    },
+    "assessment": "All five candidate runs on the final source were valid. Snapshot and waterline microbenchmarks show lower costs on cache hits versus same-revision rebuild/miss controls. Full-workflow results do not establish a reliable end-to-end improvement: frame, throughput, and backlog measurements overlap historic run ranges, while source-worktree identity is not recorded by historical raw files. No historical baseline was rerun."
+  }
+}

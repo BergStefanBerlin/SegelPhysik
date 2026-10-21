@@ -4,6 +4,8 @@ import pytest
 from segelphysik.core.rechenpfad import python_referenz
 from segelphysik.render import vista
 
+pytestmark = [pytest.mark.native]
+
 
 @pytest.mark.parametrize("shape", [(1, 1), (1, 9), (8, 1), (3, 7), (40, 31)])
 @pytest.mark.parametrize("faktor", [1, 2, 3, 5])

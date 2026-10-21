@@ -1,0 +1,38 @@
+{
+  "kennung": "P-03",
+  "messfrage": "Aufwand pro nativen Simulationsschritt bei mehreren Batchgroessen",
+  "messart": "Gezielter A/B-Vergleich der bestehenden Batchmethode",
+  "datum": "2026-10-21",
+  "modell": "folkeboot",
+  "rechenpfad": "cpp",
+  "batchgroessen": [1, 4, 16, 64],
+  "warmups_pro_batch": 3,
+  "laeufe_pro_batch": 5,
+  "batchaufrufe_pro_lauf": 10,
+  "einheit": "Mikrosekunden pro Simulationsschritt",
+  "messgrenze": "PhysikKontext.batch einschliesslich Batchaufruf und Kraftkonvertierung, normiert auf Schrittanzahl; ohne Worker-Prozess, Queue und GUI-Task-Planung",
+  "rohwerte": {
+    "1": [21.22, 20.7, 20.64, 20.39, 20.4],
+    "4": [17.49, 17.525, 17.5, 17.3125, 17.2375],
+    "16": [17.560625, 16.758125, 17.86, 16.509375, 16.40625],
+    "64": [17.099375, 18.08390625, 16.55859375, 16.3915625, 16.54578125]
+  },
+  "median_us_pro_schritt": {
+    "1": 20.64,
+    "4": 17.49,
+    "16": 16.758125,
+    "64": 16.55859375
+  },
+  "spannweite_us_pro_schritt": {
+    "1": [20.39, 21.22],
+    "4": [17.2375, 17.525],
+    "16": [16.40625, 17.86],
+    "64": [16.3915625, 18.08390625]
+  },
+  "bewertung": "Batch 4 und groesser reduzieren den pro Schritt gemessenen Kontextaufrufaufwand gegen Batch 1. Die Spannweiten der Batchgroessen 16 und 64 ueberlappen deutlich; der geringe Medianunterschied rechtfertigt keine Erhoehung ueber die derzeitige Konfiguration von 16. Gesamt-Worker-/Queue-Latenz wurde nicht gemessen.",
+  "einschraenkungen": [
+    "Kein konkurrierender Benchmark waehrend der Messung.",
+    "Wiederholt wurde derselbe Anfangszustand pro Batchaufruf; der Vergleich untersucht Aufruf-/Batchamortisierung, nicht langfristige Trajektorien.",
+    "Keine Aussage zu Rueckstand, Eingabelatenz oder Frameaktualitaet."
+  ]
+}

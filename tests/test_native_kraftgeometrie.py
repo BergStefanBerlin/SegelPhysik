@@ -8,6 +8,8 @@ from segelphysik.core.auftrieb import Vektor
 from segelphysik.core.koerper_formen import build_box
 from segelphysik.core.rechenpfad import python_referenz
 
+pytestmark = [pytest.mark.native]
+
 
 def _gleich(cpp, ref):
     if isinstance(ref, dict):
@@ -26,6 +28,7 @@ def _gleich(cpp, ref):
         np.testing.assert_allclose(cpp, ref, rtol=0., atol=2e-12)
 
 
+@pytest.mark.slow
 def test_native_kraftpfeile_momente_und_skala_gegen_referenz(monkeypatch):
     monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", "cpp")
     rng = np.random.default_rng(4026)

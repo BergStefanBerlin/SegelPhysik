@@ -12,6 +12,9 @@ from segelphysik.gui.baum import (
 )
 from segelphysik.gui.baum_widget import BaumWidget
 
+import pytest
+pytestmark = [pytest.mark.gui, pytest.mark.integration]
+
 
 def _yachtbaum(konfig):
     welt = welt_aus_konfig(konfig)

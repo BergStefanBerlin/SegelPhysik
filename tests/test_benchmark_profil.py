@@ -2,7 +2,7 @@ from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 import json
-import uuid
+from unittest.mock import Mock
 
 import numpy as np
 import pytest
@@ -18,17 +18,6 @@ from werkzeuge.benchmark_profil import (
     profil_schritte_berechnen, statistik, worker_bericht,
 )
 from werkzeuge.benchmark_gui_live import _kugelcache_deaktivieren
-
-
-@pytest.fixture
-def profildatei():
-    # Mess-/Testartefakte bleiben im Projekt, nicht im System-Temp.
-    datei = Path(".pytest_cache") / ("worker-" + uuid.uuid4().hex + ".jsonl")
-    datei.parent.mkdir(exist_ok=True)
-    try:
-        yield datei
-    finally:
-        datei.unlink(missing_ok=True)
 
 
 def test_statistik_kennzeichnet_fehlende_werte():
@@ -126,6 +115,7 @@ def test_farbgruppen_ueberspringen_leere_punktmassen(monkeypatch, pfad):
     assert _farbgruppen(wurzel) == []
 
 
+@pytest.mark.slow
 def test_kugelnetz_wird_nur_bei_form_oder_stilaenderung_erneuert(monkeypatch):
     import pyvista as pv
 
@@ -165,6 +155,45 @@ def test_kugelnetz_wird_nur_bei_form_oder_stilaenderung_erneuert(monkeypatch):
     bruecke._kugel_mesh_setzen(
         store, "marker", (2., 4., 6.), .3, "blue", True, lighting=False)
     assert len(meshes) == 7
+
+
+@pytest.mark.parametrize(("radius", "center"), [
+    (.0125, (1.25, -.4, .2)),
+    (.075, (-2.3, .125, 4.)),
+    (.2, (.1, .2, .3)),
+])
+def test_kraftmarker_kugeln_wiederverwenden_exakte_vorlage(
+        monkeypatch, radius, center):
+    import pyvista as pv
+    from segelphysik.grafik_kraefte import _kugel_mesh, _kugelvorlage
+
+    other_center = (center[0] + 1., center[1] - 2., center[2] + 3.)
+    erwartet = pv.Sphere(radius=radius, center=center)
+    erwartet_2 = pv.Sphere(radius=radius, center=other_center)
+    original_sphere = pv.Sphere
+    aufrufe = []
+
+    def sphere_zaehlen(*args, **kwargs):
+        aufrufe.append(1)
+        return original_sphere(*args, **kwargs)
+
+    _kugelvorlage.cache_clear()
+    monkeypatch.setattr(pv, "Sphere", sphere_zaehlen)
+    try:
+        mesh = _kugel_mesh(center, radius)
+        vorlage = _kugelvorlage(radius)
+        vorlagenpunkte = vorlage.points.copy()
+        mesh_2 = _kugel_mesh(other_center, radius)
+
+        assert len(aufrufe) == 1
+        assert np.array_equal(mesh.points, erwartet.points)
+        assert np.array_equal(mesh.faces, erwartet.faces)
+        assert np.array_equal(mesh.point_data["Normals"],
+                              erwartet.point_data["Normals"])
+        assert np.array_equal(mesh_2.points, erwartet_2.points)
+        assert np.array_equal(vorlage.points, vorlagenpunkte)
+    finally:
+        _kugelvorlage.cache_clear()
 
 
 def test_markerentfernung_invalidiert_geometriecache():
@@ -311,20 +340,34 @@ def test_verdeckte_navigationsanzeigen_halten_aktuelle_daten_bis_show(monkeypatc
 
     app = QApplication.instance() or QApplication([])
     fenster = NavigationsWidgetFenster()
-    aufrufe = []
+    aktualisierungen = []
     for widget in fenster.widgets:
-        monkeypatch.setattr(
-            widget, "aktualisieren",
-            lambda werte, optionen: aufrufe.append((werte, optionen)))
-    werte = navigationswerte_ableiten((1., 0., 0., 0.))
-    fenster.aktualisieren(werte, {"titel_sichtbar": False}, 3.)
-    assert not aufrufe
-    assert fenster._geschwindigkeit_m_pro_s == 3.
-    fenster.show()
-    app.processEvents()
-    assert len(aufrufe) == 3
-    assert all(wert == werte for wert, _optionen in aufrufe)
-    fenster.close()
+        spy = Mock(wraps=widget.aktualisieren)
+        monkeypatch.setattr(widget, "aktualisieren", spy)
+        aktualisierungen.append(spy)
+    geschwindigkeit = Mock(wraps=fenster.geschwindigkeit_widget.aktualisieren)
+    monkeypatch.setattr(
+        fenster.geschwindigkeit_widget, "aktualisieren", geschwindigkeit)
+    try:
+        alt = navigationswerte_ableiten((1., 0., 0., 0.))
+        neu = navigationswerte_ableiten((1., .1, 0., 0.))
+        optionen = {"titel_sichtbar": False}
+        fenster.aktualisieren(alt, {}, 1., verzoegert=True)
+        fenster.aktualisieren(neu, optionen, 3., verzoegert=True)
+        for spy in (*aktualisierungen, geschwindigkeit):
+            spy.assert_not_called()
+        assert not fenster._zahlen_timer.isActive()
+        fenster.show()
+        app.processEvents()
+        for spy in aktualisierungen:
+            spy.assert_called_once_with(neu, optionen, numerisch=True)
+        geschwindigkeit.assert_called_once_with(3.)
+        assert fenster.widgets[1]._elemente["roll_value"].text != "FEHLER"
+        assert fenster.geschwindigkeit_widget._elemente["speed_ms"].text == "3.00"
+    finally:
+        fenster.close()
+        fenster.deleteLater()
+        app.processEvents()
 
 
 def test_qt_renderanforderung_koalesziert_bis_zum_swap(monkeypatch):

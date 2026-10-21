@@ -8,6 +8,8 @@ import _segelphysik_native as native
 from segelphysik.core import dynamik_6dof as referenz
 from segelphysik.core import frames
 
+pytestmark = [pytest.mark.native, pytest.mark.integration]
+
 
 # Grenze aus tests/test_frames.py; kein pauschales Physikfehlerbudget.
 ATOL = 1e-12

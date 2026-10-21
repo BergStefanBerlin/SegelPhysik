@@ -1,0 +1,360 @@
+{
+  "title": "V0.12 Hydro-Arbeitsbereich: Referenz- und Kandidatenmessung",
+  "purpose": "Pr?ft die Wiederverwendung der Hydrodynamik-Arbeitsvektoren innerhalb eines nativen Worker-Batches. Die bereits vorhandenen Speed-Reihen wurden nicht wiederholt.",
+  "scenario": {
+    "scene": "folkeboot",
+    "hydrostatik_backend": "exakt_union",
+    "rechenpfad": "cpp",
+    "warmup_s": 10,
+    "duration_s": 45,
+    "viewport_px": [
+      640,
+      480
+    ],
+    "runs_per_variant": 5,
+    "measurement_script": "werkzeuge/benchmark_gui_live.py",
+    "measurement_script_sha256": "99569cab865a3934b4168ffc86e6029d7fd033936ecd4ea3aba0b96b2cb76bf3",
+    "render_options": {
+      "schulungsdarstellung": false
+    }
+  },
+  "environment": {
+    "python": "3.14.8",
+    "plattform": "Windows-11-10.0.26200-SP0",
+    "prozessor": "AMD64 Family 25 Model 117 Stepping 2, AuthenticAMD",
+    "cpu_threads": 12,
+    "bibliotheken": {
+      "numpy": "2.5.4",
+      "PySide6": "6.10.3",
+      "pyvista": "0.49.1",
+      "pyvistaqt": "0.13.1",
+      "vtk": "9.7.1",
+      "manifold3d": "3.5.4"
+    },
+    "npu": {
+      "onnxruntime_installiert": false,
+      "zugriff_nachgewiesen": false,
+      "operatoren_nachgewiesen": [],
+      "hinweis": "Ohne NPU-Execution-Provider kein Operator-/Kernelnachweis."
+    }
+  },
+  "build": {
+    "build_type": "Release",
+    "compiler": "MSVC 19.44.35207",
+    "cmake": "4.4.4",
+    "python": "3.14.8",
+    "reference_code_revision": "5632ff33f0d7584409dd39d746f88b5aa34dfd58",
+    "reference_source_sha256_from_head": {
+      "code/cpp/src/hydrodynamik.hpp": "c90d2e890a4176ddcfaf731e40298a58499c4c657b603c27d2cc7a2b1a9f6ce7",
+      "code/cpp/src/dynamik.hpp": "30d542b3931bb78d4866b6d4c72266e01651d03727902928ee280e96fa80f55f",
+      "code/cpp/src/modul.cpp": "be64a85226891271460ffaf71a07ac0e313409d24abaa8ae48e214bb8b553934"
+    },
+    "reference_native_binary_sha256": "not recorded before rebuilding; existing measurement was not repeated",
+    "measured_candidate_source_sha256": {
+      "code/cpp/src/hydrodynamik.hpp": "fcadeb0c6df3d65938c95c45c353686c90130fdd34a9c352c12aa918c820c3dd",
+      "code/cpp/src/dynamik.hpp": "c199de08f9a54fafcb4d1437f7d82c4e8cf1fa7516eaa5a969c9b0175b9aa796",
+      "code/cpp/src/modul.cpp": "dc8ff4fe7d76ac1002b608e8c31ebdfd8aa8aa40795511e9149489b900f5cbcb"
+    },
+    "measured_candidate_native_binary_sha256": "deeccb7f9b58c4a4b73024f846cb01be0d8f41ddce3221aa3abdd9a6f12216c1",
+    "stable_worktree_inputs_during_measurement": {
+      "code/python/segelphysik/grafik_kraefte.py": "b2276de239ff71ca17a62e42e0565a62e8bfe713aa213af5f995038f87da4c7a",
+      "konfigurationen/settings.json": "45f9c732a3e57c289e01bb15c4270ba28b970f12c058fa9b9e936e37190843c0",
+      "pyproject.toml": "83b768d98b64b3ce4af8cc0b2725c90f4b5950fed6f97298f5b396de089659c3",
+      "werkzeuge/benchmark_gui_live.py": "99569cab865a3934b4168ffc86e6029d7fd033936ecd4ea3aba0b96b2cb76bf3"
+    },
+    "worktree_note": "Reference and candidate runs used the same pre-existing worktree for GUI/Python/configuration inputs. Only the three recorded C++ source files differ between reference and candidate variants; after candidate measurement only the one-shot wrapper ownership fix was applied."
+  },
+  "reference_runs": [
+    {
+      "file": "hydro_workspace_reference_1.json",
+      "sha256": "444f20d585c219c2360e18b0777ac9e8edf1d6094a0caa6ceb60d3ce5e6080d0",
+      "bytes": 110441
+    },
+    {
+      "file": "hydro_workspace_reference_2.json",
+      "sha256": "8402a0c2ed950683e16c15d03a6dc11e24b35c6b463a5f7eb73767d0db7f5318",
+      "bytes": 108093
+    },
+    {
+      "file": "hydro_workspace_reference_3.json",
+      "sha256": "66139f3c7db4d7bfc31a6c84bc6d16d6ab9afe2b60a875feaecfad7f552636fc",
+      "bytes": 110101
+    },
+    {
+      "file": "hydro_workspace_reference_4.json",
+      "sha256": "427b94670fe1b583eba0449e57080ee459a2908d2cfa696d158eaaf4076cdd85",
+      "bytes": 109470
+    },
+    {
+      "file": "hydro_workspace_reference_5.json",
+      "sha256": "75b931abd26f7f30e10e399f8a88ab15900f3d1e7e48fef578509d52ec1a8787",
+      "bytes": 110583
+    }
+  ],
+  "candidate_runs": [
+    {
+      "file": "hydro_workspace_candidate_1.json",
+      "sha256": "512e4b636571763533e37d996acfa4a9e8aac2f4d882a09b185b776ae12de275",
+      "bytes": 110468
+    },
+    {
+      "file": "hydro_workspace_candidate_2.json",
+      "sha256": "aa8c751cf5ff0c055496f6058485366f897e96f19cfaf35ccc87b7e1c39bb122",
+      "bytes": 110744
+    },
+    {
+      "file": "hydro_workspace_candidate_3.json",
+      "sha256": "950757259c7efe536284dd6e26333ba15d9c911b4b67b4645173b6aa454a8ba1",
+      "bytes": 111082
+    },
+    {
+      "file": "hydro_workspace_candidate_4.json",
+      "sha256": "3e2ff385ec2157da4af6a1dcc3910801d59e9c9b11bb681bc896cbf6201808c3",
+      "bytes": 108833
+    },
+    {
+      "file": "hydro_workspace_candidate_5.json",
+      "sha256": "1d7f370f9abe116085d968b6ed26f8a5c3a3475ae134964b988e15384eca186e",
+      "bytes": 107844
+    }
+  ],
+  "comparison": [
+    {
+      "metric": "worker_batch_median_ms",
+      "unit": "ms",
+      "direction": "lower",
+      "reference_run_medians": [
+        1.6190999995160382,
+        1.6649500003040885,
+        1.7048000008799136,
+        1.6232500001933658,
+        1.6687999996065628
+      ],
+      "reference_median": 1.6649500003040885,
+      "reference_min": 1.6190999995160382,
+      "reference_max": 1.7048000008799136,
+      "candidate_run_medians": [
+        1.4039999987289775,
+        1.4411499996640487,
+        1.4841500014881603,
+        1.4713999989908189,
+        1.4744000000064261
+      ],
+      "candidate_median": 1.4713999989908189,
+      "candidate_min": 1.4039999987289775,
+      "candidate_max": 1.4841500014881603,
+      "candidate_vs_reference_percent": -11.624973799688842,
+      "decision": "Belegter Gewinn: Referenz- und Kandidatenbereiche der f?nf Laufmediane ?berlappen nicht."
+    },
+    {
+      "metric": "worker_roundtrip_median_ms",
+      "unit": "ms",
+      "direction": "lower",
+      "reference_run_medians": [
+        18.24875000056636,
+        12.226999999256805,
+        16.14164999955392,
+        16.060400000242225,
+        16.55060000030062
+      ],
+      "reference_median": 16.14164999955392,
+      "reference_min": 12.226999999256805,
+      "reference_max": 18.24875000056636,
+      "candidate_run_medians": [
+        13.65540000006149,
+        16.3422499972512,
+        15.642999998817686,
+        15.149800001381664,
+        19.968900000094436
+      ],
+      "candidate_median": 15.642999998817686,
+      "candidate_min": 13.65540000006149,
+      "candidate_max": 19.968900000094436,
+      "candidate_vs_reference_percent": -3.0892133130752675,
+      "decision": "Innerhalb/?berlappend zur beobachteten Laufstreuung; Effekt unklar, kein belastbarer Gewinn oder keine belastbare Regression."
+    },
+    {
+      "metric": "frame_swapped_interval_median_ms",
+      "unit": "ms",
+      "direction": "lower",
+      "reference_run_medians": [
+        166.87445000025036,
+        170.5724999992526,
+        162.49400000015157,
+        165.99450000103388,
+        163.31460000037623
+      ],
+      "reference_median": 165.99450000103388,
+      "reference_min": 162.49400000015157,
+      "reference_max": 170.5724999992526,
+      "candidate_run_medians": [
+        163.64545000033104,
+        167.07395000048564,
+        166.46140000011656,
+        173.20059999838122,
+        173.7340999989101
+      ],
+      "candidate_median": 167.07395000048564,
+      "candidate_min": 163.64545000033104,
+      "candidate_max": 173.7340999989101,
+      "candidate_vs_reference_percent": 0.6502926298431744,
+      "decision": "Innerhalb/?berlappend zur beobachteten Laufstreuung; Effekt unklar, kein belastbarer Gewinn oder keine belastbare Regression."
+    },
+    {
+      "metric": "render_median_ms",
+      "unit": "ms",
+      "direction": "lower",
+      "reference_run_medians": [
+        22.695800000292365,
+        22.923999999875377,
+        22.761399999581045,
+        22.683600000164006,
+        22.405000001526787
+      ],
+      "reference_median": 22.695800000292365,
+      "reference_min": 22.405000001526787,
+      "reference_max": 22.923999999875377,
+      "candidate_run_medians": [
+        22.45039999979781,
+        22.454499998275423,
+        22.44724999764003,
+        22.937499998079147,
+        23.281199999473756
+      ],
+      "candidate_median": 22.454499998275423,
+      "candidate_min": 22.44724999764003,
+      "candidate_max": 23.281199999473756,
+      "candidate_vs_reference_percent": -1.063192317582251,
+      "decision": "Innerhalb/?berlappend zur beobachteten Laufstreuung; Effekt unklar, kein belastbarer Gewinn oder keine belastbare Regression."
+    },
+    {
+      "metric": "pose_median_ms",
+      "unit": "ms",
+      "direction": "lower",
+      "reference_run_medians": [
+        5.0769499994203215,
+        5.333899998731795,
+        5.274999999528518,
+        5.6370499996774015,
+        5.123700000694953
+      ],
+      "reference_median": 5.274999999528518,
+      "reference_min": 5.0769499994203215,
+      "reference_max": 5.6370499996774015,
+      "candidate_run_medians": [
+        5.098999998153886,
+        5.43649999963236,
+        5.002200001399615,
+        5.149300002813106,
+        5.316700000548735
+      ],
+      "candidate_median": 5.149300002813106,
+      "candidate_min": 5.002200001399615,
+      "candidate_max": 5.43649999963236,
+      "candidate_vs_reference_percent": -2.3829383265715043,
+      "decision": "Innerhalb/?berlappend zur beobachteten Laufstreuung; Effekt unklar, kein belastbarer Gewinn oder keine belastbare Regression."
+    },
+    {
+      "metric": "throughput_sim_s_per_wall_s",
+      "unit": "sim_s/wall_s",
+      "direction": "higher",
+      "reference_run_medians": [
+        0.9782084854548669,
+        0.9763591069666696,
+        0.9794261765658039,
+        0.9804571824377689,
+        0.976504449478548
+      ],
+      "reference_median": 0.9782084854548669,
+      "reference_min": 0.9763591069666696,
+      "reference_max": 0.9804571824377689,
+      "candidate_run_medians": [
+        0.9789114052727855,
+        0.9782050444700919,
+        0.9772586580258389,
+        0.9789008896648825,
+        0.9755118151291368
+      ],
+      "candidate_median": 0.9782050444700919,
+      "candidate_min": 0.9755118151291368,
+      "candidate_max": 0.9789114052727855,
+      "candidate_vs_reference_percent": -0.00035176394665992206,
+      "decision": "Innerhalb/?berlappend zur beobachteten Laufstreuung; Effekt unklar, kein belastbarer Gewinn oder keine belastbare Regression."
+    },
+    {
+      "metric": "backlog_max_s",
+      "unit": "s",
+      "direction": "lower",
+      "reference_run_medians": [
+        1.094148800000072,
+        1.1475342999997409,
+        1.1533693999995727,
+        1.1879942999997315,
+        1.1031761999988419
+      ],
+      "reference_median": 1.1475342999997409,
+      "reference_min": 1.094148800000072,
+      "reference_max": 1.1879942999997315,
+      "candidate_run_medians": [
+        1.1064363999982376,
+        1.1843432999988188,
+        1.1302390000008877,
+        1.183884099999485,
+        1.108476399998004
+      ],
+      "candidate_median": 1.1302390000008877,
+      "candidate_min": 1.1064363999982376,
+      "candidate_max": 1.1843432999988188,
+      "candidate_vs_reference_percent": -1.507170635235655,
+      "decision": "Innerhalb/?berlappend zur beobachteten Laufstreuung; Effekt unklar, kein belastbarer Gewinn oder keine belastbare Regression."
+    },
+    {
+      "metric": "input_latency_median_ms",
+      "unit": "ms",
+      "direction": "lower",
+      "reference_run_medians": [
+        84.541,
+        88.211,
+        96.146,
+        90.678,
+        88.659
+      ],
+      "reference_median": 88.659,
+      "reference_min": 84.541,
+      "reference_max": 96.146,
+      "candidate_run_medians": [
+        89.548,
+        94.822,
+        93.636,
+        92.939,
+        95.498
+      ],
+      "candidate_median": 93.636,
+      "candidate_min": 89.548,
+      "candidate_max": 95.498,
+      "candidate_vs_reference_percent": 5.6136432849456686,
+      "decision": "Innerhalb/?berlappend zur beobachteten Laufstreuung; Effekt unklar, kein belastbarer Gewinn oder keine belastbare Regression."
+    }
+  ],
+  "test_result": {
+    "command": ".\\.venv\\Scripts\\python.exe -m pytest -q tests\\test_native_worker.py tests\\test_native_hydrodynamik.py tests\\test_native_statik.py code\\cpp\\tests\\paritaet_batch.py code\\cpp\\tests\\paritaet_koerperkontext.py",
+    "result": "63 passed, 1 failed",
+    "failure": "The existing Optimist parity case differs by 1.01024256e-9 at atol=1e-9; this exact pre-existing baseline finding is documented in Abschlussnachweis_Teststruktur_und_Speed_V0.12.md. Folkeboot parity and all other selected tests passed."
+  },
+  "limitations": [
+    "The reference native binary hash was not captured before rebuilding; source revision and hashes are known, but exact binary identity for the reference is not available.",
+    "Qt frameSwapped and input-to-swap measurements do not prove physical monitor scanout.",
+    "Run ranges are descriptive, not a formal confidence interval.",
+    "The test selection is targeted; this is not a full-suite or all-model acceptance."
+  ],
+  "post_measurement_change": {
+    "description": "After the five candidate runs, the one-shot compatibility wrapper was corrected to move its locally owned result vector rather than copy it. The native worker-batch path measured in the candidate runs uses the workspace overload and does not call this wrapper. No existing measurement was repeated.",
+    "final_source_sha256": {
+      "code/cpp/src/hydrodynamik.hpp": "3096675a9c362d60fef1e0143d0eb604dcdc368ed578348d6473ffed5d0c5031",
+      "code/cpp/src/dynamik.hpp": "c199de08f9a54fafcb4d1437f7d82c4e8cf1fa7516eaa5a969c9b0175b9aa796",
+      "code/cpp/src/modul.cpp": "dc8ff4fe7d76ac1002b608e8c31ebdfd8aa8aa40795511e9149489b900f5cbcb"
+    },
+    "final_native_binary_sha256": "fe3c215fb627baa8c366af65ef22d4befdfca07cd8b4d872a1474d39744d4e79",
+    "verification": "Native extension rebuilt and the same targeted test selection rerun: 63 passed; the same known Optimist parity failure occurred."
+  }
+}

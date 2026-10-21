@@ -1,0 +1,36 @@
+{
+  "kennung": "P-01",
+  "messfrage": "Wiederverwendung des nativen Koerperkontexts gegen Neuerzeugung pro Snapshot",
+  "messart": "A/B-Gegenmessung im aktuellen Arbeitsbaum; kein historischer Vorherstand",
+  "datum": "2026-10-21",
+  "modell": "folkeboot",
+  "rechenpfad": "cpp",
+  "python": "3.14.8",
+  "cpu": "AMD Ryzen 5 8600G w/ Radeon 760M Graphics",
+  "build": "CMake Release, C++17",
+  "warmups_pro_variante": 3,
+  "laeufe_pro_variante": 5,
+  "aufrufe_pro_lauf": 20,
+  "einheit": "Mikrosekunden pro Aufruf",
+  "messgrenze": "Koerper.snapshot() mit wiederverwendetem Kontext gegen NativeKoerperKontext(koerper).snapshot(koerper) mit Neuaufbau",
+  "rohwerte_us_pro_aufruf": {
+    "wiederverwendung": [98.475, 97.82, 96.665, 118.01, 105.025],
+    "neuaufbau": [231.375, 256.355, 287.82, 225.83, 257.615]
+  },
+  "median_us_pro_aufruf": {
+    "wiederverwendung": 98.475,
+    "neuaufbau": 256.355
+  },
+  "spannweite_us_pro_aufruf": {
+    "wiederverwendung": [96.665, 118.01],
+    "neuaufbau": [225.83, 287.82]
+  },
+  "faktor": 2.6033,
+  "medianzeitreduktion_prozent": 61.5865,
+  "bewertung": "Die Messreihen-Spannweiten ueberlappen nicht. Der gemessene absolute Vorteil betraegt 157.88 Mikrosekunden pro Snapshot. Dies ist ein kontrollierter Vergleich gegen den expliziten Neuaufbaupfad im aktuellen Quellstand, kein historischer Vorher-/Nachher-Nachweis.",
+  "einschraenkungen": [
+    "Kein konkurrierender Benchmark waehrend der Messung.",
+    "Die Messung isoliert Kontextwiederverwendung und nicht den vollstaendigen Worker- oder GUI-Pfad.",
+    "Die aktuelle Implementierung lag bereits vor der Messung im uncommitted Arbeitsbaum."
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "kennung": "P-04",
+  "messfrage": "Wasser-Splat native C++ gegen Python-Referenz",
+  "messart": "A/B-Messung vorhandener Rechenpfade im aktuellen Arbeitsbaum",
+  "datum": "2026-10-21",
+  "partikel": 700,
+  "raster": [41, 41, 17],
+  "kernel_offsets": 343,
+  "warmups_pro_variante": 3,
+  "laeufe_pro_variante": 5,
+  "aufrufe_pro_lauf": 10,
+  "einheit": "Mikrosekunden pro Aufruf",
+  "messgrenze": "IsoSurfaceWater.splat einschliesslich Spiegelung und Rasterbefuellung; ohne Isosurface-Extraktion oder Rendering",
+  "rohwerte_us_pro_aufruf": {
+    "cpp": [2020.87, 2012.82, 2019.94, 2118.6, 2227.07],
+    "python_referenz": [19410.57, 19964.88, 19460.8, 18456.03, 18103.23]
+  },
+  "median_us_pro_aufruf": {
+    "cpp": 2020.87,
+    "python_referenz": 19410.57
+  },
+  "spannweite_us_pro_aufruf": {
+    "cpp": [2012.82, 2227.07],
+    "python_referenz": [18103.23, 19964.88]
+  },
+  "faktor": 9.6051,
+  "medianzeitreduktion_prozent": 89.5888,
+  "bewertung": "Die native Variante ist in dieser synthetischen Messung 9.61x schneller; die Spannweiten ueberlappen nicht. Das belegt einen Rechenpfadvergleich des vorhandenen nativen Kernels, keinen Vorher-/Nachher-Gewinn gegen eine fruehere native Splatimplementierung und keinen kompletten Rendergewinn.",
+  "eingabe": "Reproduzierbare uniforme Zufallspunkte mit Seed 1837 im Beckenbereich; 700 Partikel.",
+  "einschraenkungen": [
+    "Kein konkurrierender Benchmark waehrend der Messung.",
+    "Synthetischer Partikeldatensatz; keine Produktionsaufnahme.",
+    "Isosurface-Extraktion und Rendering sind ausgeschlossen.",
+    "Die native Splatimplementierung lag bereits im Arbeitsbaum."
+  ]
+}

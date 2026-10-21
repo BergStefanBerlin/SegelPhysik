@@ -1,0 +1,547 @@
+{
+  "purpose": "current V0.12 wrapper diagnostics; not end-to-end proof or approved register measurement",
+  "environment": {
+    "python": "3.14.8",
+    "plattform": "Windows-11-10.0.26200-SP0",
+    "prozessor": "AMD64 Family 25 Model 117 Stepping 2, AuthenticAMD",
+    "cpu_threads": 12,
+    "bibliotheken": {
+      "numpy": "2.5.4",
+      "PySide6": "6.10.3",
+      "pyvista": "0.49.1",
+      "pyvistaqt": "0.13.1",
+      "vtk": "9.7.1",
+      "manifold3d": "3.5.4"
+    },
+    "npu": {
+      "onnxruntime_installiert": false,
+      "zugriff_nachgewiesen": false,
+      "operatoren_nachgewiesen": [],
+      "hinweis": "Ohne NPU-Execution-Provider kein Operator-/Kernelnachweis."
+    }
+  },
+  "native_binary": "C:\\_DATEN\\Code\\Python\\Organisierter Code\\SegelPhysik\\.venv\\Lib\\site-packages\\_segelphysik_native.cp314-win_amd64.pyd",
+  "native_abi": 1,
+  "rows": [
+    {
+      "interface": "CPPI-0023 quaternion_normalisieren",
+      "calls_per_repeat": 10000,
+      "warmup_calls": 1,
+      "repeats": 7,
+      "python_us": [
+        3.44727,
+        3.4188400000000003,
+        3.51609,
+        3.47373,
+        3.43449,
+        3.42616,
+        3.5132
+      ],
+      "cpp_us": [
+        10.27683,
+        10.39434,
+        10.395010000000001,
+        10.049,
+        10.01037,
+        9.895280000000001,
+        10.40396
+      ],
+      "python_median_us": 3.44727,
+      "cpp_median_us": 10.27683,
+      "cpp_over_python": 2.9811503015429603,
+      "parity": "pass",
+      "input": {
+        "q": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ],
+        "p": [
+          0.7,
+          0.1,
+          -0.2,
+          0.4
+        ],
+        "v": [
+          0.7,
+          0.1,
+          -0.2
+        ],
+        "translation": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      }
+    },
+    {
+      "interface": "CPPI-0024 quaternion_matrix",
+      "calls_per_repeat": 10000,
+      "warmup_calls": 1,
+      "repeats": 7,
+      "python_us": [
+        6.46512,
+        6.5015600000000004,
+        6.5158000000000005,
+        6.53162,
+        6.53676,
+        6.397810000000001,
+        6.47576
+      ],
+      "cpp_us": [
+        10.57901,
+        10.42824,
+        10.15091,
+        10.39676,
+        10.50059,
+        10.45068,
+        10.710899999999999
+      ],
+      "python_median_us": 6.5015600000000004,
+      "cpp_median_us": 10.45068,
+      "cpp_over_python": 1.6074111444022665,
+      "parity": "pass",
+      "input": {
+        "q": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ],
+        "p": [
+          0.7,
+          0.1,
+          -0.2,
+          0.4
+        ],
+        "v": [
+          0.7,
+          0.1,
+          -0.2
+        ],
+        "translation": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      }
+    },
+    {
+      "interface": "CPPI-0026 _quaternion_multiplizieren",
+      "calls_per_repeat": 10000,
+      "warmup_calls": 1,
+      "repeats": 7,
+      "python_us": [
+        2.4822800000000003,
+        2.56318,
+        2.53464,
+        2.53164,
+        2.46041,
+        2.492,
+        2.4693899999999998
+      ],
+      "cpp_us": [
+        10.47836,
+        10.38666,
+        10.48043,
+        10.62883,
+        10.525030000000001,
+        10.63806,
+        10.66301
+      ],
+      "python_median_us": 2.492,
+      "cpp_median_us": 10.525030000000001,
+      "cpp_over_python": 4.223527287319422,
+      "parity": "pass",
+      "input": {
+        "q": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ],
+        "p": [
+          0.7,
+          0.1,
+          -0.2,
+          0.4
+        ],
+        "v": [
+          0.7,
+          0.1,
+          -0.2
+        ],
+        "translation": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      }
+    },
+    {
+      "interface": "CPPI-0059 winkel_360",
+      "calls_per_repeat": 10000,
+      "warmup_calls": 1,
+      "repeats": 7,
+      "python_us": [
+        0.2032,
+        0.20282,
+        0.20079,
+        0.19957,
+        0.19908,
+        0.19854,
+        0.29504
+      ],
+      "cpp_us": [
+        9.667159999999999,
+        9.65877,
+        9.74754,
+        9.575629999999999,
+        9.69979,
+        9.58498,
+        9.59948
+      ],
+      "python_median_us": 0.20079,
+      "cpp_median_us": 9.65877,
+      "cpp_over_python": 48.103839832660995,
+      "parity": "pass",
+      "input": {
+        "q": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ],
+        "p": [
+          0.7,
+          0.1,
+          -0.2,
+          0.4
+        ],
+        "v": [
+          0.7,
+          0.1,
+          -0.2
+        ],
+        "translation": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      }
+    },
+    {
+      "interface": "CPPI-0060 wrap_180",
+      "calls_per_repeat": 10000,
+      "warmup_calls": 1,
+      "repeats": 7,
+      "python_us": [
+        0.23415,
+        0.23875,
+        0.23581,
+        0.23462,
+        0.23364,
+        0.23961000000000002,
+        0.2376
+      ],
+      "cpp_us": [
+        9.71409,
+        9.929440000000001,
+        9.8301,
+        9.711559999999999,
+        10.48583,
+        9.47329,
+        9.432559999999999
+      ],
+      "python_median_us": 0.23581,
+      "cpp_median_us": 9.71409,
+      "cpp_over_python": 41.194563419702305,
+      "parity": "pass",
+      "input": {
+        "q": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ],
+        "p": [
+          0.7,
+          0.1,
+          -0.2,
+          0.4
+        ],
+        "v": [
+          0.7,
+          0.1,
+          -0.2
+        ],
+        "translation": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      }
+    },
+    {
+      "interface": "CPPI-0061 richtung_16",
+      "calls_per_repeat": 10000,
+      "warmup_calls": 1,
+      "repeats": 7,
+      "python_us": [
+        0.27276,
+        0.26550999999999997,
+        0.26291000000000003,
+        0.27903,
+        0.2691,
+        0.2692,
+        0.26818000000000003
+      ],
+      "cpp_us": [
+        9.29424,
+        9.40247,
+        9.18511,
+        9.24624,
+        9.157680000000001,
+        9.003219999999999,
+        9.006170000000001
+      ],
+      "python_median_us": 0.2691,
+      "cpp_median_us": 9.18511,
+      "cpp_over_python": 34.13270159791899,
+      "parity": "pass",
+      "input": {
+        "q": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ],
+        "p": [
+          0.7,
+          0.1,
+          -0.2,
+          0.4
+        ],
+        "v": [
+          0.7,
+          0.1,
+          -0.2
+        ],
+        "translation": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      }
+    },
+    {
+      "interface": "CPPI-0080 pfeil_fest",
+      "calls_per_repeat": 5000,
+      "warmup_calls": 1,
+      "repeats": 7,
+      "python_us": [
+        4.5267,
+        4.5041199999999995,
+        4.74674,
+        4.51074,
+        4.508100000000001,
+        4.507479999999999,
+        4.75066
+      ],
+      "cpp_us": [
+        15.95444,
+        16.09514,
+        16.067899999999998,
+        15.88394,
+        16.36466,
+        15.943760000000001,
+        15.64384
+      ],
+      "python_median_us": 4.51074,
+      "cpp_median_us": 15.95444,
+      "cpp_over_python": 3.5369894961802273,
+      "parity": "pass",
+      "input": {
+        "q": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ],
+        "p": [
+          0.7,
+          0.1,
+          -0.2,
+          0.4
+        ],
+        "v": [
+          0.7,
+          0.1,
+          -0.2
+        ],
+        "translation": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      }
+    },
+    {
+      "interface": "CPPI-0085 moment_bogen_achse",
+      "calls_per_repeat": 3000,
+      "warmup_calls": 1,
+      "repeats": 7,
+      "python_us": [
+        17.568466666666666,
+        18.2333,
+        17.238333333333333,
+        17.136066666666665,
+        17.151433333333333,
+        17.6941,
+        17.148866666666667
+      ],
+      "cpp_us": [
+        11.562233333333333,
+        11.524466666666667,
+        11.6081,
+        11.5449,
+        11.577399999999999,
+        11.490533333333333,
+        11.524433333333333
+      ],
+      "python_median_us": 17.238333333333333,
+      "cpp_median_us": 11.5449,
+      "cpp_over_python": 0.669722517644784,
+      "parity": "pass",
+      "input": {
+        "q": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ],
+        "p": [
+          0.7,
+          0.1,
+          -0.2,
+          0.4
+        ],
+        "v": [
+          0.7,
+          0.1,
+          -0.2
+        ],
+        "translation": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      }
+    },
+    {
+      "interface": "CPPI-0098 svg_rahmen",
+      "calls_per_repeat": 10000,
+      "warmup_calls": 1,
+      "repeats": 7,
+      "python_us": [
+        0.4036,
+        0.40124,
+        0.40517000000000003,
+        0.39364,
+        0.44786000000000004,
+        0.39302,
+        0.39465
+      ],
+      "cpp_us": [
+        10.50807,
+        10.40988,
+        10.23293,
+        10.296700000000001,
+        10.64185,
+        10.42206,
+        10.472610000000001
+      ],
+      "python_median_us": 0.40124,
+      "cpp_median_us": 10.42206,
+      "cpp_over_python": 25.974628651181337,
+      "parity": "pass",
+      "input": {
+        "q": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ],
+        "p": [
+          0.7,
+          0.1,
+          -0.2,
+          0.4
+        ],
+        "v": [
+          0.7,
+          0.1,
+          -0.2
+        ],
+        "translation": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      }
+    },
+    {
+      "interface": "CPPI-0099 geschwindigkeitseinheiten",
+      "calls_per_repeat": 10000,
+      "warmup_calls": 1,
+      "repeats": 7,
+      "python_us": [
+        0.19771,
+        0.19244,
+        0.19219,
+        0.19138999999999998,
+        0.19407,
+        0.20173,
+        0.19203
+      ],
+      "cpp_us": [
+        10.12476,
+        10.09251,
+        10.01323,
+        9.91653,
+        9.9848,
+        10.16706,
+        10.3158
+      ],
+      "python_median_us": 0.19244,
+      "cpp_median_us": 10.09251,
+      "cpp_over_python": 52.44496986073582,
+      "parity": "pass",
+      "input": {
+        "q": [
+          2.0,
+          -0.3,
+          0.2,
+          0.4
+        ],
+        "p": [
+          0.7,
+          0.1,
+          -0.2,
+          0.4
+        ],
+        "v": [
+          0.7,
+          0.1,
+          -0.2
+        ],
+        "translation": [
+          1.0,
+          2.0,
+          3.0
+        ]
+      }
+    }
+  ]
+}

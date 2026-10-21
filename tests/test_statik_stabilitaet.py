@@ -1,7 +1,8 @@
-"""Tests rev E: stabil-Flag, beste_loesung-Stufen, echte Kegel-Seitenlage."""
+"""Statische Stabilitaet: Flag, Loesungsauswahl und Kegel-Seitenlage (E1-E3)."""
 from __future__ import annotations
-import math, sys, traceback
+import math
 import numpy as np
+import pytest
 
 from segelphysik.core.statisch_robust import loese_robust
 from segelphysik.core.stoerung import beste_loesung, kontakt_start
@@ -40,6 +41,8 @@ def test_e2_beste_loesung_stabil_ohne_gm():
     assert beste_loesung([stabil_ohne_gm, mit_gm])["z"] == -0.3
     assert beste_loesung([neutral])["z"] == -0.5
 
+@pytest.mark.integration
+@pytest.mark.slow
 def test_e3_kegel_liegt_seitlich_stabil():
     """Der physikalische Kernbefund (Kalibrierlauf): ein homogener Kegel
     (rho=500) liegt SEITLICH im Wasser (phi* nahe 90 Grad) - und diese
@@ -57,15 +60,3 @@ def test_e3_kegel_liegt_seitlich_stabil():
     assert L["restkraft"] < 0.05 * k.masse * G
     erg = kf((L["z"], L["phi"], 0.0))
     assert abs(erg.F_A.as_array()[2] - k.masse * G) < 0.05 * k.masse * G
-
-if __name__ == "__main__":
-    fehler = 0
-    tests = [(n, f) for n, f in sorted(globals().items())
-             if n.startswith("test_") and callable(f)]
-    for name, fn in tests:
-        try:
-            fn(); print("PASS", name)
-        except Exception:
-            fehler += 1; print("FAIL", name); traceback.print_exc()
-    print("---"); print("%d/%d" % (len(tests)-fehler, len(tests)))
-    sys.exit(1 if fehler else 0)

@@ -9,6 +9,9 @@ from segelphysik.core.physik_backend import (
     OpenCLBackend,
 )
 
+import pytest
+pytestmark = [pytest.mark.gui]
+
 
 def test_welt_laden_baut_baum_und_waehlt_standardobjekt(monkeypatch):
     konfig_pfad = os.path.join(

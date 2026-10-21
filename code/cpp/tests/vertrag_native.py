@@ -7,6 +7,8 @@ import pytest
 
 import _segelphysik_native as native
 
+pytestmark = [pytest.mark.native, pytest.mark.integration]
+
 
 def zustand_array():
     werte = np.arange(13, dtype=np.float64)

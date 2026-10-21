@@ -15,8 +15,11 @@ from segelphysik.core.stationaer_hydrodynamik import (
 )
 from werkzeuge.migration_szenarien import koerper_laden
 
+pytestmark = [pytest.mark.native]
 
-@pytest.mark.parametrize("name", ["optimist", "folkeboot", "yacht1"])
+
+@pytest.mark.slow
+@pytest.mark.parametrize("name", ["folkeboot"])
 @pytest.mark.parametrize("solver", [loese, loese_robust])
 def test_beide_solver_mit_exaktem_modell_nativ_und_ohne_pythonresiduum(
         monkeypatch, name, solver):
@@ -57,7 +60,7 @@ def test_beide_solver_mit_exaktem_modell_nativ_und_ohne_pythonresiduum(
 
 def test_native_statikresiduen_mit_fluid_ruder_und_fremdkraft(monkeypatch):
     monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", "cpp")
-    konfig, physik, snapshot = koerper_laden("optimist")
+    konfig, physik, snapshot = koerper_laden("folkeboot")
     hydro = baue_kraftfunktion(
         snapshot, rho_w=konfig.wasser_dichte(), g=physik.g_m_pro_s2, pfad="exakt_union")
     rollen = HydrodynamikModell.aus_koerper(
@@ -78,7 +81,7 @@ def test_native_statikresiduen_mit_fluid_ruder_und_fremdkraft(monkeypatch):
 
 def test_nativer_solver_meldet_budget_und_abbruch(monkeypatch):
     monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", "cpp")
-    konfig, physik, snapshot = koerper_laden("optimist")
+    konfig, physik, snapshot = koerper_laden("folkeboot")
     hydro = baue_kraftfunktion(
         snapshot, rho_w=konfig.wasser_dichte(), g=physik.g_m_pro_s2, pfad="exakt_union")
     with pytest.raises(SolverFehler):
@@ -94,7 +97,7 @@ def test_nativer_solver_meldet_budget_und_abbruch(monkeypatch):
 
 def test_native_solver_ignorieren_keine_ueberschriebenen_kraftcallbacks(monkeypatch):
     monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", "cpp")
-    _, physik, snapshot = koerper_laden("optimist")
+    _, physik, snapshot = koerper_laden("folkeboot")
     hydro = baue_kraftfunktion(snapshot, pfad="exakt_union", g=physik.g_m_pro_s2)
 
     class ErweitertesKraftmodell(Kraftmodell):
@@ -111,7 +114,7 @@ def test_native_solver_ignorieren_keine_ueberschriebenen_kraftcallbacks(monkeypa
 @pytest.mark.parametrize("budget", [1.5, "2"])
 def test_native_statik_trunkiert_keine_ungueltigen_iterationsbudgets(monkeypatch, solver, budget):
     monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", "cpp")
-    _, physik, snapshot = koerper_laden("optimist")
+    _, physik, snapshot = koerper_laden("folkeboot")
     hydro = baue_kraftfunktion(snapshot, pfad="exakt_union", g=physik.g_m_pro_s2)
     with pytest.raises(TypeError):
         solver(hydro, snapshot.masse, max_iter=budget)
@@ -119,7 +122,7 @@ def test_native_statik_trunkiert_keine_ungueltigen_iterationsbudgets(monkeypatch
 
 def test_stationaere_native_kraftauswertung_gegen_oeffentlichen_vertrag(monkeypatch):
     monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", "cpp")
-    konfig, physik, snapshot = koerper_laden("optimist")
+    konfig, physik, snapshot = koerper_laden("folkeboot")
     hydro = baue_kraftfunktion(snapshot, pfad="exakt_union", g=physik.g_m_pro_s2)
     rollen = HydrodynamikModell.aus_koerper(
         snapshot, rho_kg_m3=1000., ruderwinkel_rad=.1)

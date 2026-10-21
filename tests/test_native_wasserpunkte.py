@@ -4,6 +4,8 @@ import pytest
 from segelphysik.core import wasserpunkte as wasser
 from segelphysik.core.rechenpfad import python_referenz
 
+pytestmark = [pytest.mark.native]
+
 
 def test_nativer_wasserhash_und_punktlage_sind_deterministisch_und_periodisch(monkeypatch):
     monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", "cpp")

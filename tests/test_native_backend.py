@@ -4,6 +4,8 @@ import pytest
 
 from segelphysik.core import native_backend
 
+pytestmark = [pytest.mark.native]
+
 
 def _modul():
     modul = SimpleNamespace(

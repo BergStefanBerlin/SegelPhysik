@@ -1,0 +1,36 @@
+{
+  "kennung": "P-06",
+  "messfrage": "Kosten der wiederholten Positivdefinitheitsvalidierung im Python-6-DOF-Referenzschritt",
+  "messart": "Vorher-/Nachher-Messung im Python-Referenzpfad",
+  "datum": "2026-10-21",
+  "rechenpfad": "python_referenz",
+  "workload": "500 aufeinanderfolgende 6-DOF-Schritte mit analytischem konstantem Kraftstub, 80 kg Masse, diagonalem Traegheitstensor und dt=0.01 s",
+  "warmups": 5,
+  "laeufe": 5,
+  "wiederholungen_pro_lauf": 10,
+  "einheit": "Mikrosekunden pro Simulationsschritt",
+  "messgrenze": "schritt() einschliesslich Validierung, Integration und Zustandserzeugung; ohne reale Hydrodynamik/Hydrostatik",
+  "vorher": {
+    "revision": "uncommitted Arbeitsbaum vor P-06-Aenderung",
+    "rohwerte_us_pro_schritt": [149.2786, 150.14534, 152.54012, 148.9288, 150.0782],
+    "median_us_pro_schritt": 150.0782,
+    "spannweite_us_pro_schritt": [148.9288, 152.54012]
+  },
+  "nachher": {
+    "revision": "uncommitted Arbeitsbaum mit gecachter Traegheitstensorvalidierung",
+    "rohwerte_us_pro_schritt": [127.22056, 126.76548, 127.14236, 126.88726, 125.88112],
+    "median_us_pro_schritt": 126.88726,
+    "spannweite_us_pro_schritt": [125.88112, 127.22056]
+  },
+  "verbesserung": {
+    "median_prozent": 15.45,
+    "median_us_pro_schritt": 23.19094,
+    "spannweiten_ueberlappen": false
+  },
+  "bewertung": "Der begrenzte Python-Workload zeigt eine um 15,45 % niedrigere Medianzeit und nicht ueberlappende Spannweiten. Die Messung umfasst weiterhin den gesamten Python-6-DOF-Schritt; sie attribuiert den Gewinn nicht auf einen Produktions-Worker oder vollstaendige Hydrodynamik.",
+  "einschraenkungen": [
+    "Synthetischer Kraftstub statt Produktionskraftmodell.",
+    "Der Zustand wird in jedem Schritt neu erzeugt und muss daher validiert bleiben.",
+    "Die unveraenderte numerische Matrix wird als begrenzter Cache-Schluessel verwendet; geaenderte Werte werden neu geprueft."
+  ]
+}

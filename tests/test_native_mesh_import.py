@@ -5,6 +5,8 @@ from segelphysik.core import mesh
 from segelphysik.core.dynamik_6dof import quaternion_matrix
 from segelphysik.core.rechenpfad import python_referenz
 
+pytestmark = [pytest.mark.native]
+
 
 def test_native_obj_polygontriangulierung_behaelt_ohren_und_indexreihenfolge(monkeypatch):
     monkeypatch.setenv("SEGELPHYSIK_RECHENPFAD", "cpp")

@@ -8,6 +8,8 @@ from segelphysik.gui.navigationswidgets import (
     _geschwindigkeitseinheiten, _svg_rahmen,
 )
 
+pytestmark = [pytest.mark.native]
+
 
 @pytest.fixture
 def qapp():

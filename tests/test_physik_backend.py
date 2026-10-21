@@ -152,6 +152,7 @@ def test_opencl_geraet_stellt_treiber_und_speicherangaben_bereit():
     assert backend.global_memory_bytes == 1024
 
 
+@pytest.mark.hardware
 def test_opencl_vektoraddition_auf_gpu_wenn_verfuegbar():
     try:
         backend = OpenCLBackend.oeffnen()

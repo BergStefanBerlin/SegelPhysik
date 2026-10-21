@@ -5,7 +5,7 @@ import math
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
-from PySide6.QtCore import QByteArray, QRectF, QSize, Qt
+from PySide6.QtCore import QByteArray, QRectF, QSize, Qt, QTimer
 from PySide6.QtGui import QPainter
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtWidgets import QScrollArea, QVBoxLayout, QWidget
@@ -253,7 +253,7 @@ class SVGInstrumentWidget(QWidget):
                     [self.typ]):
                 _sichtbar_setzen(self._elemente[element_id], True)
 
-    def _render(self, werte, optionen):
+    def _render(self, werte, optionen, *, numerisch=True):
         heading = getattr(werte, "heading_grad", None)
         roll = getattr(werte, "kraengung_grad", None)
         pitch = getattr(werte, "stampfen_grad", None)
@@ -284,11 +284,12 @@ class SVGInstrumentWidget(QWidget):
                     self._elemente["heading_pointer"], grad)
                 if not nativ:
                     gerundet = int(math.floor(grad + 0.5)) % 360
-                self._elemente["heading_value"].text = "%03d°" % gerundet
-                self._elemente["heading_direction"].text = (
-                    richtung_16(grad) or "")
-            self._elemente["heading_value"].text = (
-                "FEHLER" if fehler else self._elemente["heading_value"].text)
+                if numerisch:
+                    self._elemente["heading_value"].text = "%03d°" % gerundet
+                    self._elemente["heading_direction"].text = (
+                        richtung_16(grad) or "")
+            if fehler:
+                self._elemente["heading_value"].text = "FEHLER"
             if camera is not None:
                 _rotation_setzen(
                     self._elemente["camera_symbol"], kamera_grad if nativ else camera % 360.0)
@@ -302,8 +303,9 @@ class SVGInstrumentWidget(QWidget):
             _rotation_setzen(
                 self._elemente[id_prefix + "_pose"],
                 pose_grad if nativ else (-winkel if winkel is not None else 0.0))
-            self._elemente[id_prefix + "_value"].text = (
-                self._winkel_text(winkel) if winkel is not None else "FEHLER")
+            if numerisch or fehler:
+                self._elemente[id_prefix + "_value"].text = (
+                    self._winkel_text(winkel) if winkel is not None else "FEHLER")
             if kamera_winkel is not None:
                 _rotation_setzen(
                     self._elemente[id_prefix + "_camera"],
@@ -332,12 +334,15 @@ class SVGInstrumentWidget(QWidget):
             _sichtbar_setzen(
                 self._elemente[self._prefix + "_camera"],
                 analog and kamera_winkel is not None)
-        self._rendered_bytes = ET.tostring(
+        rendered_bytes = ET.tostring(
             self._xml, encoding="utf-8", xml_declaration=True)
-        if not self._renderer.load(QByteArray(self._rendered_bytes)):
+        if rendered_bytes == self._rendered_bytes:
+            return
+        if not self._renderer.load(QByteArray(rendered_bytes)):
             raise RuntimeError(
                 "Laufzeit-SVG konnte nicht gerendert werden: %s"
                 % self._source_path)
+        self._rendered_bytes = rendered_bytes
         self.update()
 
     @staticmethod
@@ -347,10 +352,10 @@ class SVGInstrumentWidget(QWidget):
         text = "%s%d°" % (vorzeichen, gerundet)
         return text.replace("-", "−")
 
-    def aktualisieren(self, werte, optionen):
+    def aktualisieren(self, werte, optionen, *, numerisch=True):
         if not isinstance(werte, Navigationswerte):
             raise TypeError("Navigationswerte erwartet")
-        self._render(werte, optionen)
+        self._render(werte, optionen, numerisch=numerisch)
 
     def paintEvent(self, ereignis):
         painter = QPainter(self)
@@ -372,6 +377,7 @@ class GeschwindigkeitsWidget(QWidget):
         }
         self._renderer = QSvgRenderer()
         self._rendered_bytes = b""
+        self._angezeigte_werte = None
         self.aktualisieren(None)
 
     def sizeHint(self):
@@ -386,14 +392,18 @@ class GeschwindigkeitsWidget(QWidget):
                               _geschwindigkeitseinheiten(geschwindigkeit))
             else:
                 werte = ("FEHLER", "FEHLER", "FEHLER")
-        for element_id, wert in zip(
-                ("speed_ms", "speed_kmh", "speed_kn"), werte):
+        ids = ("speed_ms", "speed_kmh", "speed_kn")
+        if werte == self._angezeigte_werte:
+            return
+        for element_id, wert in zip(ids, werte):
             self._elemente[element_id].text = wert
-        self._rendered_bytes = ET.tostring(
+        rendered_bytes = ET.tostring(
             self._xml, encoding="utf-8", xml_declaration=True)
-        if not self._renderer.load(QByteArray(self._rendered_bytes)):
+        if not self._renderer.load(QByteArray(rendered_bytes)):
             raise RuntimeError("Geschwindigkeitsanzeige konnte nicht "
                                "gerendert werden")
+        self._rendered_bytes = rendered_bytes
+        self._angezeigte_werte = werte
         self.update()
 
     def paintEvent(self, ereignis):
@@ -415,6 +425,12 @@ class NavigationsWidgetFenster(QWidget):
         self._werte = Navigationswerte(None, None, None, None, None, None)
         self._optionen = {}
         self._geschwindigkeit_m_pro_s = None
+        self._geschwindigkeit_status = "fehlt"
+        self._zahlen_timer = QTimer(self)
+        self._zahlen_timer.setSingleShot(True)
+        self._zahlen_timer.setTimerType(Qt.TimerType.PreciseTimer)
+        self._zahlen_timer.setInterval(100)
+        self._zahlen_timer.timeout.connect(self._instrumente_rendern)
         inhalt = QWidget()
         layout = QVBoxLayout(inhalt)
         layout.setContentsMargins(4, 4, 4, 4)
@@ -433,23 +449,49 @@ class NavigationsWidgetFenster(QWidget):
         fenster_layout.setContentsMargins(0, 0, 0, 0)
         fenster_layout.addWidget(scroll)
 
-    def aktualisieren(self, werte, optionen, geschwindigkeit_m_pro_s=None):
+    def aktualisieren(self, werte, optionen, geschwindigkeit_m_pro_s=None,
+                      *, verzoegert=False):
+        statuswechsel = any(
+            (getattr(self._werte, name) is None) != (getattr(werte, name) is None)
+            for name in ("heading_grad", "kraengung_grad", "stampfen_grad"))
+        if geschwindigkeit_m_pro_s is None:
+            geschwindigkeit_status = "fehlt"
+        elif (math.isfinite(float(geschwindigkeit_m_pro_s))
+              and float(geschwindigkeit_m_pro_s) >= 0.0):
+            geschwindigkeit_status = "gueltig"
+        else:
+            geschwindigkeit_status = "fehler"
+        statuswechsel = statuswechsel or (
+            self._geschwindigkeit_status != geschwindigkeit_status)
         self._werte = werte
         self._optionen = dict(optionen)
         self._geschwindigkeit_m_pro_s = geschwindigkeit_m_pro_s
+        self._geschwindigkeit_status = geschwindigkeit_status
         if not self.isVisible():
             return
-        self._instrumente_rendern()
+        if verzoegert and not statuswechsel:
+            self._instrumente_rendern(numerisch=False)
+            if not self._zahlen_timer.isActive():
+                self._zahlen_timer.start()
+        else:
+            self._zahlen_timer.stop()
+            self._instrumente_rendern()
 
-    def _instrumente_rendern(self):
+    def _instrumente_rendern(self, *, numerisch=True):
         for widget in self.widgets:
-            widget.aktualisieren(self._werte, self._optionen)
-        self.geschwindigkeit_widget.aktualisieren(
-            self._geschwindigkeit_m_pro_s)
+            widget.aktualisieren(self._werte, self._optionen, numerisch=numerisch)
+        if numerisch:
+            self.geschwindigkeit_widget.aktualisieren(
+                self._geschwindigkeit_m_pro_s)
 
     def showEvent(self, ereignis):
+        self._zahlen_timer.stop()
         self._instrumente_rendern()
         super().showEvent(ereignis)
+
+    def hideEvent(self, ereignis):
+        self._zahlen_timer.stop()
+        super().hideEvent(ereignis)
 
     def sichtbarkeit_setzen(self, optionen):
         self._optionen = dict(optionen)

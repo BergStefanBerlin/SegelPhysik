@@ -17,7 +17,8 @@ struct HydrostatikKontext {
     double rho, g;
 
     HydrostatikWerte auswerten(const Matrix3& rotation, const Vektor3& position,
-                              const Abbruch& abbruch) const
+                              const Abbruch& abbruch,
+                              SchnittArbeitsbereich& arbeitsbereich) const
     {
         endlich(rotation, "Rotation"); endlich(position, "Position");
         abbruch.pruefen();
@@ -49,7 +50,8 @@ struct HydrostatikKontext {
             }
         } else {
             const auto geschnitten = schnitt.auswerten(
-                {-normale[0], -normale[1], -normale[2]}, position[2], abbruch);
+                {-normale[0], -normale[1], -normale[2]}, position[2],
+                abbruch, arbeitsbereich);
             ergebnis.volumen = geschnitten.first;
             ergebnis.schwerpunkt = geschnitten.second;
             if (ergebnis.volumen > 0.) {
@@ -68,6 +70,13 @@ struct HydrostatikKontext {
         endlich(ergebnis.schwerpunkt, "Auftriebsschwerpunkt");
         endlich(ergebnis.kraft, "Auftriebskraft"); endlich(ergebnis.moment, "Auftriebsmoment");
         return ergebnis;
+    }
+
+    HydrostatikWerte auswerten(const Matrix3& rotation, const Vektor3& position,
+                              const Abbruch& abbruch) const
+    {
+        SchnittArbeitsbereich arbeitsbereich;
+        return auswerten(rotation, position, abbruch, arbeitsbereich);
     }
 };
 

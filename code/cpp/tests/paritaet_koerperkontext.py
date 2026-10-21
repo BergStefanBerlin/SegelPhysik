@@ -7,6 +7,8 @@ from segelphysik.core.koerper_formen import build_box
 from segelphysik.core.native_backend import NativeBackendFehler, NativeKoerperKontext
 from werkzeuge.migration_vergleich import vergleiche
 
+pytestmark = [pytest.mark.native, pytest.mark.integration]
+
 
 def snapshot_vergleichen(a, b):
     for name in ("masse", "traegheitstensor", "r_S", "zustand", "version",
@@ -51,15 +53,11 @@ def test_punktmassen_bleiben_ohne_verdrangung_und_rollen_werden_vererbt():
 
 
 @pytest.mark.parametrize("mutation", [
-    "zustand", "pose", "basis_pose", "masse", "traegheit", "identitaet"])
+    "basis_pose", "masse", "traegheit", "identitaet"])
 def test_geaenderte_koerper_werden_explizit_invalidiert(mutation):
     k = Koerper(form=build_box(1., 2., 3.), masse=2.)
     kontext = NativeKoerperKontext(k)
-    if mutation == "zustand":
-        k.zustand = Zustand6DOF(position=(1., 2., 3.))
-    elif mutation == "pose":
-        k.setze_pose((1., 2., 3.))
-    elif mutation == "basis_pose":
+    if mutation == "basis_pose":
         from segelphysik.core.frames import Pose
 
         k.basis_pose = Pose(
@@ -73,6 +71,17 @@ def test_geaenderte_koerper_werden_explizit_invalidiert(mutation):
     with pytest.raises(NativeBackendFehler, match="veraltet"):
         kontext.snapshot(k)
     snapshot_vergleichen(k.snapshot(), NativeKoerperKontext(k).snapshot(k))
+
+
+def test_dynamische_pose_wird_pro_snapshot_uebernommen_ohne_kontextwechsel():
+    k = Koerper(form=build_box(1., 2., 3.), masse=2.)
+    kontext = NativeKoerperKontext(k)
+    k.zustand = Zustand6DOF(position=(1., 2., 3.))
+
+    snapshot = kontext.snapshot(k)
+
+    assert snapshot.zustand == k.zustand
+    assert kontext.gueltig_fuer(k)
 
 
 def test_gelenkwechsel_behaelt_den_tatsaechlichen_referenzvertrag():
@@ -114,13 +123,13 @@ def test_unversionierte_mesh_und_unterbaum_aenderungen_sind_keine_stillen_cachet
     snapshot_vergleichen(k.snapshot(), NativeKoerperKontext(k).snapshot(k))
 
 
-def test_snapshotausgaben_teilen_keinen_speicher_mit_der_internen_vorlage():
+def test_snapshotausgaben_sind_gegen_mutation_geschuetzt():
     k = Koerper(form=build_box(1., 2., 3.), masse=2.)
     kontext = NativeKoerperKontext(k)
     erster = kontext.snapshot(k)
     p, f = erster.blatt_meshes[0]
-    p.setflags(write=True)
-    f.setflags(write=True)
-    p[:] = 999.
-    f[:] = 0
+    with pytest.raises(ValueError):
+        p.setflags(write=True)
+    with pytest.raises(ValueError):
+        f.setflags(write=True)
     snapshot_vergleichen(k.snapshot(), kontext.snapshot(k))

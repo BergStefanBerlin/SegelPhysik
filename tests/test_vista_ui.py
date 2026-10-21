@@ -2,6 +2,9 @@ from types import SimpleNamespace
 
 from segelphysik.render.vista import PyVistaRenderer
 
+import pytest
+pytestmark = [pytest.mark.gui, pytest.mark.integration]
+
 
 class _Plotter:
     def __init__(self):

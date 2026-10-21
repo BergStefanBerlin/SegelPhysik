@@ -5,6 +5,8 @@ from segelphysik.core import massen
 from segelphysik.core.koerper_formen import build_box
 from segelphysik.core.rechenpfad import python_referenz
 
+pytestmark = [pytest.mark.native]
+
 
 @pytest.mark.parametrize("verschiebung", [0., 1., 1e6])
 def test_native_schalenmomente_und_schwerpunkt_gegen_referenz(monkeypatch, verschiebung):
